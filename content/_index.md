@@ -17,6 +17,11 @@ Keep in mind that this project is still in a very early phase of development. Th
 [main repo](https://github.com/MagicalBitcoin/magical-bitcoin-wallet) and is slowly being refactored and taken out into separate, independent modules.
 {{% /notice %}}
 
+## Trying out the CLI
+
+While the project is mostly meant to be integrated into other larger project, there's a very minimalistic command line interface ("repl") written in the main
+[`magical-bitcoin-wallet`](https://github.com/MagicalBitcoin/magical-bitcoin-wallet) repo. See the [REPL](/repl) section to try it out.
+
 ## Descriptors
 
 The name of the project refers to the fact that when its components are built into a wallet, it can "almost magically" support very complex spending policies, without having to individually translate them into code. It may sound disappointing, but there isn't, in fact,
