@@ -417,11 +417,17 @@ This subcommand has no extra flags and launches an interactive shell session.
 
 ```text
 OPTIONS:
+        --assume_height <HEIGHT>    Assume the blockchain has reached a specific height. This affects the transaction
+                                    finalization, if there are timelocks in the descriptor
         --psbt <BASE64_PSBT>    Sets the PSBT to sign
 ```
 
 Adds to the PSBT all the signatures it can produce with the secrets embedded in the descriptor (xprv or WIF keys). Returns the signed PSBT and, if there are enough item to satisfy the script, also the extracted raw
 Bitcoin transaction.
+
+Optionally, the `assume_height` option can be specified to let the wallet assume the blockchain has reached a specific height. This affects the finalization of the PSBT which is done right at the end of the signing
+process: the wallet tries to satisfy the spending condition of each input using the partial signatures collected. In case timelocks are present the wallet needs to know whether or not they have expired. This flag
+is particularly useful for offline wallets.
 
 ### `sync`
 
