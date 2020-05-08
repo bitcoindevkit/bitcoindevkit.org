@@ -17,10 +17,13 @@ Keep in mind that this project is still in a very early phase of development. Th
 [main repo](https://github.com/MagicalBitcoin/magical-bitcoin-wallet) and is slowly being refactored and taken out into separate, independent modules.
 {{% /notice %}}
 
-## Trying out the CLI
+## Playground
 
-While the project is mostly meant to be integrated into other larger project, there's a very minimalistic command line interface ("repl") written in the main
-[`magical-bitcoin-wallet`](https://github.com/MagicalBitcoin/magical-bitcoin-wallet) repo. See the [REPL](/repl) section to try it out.
+As a way of demostrating the flexibily of this project, the minimalistic command line (also called "repl") that is currently shipped as a debugging tool in the main [`magical-bitcoin-wallet`](https://github.com/MagicalBitcoin/magical-bitcoin-wallet)
+repo has been compiled to WebAssembly and can be used directly from the browser. See the [playground](/repl/playground) section to give it a try!
+
+The playground relies on [Esplora](https://blockstream.info) to monitor the blockchain and is currently locked in testnet-only mode, for obvious safety reasons. The native command line can also be used in regtest mode when installed on
+a computer. See the [REPL](/repl) section to learn more.
 
 ## Descriptors
 
@@ -30,4 +33,4 @@ any real magic in this wallet: the generalization is achieved thanks to *descrip
 The author of this project strongly believes descriptors will be a big part of the future generation of Bitcoin wallets, since they provide a very flexible scripting language that can also be extended as the
 technology and tooling on Bitcoin evolve and change (Schnorr signatures, Taproot, etc).
 
-To learn more, check the specific [Descriptors section](/descriptors).
+To learn more, check out the specific [Descriptors section](/descriptors).
