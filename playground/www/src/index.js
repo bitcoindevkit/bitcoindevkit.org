@@ -1,4 +1,5 @@
 import { WalletWrapper, init, compile } from "magical-bitcoin-wallet-playground";
+import * as InternalBlockly from "./blockly.js";
 
 async function startWallet(desc, change_desc) {
     const stdout = document.getElementById("stdout");
@@ -69,6 +70,7 @@ async function startWallet(desc, change_desc) {
 
 (async function() {
     init();
+    InternalBlockly.startBlockly('blocklyDiv', 'policy');
 
     let currentWallet = null;
 
