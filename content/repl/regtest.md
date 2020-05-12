@@ -32,3 +32,21 @@ This will start the Electrum server on port 50001. You can then add the `-n regt
 #### Stuck with "*wait until bitcoind is synced (i.e. initialblockdownload = false)*"
 
 Just generate a few blocks with `bitcoin-cli generatetoaddress 1 <address>`
+
+## Bonus: Docker
+
+If you have already installed Docker on your machine, you can also use 🍣 [Nigiri CLI](https://github.com/vulpemventures/nigiri) to spin-up a complete development environment in `regtest` that includes a `bitcoin` node, an `electrs` explorer and the [`esplora`](https://github.com/blockstream/esplora) web-app to visualize blocks and transactions in the browser.
+
+Install 🍣 Nigiri
+```bash
+$ curl https://getnigiri.vulpem.com | bash
+```
+
+Start Docker daemon and run Nigiri box
+```
+$ nigiri start
+```
+
+This will start electrum RPC interface on port `51401`, the REST interface on `3000` and the esplora UI on `5000` (You can visit with the browser and look for blocks, addresses and transactions)
+
+You can then add the `-n regtest -s localhost:51401` the `magic` commands to switch to the local regtest.
