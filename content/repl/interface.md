@@ -65,6 +65,7 @@ SUBCOMMANDS:
     get_new_address    Generates a new external address
     list_unspent       Lists the available spendable UTXOs
     policies           Returns the available spending policies for the descriptor
+    public_descriptor  Returns the public version of the wallet's descriptor(s)
     repl               Opens an interactive shell
     sign               Signs and tries to finalize a PSBT
     sync               Syncs with the chosen Electrum server
@@ -408,6 +409,10 @@ the descriptor (type = `PARTIALCOMPLETE`) and the three options are `[0, 1] ⇒ 
   }
 }
 ```
+
+### `public\_descriptor`
+
+This subcommand has no extra flags and returns the "public" version of the wallet's descriptor(s). It can be used to bootstrap a watch-only instance for the wallet.
 
 ### `repl`
 
