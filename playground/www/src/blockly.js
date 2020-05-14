@@ -468,6 +468,25 @@ export function startBlockly(container, codeContainer) {
             beginBlock.initSvg();
             beginBlock.render();
         }
+
+        // add fullscreen button
+        const btn = document.createElement("span");
+        btn.innerHTML = '<i class="fas fa-expand"></i>';
+        btn.style['float'] = 'right';
+        btn.style['margin-right'] = '10px';
+
+        let fs = false;
+        btn.onclick = function() {
+            if (fs) {
+                document.exitFullscreen();
+            } else {
+                document.getElementById("blocklyDiv").requestFullscreen();
+            }
+
+            fs = !fs;
+        };
+
+        document.getElementsByClassName("blocklyToolboxDiv")[0].appendChild(btn);
     }, 0);
 
     BlocklyStorage.backupOnUnload();
