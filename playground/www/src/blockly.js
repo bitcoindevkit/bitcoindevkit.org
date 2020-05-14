@@ -1,4 +1,5 @@
-import * as Blockly from 'blockly';
+import Blockly from 'blockly';
+import BlocklyStorage from "./blockly_storage";
 
 const toolbox = `<xml xmlns="https://developers.google.com/blockly/xml">
   <category name="Miniscript" colour="#5ba55b">
@@ -457,10 +458,17 @@ export function startBlockly(container, codeContainer) {
 
     workspace.addChangeListener(Blockly.Events.disableOrphans);
 
-    var beginBlock = workspace.newBlock('begin');
-    beginBlock.setDeletable(false);
-    beginBlock.setEditable(false);
-    beginBlock.moveBy(20, 20);
-    beginBlock.initSvg();
-    beginBlock.render();
+    setTimeout(() => {
+        BlocklyStorage.restoreBlocks();
+        if (workspace.getTopBlocks().length == 0) {
+            var beginBlock = workspace.newBlock('begin');
+            beginBlock.setDeletable(false);
+            beginBlock.setEditable(false);
+            beginBlock.moveBy(20, 20);
+            beginBlock.initSvg();
+            beginBlock.render();
+        }
+    }, 0);
+
+    BlocklyStorage.backupOnUnload();
 }
