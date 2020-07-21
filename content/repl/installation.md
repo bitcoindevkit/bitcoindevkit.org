@@ -12,8 +12,10 @@ The only requirement is a Linux/macOS system with a fairly recent Rust toolchain
 [rustup.rs](https://rustup.rs/). You can head there and follow their instructions, after which you can test if everything went fine by running `cargo version`, which should print something like:
 
 ```
-cargo 1.42.0 (86334295e 2020-01-31)
+cargo 1.45.0 (744bd1fbb 2020-06-15)
 ```
+
+**At the time of writing, the project requires cargo >= 1.45.0, which is the latest stable as of June 2020. If you have an older version installed with rustup.rs, you can upgrade it with `rustup update`.**
 
 If you really don't wanna pipe the output of `curl` into `sh`, you can also try using a [Docker image](https://hub.docker.com/_/rust) and working inside of it, but that's meant for more advanced
 users and won't be covered in this guide.
