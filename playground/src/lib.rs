@@ -70,7 +70,7 @@ impl WalletWrapper {
             MemoryDatabase::new(),
             blockchain,
         )
-        .await
+            .await
         .map_err(|e| format!("{:?}", e))?;
 
         Ok(WalletWrapper {
@@ -142,12 +142,11 @@ pub fn compile(policy: String, aliases: String, script_type: String) -> Promise 
             .collect();
 
         let policy = Concrete::<String>::from_str(&policy).map_err(|e| format!("{:?}", e))?;
-        let compiled = policy.compile().map_err(|e| format!("{:?}", e))?;
 
         let descriptor = match script_type.as_str() {
-            "sh" => Descriptor::Sh(compiled),
-            "wsh" => Descriptor::Wsh(compiled),
-            "sh-wsh" => Descriptor::ShWsh(compiled),
+            "sh" => Descriptor::Sh(policy.compile().map_err(|e| format!("{:?}", e))?),
+            "wsh" => Descriptor::Wsh(policy.compile().map_err(|e| format!("{:?}", e))?),
+            "sh-wsh" => Descriptor::ShWsh(policy.compile().map_err(|e| format!("{:?}", e))?),
             _ => return Err("InvalidScriptType".into()),
         };
 
