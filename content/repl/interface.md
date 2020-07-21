@@ -35,8 +35,10 @@ OPTIONS:
     -c, --change_descriptor <DESCRIPTOR>    Sets the descriptor to use for internal addresses
     -d, --descriptor <DESCRIPTOR>           Sets the descriptor to use for the external addresses
     -n, --network <NETWORK>                 Sets the network [default: testnet]  [possible values: testnet, regtest]
-    -s, --server <SERVER:PORT>              Sets the Electrum server to use [default: tn.not.fyi:55001]
+    -s, --server <SERVER:PORT>              Sets the Electrum server to use [default:
+                                            ssl://electrum.blockstream.info:60002]
     -w, --wallet <WALLET_NAME>              Selects the wallet to use [default: main]
+    -p, --proxy <SERVER:PORT>               Sets the SOCKS5 proxy for the Electrum client
 ```
 
 These are the global options that can be set. They are pretty much like the flags, but they also take a value. The only **required** one is the `--descriptor` or `-d` flag, since every wallet **must have an
@@ -49,27 +51,33 @@ standard descriptor.
 
 The `--network` flag can be used to change the network. Right now only `testnet` and `regtest` are supported since the code is very much not production-ready yet.
 
-The `--server` flag can be used to select the Electrum server to use. By default it's connecting to a random `testnet` server that has been found online, but sometimes it has proven to be kinda unreliable.
-You can also try with `kirsche.emzy.de:50001` or find other servers [here](https://1209k.com/bitcoin-eye/ele.php?chain=tbtc) and see if you have more luck with those. Right now **only tcp, non-Tor** servers are supported.
+The `--server` flag can be used to select the Electrum server to use. By default it's connecting to Blockstream's electrum servers, which seems pretty stable.
+If you are having connection issues, you can also try with one of the other servers [listed here](https://1209k.com/bitcoin-eye/ele.php?chain=tbtc) and see if you have more luck with those.
+Right now both plaintext and ssl servers are supported (prefix `tcp://` or no prefix at all for tcp, prefix `ssl://` for ssl).
+
+The `--proxy` flag can be optionally used to specify a SOCKS5 proxy to use when connecting to the Electrum server. Spawning a local Tor daemon and using it as a proxy will allow you to connect to `.onion` Electrum
+URLs. **Keep in mind that only plaintext server are supported over a proxy**
 
 The `--wallet` flag can be used to select which wallet to use, if you have more than one of them. If you get a `ChecksumMismatch` error when you make some changes to your descriptor, it's because it doesn't
 match anymore the one you've used to initialize the cache. One solution could be to switch to a new wallet name, or delete the cache directory at `~/.magical-bitcoin` and start from scratch.
 
 ## Subcommands
 
-```text
-SUBCOMMANDS:
-    broadcast          Extracts the finalized transaction from a PSBT and broadcasts it to the network
-    create_tx          Creates a new unsigned tranasaction
-    get_balance        Returns the current wallet balance
-    get_new_address    Generates a new external address
-    list_unspent       Lists the available spendable UTXOs
-    policies           Returns the available spending policies for the descriptor
-    public_descriptor  Returns the public version of the wallet's descriptor(s)
-    repl               Opens an interactive shell
-    sign               Signs and tries to finalize a PSBT
-    sync               Syncs with the chosen Electrum server
-```
+| Command | Description |
+| ------- | ----------- |
+| [broadcast](#broadcast)         | Broadcasts a transaction to the network. Takes either a raw transaction or a PSBT to extract |
+| [combine_psbt](#combine_psbt)      | Combines multiple PSBTs into one |
+| [create_tx](#create_tx)         | Creates a new unsigned tranasaction |
+| [extract_psbt](#extract_psbt)      | Extracts a raw transaction from a PSBT |
+| [finalize_psbt](#finalize_psbt)     | Finalizes a psbt |
+| [get_balance](#get_balance)       | Returns the current wallet balance |
+| [get_new_address](#get_new_address)   | Generates a new external address |
+| [list_unspent](#list_unspent)      | Lists the available spendable UTXOs |
+| [policies](#policies)          | Returns the available spending policies for the descriptor |
+| [public_descriptor](#public_descriptor) | Returns the public version of the wallet's descriptor(s) |
+| [repl](#repl)              | Opens an interactive shell |
+| [sign](#sign)              | Signs and tries to finalize a PSBT |
+| [sync](#sync)              | Syncs with the chosen Electrum server |
 
 These are the main "functions" of the wallet. Most of them are pretty self explanatory, but we'll go over them quickly anyways. You can get more details about every single command by running `magic <subcommand> --help`.
 
@@ -77,10 +85,20 @@ These are the main "functions" of the wallet. Most of them are pretty self expla
 
 ```text
 OPTIONS:
-        --psbt <BASE64_PSBT>    Sets the PSBT to broadcast
+        --psbt <BASE64_PSBT>    Sets the PSBT to extract and broadcast
+        --tx <RAWTX>            Sets the raw transaction to broadcast
 ```
 
-Broadcasts a transaction. The transaction has to be in PSBT format and has to be "finalizable" (i.e. it should contain enough partial signatures to construct a finalized valid signature).
+Broadcasts a transaction. The transaction can be a raw hex transaction or a PSBT, in which case it also has to be "finalizable" (i.e. it should contain enough partial signatures to construct a finalized valid scriptsig/witness).
+
+### combine\_psbt
+
+```text
+OPTIONS:
+        --psbt <BASE64_PSBT>...    Add one PSBT to comine. This option can be repeated multiple times, one for each PSBT
+```
+
+Combines multiple PSBTs by merging metadata and partial signatures. It can be used to merge multiple signed PSBTs into a single PSBT that contains every signature and is ready to be [finalized](#finalize_psbt).
 
 ### create\_tx
 
@@ -109,7 +127,7 @@ The `--policy` option is an advanced flag that can be used to select the spendin
 with complex descriptor it has to be specified, or you'll get a `SpendingPolicyRequired` error. This flag should be set to an array of the list of child indexes that should be taken at each step when traversing the spending
 policies tree from the root, at least until there are no more ambiguities. This is probably better explained with an example:
 
-Let's assume our descriptor is: `thresh(2,c:pk(A),sj:and_v(vc:pk(B),n:older(6)),sjn:and_v(vc:pk(C),after(630000)))`. There are three conditions and we need to satisfy two of them to be able to spend. The conditions are:
+Let's assume our descriptor is: `sh(thresh(2,pk(A),sj:and_v(v:pk(B),n:older(6)),snj:and_v(v:pk(C),after(630000))))`. There are three conditions and we need to satisfy two of them to be able to spend. The conditions are:
 
 1. Sign with the key corresponding to `pk(A)`
 2. Sign with the key corresponding to `pk(B)` AND wait 6 blocks 
@@ -121,32 +139,56 @@ So if we write down all the possible outcomes when we combine them, we get:
 2. Sign with `pk(A)` + `pk(C)` + wait block 630,000
 3. Sign with `pk(B)` + `pk(C)` + wait 6 blocks + wait block 630,000
 
-* If we choose option #1, the final transaction will need to have the `nSequence` of its inputs to a value greather than or equal to 6, but the `nLockTime` can stay at 0.
+In other words:
+
+* If we choose option #1, the final transaction will need to have the `nSequence` of its inputs set to a value greather than or equal to 6, but the `nLockTime` can stay at 0.
 * If we choose option #2, the final transaction will need to have its `nLockTime` set to a value greater than or equal to 630,000, but the `nSequence` can be set to a final value.
 * If we choose option #3, both the `nSequence` and `nLockTime` must be set.
 
-The wallet can't choose by itself which one of these combination to use, so the user has to provide this information with the `--policy` flag. Now, let's draw the condition tree to understand better how the chosen
-policy is represented:
+The wallet can't choose by itself which one of these combination to use, so the user has to provide this information with the `--policy` flag.
+
+Now, let's draw the condition tree to understand better how the chosen policy is represented: every node has its id shown right next to its name, like `qd3um656` for the root node. These ids can be seen by running the [policies](#policies) command.
+Some ids have been omitted since they are not particularly relevant, in this example we will actually only use the root id.
 
 {{<mermaid align="center">}}
 graph TD;
     subgraph ""
-        R["Root"] --> A["pk(A)"]
-        R["Root"] --> B
-        B --> B_0["pk(B)"]
-        B --> B_1["older(6)"]
+        R["Root - qd3um656"] --> A["pk(A) - ykfuwzkl"]
+        R["Root - qd3um656"] --> B["B - ms3xjley"]
+        B["B - ms3xjley"] --> B_0["pk(B)"]
+        B["B - ms3xjley"] --> B_1["older(6)"]
     end
-    C --> C_0["pk(C)"]
-    C --> C_1["after(630,000)"]
-    R["Root"] --> C
+    C["C - d8jph6ax"] --> C_0["pk(C)"]
+    C["C - d8jph6ax"] --> C_1["after(630,000)"]
+    R["Root - qd3um656"] --> C["C - d8jph6ax"]
 {{< /mermaid >}}
 
-Let's imagine that we are walking down from the root, and we want to use option #1. So we will have to select `pk(A)` + the whole `B` node. Since the order is always mainteined, we can refer to them with their
-indexes, in this case they are children #0 and #1 of the root. So our final policy will be: `--policy [[0, 1]]`, which means "at the first step from the root, pick items #0 and #1".
+Let's imagine that we are walking down from the root, and we want to use option #1. So we will have to select `pk(A)` + the whole `B` node. Since these nodes have an id, we can use it to refer to them and say which children
+we want to use. In this case we want to use children #0 and #1 of the root, so our final policy will be: `--policy {"qd3um656":[0,1]}`.
+
+### extract\_psbt
+
+```text
+OPTIONS:
+        --psbt <BASE64_PSBT>    Sets the PSBT to extract
+```
+
+Extracts the global transaction from a PSBT. **Note that partial signatures are ignored in this step. If you want to merge the partial signatures back into the global transaction first, please use [finalize_psbt](#finalize_psbt) first**
+
+### finalize\_psbt
+
+```text
+OPTIONS:
+        --assume_height <HEIGHT>    Assume the blockchain has reached a specific height
+        --psbt <BASE64_PSBT>        Sets the PSBT to finalize
+```
+
+Tries to finalize a PSBT by merging all the partial signatures and other elements back into the global transaction. This command fails if there are timelocks that have not yet expired, but the check can be overridden
+by specifying `--assume_height` to make the wallet assume that a future height has already been reached.
 
 ### get\_balance
 
-This subcommand has no extra flags, and simply returns the available balance in Satoshis. This command **must be called after [`sync`](#sync)**, since it only looks into the local cache to determine the list of UTXOs.
+This subcommand has no extra flags, and simply returns the available balance in Satoshis. This command **should normally be called after [`sync`](#sync)**, since it only looks into the local cache to determine the list of UTXOs.
 
 ### get\_new\_address
 
@@ -154,19 +196,21 @@ This subcommand has no extra flags and returns a new address. It internally incr
 
 ### list\_unspent
 
-This subcommand has no extra flags and returns the list of available UTXOs and their value in Satoshi. Just like [`get_balance`](#get_balance) it **must be called after [`sync`](#sync)**, since it only operates
+This subcommand has no extra flags and returns the list of available UTXOs and their value in Satoshi. Just like [`get_balance`](#get_balance) it **should normally be called after [`sync`](#sync)**, since it only operates
 on the internal cache.
 
 ### policies
 
 This subcommand has no extra flags and returns the spending policies encoded by the descriptor in a more human-readable format. As an example, running the `policies` command on the descriptor shown earlier for the
-in the explanation of the [`create_tx`](#create_tx) command, it will return this:
+in the explanation of the [create_tx](#create_tx) command, it will return this:
 
 {{% json %}}
 {
+  "id":"qd3um656",
   "type":"THRESH",
   "items":[
     {
+      "id":"ykfuwzkl",
       "type":"SIGNATURE",
       "pubkey":"...",
       "satisfaction":{
@@ -180,9 +224,11 @@ in the explanation of the [`create_tx`](#create_tx) command, it will return this
       }
     },
     {
+      "id":"ms3xjley",
       "type":"THRESH",
       "items":[
         {
+          "id":"xgfnp9rt",
           "type":"SIGNATURE",
           "pubkey":"...",
           "satisfaction":{
@@ -196,6 +242,7 @@ in the explanation of the [`create_tx`](#create_tx) command, it will return this
           }
         },
         {
+          "id":"5j96ludf",
           "type":"RELATIVETIMELOCK",
           "value":6,
           "satisfaction":{
@@ -231,9 +278,11 @@ in the explanation of the [`create_tx`](#create_tx) command, it will return this
       }
     },
     {
+      "id":"d8jph6ax",
       "type":"THRESH",
       "items":[
         {
+          "id":"gdl039m6",
           "type":"SIGNATURE",
           "pubkey":"...",
           "satisfaction":{
@@ -247,6 +296,7 @@ in the explanation of the [`create_tx`](#create_tx) command, it will return this
           }
         },
         {
+          "id":"xpf2twg8",
           "type":"ABSOLUTETIMELOCK",
           "value":630000,
           "satisfaction":{
@@ -321,6 +371,7 @@ This is a tree-like recursive structure, so it tends to get huge as more and mor
 
 ```json
 {
+  "id":"qd3um656",
   "type":"SIGNATURE",
   "pubkey":"...",
   "satisfaction":{
@@ -333,6 +384,7 @@ This is a tree-like recursive structure, so it tends to get huge as more and mor
 }
 ```
 
+* `id` is a unique identifier to this specific node in the tree.
 * `type`, as the name implies, represents the type of node. It defines what should be provided to satisfy that particular node. Generally some other data are provided to give meaning to
   the type itself (like the `pubkey` field here in the example). There are basically two families of types: some of them can only be used as leaves, while some other can only be used as intermediate nodes.
 
@@ -410,7 +462,7 @@ the descriptor (type = `PARTIALCOMPLETE`) and the three options are `[0, 1] ⇒ 
 }
 ```
 
-### `public\_descriptor`
+### `public_descriptor`
 
 This subcommand has no extra flags and returns the "public" version of the wallet's descriptor(s). It can be used to bootstrap a watch-only instance for the wallet.
 
