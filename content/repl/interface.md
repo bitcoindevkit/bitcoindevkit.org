@@ -72,6 +72,7 @@ match anymore the one you've used to initialize the cache. One solution could be
 | [finalize_psbt](#finalize_psbt)     | Finalizes a psbt |
 | [get_balance](#get_balance)       | Returns the current wallet balance |
 | [get_new_address](#get_new_address)   | Generates a new external address |
+| [list_transactions](#list_transactions)      | Lists all the incoming and outgoing transactions of the wallet |
 | [list_unspent](#list_unspent)      | Lists the available spendable UTXOs |
 | [policies](#policies)          | Returns the available spending policies for the descriptor |
 | [public_descriptor](#public_descriptor) | Returns the public version of the wallet's descriptor(s) |
@@ -193,6 +194,12 @@ This subcommand has no extra flags, and simply returns the available balance in 
 ### get\_new\_address
 
 This subcommand has no extra flags and returns a new address. It internally increments the derivation index and saves it in the database.
+
+### list\_transactions
+
+This subcommand has no extra flags and returns the history of transactions made or received by the wallet, with their txid, confirmation height and the amounts (in Satoshi) "sent" (meaning, the sum of the wallet's inputs spent in the transaction) and
+"received" (meaning, the sum of the outputs received by the wallet). Just like [`get_balance`](#get_balance) it **should normally be called after [`sync`](#sync)**, since it only operates
+on the internal cache.
 
 ### list\_unspent
 
