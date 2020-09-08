@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error","Errors that can be thrown by the `Wallet`"],["ScriptType","Types of script"]],"mod":[["blockchain","Blockchain backends"],["database","Database types"],["descriptor","Descriptors"],["wallet","Wallet"]],"struct":[["FeeRate","Fee rate"],["TransactionDetails","A wallet transaction"],["UTXO","A wallet unspent output"]]});

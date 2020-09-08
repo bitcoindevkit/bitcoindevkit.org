@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["CoinSelectionResult","Result of a successful coin selection"],["DumbCoinSelection","Simple and dumb coin selection"]],"trait":[["CoinSelectionAlgorithm","Trait for generalized coin selection algorithms"]],"type":[["DefaultCoinSelectionAlgorithm","Default coin selection algorithm used by `TxBuilder` if not overridden"]]});
