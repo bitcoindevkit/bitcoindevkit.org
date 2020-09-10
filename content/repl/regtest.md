@@ -6,7 +6,7 @@ weight: 4
 pre: "<b>4. </b>"
 ---
 
-Running the REPL in regtest requires having a local Electrum server set-up. There are two main implementations, [`electrs`](https://github.com/romanz/electrs) in Rust and [`ElectrumX`](https://github.com/kyuupichan/electrumx) in Python. Since the Rust toolchain is already required to
+Running the REPL in regtest requires having a local Electrum server set-up. There are two main implementations, [`electrs`](https://github.com/romanz/electrs) in Rust and [`ElectrumX`](https://github.com/spesmilo/electrumx) in Python. Since the Rust toolchain is already required to
 use Magical, this page will focus mostly on the former.
 
 Electrs can be installed by running:
