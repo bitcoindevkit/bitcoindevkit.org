@@ -45,7 +45,7 @@ These are the global options that can be set. They are pretty much like the flag
 associated descriptor**.
 
 The `--change-descriptor` flag can be used to set a different descriptor for the change addresses, sometimes called "internal" addresses in Bitcoin Core. Unfortunately there isn't
-[really consensus](https://freenode.irclog.whitequark.org/bitcoin-wizards/2020-01-25#26222504;) on a nice way to encode informations about the change derivation inside the standard descriptor, so we are
+[really consensus](https://freenode.irclog.whitequark.org/bitcoin-wizards/2020-01-25#26222504;) on a nice way to encode information about the change derivation inside the standard descriptor, so we are
 stuck with having two separate ones. Keep in mind though, that even if you don't specify a change descriptor, you'll still be able to create transactions - the change address will simply be generated from the
 standard descriptor.
 
@@ -58,8 +58,8 @@ Right now both plaintext and ssl servers are supported (prefix `tcp://` or no pr
 The `--proxy` flag can be optionally used to specify a SOCKS5 proxy to use when connecting to the Electrum server. Spawning a local Tor daemon and using it as a proxy will allow you to connect to `.onion` Electrum
 URLs. **Keep in mind that only plaintext server are supported over a proxy**
 
-The `--wallet` flag can be used to select which wallet to use, if you have more than one of them. If you get a `ChecksumMismatch` error when you make some changes to your descriptor, it's because it doesn't
-match anymore the one you've used to initialize the cache. One solution could be to switch to a new wallet name, or delete the cache directory at `~/.magical-bitcoin` and start from scratch.
+The `--wallet` flag can be used to select which wallet to use, if you have more than one of them. If you get a `ChecksumMismatch` error when you make some changes to your descriptor, it's because it does not
+match anymore the one you've used to initialize the cache. One solution could be to switch to a new wallet name, or delete the cache directory at `~/.bdk` and start from scratch.
 
 ## Subcommands
 
@@ -153,7 +153,7 @@ Some ids have been omitted since they are not particularly relevant, in this exa
 
 {{<mermaid align="center">}}
 graph TD;
-    subgraph ""
+    subgraph " "
         R["Root - qd3um656"] --> A["pk(A) - ykfuwzkl"]
         R["Root - qd3um656"] --> B["B - ms3xjley"]
         B["B - ms3xjley"] --> B_0["pk(B)"]

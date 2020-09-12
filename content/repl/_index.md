@@ -8,5 +8,5 @@ pre = '<i class="fas fa-terminal"></i> '
 
 # REPL
 
-The [magical-bitcoin-wallet](https://github.com/magicalbitcoin/magical-bitcoin-wallet) repo has a very minimalistic interactive shell that acts both as a reference implementation of a wallet and a tool to
+The [bdk](https://github.com/bitcoindevkit/bdk) repo has a very minimalistic interactive shell called `repl` that acts both as a reference implementation of a wallet and a tool to
 quickly experiment with descriptors and transactions.

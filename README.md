@@ -1,4 +1,4 @@
-# magicalbitcoin.org
+# bitcoindevkit.org
 
 This website is built with [Hugo](https://gohugo.io).
 

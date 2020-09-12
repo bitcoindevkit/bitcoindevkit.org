@@ -8,9 +8,9 @@ pre: "<b>5. </b>"
 
 ## Introduction
 
-If you want to play around with more complicated spending policies, you'll start to find it harder and harder to manually create the descriptors. This is where the miniscript compiler comes in! `magical-bitcoin-wallet`
-includes a very simple compiler that can produce a descriptor given a spending policy. The syntax used to encode the spending policiy is very well described [in this page](http://bitcoin.sipa.be/miniscript/),
-specifically in the "Policy to Miniscript compiler". The compiler included in Magical Bitcoin does basically the same job, but produces a descriptors for `rust-miniscript` that has some minor differences from
+If you want to play around with more complicated spending policies, you'll start to find it harder and harder to manually create the descriptors. This is where the miniscript compiler comes in! The `bdk` library
+includes a very simple compiler that can produce a descriptor given a spending policy. The syntax used to encode the spending policy is very well described [in this page](http://bitcoin.sipa.be/miniscript/),
+specifically in the "Policy to Miniscript compiler". The compiler included in BDK does basically the same job, but produces descriptors for `rust-miniscript` that have some minor differences from
 the ones made by the C++ implementation used in that website.
 
 ## Installation
@@ -18,7 +18,7 @@ the ones made by the C++ implementation used in that website.
 To install the miniscript compiler run the following command:
 
 ```bash
-cargo install --git https://github.com/magicalbitcoin/magical-bitcoin-wallet --features="compiler" --example miniscriptc
+cargo install --git https://github.com/bitcoindevkit/bdk --features="compiler" --example miniscriptc
 ```
 
 Once the command is done, you should have a `miniscriptc` command available. You can check if that's the case by running `miniscriptc --help`.
@@ -26,7 +26,7 @@ Once the command is done, you should have a `miniscriptc` command available. You
 ## Usage
 
 In this case the interface is very simple: it accepts two arguments called "POLICY" and "TYPE", in this order. The first one, as the name implies, sets the spending policy to compile. The latter defines the type
-of address that should be used to incapsulate the produced script, like a P2SH, P2WSH, etc.
+of address that should be used to encapsulate the produced script, like a P2SH, P2WSH, etc.
 
 Optionally, the `--parsed_policy` flag can be enabled and it will make the compiler print the JSON "human-readable" version of the spending policy, as described in the [`policies subcommand`](/repl/interface/#policies) of the CLI.
 

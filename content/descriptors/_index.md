@@ -10,18 +10,18 @@ Descriptors are a compact and semi-standard way to easily encode, or "describe",
 more complex scripts, where the structure of the script itself is not trivial. They are a big step forward in making wallets more portable across different tools and apps, because for the first time they create a common
 language to describe a full bitcoin script that developers can use and integrate in their software.
 
-The ecosystem around descriptors is still very much in its early stage, but they are starting to see some adoption in [Bitcoin Core](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md) and other projects. Magical Bitcoin
+The ecosystem around descriptors is still very much in its early stage, but they are starting to see some adoption in [Bitcoin Core](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md) and other projects. BDK
 aims to produce the first "Native Descriptor" Bitcoin library that can be used by developers to build their own ["Native Descriptor Wallets"](https://www.youtube.com/watch?v=xC25NzIjzog).
 
 ### Compatibility Matrix
 
-Below are some tables to highlight the differences between Bitcoin Core's descriptor support, rust-miniscript's one and Magical Bitcoin's.
+Below are some tables to highlight the differences between Bitcoin Core's descriptor support, rust-miniscript's one and BDK's.
 
 #### Key Types
 
 <div class="descriptor-support-table">
 
-| Key Type | Magical Bitcoin | rust-miniscript | Bitcoin Core |
+| Key Type | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
 | Hex PublicKey | ✓ | ✓ | ✓ |
 | WIF PrivateKey | ✓ | ✗ | ✓ |
@@ -33,7 +33,7 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 
 <div class="descriptor-support-table">
 
-| Script Type | Magical Bitcoin | rust-miniscript | Bitcoin Core |
+| Script Type | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
 | `pk()` | ✓ | ✓ | ✓ |
 | `pkh()` | ✓ | ✓ | ✓ |
@@ -53,7 +53,7 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 
 <div class="descriptor-support-table">
 
-| Operator | Magical Bitcoin | rust-miniscript | Bitcoin Core |
+| Operator | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
 | `pk()` | ✓ | ✓ | ✓ |
 | `pk_h()` | ✓ | ✓ | ✓ - as `pkh()` |
@@ -76,7 +76,7 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 
 <div class="descriptor-support-table">
 
-| Script Type | Magical Bitcoin | rust-miniscript | Bitcoin Core |
+| Script Type | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
 | `a:` | ✓ | ✓ | ✗ |
 | `s:` | ✓ | ✓ | ✗ |
@@ -95,7 +95,7 @@ For a more thorough description of these operators and modifiers see [Sipa's Min
 
 ### Examples
 
-Some examples of valid Magical Bitcoin descriptors are:
+Some examples of valid BDK descriptors are:
 
 <div id="descriptor-examples-table">
 
@@ -110,7 +110,7 @@ Some examples of valid Magical Bitcoin descriptors are:
 
 ### Implementation Details
 
-Magical Bitcoin extends the capabilities of [rust-miniscript](https://github.com/apoelstra/rust-miniscript) by introducing the concept of an *ExtendedDescriptor*: it represents a descriptor that contains one or more "derivable keys" like `xpubs` or `xprvs`
+BDK extends the capabilities of [rust-miniscript](https://github.com/apoelstra/rust-miniscript) by introducing the concept of an *ExtendedDescriptor*: it represents a descriptor that contains one or more "derivable keys" like `xpubs` or `xprvs`
 and can be "derived" to a normal Descriptor by deriving every single one of its keys. It is currently called "StringDescriptor" in the code, because it's implemented as a wrapped `miniscript::Descriptor<String>`.
 
 ExtendedDescriptors are derived using a single index instead of a full derivation path: this is because normally most of the path is fixed and can be represented right after the xpub/xprv itself, and only the

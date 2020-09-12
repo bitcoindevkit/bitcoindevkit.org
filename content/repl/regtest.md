@@ -7,7 +7,7 @@ pre: "<b>4. </b>"
 ---
 
 Running the REPL in regtest requires having a local Electrum server set-up. There are two main implementations, [`electrs`](https://github.com/romanz/electrs) in Rust and [`ElectrumX`](https://github.com/spesmilo/electrumx) in Python. Since the Rust toolchain is already required to
-use Magical, this page will focus mostly on the former.
+use BDK, this page will focus mostly on the former.
 
 Electrs can be installed by running:
 
@@ -25,7 +25,7 @@ electrs -vv --timestamp --db-dir /tmp/electrs-db --electrum-rpc-addr="127.0.0.1:
 
 on macOS you should change the cookie-file to `$HOME/Library/Application Support/Bitcoin/regtest/.cookie`.
 
-This will start the Electrum server on port 50001. You can then add the `-n regtest -s localhost:50001` the `magic` commands to switch to the local regtest.
+This will start the Electrum server on port 50001. You can then add the `-n regtest -s localhost:50001` the `bdk` commands to switch to the local regtest.
 
 ## Troubleshooting
 
@@ -49,4 +49,4 @@ $ nigiri start
 
 This will start electrum RPC interface on port `51401`, the REST interface on `3000` and the esplora UI on `5000` (You can visit with the browser and look for blocks, addresses and transactions)
 
-You can then add the `-n regtest -s localhost:51401` the `magic` commands to switch to the local regtest.
+You can then add the `-n regtest -s localhost:51401` to the `magic` commands to switch to the local regtest.
