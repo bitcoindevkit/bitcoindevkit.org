@@ -14,10 +14,10 @@ use serde::Deserialize;
 
 use clap::AppSettings;
 
-use magical_bitcoin_wallet::bitcoin;
-use magical_bitcoin_wallet::database::memory::MemoryDatabase;
-use magical_bitcoin_wallet::miniscript;
-use magical_bitcoin_wallet::*;
+use bdk::bitcoin;
+use bdk::database::memory::MemoryDatabase;
+use bdk::miniscript;
+use bdk::*;
 
 use bitcoin::*;
 

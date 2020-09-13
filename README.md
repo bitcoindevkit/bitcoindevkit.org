@@ -5,7 +5,7 @@ This website is built with [Hugo](https://gohugo.io).
 To clone this project use the --recursive option to also clone the themes/learn submodule:
 
    ```
-   git clone --recursive git@github.com:MagicalBitcoin/magicalbitcoin.org.git
+   git clone --recursive git@github.com:bitcoindevkit/bitcoindevkit.org.git
    ```
 
 If you are editing this website, you can run

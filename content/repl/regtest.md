@@ -49,4 +49,4 @@ $ nigiri start
 
 This will start electrum RPC interface on port `51401`, the REST interface on `3000` and the esplora UI on `5000` (You can visit with the browser and look for blocks, addresses and transactions)
 
-You can then add the `-n regtest -s localhost:51401` to the `magic` commands to switch to the local regtest.
+You can then add the `-n regtest -s localhost:51401` to the `repl` commands to switch to the local regtest.

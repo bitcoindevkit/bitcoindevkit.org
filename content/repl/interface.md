@@ -6,7 +6,7 @@ weight: 3
 pre: "<b>3. </b>"
 ---
 
-Remember the `magic --help` command you ran before? Let's analyze its output here to figure out the interface:
+Remember the `repl --help` command you ran before? Let's analyze its output here to figure out the interface:
 
 ## Flags
 
@@ -21,11 +21,11 @@ These are the optional flags that can be set with every command. The `-h` flag p
 
 ### Verbosity
 
-If you want to increase the verbosity of the output, you should use the `RUST_LOG` environment variable. You can set it like so to see a lot more of what's going on behind the scenes, before running the `magic`
-command. You only have to do this once when you open a new shell, after that you can run the `magic` command multiple times.
+If you want to increase the verbosity of the output, you should use the `RUST_LOG` environment variable. You can set it like so to see a lot more of what's going on behind the scenes, before running the `repl`
+command. You only have to do this once when you open a new shell, after that you can run the `repl` command multiple times.
 
 ```bash
-export RUST_LOG="magical_bitcoin_wallet=debug"
+export RUST_LOG="bdk_repl=debug"
 ```
 
 ## Options
@@ -80,7 +80,7 @@ match anymore the one you've used to initialize the cache. One solution could be
 | [sign](#sign)              | Signs and tries to finalize a PSBT |
 | [sync](#sync)              | Syncs with the chosen Electrum server |
 
-These are the main "functions" of the wallet. Most of them are pretty self explanatory, but we'll go over them quickly anyways. You can get more details about every single command by running `magic <subcommand> --help`.
+These are the main "functions" of the wallet. Most of them are pretty self explanatory, but we'll go over them quickly anyways. You can get more details about every single command by running `repl <subcommand> --help`.
 
 ### broadcast
 
