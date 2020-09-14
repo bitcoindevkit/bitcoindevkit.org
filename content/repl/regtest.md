@@ -25,7 +25,7 @@ electrs -vv --timestamp --db-dir /tmp/electrs-db --electrum-rpc-addr="127.0.0.1:
 
 on macOS you should change the cookie-file to `$HOME/Library/Application Support/Bitcoin/regtest/.cookie`.
 
-This will start the Electrum server on port 50001. You can then add the `-n regtest -s localhost:50001` the `bdk` commands to switch to the local regtest.
+This will start the Electrum server on port 50001. You can then add the `-n regtest -s localhost:50001` the `repl` commands to switch to the local regtest.
 
 ## Troubleshooting
 

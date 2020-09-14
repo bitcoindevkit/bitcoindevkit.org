@@ -25,7 +25,7 @@ If you want to increase the verbosity of the output, you should use the `RUST_LO
 command. You only have to do this once when you open a new shell, after that you can run the `repl` command multiple times.
 
 ```bash
-export RUST_LOG="bdk_repl=debug"
+export RUST_LOG="bdk=debug"
 ```
 
 ## Options

@@ -32,7 +32,7 @@ This command will probably take a while to finish, since it will fetch and compi
 by running `repl --help` which should print something like this:
 
 ```text
-BDK repl 0.1.0
+Magical Bitcoin Wallet 0.1.0
 Riccardo Casatta <riccardo@casatta.it>:Alekos Filini <alekos.filini@gmail.com>
 A modern, lightweight, descriptor-based wallet
 
@@ -62,4 +62,10 @@ SUBCOMMANDS:
     repl               Opens an interactive shell
     sign               Signs and tries to finalize a PSBT
     sync               Syncs with the chosen Electrum server
+```
+
+An example command to sync a testnet wallet looks like this:
+
+```
+repl --descriptor "wpkh(tprv8ZgxMBicQKsPexGYyaFwnAsCXCjmz2FaTm6LtesyyihjbQE3gRMfXqQBXKM43DvC1UgRVv1qom1qFxNMSqVAs88qx9PhgFnfGVUdiiDf6j4/0/*)" --network testnet --server tcp://testnet.aranguren.org:51001 sync
 ```

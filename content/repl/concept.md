@@ -15,7 +15,7 @@ APIs exposed by the various components of the library, **not a full, end-user-re
 
 This concept leads to a few design choices that are arguably very bad for the "UX" of this wallet, but that allow developers to work more directly with the underlying library. For instance:
 
-* BDK has an internal database that's used to store data about received transactions, spendable UTXOs, etc. This database is stored by default in your home folder, in `~/.bdk`. The database
+* BDK has an internal database that's used to store data about received transactions, spendable UTXOs, etc. This database is stored by default in your home folder, in `~/.bdk-bitcoin`. The database
   **will never** contain any data that can't be recreated purely by looking at the blockchain. Keys, descriptors, Electrum endpoints **are not stored in there**. This explains why you'll have to specify them every
   time in the command line. It can be seen more like a *cache* and can be safely deleted without risking funds.
 * BDK doesn't automatically "monitor" the blockchain, instead there's a `sync` command that has to be called by the user.
