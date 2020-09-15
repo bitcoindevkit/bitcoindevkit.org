@@ -23,5 +23,8 @@ the `bdk/target/doc` directory after running the below commands from the `bdk` p
 
    ```
    cargo clean
-   cargo doc --no-deps
+   cargo +nightly rustdoc --features=compiler,electrum,esplora,compact_filters,key-value-db -- --cfg docsrs
    ```
+
+A nightly toolchain is required because some cool features, like `intra_rustdoc_links` and `doc_cfg`, are still
+unstable.
