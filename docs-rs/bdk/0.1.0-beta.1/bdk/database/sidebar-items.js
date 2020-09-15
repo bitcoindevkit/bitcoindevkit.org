@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["memory","In-memory ephemeral database"]],"trait":[["BatchDatabase","Trait for a database that supports batch operations"],["BatchOperations","Trait for operations that can be batched"],["Database","Trait for reading data from a database"]]});
