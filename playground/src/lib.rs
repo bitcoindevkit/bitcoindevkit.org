@@ -16,6 +16,7 @@ use clap::AppSettings;
 
 use bdk::bitcoin;
 use bdk::database::memory::MemoryDatabase;
+use bdk::blockchain::EsploraBlockchain;
 use bdk::miniscript;
 use bdk::*;
 
@@ -90,6 +91,7 @@ impl WalletWrapper {
                 .map_err(|e| e.message)?;
             let res = cli::handle_matches(&wallet, matches)
                 .await
+                .map(|json| json.to_string())
                 .map_err(|e| format!("{:?}", e))?;
 
             Ok(res.into())
