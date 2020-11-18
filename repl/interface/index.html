@@ -18,21 +18,21 @@
     <title>Interface :: Bitcoin Dev Kit</title>
 
     
-    <link href="/css/nucleus.css?1600288750" rel="stylesheet">
-    <link href="/css/fontawesome-all.min.css?1600288750" rel="stylesheet">
-    <link href="/css/hybrid.css?1600288750" rel="stylesheet">
-    <link href="/css/featherlight.min.css?1600288750" rel="stylesheet">
-    <link href="/css/perfect-scrollbar.min.css?1600288750" rel="stylesheet">
-    <link href="/css/auto-complete.css?1600288750" rel="stylesheet">
-    <link href="/css/atom-one-dark-reasonable.css?1600288750" rel="stylesheet">
-    <link href="/css/theme.css?1600288750" rel="stylesheet">
-    <link href="/css/hugo-theme.css?1600288750" rel="stylesheet">
+    <link href="/css/nucleus.css?1605695013" rel="stylesheet">
+    <link href="/css/fontawesome-all.min.css?1605695013" rel="stylesheet">
+    <link href="/css/hybrid.css?1605695013" rel="stylesheet">
+    <link href="/css/featherlight.min.css?1605695013" rel="stylesheet">
+    <link href="/css/perfect-scrollbar.min.css?1605695013" rel="stylesheet">
+    <link href="/css/auto-complete.css?1605695013" rel="stylesheet">
+    <link href="/css/atom-one-dark-reasonable.css?1605695013" rel="stylesheet">
+    <link href="/css/theme.css?1605695013" rel="stylesheet">
+    <link href="/css/hugo-theme.css?1605695013" rel="stylesheet">
     
-    <link href="/css/theme-blue.css?1600288750" rel="stylesheet">
+    <link href="/css/theme-blue.css?1605695013" rel="stylesheet">
     
-    <link href="/css/style.css?1600288750" rel="stylesheet"><link href="/css/jsonview.css?1600288750" rel="stylesheet">
+    <link href="/css/style.css?1605695013" rel="stylesheet"><link href="/css/jsonview.css?1605695013" rel="stylesheet">
 
-    <script src="/js/jquery-3.3.1.min.js?1600288750"></script>
+    <script src="/js/jquery-3.3.1.min.js?1605695013"></script>
 
     <style>
       :root #header + #content > #left > #rlblock_left{
@@ -61,14 +61,14 @@
     <span data-search-clear=""><i class="fas fa-times"></i></span>
 </div>
 
-<script type="text/javascript" src="/js/lunr.min.js?1600288750"></script>
-<script type="text/javascript" src="/js/auto-complete.js?1600288750"></script>
+<script type="text/javascript" src="/js/lunr.min.js?1605695013"></script>
+<script type="text/javascript" src="/js/auto-complete.js?1605695013"></script>
 <script type="text/javascript">
     
         var baseurl = "https:\/\/bitcoindevkit.org\/";
     
 </script>
-<script type="text/javascript" src="/js/search.js?1600288750"></script>
+<script type="text/javascript" src="/js/search.js?1605695013"></script>
 
     
   </div>
@@ -384,6 +384,7 @@
     <li><a href="#subcommands">Subcommands</a>
       <ul>
         <li><a href="#broadcast">broadcast</a></li>
+        <li><a href="#bump_fee">bump_fee</a></li>
         <li><a href="#combine_psbt">combine_psbt</a></li>
         <li><a href="#create_tx">create_tx</a></li>
         <li><a href="#extract_psbt">extract_psbt</a></li>
@@ -438,6 +439,7 @@ command. You only have to do this once when you open a new shell, after that you
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">OPTIONS:
     -c, --change_descriptor &lt;DESCRIPTOR&gt;    Sets the descriptor to use for internal addresses
     -d, --descriptor &lt;DESCRIPTOR&gt;           Sets the descriptor to use for the external addresses
+    -e, --esplora &lt;ESPLORA&gt;                 Use the esplora server if given as parameter
     -n, --network &lt;NETWORK&gt;                 Sets the network [default: testnet]  [possible values: testnet, regtest]
     -s, --server &lt;SERVER:PORT&gt;              Sets the Electrum server to use [default:
                                             ssl://electrum.blockstream.info:60002]
@@ -453,6 +455,8 @@ standard descriptor.</p>
 <p>The <code>--server</code> flag can be used to select the Electrum server to use. By default it&rsquo;s connecting to Blockstream&rsquo;s electrum servers, which seems pretty stable.
 If you are having connection issues, you can also try with one of the other servers <a href="https://1209k.com/bitcoin-eye/ele.php?chain=tbtc">listed here</a> and see if you have more luck with those.
 Right now both plaintext and ssl servers are supported (prefix <code>tcp://</code> or no prefix at all for tcp, prefix <code>ssl://</code> for ssl).</p>
+<p>The <code>--esplora</code> flag can be used to connect to an Esplora instance instead of using Electrum. It should be set to the API&rsquo;s &ldquo;base url&rdquo;. For public instances of Esplora this is <code>https://blockstream.info/api</code> for mainnet
+and <code>https://blockstream.info/testnet/api</code> for testnet.</p>
 <p>The <code>--proxy</code> flag can be optionally used to specify a SOCKS5 proxy to use when connecting to the Electrum server. Spawning a local Tor daemon and using it as a proxy will allow you to connect to <code>.onion</code> Electrum
 URLs. <strong>Keep in mind that only plaintext server are supported over a proxy</strong></p>
 <p>The <code>--wallet</code> flag can be used to select which wallet to use, if you have more than one of them. If you get a <code>ChecksumMismatch</code> error when you make some changes to your descriptor, it&rsquo;s because it does not
@@ -469,6 +473,10 @@ match anymore the one you&rsquo;ve used to initialize the cache. One solution co
 <tr>
 <td><a href="#broadcast">broadcast</a></td>
 <td>Broadcasts a transaction to the network. Takes either a raw transaction or a PSBT to extract</td>
+</tr>
+<tr>
+<td><a href="#bump_fee">bump_fee</a></td>
+<td>Bumps the fees of an RBF transaction</td>
 </tr>
 <tr>
 <td><a href="#combine_psbt">combine_psbt</a></td>
@@ -530,6 +538,19 @@ match anymore the one you&rsquo;ve used to initialize the cache. One solution co
         --psbt &lt;BASE64_PSBT&gt;    Sets the PSBT to extract and broadcast
         --tx &lt;RAWTX&gt;            Sets the raw transaction to broadcast
 </code></pre></div><p>Broadcasts a transaction. The transaction can be a raw hex transaction or a PSBT, in which case it also has to be &ldquo;finalizable&rdquo; (i.e. it should contain enough partial signatures to construct a finalized valid scriptsig/witness).</p>
+<h3 id="bump_fee">bump_fee</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">FLAGS:
+    -a, --send_all    Allows the wallet to reduce the amount of the only output in order to increase fees. This is
+                      generally the expected behavior for transactions originally created with `send_all`
+
+OPTIONS:
+    -f, --fee_rate &lt;SATS_VBYTE&gt;         The new targeted fee rate in sat/vbyte
+    -t, --txid &lt;txid&gt;                   TXID of the transaction to update
+        --unspendable &lt;TXID:VOUT&gt;...    Marks an utxo as unspendable, in case more inputs are needed to cover the extra
+                                        fees
+        --utxos &lt;TXID:VOUT&gt;...          Selects which utxos *must* be added to the tx. Unconfirmed utxos cannot be used
+</code></pre></div><p>Bumps the fee of a transaction made with RBF. The transaction to bump is specified using the <code>--txid</code> flag and the new fee rate with <code>--fee_rate</code>.</p>
+<p>The <code>--send_all</code> flag should be enabled if the original transaction was also made with <code>--send_all</code>.</p>
 <h3 id="combine_psbt">combine_psbt</h3>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">OPTIONS:
         --psbt &lt;BASE64_PSBT&gt;...    Add one PSBT to comine. This option can be repeated multiple times, one for each PSBT
@@ -537,10 +558,12 @@ match anymore the one you&rsquo;ve used to initialize the cache. One solution co
 <h3 id="create_tx">create_tx</h3>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">FLAGS:
     -a, --send_all    Sends all the funds (or all the selected utxos). Requires only one addressees of value 0
+    -r, --enable_rbf    Enables Replace-By-Fee (BIP125)
 
 OPTIONS:
+        --external_policy &lt;POLICY&gt;      Selects which policy should be used to satisfy the external descriptor
     -f, --fee_rate &lt;SATS_VBYTE&gt;         Fee rate to use in sat/vbyte
-        --policy &lt;POLICY&gt;               Selects which policy will be used to satisfy the descriptor
+        --internal_policy &lt;POLICY&gt;      Selects which policy should be used to satisfy the internal descriptor
         --to &lt;ADDRESS:SAT&gt;...           Adds an addressee to the transaction
         --unspendable &lt;TXID:VOUT&gt;...    Marks an utxo as unspendable
         --utxos &lt;TXID:VOUT&gt;...          Selects which utxos *must* be spent
@@ -550,9 +573,9 @@ option can be specified multiple times) and a list of UTXOs that must be spent w
 can also be specified multiple times to send to multiple addresses at once.</p>
 <p>The <code>--send_all</code> flag can be used to send the value of all the spendable UTXOs to a single address, without creating a change output. If this flag is set, there must be only one <code>--to</code> address, and its value will
 be ignored (it can be set to 0).</p>
-<p>The <code>--policy</code> option is an advanced flag that can be used to select the spending policy that the sender intends to satisfy in this transaction. It&rsquo;s normally not required if there&rsquo;s no ambiguity, but sometimes
-with complex descriptor it has to be specified, or you&rsquo;ll get a <code>SpendingPolicyRequired</code> error. This flag should be set to an array of the list of child indexes that should be taken at each step when traversing the spending
-policies tree from the root, at least until there are no more ambiguities. This is probably better explained with an example:</p>
+<p>The <code>--external_policy</code> and <code>--internal_policy</code> options are two advanced flags that can be used to select the spending policy that the sender intends to satisfy in this transaction. They are normally not required if there&rsquo;s no ambiguity, but sometimes
+with complex descriptor one or both of them have to be specified, or you&rsquo;ll get a <code>SpendingPolicyRequired</code> error. Those flags should be set to a JSON object that maps a policy node id to the list of child indexes that
+the user intends to satisfy for that node. This is probably better explained with an example:</p>
 <p>Let&rsquo;s assume our descriptor is: <code>sh(thresh(2,pk(A),sj:and_v(v:pk(B),n:older(6)),snj:and_v(v:pk(C),after(630000))))</code>. There are three conditions and we need to satisfy two of them to be able to spend. The conditions are:</p>
 <ol>
 <li>Sign with the key corresponding to <code>pk(A)</code></li>
@@ -571,7 +594,7 @@ policies tree from the root, at least until there are no more ambiguities. This 
 <li>If we choose option #2, the final transaction will need to have its <code>nLockTime</code> set to a value greater than or equal to 630,000, but the <code>nSequence</code> can be set to a final value.</li>
 <li>If we choose option #3, both the <code>nSequence</code> and <code>nLockTime</code> must be set.</li>
 </ul>
-<p>The wallet can&rsquo;t choose by itself which one of these combination to use, so the user has to provide this information with the <code>--policy</code> flag.</p>
+<p>The wallet can&rsquo;t choose by itself which one of these combination to use, so the user has to provide this information with the <code>--external_policy</code> flag.</p>
 <p>Now, let&rsquo;s draw the condition tree to understand better how the chosen policy is represented: every node has its id shown right next to its name, like <code>qd3um656</code> for the root node. These ids can be seen by running the <a href="#policies">policies</a> command.
 Some ids have been omitted since they are not particularly relevant, in this example we will actually only use the root id.</p>
 
@@ -589,7 +612,7 @@ graph TD;
 </div>
 
 <p>Let&rsquo;s imagine that we are walking down from the root, and we want to use option #1. So we will have to select <code>pk(A)</code> + the whole <code>B</code> node. Since these nodes have an id, we can use it to refer to them and say which children
-we want to use. In this case we want to use children #0 and #1 of the root, so our final policy will be: <code>--policy {&quot;qd3um656&quot;:[0,1]}</code>.</p>
+we want to use. In this case we want to use children #0 and #1 of the root, so our final policy will be: <code>--external_policy {&quot;qd3um656&quot;:[0,1]}</code>.</p>
 <h3 id="extract_psbt">extract_psbt</h3>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">OPTIONS:
         --psbt &lt;BASE64_PSBT&gt;    Sets the PSBT to extract
@@ -1088,19 +1111,19 @@ is particularly useful for offline wallets.</p>
     <div style="left: -1000px; overflow: scroll; position: absolute; top: -1000px; border: none; box-sizing: content-box; height: 200px; margin: 0px; padding: 0px; width: 200px;">
       <div style="border: none; box-sizing: content-box; height: 200px; margin: 0px; padding: 0px; width: 200px;"></div>
     </div>
-    <script src="/js/clipboard.min.js?1600288750"></script>
-    <script src="/js/perfect-scrollbar.min.js?1600288750"></script>
-    <script src="/js/perfect-scrollbar.jquery.min.js?1600288750"></script>
-    <script src="/js/jquery.sticky.js?1600288750"></script>
-    <script src="/js/featherlight.min.js?1600288750"></script>
-    <script src="/js/highlight.pack.js?1600288750"></script>
+    <script src="/js/clipboard.min.js?1605695013"></script>
+    <script src="/js/perfect-scrollbar.min.js?1605695013"></script>
+    <script src="/js/perfect-scrollbar.jquery.min.js?1605695013"></script>
+    <script src="/js/jquery.sticky.js?1605695013"></script>
+    <script src="/js/featherlight.min.js?1605695013"></script>
+    <script src="/js/highlight.pack.js?1605695013"></script>
     <script>hljs.initHighlightingOnLoad();</script>
-    <script src="/js/modernizr.custom-3.6.0.js?1600288750"></script>
-    <script src="/js/learn.js?1600288750"></script>
-    <script src="/js/hugo-learn.js?1600288750"></script>
+    <script src="/js/modernizr.custom-3.6.0.js?1605695013"></script>
+    <script src="/js/learn.js?1605695013"></script>
+    <script src="/js/hugo-learn.js?1605695013"></script>
     
         
-            <script src="/mermaid/mermaid.js?1600288750"></script>
+            <script src="/mermaid/mermaid.js?1605695013"></script>
         
         <script>
             mermaid.initialize({ startOnLoad: true });
