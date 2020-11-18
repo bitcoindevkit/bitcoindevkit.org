@@ -19,16 +19,17 @@ and use it was possible only if the involved parties were using the same wallet
 
 * on the particular type of script and the type of address to use
 * on the way the transaction would be composed with all the signatures until the 
-necessary threshold was reached in which way to encode it to pass it along to 
+necessary threshold was reached 
+* in which way to encode the transaction and the partial signatures to pass them along to 
 the various parties to be signed and enriched.
 
-[Output Descriptors] are a way to express which kind scriptPubKey also which 
-kind of address to produce with a key or a serie of keys.
+[Output Descriptors] are a way to express which kind scriptPubKey or which 
+kind of addresses to produce with a key or a series of keys.
 
 In a more practical way, they dictate how to use keys in a wallet and they can 
 be very important, apart from multisig, when you backup and restore a wallet, 
 because it could allow you to use it in the same way it was used before even 
-if you have restored it on a different software.
+if you restore it on a different software.
 
 [PSBT], described in BIP 174, is instead the standard encoding and protocol used to 
 create and enrich a transaction with the necessary signatures and other components, to make it valid and complete.
@@ -51,7 +52,7 @@ complete it.
 With [PSBT] the partially signed transaction can be enriched step by step 
 and passed along **to any wallet aware of this standard** so that Alice and Bob 
 **are not required to use the same software anymore**, as long as they adopt a 
-software compatible with [BIP174] (which disciplines the use of PSBT).
+software compatible with [BIP 174] (which disciplines the use of PSBT).
 
 ## The role of Descriptors
 
@@ -80,10 +81,10 @@ Immagine Alice using Bitcoin Core (from now on ["Core"][Bitcoin Core]) as a Wall
 Each of these software wallet should be able to:
 
 * Create a new address whose transactions are seen by both software as part of the wallet "in common" and which can be given to receive the funds which will be spent only with the consent of both parties
-* Express the consent of each party by partially sign the transaction in a way the other wallet can understand and complete it with theyr own signature.
+* Express the consent of each party by partially signing the transaction in a way the other wallet can understand and complete it with their own signature.
 
 Descriptors and PSBT give this possibility to each of the two software. 
-With descriptors the two software will be able to produce a very long list of addresses that they can manage, also to spend the funds encumbered in the associated 
+With descriptors the two software will be able to produce a very long list of addresses that they can manage, and then to spend the funds encumbered in the associated 
 UTXOs. 
 
 The infrastructure of multiple Extended keys combined toghether to produce multiple 
@@ -106,7 +107,7 @@ party
 
 We need:
 * [Bitcoin Dev Kit][BDK]
-* [Bitcoin Core] (at the present moment it is necessary to build one the last 
+* [Bitcoin Core] (currently it is necessary to build one the last 
 commits on the main branch)
 * [Pycoin ku utility][pycoin]
 
@@ -127,7 +128,7 @@ echo $core_key
 
 export core_xprv=$(echo $core_key|jq -r '.wallet_key')
 
-# Derived Extended Pubblic key
+# Derived Extended Public key
 
 export core_xpub_84=$(ku -j -s 84H/0H/0H $core_xprv |jq -r '.public_version')
 export core_fingerprint=$(echo $core_key|jq -r '.fingerprint')
@@ -137,7 +138,6 @@ echo $core_fingerprint
 
 export core_xpub_84_for_rec_desc="[$core_fingerprint/84'/0'/0']$core_xpub_84/0/*"
 export core_xpub_84_for_chg_desc="[$core_fingerprint/84'/0'/0']$core_xpub_84/1/*"
-
 ```
 
 For BDK (Bob) we do the same:
@@ -151,7 +151,7 @@ export BDK_key=$(ku -n XTN -j create)
 
 export BDK_xprv=$(echo $BDK_key|jq -r '.wallet_key')
 
-# Derived Extended Pubblic key
+# Derived Extended Public key
 
 export BDK_xpub_84=$(ku -j -s 84H/0H/0H $BDK_xprv |jq -r '.public_version')
 export BDK_fingerprint=$(echo $BDK_key|jq -r '.fingerprint')
@@ -160,7 +160,6 @@ export BDK_fingerprint=$(echo $BDK_key|jq -r '.fingerprint')
 
 export BDK_xpub_84_for_rec_desc="[$BDK_fingerprint/84'/0'/0']$BDK_xpub_84/0/*"
 export BDK_xpub_84_for_chg_desc="[$BDK_fingerprint/84'/0'/0']$BDK_xpub_84/1/*"
-
 ```
 
 ### 2. Create the multi signature descriptor for each wallet 
@@ -269,7 +268,6 @@ address, because BDK is descriptors aware natively.
 
 ```
 repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fingerprint get_new_address`
-
 ```
 
 Et voilà: if we have done everything correctly, the newly created address in Core is the same of the newly created address in BDK. this is part of the miracle of descriptors' interoperability.
@@ -288,8 +286,10 @@ bitcoin-cli -testnet -rpcwallet=multisig2of2withBDK getbalance
 
 # In BDK:
 
+# Sync with the blockchain
+repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fingerprint sync
+# Get the balance
 repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fingerprint get_balance
-
 ```
 Some testnet faucets have an address to send back the unused satoshi after having tested your application. Take note of that because we will use it in the next step.
 
@@ -331,7 +331,7 @@ repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fing
 ## Conclusion
 
 We have built an HDM and we have used it with two indipendent wallets which are compatible 
-with [BIP 174][PSBT] and [Output Descriptors]. Hopefully we will see many other compatible 
+with [BIP 174] ([PSBT]) and [Output Descriptors]. Hopefully we will see many other compatible 
 wallets beyound [Bitcoin Core] and [BDK], with which we will be able to easily set up 
 multi signature schemes.
 
@@ -341,6 +341,7 @@ multi signature schemes.
 [Output Descriptors]: https://bitcoinops.org/en/topics/output-script-descriptors/
 [PSBT]: https://en.bitcoin.it/wiki/BIP_0174
 [HDWallet]: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+[BIP 174]: https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki
 [sortedmulti]: https://github.com/bitcoin/bitcoin/pull/17056?ref=tokendaily
 [BDK]: https://bitcoindevkit.org/
 [Bitcoin Core]: https://bitcoincore.org/
