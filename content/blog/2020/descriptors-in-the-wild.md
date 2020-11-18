@@ -274,7 +274,7 @@ repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fing
 
 Et voilà: if we have done everything correctly, the newly created address in Core is the same of the newly created address in BDK. this is part of the miracle of descriptors' interoperability.
 
-### We ask for testnet coins giving the first created address.
+### 4. We ask for testnet coins giving the first created address.
 
 To find testnet coins for free, you can just google "testnet faucet" and you should 
 find some satoshis to play with. Just give to the site your first generated address 
@@ -293,7 +293,7 @@ repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fing
 ```
 Some testnet faucets have an address to send back the unused satoshi after having tested your application. Take note of that because we will use it in the next step.
 
-### 4. we return part of the satoshis received back to the faucet
+### 5. We return part of the satoshis received back to the faucet
 
 ```
 export psbt=$(bitcoin-cli -testnet -rpcwallet=multisig2of2withBDK walletcreatefundedpsbt "[]" "[{\"tb1qrcesfj9f2d7x40xs6ztnlrcgxhh6vsw8658hjdhdy6qgkf6nfrds9rp79a\":0.000012}]"|jq -r '.psbt')
