@@ -6,8 +6,6 @@ use js_sys::Promise;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::future_to_promise;
 
-use rand::Rng;
-
 use log::{debug, info};
 
 use serde::Deserialize;
@@ -15,8 +13,9 @@ use serde::Deserialize;
 use clap::AppSettings;
 
 use bdk::bitcoin;
-use bdk::database::memory::MemoryDatabase;
 use bdk::blockchain::EsploraBlockchain;
+use bdk::database::memory::MemoryDatabase;
+use bdk::keys::{GeneratableDefaultOptions, GeneratedKey};
 use bdk::miniscript;
 use bdk::*;
 
@@ -27,9 +26,6 @@ use miniscript::Descriptor;
 
 mod utils;
 
-// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
-// allocator.
-#[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
@@ -71,7 +67,7 @@ impl WalletWrapper {
             MemoryDatabase::new(),
             blockchain,
         )
-            .await
+        .await
         .map_err(|e| format!("{:?}", e))?;
 
         Ok(WalletWrapper {
@@ -111,20 +107,22 @@ impl Alias {
     fn into_key(self) -> String {
         match self {
             Alias::GenWif => {
-                let key = secp256k1::key::SecretKey::new(&mut rand::thread_rng());
-                let sk = bitcoin::util::key::PrivateKey {
-                    compressed: true,
-                    network: Network::Testnet,
-                    key,
-                };
+                let generated: GeneratedKey<bitcoin::PrivateKey, miniscript::Legacy> =
+                    GeneratableDefaultOptions::generate_default().unwrap();
 
-                sk.to_wif()
+                let mut key = generated.into_key();
+                key.network = Network::Testnet;
+
+                key.to_wif()
             }
             Alias::GenExt { extra: path } => {
-                let seed = rand::thread_rng().gen::<[u8; 32]>();
-                let xprv =
-                    bitcoin::util::bip32::ExtendedPrivKey::new_master(Network::Testnet, &seed)
-                        .unwrap();
+                let generated: GeneratedKey<
+                    bitcoin::util::bip32::ExtendedPrivKey,
+                    miniscript::Legacy,
+                > = GeneratableDefaultOptions::generate_default().unwrap();
+
+                let mut xprv = generated.into_key();
+                xprv.network = Network::Testnet;
 
                 format!("{}{}", xprv, path)
             }
