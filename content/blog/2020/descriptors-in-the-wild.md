@@ -1,4 +1,12 @@
-# Descriptors in the wild
+---
+title: "Descriptors in the wild"
+description: "Guide to setup a 2-of-2 multisig using Bitcoin Core and BDK"
+author: "Gabriele Domenichini"
+date: "2020-11-18"
+tags: ["guide", "descriptor"]
+hidden: true
+draft: false
+---
 
 I have tried to setup a 2 of 2 multi signature infrastructure with two 
 different wallets, which know nothing about each other, but are compliant with 
