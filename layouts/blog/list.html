@@ -1,0 +1,25 @@
+{{ partial "header.html" . }}
+
+{{ if eq .Kind "section" }}
+	{{ .Content }}
+{{end}}
+
+{{ range (where .Site.Pages "Type" "blog").GroupByDate "2006" }}
+    <h2>Posts in {{ .Key }}</h2>
+
+    {{ range where .Pages ".Kind" "!=" "section" }}
+        <h3 class="blog-post"><span class="date">{{ .Date.Format "Jan 2" }}</span> <a href="{{ .RelPermalink }}" class="permalink">{{ .Title }}</a></h3>
+        {{ if isset .Params "tags" }}
+	<span class="blog-post-tags">
+            {{ $list := .Params.tags }}
+            {{ $len := (len $list) }}
+
+	    Tags: {{ range $index, $elem := $list }}
+                <a href="/blog/tags/{{ $elem | urlize }}">{{ $elem }}</a> {{ if ne (add $index 1) $len }} · {{ end }}
+	    {{ end }}
+	</span>
+        {{ end }}
+    {{ end }}
+{{ end }}
+
+{{ partial "footer.html" . }}

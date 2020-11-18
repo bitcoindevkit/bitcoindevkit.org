@@ -1,7 +1,7 @@
 +++
 title = "REPL"
 date = 2020-04-28T17:03:00+02:00
-weight = 1
+weight = 5
 chapter = true
 pre = '<i class="fas fa-terminal"></i> '
 +++
