@@ -68,7 +68,7 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 | `or_{b,c,d,i}()` | ✓ | ✓ | ✗  |
 | `multi()` | ✓ | ✓ | ✓  |
 | `thresh()` | ✓ | ✓ | ✗  |
-| `sortedmulti()` | ✗ | ✗ | ✓  |
+| `sortedmulti()` | ✓  | ✓  | ✓  |
 
 </div>
 

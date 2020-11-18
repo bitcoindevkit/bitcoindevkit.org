@@ -25,7 +25,7 @@ users and won't be covered in this guide.
 Once Cargo is installed, you can proceed to install the interactive BDK `repl` tool directly from the GitHub repository, by running:
 
 ```bash
-cargo install --git https://github.com/bitcoindevkit/bdk --features=cli-utils --example repl
+cargo install --git https://github.com/bitcoindevkit/bdk --features=cli-utils,esplora --example repl
 ```
 
 This command will probably take a while to finish, since it will fetch and compile all the dependencies and the `bdk` library itself. Once it's done, you can check if everything went fine

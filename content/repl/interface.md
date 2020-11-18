@@ -34,6 +34,7 @@ export RUST_LOG="bdk=debug"
 OPTIONS:
     -c, --change_descriptor <DESCRIPTOR>    Sets the descriptor to use for internal addresses
     -d, --descriptor <DESCRIPTOR>           Sets the descriptor to use for the external addresses
+    -e, --esplora <ESPLORA>                 Use the esplora server if given as parameter
     -n, --network <NETWORK>                 Sets the network [default: testnet]  [possible values: testnet, regtest]
     -s, --server <SERVER:PORT>              Sets the Electrum server to use [default:
                                             ssl://electrum.blockstream.info:60002]
@@ -55,6 +56,9 @@ The `--server` flag can be used to select the Electrum server to use. By default
 If you are having connection issues, you can also try with one of the other servers [listed here](https://1209k.com/bitcoin-eye/ele.php?chain=tbtc) and see if you have more luck with those.
 Right now both plaintext and ssl servers are supported (prefix `tcp://` or no prefix at all for tcp, prefix `ssl://` for ssl).
 
+The `--esplora` flag can be used to connect to an Esplora instance instead of using Electrum. It should be set to the API's "base url". For public instances of Esplora this is `https://blockstream.info/api` for mainnet
+and `https://blockstream.info/testnet/api` for testnet.
+
 The `--proxy` flag can be optionally used to specify a SOCKS5 proxy to use when connecting to the Electrum server. Spawning a local Tor daemon and using it as a proxy will allow you to connect to `.onion` Electrum
 URLs. **Keep in mind that only plaintext server are supported over a proxy**
 
@@ -66,6 +70,7 @@ match anymore the one you've used to initialize the cache. One solution could be
 | Command | Description |
 | ------- | ----------- |
 | [broadcast](#broadcast)         | Broadcasts a transaction to the network. Takes either a raw transaction or a PSBT to extract |
+| [bump_fee](#bump_fee)         | Bumps the fees of an RBF transaction |
 | [combine_psbt](#combine_psbt)      | Combines multiple PSBTs into one |
 | [create_tx](#create_tx)         | Creates a new unsigned tranasaction |
 | [extract_psbt](#extract_psbt)      | Extracts a raw transaction from a PSBT |
@@ -92,6 +97,25 @@ OPTIONS:
 
 Broadcasts a transaction. The transaction can be a raw hex transaction or a PSBT, in which case it also has to be "finalizable" (i.e. it should contain enough partial signatures to construct a finalized valid scriptsig/witness).
 
+### bump\_fee
+
+```text
+FLAGS:
+    -a, --send_all    Allows the wallet to reduce the amount of the only output in order to increase fees. This is
+                      generally the expected behavior for transactions originally created with `send_all`
+
+OPTIONS:
+    -f, --fee_rate <SATS_VBYTE>         The new targeted fee rate in sat/vbyte
+    -t, --txid <txid>                   TXID of the transaction to update
+        --unspendable <TXID:VOUT>...    Marks an utxo as unspendable, in case more inputs are needed to cover the extra
+                                        fees
+        --utxos <TXID:VOUT>...          Selects which utxos *must* be added to the tx. Unconfirmed utxos cannot be used
+```
+
+Bumps the fee of a transaction made with RBF. The transaction to bump is specified using the `--txid` flag and the new fee rate with `--fee_rate`.
+
+The `--send_all` flag should be enabled if the original transaction was also made with `--send_all`.
+
 ### combine\_psbt
 
 ```text
@@ -106,10 +130,12 @@ Combines multiple PSBTs by merging metadata and partial signatures. It can be us
 ```text
 FLAGS:
     -a, --send_all    Sends all the funds (or all the selected utxos). Requires only one addressees of value 0
+    -r, --enable_rbf    Enables Replace-By-Fee (BIP125)
 
 OPTIONS:
+        --external_policy <POLICY>      Selects which policy should be used to satisfy the external descriptor
     -f, --fee_rate <SATS_VBYTE>         Fee rate to use in sat/vbyte
-        --policy <POLICY>               Selects which policy will be used to satisfy the descriptor
+        --internal_policy <POLICY>      Selects which policy should be used to satisfy the internal descriptor
         --to <ADDRESS:SAT>...           Adds an addressee to the transaction
         --unspendable <TXID:VOUT>...    Marks an utxo as unspendable
         --utxos <TXID:VOUT>...          Selects which utxos *must* be spent
@@ -124,9 +150,9 @@ can also be specified multiple times to send to multiple addresses at once.
 The `--send_all` flag can be used to send the value of all the spendable UTXOs to a single address, without creating a change output. If this flag is set, there must be only one `--to` address, and its value will
 be ignored (it can be set to 0).
 
-The `--policy` option is an advanced flag that can be used to select the spending policy that the sender intends to satisfy in this transaction. It's normally not required if there's no ambiguity, but sometimes
-with complex descriptor it has to be specified, or you'll get a `SpendingPolicyRequired` error. This flag should be set to an array of the list of child indexes that should be taken at each step when traversing the spending
-policies tree from the root, at least until there are no more ambiguities. This is probably better explained with an example:
+The `--external_policy` and `--internal_policy` options are two advanced flags that can be used to select the spending policy that the sender intends to satisfy in this transaction. They are normally not required if there's no ambiguity, but sometimes
+with complex descriptor one or both of them have to be specified, or you'll get a `SpendingPolicyRequired` error. Those flags should be set to a JSON object that maps a policy node id to the list of child indexes that
+the user intends to satisfy for that node. This is probably better explained with an example:
 
 Let's assume our descriptor is: `sh(thresh(2,pk(A),sj:and_v(v:pk(B),n:older(6)),snj:and_v(v:pk(C),after(630000))))`. There are three conditions and we need to satisfy two of them to be able to spend. The conditions are:
 
@@ -146,7 +172,7 @@ In other words:
 * If we choose option #2, the final transaction will need to have its `nLockTime` set to a value greater than or equal to 630,000, but the `nSequence` can be set to a final value.
 * If we choose option #3, both the `nSequence` and `nLockTime` must be set.
 
-The wallet can't choose by itself which one of these combination to use, so the user has to provide this information with the `--policy` flag.
+The wallet can't choose by itself which one of these combination to use, so the user has to provide this information with the `--external_policy` flag.
 
 Now, let's draw the condition tree to understand better how the chosen policy is represented: every node has its id shown right next to its name, like `qd3um656` for the root node. These ids can be seen by running the [policies](#policies) command.
 Some ids have been omitted since they are not particularly relevant, in this example we will actually only use the root id.
@@ -165,7 +191,7 @@ graph TD;
 {{< /mermaid >}}
 
 Let's imagine that we are walking down from the root, and we want to use option #1. So we will have to select `pk(A)` + the whole `B` node. Since these nodes have an id, we can use it to refer to them and say which children
-we want to use. In this case we want to use children #0 and #1 of the root, so our final policy will be: `--policy {"qd3um656":[0,1]}`.
+we want to use. In this case we want to use children #0 and #1 of the root, so our final policy will be: `--external_policy {"qd3um656":[0,1]}`.
 
 ### extract\_psbt
 
