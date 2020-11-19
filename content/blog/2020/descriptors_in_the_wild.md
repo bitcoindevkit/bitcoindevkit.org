@@ -34,14 +34,14 @@ to test.
 
 ## The use case
 
-Imagine Alice and Bob owning a company and willing to put the corporate cash 
+Imagine Alice and Bob owning a company and being willing to put the corporate cash 
 in a 2of2 multi signature setup, so that each one of them have to agree and sign each
 transaction.
 
 ## The role of Descriptors
 
 If Alice and Bob cannot agree on the software to use, to monitor the same financial 
-situation, the two software must control and produce exactly the same serie 
+situation, the two software must control and produce exactly the same series
 of multisignature addresses. 
 
 To make two different software produce the same addresses in a deterministic way 
@@ -74,9 +74,9 @@ the other wallet can understand and complete it with its own signature.
 
 The infrastructure of multiple Extended keys combined toghether to produce 
 multiple multisignature addresses is often referred as 
-*[Hyerarchical Deterministic][HDWallet] multi signature wallet or HDM*. 
+*[Hierarchical Deterministic][HDWallet] multi signature wallet or HDM*. 
 
-What follows are the steps to  steps to create the HDM usable both in Core and 
+What follows are the steps to create the HDM usable both in Core and 
 in BDK.
 
 *Note: In Core, [Descriptor wallets] are still experimental and in general, 
@@ -129,7 +129,6 @@ export core_fingerprint=$(echo $core_key|jq -r '.fingerprint')
 
 export core_xpub_84_for_rec_desc="[$core_fingerprint/84'/0'/0']$core_xpub_84/0/*"
 export core_xpub_84_for_chg_desc="[$core_fingerprint/84'/0'/0']$core_xpub_84/1/*"
-
 ```
 
 For BDK (Bob) we do the same:
@@ -152,7 +151,6 @@ export BDK_fingerprint=$(echo $BDK_key|jq -r '.fingerprint')
 
 export BDK_xpub_84_for_rec_desc="[$BDK_fingerprint/84'/0'/0']$BDK_xpub_84/0/*"
 export BDK_xpub_84_for_chg_desc="[$BDK_fingerprint/84'/0'/0']$BDK_xpub_84/1/*"
-
 ```
 
 ### 2. Creation of the multi signature descriptor for each wallet 
@@ -273,14 +271,13 @@ the multisig address, because BDK is descriptors aware natively.
 
 ```
 repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fingerprint get_new_address`
-
 ```
 
 Et voilà: if we have done everything correctly, the newly created address in 
 Core is the same of the newly created address in BDK. this is part of the 
 "miracle" of descriptors' interoperability.
 
-### We ask for testnet coins giving the first created address.
+#### We ask for testnet coins giving the first created address.
 
 To find testnet coins for free, you can just google "testnet faucet" and you 
 should find some satoshis to play with. Just give to the site your first 
@@ -294,8 +291,10 @@ bitcoin-cli -testnet -rpcwallet=multisig2of2withBDK getbalance
 
 # In BDK:
 
+# Sync with the blockchain
+repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fingerprint sync
+# Get the balance
 repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fingerprint get_balance
-
 ```
 Some testnet faucets have an address to send back the unused satoshi after 
 the use. Take note of that because we will use it in the next step.
