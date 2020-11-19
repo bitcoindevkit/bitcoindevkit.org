@@ -2,37 +2,42 @@
 
 I have tried to setup a 2 of 2 multi signature infrastructure with two 
 different wallets, which know nothing about each other, but are compliant with 
-two very important protocols: [Output Descriptors] and [Partially Signed Bitcoin 
-Transactions][PSBT].
+two very important protocols: [Output Descriptors] and [Partially Signed 
+Bitcoin Transactions][PSBT] described in BIP 174.
 
 Before these two protocols came into existence, making a multi signature setup 
-and use it was possible only if the involved parties were using the same wallet 
-(eg. Electrum Desktop Wallet). This limitation was because the two parties had to agree: 
+and spending from it was possible only if the involved parties were using the 
+same wallet (eg. Electrum Desktop Wallet). This limitation was due to the fact 
+that the two parties had to agree: 
 
 * on the particular type of script and address to use
-* on the way the transaction would be shared for composition and signing with all the involved parties.
+* on the way the transaction would be shared composed and signed with all the 
+involved parties.
 
-[Output Descriptors] are a way to express which kind scriptPubKey to produce with a key or a serie of keys.
+[Output Descriptors] are a way to express which kind scriptPubKey and 
+addresses to produce with a key or a serie of keys.
 
-[PSBT], described in BIP 174, is instead the standard encoding and protocol used to 
-create transaction and to enrich it with the necessary signatures and other components, to make it valid and complete.
+[PSBT] is instead the standard protocol used to create transaction and to enrich 
+it with the necessary signatures and other components, to make it valid and complete.
 
-Together they provide a common ground to create and use a multi signature infrastructure 
-in a eterogeneous environment and this is what I have put to test.
+Together they provide a common ground to create and use a multi signature 
+infrastructure in a eterogeneous environment and this is what I have put 
+to test.
 
 ## The use case
 
-Imagine Alice and Bob owning a company and willing to put the corporate cash in a 
-2of2 multi signature setup, so that each one of them have to agree and sign each
+Imagine Alice and Bob owning a company and willing to put the corporate cash 
+in a 2of2 multi signature setup, so that each one of them have to agree and sign each
 transaction.
 
 ## The role of Descriptors
 
-If Alice and Bob cannot agree on the software to use, to monitor the same financial situation, the two software must control and produce exactly 
-the same serie of multisignature addresses. 
+If Alice and Bob cannot agree on the software to use, to monitor the same financial 
+situation, the two software must control and produce exactly the same serie 
+of multisignature addresses. 
 
 To make two different software produce the same addresses in a deterministic way 
-is not the easiest job because every time a new address is requested they must:
+we must ensure that they:
 * produce the same pair of public keys
 * combine them in the same order
 * put them inside the same scriptPubKey to produce the same address
@@ -40,37 +45,47 @@ is not the easiest job because every time a new address is requested they must:
 Here is where the [Output Descriptors] come into play. They describe:
 
 * the sequence of public keys each extended key (xpub) will produce 
-* the sequence in which the new public keys of various parties will enter into the script
-* the type of script the wallet will prepare with that group keys and so the 
+* the sequence in which the new public keys of various parties will enter into 
+the script
+* the type of script the wallet will prepare with that group keys and so the type
 of address the group of keys will produce.
 
-By sharing the same Descriptor, every compliant wallet will derive 
-deterministically the same serie of multisig addresses.
+**By sharing the same Descriptor, every compliant wallet will derive 
+deterministically the same serie of multisig addresses**.
 
-Immagine Alice using Bitcoin Core (from now on ["Core"][Bitcoin Core]) as a Wallet and Bob using a "Last generation" wallet, Bitcoin Development Kit (from now on ["BDK"][BDK]), which uses descriptors and miniscript natively.
+Immagine Alice using Bitcoin Core (from now on ["Core"][Bitcoin Core]) as a 
+Wallet and Bob using a "Last generation" wallet, Bitcoin Development Kit 
+(from now on ["BDK"][BDK]), which uses descriptors and miniscript natively.
 
-Each of these software wallet should be able to:
+Each of these two software wallet should be able to:
 
-* Create a new address whose transactions are seen by both software as part of the wallet "in common" and which can be given to receive the funds which will be spent only with the consent of both parties
-* Express the consent of each party by partially sign the transaction in a way the other wallet can understand and complete it with their own signature.
+* Create a new address which is seen as belonging to the multi signature 
+wallet in both software
+* Express the consent of each party by partially sign the transaction in a way 
+the other wallet can understand and complete it with its own signature.
 
-The infrastructure of multiple Extended keys combined toghether to produce multiple 
-multisignature wallet is often referred as *[Hyerarchical Deterministic][HDWallet] multi signature wallet or HDM*. 
+The infrastructure of multiple Extended keys combined toghether to produce 
+multiple multisignature addresses is often referred as 
+*[Hyerarchical Deterministic][HDWallet] multi signature wallet or HDM*. 
 
-In this post all the necessary steps to create the HDM usable both in Core and in BDK are illustrated to serve as a guide and as an example to build your own and to play with it (in testnet).
+What follows are the steps to  steps to create the HDM usable both in Core and 
+in BDK.
 
-*Note: In Core, [Descriptor wallets] are still experimental and in general, both wallets should be tested for descriptor capabilities only in testnet.*
+*Note: In Core, [Descriptor wallets] are still experimental and in general, 
+both wallets should be tested for descriptor capabilities only in testnet.*
 
 ## Our playground
 
-We will build a 2of2 key set up that will be used cooperatively by Bitcoin Core and Bitcoin Development Kit.
+We will build a 2of2 key set up that will be used cooperatively by Bitcoin Core 
+and Bitcoin Development Kit.
 The steps Alice and Bob will do are:
 
-1. create the seed and the derived Extended Master Public and send it to the other 
-party
+1. creation of the seed and the derived Extended Master Public and send it to 
+the other party
 2. Create the multi signature descriptor for each wallet
 3. Use each other's software to receive testnet coins from a faucet
-4. return part of the coins to the faucet signing the transaction with both wallets.
+4. return part of the coins to the faucet signing the transaction with both 
+wallets.
 
 We need:
 * [Bitcoin Dev Kit][BDK]
@@ -82,7 +97,8 @@ commits on the main branch)
 
 #### Seeds and Extended Master Public
 
-We build an Extended Private Master Key for both wallet and derive a BIP84 Extended Master Public for Bitcoin Core and then for BDK.
+We build an Extended Private Master Key for both wallet and derive a BIP84 
+Extended Master Public for Bitcoin Core and then for BDK.
 
 For Bitcoin Core (Alice):
 
@@ -133,32 +149,40 @@ export BDK_xpub_84_for_chg_desc="[$BDK_fingerprint/84'/0'/0']$BDK_xpub_84/1/*"
 
 ### 2. Creation of the multi signature descriptor for each wallet 
 
-To build a multisig wallet, each wallet owner must compose the descriptor adding:
+To build a multisig wallet, each wallet owner must compose the descriptor 
+adding:
 * his derived extended **private** key AND 
-* all the extended **public** keys of the other wallets involved in the multi signature setup 
+* all the extended **public** keys of the other wallets involved in the 
+multi signature setup 
 
-*The different nature of the two keys (one is private and one is public) is due 
-to the fact that each wallet, to be able to partially sign the transaction, **must manage the private key of the wallet's 
-owner*** AND have the other party's public key. Otherwise if we put both public key, we would obtain a watch-only wallet unable to sign the transactions. If we 
+*The different nature of the two keys (one is private and one is public) is 
+due to the fact that each wallet, to be able to partially sign the transaction, 
+**must manage the private key of the wallet's owner*** AND have the other 
+party's public key. Otherwise if we put both public key, we would obtain 
+a watch-only wallet unable to sign the transactions. If we 
 had both extended private keys inside the descriptor, we would allow each party 
 to finalize the transactions autonomously.
 
 #### In Bitcoin Core:
 
-In our case, the multi signature descriptor for Bitcoin Core will be composed with:
+In our case, the multi signature descriptor for Bitcoin Core will be composed 
+with:
 
 * The BIP84 derived Extended **Public** Key from BDK
 * The BIP84 derived Extended **Private** Key from Core. 
 
 BDK wallet's owner will send to Core's owner the derived xpub for this purpose.
-This is how the Core's multisig descriptor will be created and put into an environment variable:
+This is how the Core's multisig descriptor will be created and put into an 
+environment variable:
 
 ```
 export core_rec_desc="wsh(multi(2,$BDK_xpub_84_for_rec_desc,$core_xprv/84'/0'/0'/0/*))"
 ```
 
-Where of course `$BDK_xpub_84_for_rec_desc`is the derived master public created in BDK and received by Core's owner.
-the meaning of what is before and after is illustrated in the doc that explain 
+Where of course `$BDK_xpub_84_for_rec_desc`is the derived master public created 
+in BDK and received by Core's owner.
+
+The meaning of what is before and after is illustrated in the doc that explain 
 the use of [Output Descriptors in Bitcoin Core][Output Descriptors].
 
 We add the necessary checksum using the specific `bitcoin-cli` call.
@@ -176,7 +200,8 @@ export core_chg_desc_chksum=$core_chg_desc#$(bitcoin-cli -testnet getdescriptori
 
 #### In BDK:
 
-For BDK we set the derivation for receiving addresses and change addresses in the command line (maybe setting an alias)
+For BDK we set the derivation for receiving addresses and change addresses 
+in the command line (maybe setting an alias)
 
 Building the descriptor:
 
@@ -184,7 +209,8 @@ Building the descriptor:
 export BDK_rec_desc="wsh(multi(2,$BDK_xprv/84'/0'/0'/0/*,$core_xpub_84_for_rec_desc))"`
 ```
 
-Please note that the order of the extended key in the descriptor MUST be the same in the 2 wallets.
+Please note that the order of the extended key in the descriptor MUST be the 
+same in the 2 wallets.
 
 *We have chosen to put BDK first and in each software wallet, the public key 
 derived from BDK will always come first. In alternative, we could have chosen to 
@@ -202,26 +228,28 @@ env |grep 'core_'
 env |grep 'BDK_'
 ```
 
-Now we will use the multisig descriptor wallet to receive testnet coins with Alice's 
-and Bob's software
+Now we will use the multisig descriptor wallet to receive testnet coins with 
+Alice and Bob's software
 
 ### 3. Use each other's software to receive testnet coins from a faucet
 
 #### In Bitcoin Core
 
-Alice must create an empty, experimental new "descriptors wallet" in Core and to 
-import the multisig Output Descriptor.
+Alice must create an empty, experimental new "descriptors wallet" in Core and 
+to import the multisig Output Descriptor.
 
 ```
 bitcoin-cli -testnet createwallet "multisig2of2withBDK" false true "" false true false
-# The flag are to:
-# use the private keys
-# make it empty
-# no password
-# don't allow reuse of addresses
-# make a "new experimentatl descriptors wallet"
-# don't load it on start up
+````
+The flag are to:
+* use the private keys
+* make it empty
+* no password provided to the wallet
+* reusing of addresses not allowed
+* "new experimental descriptors wallet"
+*  don't load it on start up
 
+```
 bitcoin-cli -testnet -rpcwallet=multisig2of2withBDK importdescriptors "[{\"desc\":\"$core_rec_desc_chksum\",\"timestamp\":\"now\",\"active\":true,\"internal\":false},{\"desc\":\"$core_chg_desc_chksum\",\"timestamp\":\"now\",\"active\":true,\"internal\":true}]"
 ```
 Now Alice asks for her first receiving multisignature address.
@@ -232,23 +260,24 @@ echo $first_address
 ```
 
 #### BDK
-Bob can specify directly the descriptors on the command line to produce the multisig 
-address, because BDK is descriptors aware natively.
-
+In BDK Bob can specify directly the descriptors on the command line to produce 
+the multisig address, because BDK is descriptors aware natively.
 
 ```
 repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fingerprint get_new_address`
 
 ```
 
-Et voilà: if we have done everything correctly, the newly created address in Core is the same of the newly created address in BDK. this is part of the miracle of descriptors' interoperability.
+Et voilà: if we have done everything correctly, the newly created address in 
+Core is the same of the newly created address in BDK. this is part of the 
+"miracle" of descriptors' interoperability.
 
 ### We ask for testnet coins giving the first created address.
 
-To find testnet coins for free, you can just google "testnet faucet" and you should 
-find some satoshis to play with. Just give to the site your first generated address 
-and, in twenty minutes, you will find the satoshis in your balance both in Core 
-and in BDK.
+To find testnet coins for free, you can just google "testnet faucet" and you 
+should find some satoshis to play with. Just give to the site your first 
+generated address and, in twenty minutes, you will find the satoshis in 
+your balance both in Core and in BDK.
 
 ```
 # to check it in Core:
@@ -260,7 +289,8 @@ bitcoin-cli -testnet -rpcwallet=multisig2of2withBDK getbalance
 repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fingerprint get_balance
 
 ```
-Some testnet faucets have an address to send back the unused satoshi after having tested your application. Take note of that because we will use it in the next step.
+Some testnet faucets have an address to send back the unused satoshi after 
+the use. Take note of that because we will use it in the next step.
 
 ### 4. we return part of the satoshis received back to the faucet
 
@@ -274,13 +304,15 @@ export psbt=$(bitcoin-cli -testnet -rpcwallet=multisig2of2withBDK walletprocessp
 }
 ```
 
-Exactly! Note the `"complete": false`. We have processed the transaction with Core but we miss one of the necessary key of the multisig 2of2 setup (The one 
+Exactly! Note the `"complete": false`. We have processed the transaction with 
+Core but we miss one of the necessary key of the multisig 2of2 setup (The one 
 contained inside BDK).
 
 `tb1qrcesfj9f2d7x40xs6ztnlrcgxhh6vsw8658hjdhdy6qgkf6nfrds9rp79a` is the address 
 we got from the faucet site to return the satoshis.
 
-The [PSBT] is sent over to the BDK wallet owner who tries to sign the transaction:
+The [PSBT] is sent over to the BDK wallet owner who tries to sign the 
+transaction:
 
 ```
 repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fingerprint sign --psbt $psbt
@@ -300,10 +332,10 @@ repl -d "$BDK_rec_desc_chksum" -c "$BDK_chg_desc_chksum" -n testnet -w $BDK_fing
 
 ## Conclusion
 
-We have built an HDM and we have used it with two indipendent wallets, which are compatible 
-with [BIP 174][PSBT] and [Output Descriptors]. Hopefully we will see many other compatible 
-wallets beyound [Bitcoin Core] and [BDK], with which we will be able to easily set up 
-multi signature schemes.
+We have built an HDM and we have used it with two indipendent wallets, which 
+are compatible with [BIP 174][PSBT] and [Output Descriptors]. Hopefully we 
+will see many other compatible wallets beyound [Bitcoin Core] and [BDK], 
+with which we will be able to easily set up multi signature schemes.
 
 
 [Descriptor wallets]: https://github.com/bitcoin/bitcoin/pull/16528
