@@ -59,7 +59,7 @@ impl WalletWrapper {
 
         debug!("descriptors: {:?} {:?}", descriptor, change_descriptor);
 
-        let blockchain = EsploraBlockchain::new(&esplora);
+        let blockchain = EsploraBlockchain::new(&esplora, None);
         let wallet = Wallet::new(
             descriptor.as_str(),
             change_descriptor.as_ref().map(|x| x.as_str()),
