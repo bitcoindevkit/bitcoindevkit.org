@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["bdk"] = [{"text":"impl Ord for Condition","synthetic":false,"types":[]},{"text":"impl Ord for SignerOrdering","synthetic":false,"types":[]},{"text":"impl Ord for TxOrdering","synthetic":false,"types":[]},{"text":"impl Ord for ChangeSpendPolicy","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

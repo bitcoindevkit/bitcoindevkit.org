@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["bdk"] = [{"text":"impl PartialOrd&lt;Condition&gt; for Condition","synthetic":false,"types":[]},{"text":"impl PartialOrd&lt;FeeRate&gt; for FeeRate","synthetic":false,"types":[]},{"text":"impl PartialOrd&lt;SignerOrdering&gt; for SignerOrdering","synthetic":false,"types":[]},{"text":"impl PartialOrd&lt;TxOrdering&gt; for TxOrdering","synthetic":false,"types":[]},{"text":"impl PartialOrd&lt;ChangeSpendPolicy&gt; for ChangeSpendPolicy","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
