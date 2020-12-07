@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["bdk"] = [{"text":"impl Copy for Capability","synthetic":false,"types":[]},{"text":"impl Copy for Condition","synthetic":false,"types":[]},{"text":"impl Copy for ScriptContextEnum","synthetic":false,"types":[]},{"text":"impl Copy for PrivateKeyGenerateOptions","synthetic":false,"types":[]},{"text":"impl Copy for KeychainKind","synthetic":false,"types":[]},{"text":"impl Copy for FeeRate","synthetic":false,"types":[]},{"text":"impl Copy for TxOrdering","synthetic":false,"types":[]},{"text":"impl Copy for ChangeSpendPolicy","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
