@@ -3389,6 +3389,37 @@
 <span id="3386">3386</span>
 <span id="3387">3387</span>
 <span id="3388">3388</span>
+<span id="3389">3389</span>
+<span id="3390">3390</span>
+<span id="3391">3391</span>
+<span id="3392">3392</span>
+<span id="3393">3393</span>
+<span id="3394">3394</span>
+<span id="3395">3395</span>
+<span id="3396">3396</span>
+<span id="3397">3397</span>
+<span id="3398">3398</span>
+<span id="3399">3399</span>
+<span id="3400">3400</span>
+<span id="3401">3401</span>
+<span id="3402">3402</span>
+<span id="3403">3403</span>
+<span id="3404">3404</span>
+<span id="3405">3405</span>
+<span id="3406">3406</span>
+<span id="3407">3407</span>
+<span id="3408">3408</span>
+<span id="3409">3409</span>
+<span id="3410">3410</span>
+<span id="3411">3411</span>
+<span id="3412">3412</span>
+<span id="3413">3413</span>
+<span id="3414">3414</span>
+<span id="3415">3415</span>
+<span id="3416">3416</span>
+<span id="3417">3417</span>
+<span id="3418">3418</span>
+<span id="3419">3419</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -3455,7 +3486,7 @@
 <span class="kw">use</span> <span class="ident">address_validator</span>::<span class="ident">AddressValidator</span>;
 <span class="kw">use</span> <span class="ident">signer</span>::{<span class="ident">Signer</span>, <span class="ident">SignerId</span>, <span class="ident">SignerOrdering</span>, <span class="ident">SignersContainer</span>};
 <span class="kw">use</span> <span class="ident">tx_builder</span>::{<span class="ident">BumpFee</span>, <span class="ident">CreateTx</span>, <span class="ident">FeePolicy</span>, <span class="ident">TxBuilder</span>, <span class="ident">TxBuilderContext</span>};
-<span class="kw">use</span> <span class="ident">utils</span>::{<span class="ident">descriptor_to_pk_ctx</span>, <span class="ident">After</span>, <span class="ident">Older</span>, <span class="ident">SecpCtx</span>};
+<span class="kw">use</span> <span class="ident">utils</span>::{<span class="ident">check_nlocktime</span>, <span class="ident">check_nsequence_rbf</span>, <span class="ident">descriptor_to_pk_ctx</span>, <span class="ident">After</span>, <span class="ident">Older</span>, <span class="ident">SecpCtx</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">blockchain</span>::{<span class="ident">Blockchain</span>, <span class="ident">BlockchainMarker</span>, <span class="ident">OfflineBlockchain</span>, <span class="ident">Progress</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>};
@@ -3722,19 +3753,48 @@
         };
 
         <span class="kw">let</span> <span class="ident">lock_time</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">builder</span>.<span class="ident">locktime</span> {
+            <span class="comment">// No nLockTime, default to 0</span>
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>),
+            <span class="comment">// Specific nLockTime required and we have no constraints, so just set to that value</span>
             <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="kw">if</span> <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">is_none</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">x</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="kw">if</span> <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="ident">x</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">x</span>,
+            <span class="comment">// Specific nLockTime required and it&#39;s compatible with the constraints</span>
+            <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="kw">if</span> <span class="ident">check_nlocktime</span>(<span class="ident">x</span>, <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap</span>()) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">x</span>,
+            <span class="comment">// Invalid nLockTime required</span>
             <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Generic</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;TxBuilder requested timelock of `{}`, but at least `{}` is required to spend from this script&quot;</span>, <span class="ident">x</span>, <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap</span>())))
         };
 
         <span class="kw">let</span> <span class="ident">n_sequence</span> <span class="op">=</span> <span class="kw">match</span> (<span class="ident">builder</span>.<span class="ident">rbf</span>, <span class="ident">requirements</span>.<span class="ident">csv</span>) {
+            <span class="comment">// No RBF or CSV but there&#39;s an nLockTime, so the nSequence cannot be final</span>
+            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="kw">if</span> <span class="ident">lock_time</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0xFFFFFFFE</span>,
+            <span class="comment">// No RBF, CSV or nLockTime, make the transaction final</span>
+            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">0xFFFFFFFF</span>,
+
+            <span class="comment">// No RBF requested, use the value from CSV. Note that this value is by definition</span>
+            <span class="comment">// non-final, so even if a timelock is enabled this nSequence is fine, hence why we</span>
+            <span class="comment">// don&#39;t bother checking for it here. The same is true for all the other branches below</span>
             (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">csv</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">csv</span>,
-            (<span class="prelude-val">Some</span>(<span class="ident">rbf</span>), <span class="prelude-val">Some</span>(<span class="ident">csv</span>)) <span class="kw">if</span> <span class="ident">rbf</span> <span class="op">&lt;</span> <span class="ident">csv</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Generic</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Cannot enable RBF with nSequence `{}`, since at least `{}` is required to spend with OP_CSV&quot;</span>, <span class="ident">rbf</span>, <span class="ident">csv</span>))),
-            (<span class="prelude-val">None</span>, <span class="kw">_</span>) <span class="kw">if</span> <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="number">0xFFFFFFFE</span>,
-            (<span class="prelude-val">Some</span>(<span class="ident">rbf</span>), <span class="kw">_</span>) <span class="kw">if</span> <span class="ident">rbf</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0xFFFFFFFE</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Generic</span>(<span class="string">&quot;Cannot enable RBF with a nSequence &gt;= 0xFFFFFFFE&quot;</span>.<span class="ident">into</span>())),
-            (<span class="prelude-val">Some</span>(<span class="ident">rbf</span>), <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">rbf</span>,
-            (<span class="prelude-val">None</span>, <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">0xFFFFFFFF</span>,
+
+            <span class="comment">// RBF with a specific value but that value is too high</span>
+            (<span class="prelude-val">Some</span>(<span class="ident">tx_builder</span>::<span class="ident">RBFValue</span>::<span class="ident">Value</span>(<span class="ident">rbf</span>)), <span class="kw">_</span>) <span class="kw">if</span> <span class="ident">rbf</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0xFFFFFFFE</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Generic</span>(
+                    <span class="string">&quot;Cannot enable RBF with a nSequence &gt;= 0xFFFFFFFE&quot;</span>.<span class="ident">into</span>(),
+                ))
+            }
+            <span class="comment">// RBF with a specific value requested, but the value is incompatible with CSV</span>
+            (<span class="prelude-val">Some</span>(<span class="ident">tx_builder</span>::<span class="ident">RBFValue</span>::<span class="ident">Value</span>(<span class="ident">rbf</span>)), <span class="prelude-val">Some</span>(<span class="ident">csv</span>))
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">check_nsequence_rbf</span>(<span class="ident">rbf</span>, <span class="ident">csv</span>) <span class="op">=</span><span class="op">&gt;</span>
+            {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Generic</span>(<span class="macro">format</span><span class="macro">!</span>(
+                    <span class="string">&quot;Cannot enable RBF with nSequence `{}` given a required OP_CSV of `{}`&quot;</span>,
+                    <span class="ident">rbf</span>, <span class="ident">csv</span>
+                )))
+            }
+
+            <span class="comment">// RBF enabled with the default value with CSV also enabled. CSV takes precedence</span>
+            (<span class="prelude-val">Some</span>(<span class="ident">tx_builder</span>::<span class="ident">RBFValue</span>::<span class="ident">Default</span>), <span class="prelude-val">Some</span>(<span class="ident">csv</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">csv</span>,
+            <span class="comment">// Valid RBF, either default or with a specific value. We ignore the `CSV` value</span>
+            <span class="comment">// because we&#39;ve already checked it before</span>
+            (<span class="prelude-val">Some</span>(<span class="ident">rbf</span>), <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">rbf</span>.<span class="ident">get_value</span>(),
         };
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">Transaction</span> {
@@ -5104,12 +5164,14 @@
             )
             .<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xFFFFFFFD</span>);
+        <span class="comment">// When CSV is enabled it takes precedence over the rbf value (unless forced by the user).</span>
+        <span class="comment">// It will be set to the OP_CSV value, in this case 6</span>
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">6</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">should_panic</span>(
-        <span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;Cannot enable RBF with nSequence `3`, since at least `6` is required to spend with OP_CSV&quot;</span>
+        <span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;Cannot enable RBF with nSequence `3` given a required OP_CSV of `6`&quot;</span>
     )]</span>
     <span class="kw">fn</span> <span class="ident">test_create_tx_with_custom_rbf_csv</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_single_sig_csv</span>());
