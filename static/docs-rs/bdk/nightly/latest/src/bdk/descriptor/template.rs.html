@@ -738,7 +738,7 @@
 
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>, <span class="ident">ToWalletDescriptor</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::{<span class="ident">DerivableKey</span>, <span class="ident">KeyError</span>, <span class="ident">ToDescriptorKey</span>, <span class="ident">ValidNetworks</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">descriptor</span>, <span class="ident">ScriptType</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">descriptor</span>, <span class="ident">KeychainKind</span>};
 
 <span class="doccomment">/// Type alias for the return type of [`DescriptorTemplate`], [`descriptor!`](crate::descriptor!) and others</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">DescriptorTemplateOut</span> <span class="op">=</span> (<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>, <span class="ident">ValidNetworks</span>);
@@ -863,23 +863,23 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// # use std::str::FromStr;</span>
 <span class="doccomment">/// # use bdk::bitcoin::{PrivateKey, Network};</span>
-<span class="doccomment">/// # use bdk::{Wallet, OfflineWallet, ScriptType};</span>
+<span class="doccomment">/// # use bdk::{Wallet, OfflineWallet, KeychainKind};</span>
 <span class="doccomment">/// # use bdk::database::MemoryDatabase;</span>
 <span class="doccomment">/// use bdk::template::BIP44;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// let key = bitcoin::util::bip32::ExtendedPrivKey::from_str(&quot;tprv8ZgxMBicQKsPeZRHk4rTG6orPS2CRNFX3njhUXx5vj9qGog5ZMH4uGReDWN5kCkY3jmWEtWause41CDvBRXD1shKknAMKxT99o9qUTRVC6m&quot;)?;</span>
 <span class="doccomment">/// let wallet: OfflineWallet&lt;_&gt; = Wallet::new_offline(</span>
-<span class="doccomment">///     BIP44(key.clone(), ScriptType::External),</span>
-<span class="doccomment">///     Some(BIP44(key, ScriptType::Internal)),</span>
+<span class="doccomment">///     BIP44(key.clone(), KeychainKind::External),</span>
+<span class="doccomment">///     Some(BIP44(key, KeychainKind::Internal)),</span>
 <span class="doccomment">///     Network::Testnet,</span>
 <span class="doccomment">///     MemoryDatabase::default()</span>
 <span class="doccomment">/// )?;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(wallet.get_new_address()?.to_string(), &quot;miNG7dJTzJqNbFS19svRdTCisC65dsubtR&quot;);</span>
-<span class="doccomment">/// assert_eq!(wallet.public_descriptor(ScriptType::External)?.unwrap().to_string(), &quot;pkh([c55b303f/44&#39;/0&#39;/0&#39;]tpubDDDzQ31JkZB7VxUr9bjvBivDdqoFLrDPyLWtLapArAi51ftfmCb2DPxwLQzX65iNcXz1DGaVvyvo6JQ6rTU73r2gqdEo8uov9QKRb7nKCSU/0/*)&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;pkh([c55b303f/44&#39;/0&#39;/0&#39;]tpubDDDzQ31JkZB7VxUr9bjvBivDdqoFLrDPyLWtLapArAi51ftfmCb2DPxwLQzX65iNcXz1DGaVvyvo6JQ6rTU73r2gqdEo8uov9QKRb7nKCSU/0/*)&quot;);</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BIP44</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">ScriptType</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BIP44</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">KeychainKind</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">BIP44</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
@@ -901,24 +901,24 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// # use std::str::FromStr;</span>
 <span class="doccomment">/// # use bdk::bitcoin::{PrivateKey, Network};</span>
-<span class="doccomment">/// # use bdk::{Wallet, OfflineWallet, ScriptType};</span>
+<span class="doccomment">/// # use bdk::{Wallet, OfflineWallet, KeychainKind};</span>
 <span class="doccomment">/// # use bdk::database::MemoryDatabase;</span>
 <span class="doccomment">/// use bdk::template::BIP44Public;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// let key = bitcoin::util::bip32::ExtendedPubKey::from_str(&quot;tpubDDDzQ31JkZB7VxUr9bjvBivDdqoFLrDPyLWtLapArAi51ftfmCb2DPxwLQzX65iNcXz1DGaVvyvo6JQ6rTU73r2gqdEo8uov9QKRb7nKCSU&quot;)?;</span>
 <span class="doccomment">/// let fingerprint = bitcoin::util::bip32::Fingerprint::from_str(&quot;c55b303f&quot;)?;</span>
 <span class="doccomment">/// let wallet: OfflineWallet&lt;_&gt; = Wallet::new_offline(</span>
-<span class="doccomment">///     BIP44Public(key.clone(), fingerprint, ScriptType::External),</span>
-<span class="doccomment">///     Some(BIP44Public(key, fingerprint, ScriptType::Internal)),</span>
+<span class="doccomment">///     BIP44Public(key.clone(), fingerprint, KeychainKind::External),</span>
+<span class="doccomment">///     Some(BIP44Public(key, fingerprint, KeychainKind::Internal)),</span>
 <span class="doccomment">///     Network::Testnet,</span>
 <span class="doccomment">///     MemoryDatabase::default()</span>
 <span class="doccomment">/// )?;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(wallet.get_new_address()?.to_string(), &quot;miNG7dJTzJqNbFS19svRdTCisC65dsubtR&quot;);</span>
-<span class="doccomment">/// assert_eq!(wallet.public_descriptor(ScriptType::External)?.unwrap().to_string(), &quot;pkh([c55b303f/44&#39;/0&#39;/0&#39;]tpubDDDzQ31JkZB7VxUr9bjvBivDdqoFLrDPyLWtLapArAi51ftfmCb2DPxwLQzX65iNcXz1DGaVvyvo6JQ6rTU73r2gqdEo8uov9QKRb7nKCSU/0/*)&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;pkh([c55b303f/44&#39;/0&#39;/0&#39;]tpubDDDzQ31JkZB7VxUr9bjvBivDdqoFLrDPyLWtLapArAi51ftfmCb2DPxwLQzX65iNcXz1DGaVvyvo6JQ6rTU73r2gqdEo8uov9QKRb7nKCSU/0/*)&quot;);</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BIP44Public</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">bip32</span>::<span class="ident">Fingerprint</span>, <span class="kw">pub</span> <span class="ident">ScriptType</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BIP44Public</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">bip32</span>::<span class="ident">Fingerprint</span>, <span class="kw">pub</span> <span class="ident">KeychainKind</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">BIP44Public</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
@@ -937,23 +937,23 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// # use std::str::FromStr;</span>
 <span class="doccomment">/// # use bdk::bitcoin::{PrivateKey, Network};</span>
-<span class="doccomment">/// # use bdk::{Wallet, OfflineWallet, ScriptType};</span>
+<span class="doccomment">/// # use bdk::{Wallet, OfflineWallet, KeychainKind};</span>
 <span class="doccomment">/// # use bdk::database::MemoryDatabase;</span>
 <span class="doccomment">/// use bdk::template::BIP49;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// let key = bitcoin::util::bip32::ExtendedPrivKey::from_str(&quot;tprv8ZgxMBicQKsPeZRHk4rTG6orPS2CRNFX3njhUXx5vj9qGog5ZMH4uGReDWN5kCkY3jmWEtWause41CDvBRXD1shKknAMKxT99o9qUTRVC6m&quot;)?;</span>
 <span class="doccomment">/// let wallet: OfflineWallet&lt;_&gt; = Wallet::new_offline(</span>
-<span class="doccomment">///     BIP49(key.clone(), ScriptType::External),</span>
-<span class="doccomment">///     Some(BIP49(key, ScriptType::Internal)),</span>
+<span class="doccomment">///     BIP49(key.clone(), KeychainKind::External),</span>
+<span class="doccomment">///     Some(BIP49(key, KeychainKind::Internal)),</span>
 <span class="doccomment">///     Network::Testnet,</span>
 <span class="doccomment">///     MemoryDatabase::default()</span>
 <span class="doccomment">/// )?;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(wallet.get_new_address()?.to_string(), &quot;2N3K4xbVAHoiTQSwxkZjWDfKoNC27pLkYnt&quot;);</span>
-<span class="doccomment">/// assert_eq!(wallet.public_descriptor(ScriptType::External)?.unwrap().to_string(), &quot;sh(wpkh([c55b303f/49\&#39;/0\&#39;/0\&#39;]tpubDC49r947KGK52X5rBWS4BLs5m9SRY3pYHnvRrm7HcybZ3BfdEsGFyzCMzayi1u58eT82ZeyFZwH7DD6Q83E3fM9CpfMtmnTygnLfP59jL9L/0/*))&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;sh(wpkh([c55b303f/49\&#39;/0\&#39;/0\&#39;]tpubDC49r947KGK52X5rBWS4BLs5m9SRY3pYHnvRrm7HcybZ3BfdEsGFyzCMzayi1u58eT82ZeyFZwH7DD6Q83E3fM9CpfMtmnTygnLfP59jL9L/0/*))&quot;);</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BIP49</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">ScriptType</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BIP49</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">KeychainKind</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">BIP49</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
@@ -975,24 +975,24 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// # use std::str::FromStr;</span>
 <span class="doccomment">/// # use bdk::bitcoin::{PrivateKey, Network};</span>
-<span class="doccomment">/// # use bdk::{Wallet, OfflineWallet, ScriptType};</span>
+<span class="doccomment">/// # use bdk::{Wallet, OfflineWallet, KeychainKind};</span>
 <span class="doccomment">/// # use bdk::database::MemoryDatabase;</span>
 <span class="doccomment">/// use bdk::template::BIP49Public;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// let key = bitcoin::util::bip32::ExtendedPubKey::from_str(&quot;tpubDC49r947KGK52X5rBWS4BLs5m9SRY3pYHnvRrm7HcybZ3BfdEsGFyzCMzayi1u58eT82ZeyFZwH7DD6Q83E3fM9CpfMtmnTygnLfP59jL9L&quot;)?;</span>
 <span class="doccomment">/// let fingerprint = bitcoin::util::bip32::Fingerprint::from_str(&quot;c55b303f&quot;)?;</span>
 <span class="doccomment">/// let wallet: OfflineWallet&lt;_&gt; = Wallet::new_offline(</span>
-<span class="doccomment">///     BIP49Public(key.clone(), fingerprint, ScriptType::External),</span>
-<span class="doccomment">///     Some(BIP49Public(key, fingerprint, ScriptType::Internal)),</span>
+<span class="doccomment">///     BIP49Public(key.clone(), fingerprint, KeychainKind::External),</span>
+<span class="doccomment">///     Some(BIP49Public(key, fingerprint, KeychainKind::Internal)),</span>
 <span class="doccomment">///     Network::Testnet,</span>
 <span class="doccomment">///     MemoryDatabase::default()</span>
 <span class="doccomment">/// )?;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(wallet.get_new_address()?.to_string(), &quot;2N3K4xbVAHoiTQSwxkZjWDfKoNC27pLkYnt&quot;);</span>
-<span class="doccomment">/// assert_eq!(wallet.public_descriptor(ScriptType::External)?.unwrap().to_string(), &quot;sh(wpkh([c55b303f/49\&#39;/0\&#39;/0\&#39;]tpubDC49r947KGK52X5rBWS4BLs5m9SRY3pYHnvRrm7HcybZ3BfdEsGFyzCMzayi1u58eT82ZeyFZwH7DD6Q83E3fM9CpfMtmnTygnLfP59jL9L/0/*))&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;sh(wpkh([c55b303f/49\&#39;/0\&#39;/0\&#39;]tpubDC49r947KGK52X5rBWS4BLs5m9SRY3pYHnvRrm7HcybZ3BfdEsGFyzCMzayi1u58eT82ZeyFZwH7DD6Q83E3fM9CpfMtmnTygnLfP59jL9L/0/*))&quot;);</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BIP49Public</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">bip32</span>::<span class="ident">Fingerprint</span>, <span class="kw">pub</span> <span class="ident">ScriptType</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BIP49Public</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">bip32</span>::<span class="ident">Fingerprint</span>, <span class="kw">pub</span> <span class="ident">KeychainKind</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">BIP49Public</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
@@ -1011,23 +1011,23 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// # use std::str::FromStr;</span>
 <span class="doccomment">/// # use bdk::bitcoin::{PrivateKey, Network};</span>
-<span class="doccomment">/// # use bdk::{Wallet, OfflineWallet, ScriptType};</span>
+<span class="doccomment">/// # use bdk::{Wallet, OfflineWallet, KeychainKind};</span>
 <span class="doccomment">/// # use bdk::database::MemoryDatabase;</span>
 <span class="doccomment">/// use bdk::template::BIP84;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// let key = bitcoin::util::bip32::ExtendedPrivKey::from_str(&quot;tprv8ZgxMBicQKsPeZRHk4rTG6orPS2CRNFX3njhUXx5vj9qGog5ZMH4uGReDWN5kCkY3jmWEtWause41CDvBRXD1shKknAMKxT99o9qUTRVC6m&quot;)?;</span>
 <span class="doccomment">/// let wallet: OfflineWallet&lt;_&gt; = Wallet::new_offline(</span>
-<span class="doccomment">///     BIP84(key.clone(), ScriptType::External),</span>
-<span class="doccomment">///     Some(BIP84(key, ScriptType::Internal)),</span>
+<span class="doccomment">///     BIP84(key.clone(), KeychainKind::External),</span>
+<span class="doccomment">///     Some(BIP84(key, KeychainKind::Internal)),</span>
 <span class="doccomment">///     Network::Testnet,</span>
 <span class="doccomment">///     MemoryDatabase::default()</span>
 <span class="doccomment">/// )?;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(wallet.get_new_address()?.to_string(), &quot;tb1qedg9fdlf8cnnqfd5mks6uz5w4kgpk2pr6y4qc7&quot;);</span>
-<span class="doccomment">/// assert_eq!(wallet.public_descriptor(ScriptType::External)?.unwrap().to_string(), &quot;wpkh([c55b303f/84\&#39;/0\&#39;/0\&#39;]tpubDC2Qwo2TFsaNC4ju8nrUJ9mqVT3eSgdmy1yPqhgkjwmke3PRXutNGRYAUo6RCHTcVQaDR3ohNU9we59brGHuEKPvH1ags2nevW5opEE9Z5Q/0/*)&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;wpkh([c55b303f/84\&#39;/0\&#39;/0\&#39;]tpubDC2Qwo2TFsaNC4ju8nrUJ9mqVT3eSgdmy1yPqhgkjwmke3PRXutNGRYAUo6RCHTcVQaDR3ohNU9we59brGHuEKPvH1ags2nevW5opEE9Z5Q/0/*)&quot;);</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BIP84</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">ScriptType</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BIP84</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">KeychainKind</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">BIP84</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
@@ -1049,24 +1049,24 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// # use std::str::FromStr;</span>
 <span class="doccomment">/// # use bdk::bitcoin::{PrivateKey, Network};</span>
-<span class="doccomment">/// # use bdk::{Wallet, OfflineWallet, ScriptType};</span>
+<span class="doccomment">/// # use bdk::{Wallet, OfflineWallet, KeychainKind};</span>
 <span class="doccomment">/// # use bdk::database::MemoryDatabase;</span>
 <span class="doccomment">/// use bdk::template::BIP84Public;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// let key = bitcoin::util::bip32::ExtendedPubKey::from_str(&quot;tpubDC2Qwo2TFsaNC4ju8nrUJ9mqVT3eSgdmy1yPqhgkjwmke3PRXutNGRYAUo6RCHTcVQaDR3ohNU9we59brGHuEKPvH1ags2nevW5opEE9Z5Q&quot;)?;</span>
 <span class="doccomment">/// let fingerprint = bitcoin::util::bip32::Fingerprint::from_str(&quot;c55b303f&quot;)?;</span>
 <span class="doccomment">/// let wallet: OfflineWallet&lt;_&gt; = Wallet::new_offline(</span>
-<span class="doccomment">///     BIP84Public(key.clone(), fingerprint, ScriptType::External),</span>
-<span class="doccomment">///     Some(BIP84Public(key, fingerprint, ScriptType::Internal)),</span>
+<span class="doccomment">///     BIP84Public(key.clone(), fingerprint, KeychainKind::External),</span>
+<span class="doccomment">///     Some(BIP84Public(key, fingerprint, KeychainKind::Internal)),</span>
 <span class="doccomment">///     Network::Testnet,</span>
 <span class="doccomment">///     MemoryDatabase::default()</span>
 <span class="doccomment">/// )?;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(wallet.get_new_address()?.to_string(), &quot;tb1qedg9fdlf8cnnqfd5mks6uz5w4kgpk2pr6y4qc7&quot;);</span>
-<span class="doccomment">/// assert_eq!(wallet.public_descriptor(ScriptType::External)?.unwrap().to_string(), &quot;wpkh([c55b303f/84\&#39;/0\&#39;/0\&#39;]tpubDC2Qwo2TFsaNC4ju8nrUJ9mqVT3eSgdmy1yPqhgkjwmke3PRXutNGRYAUo6RCHTcVQaDR3ohNU9we59brGHuEKPvH1ags2nevW5opEE9Z5Q/0/*)&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;wpkh([c55b303f/84\&#39;/0\&#39;/0\&#39;]tpubDC2Qwo2TFsaNC4ju8nrUJ9mqVT3eSgdmy1yPqhgkjwmke3PRXutNGRYAUo6RCHTcVQaDR3ohNU9we59brGHuEKPvH1ags2nevW5opEE9Z5Q/0/*)&quot;);</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BIP84Public</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">bip32</span>::<span class="ident">Fingerprint</span>, <span class="kw">pub</span> <span class="ident">ScriptType</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BIP84Public</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">bip32</span>::<span class="ident">Fingerprint</span>, <span class="kw">pub</span> <span class="ident">KeychainKind</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">BIP84Public</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
@@ -1082,18 +1082,18 @@
             <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">make_bipxx_private</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ctx</span><span class="op">&gt;</span><span class="op">&gt;</span>(
                 <span class="ident">bip</span>: <span class="ident">u32</span>,
                 <span class="ident">key</span>: <span class="ident">K</span>,
-                <span class="ident">script_type</span>: <span class="ident">ScriptType</span>,
+                <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
             ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">ToDescriptorKey</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ctx</span><span class="op">&gt;</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">derivation_path</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="number">4</span>);
                 <span class="ident">derivation_path</span>.<span class="ident">push</span>(<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_hardened_idx</span>(<span class="ident">bip</span>)<span class="question-mark">?</span>);
                 <span class="ident">derivation_path</span>.<span class="ident">push</span>(<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_hardened_idx</span>(<span class="number">0</span>)<span class="question-mark">?</span>);
                 <span class="ident">derivation_path</span>.<span class="ident">push</span>(<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_hardened_idx</span>(<span class="number">0</span>)<span class="question-mark">?</span>);
 
-                <span class="kw">match</span> <span class="ident">script_type</span> {
-                    <span class="ident">ScriptType</span>::<span class="ident">External</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">match</span> <span class="ident">keychain</span> {
+                    <span class="ident">KeychainKind</span>::<span class="ident">External</span> <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="ident">derivation_path</span>.<span class="ident">push</span>(<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_normal_idx</span>(<span class="number">0</span>)<span class="question-mark">?</span>)
                     }
-                    <span class="ident">ScriptType</span>::<span class="ident">Internal</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">KeychainKind</span>::<span class="ident">Internal</span> <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="ident">derivation_path</span>.<span class="ident">push</span>(<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_normal_idx</span>(<span class="number">1</span>)<span class="question-mark">?</span>)
                     }
                 };
@@ -1106,11 +1106,11 @@
                 <span class="ident">bip</span>: <span class="ident">u32</span>,
                 <span class="ident">key</span>: <span class="ident">K</span>,
                 <span class="ident">parent_fingerprint</span>: <span class="ident">bip32</span>::<span class="ident">Fingerprint</span>,
-                <span class="ident">script_type</span>: <span class="ident">ScriptType</span>,
+                <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
             ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">ToDescriptorKey</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ctx</span><span class="op">&gt;</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">derivation_path</span>: <span class="ident">bip32</span>::<span class="ident">DerivationPath</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">script_type</span> {
-                    <span class="ident">ScriptType</span>::<span class="ident">External</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_normal_idx</span>(<span class="number">0</span>)<span class="question-mark">?</span>].<span class="ident">into</span>(),
-                    <span class="ident">ScriptType</span>::<span class="ident">Internal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_normal_idx</span>(<span class="number">1</span>)<span class="question-mark">?</span>].<span class="ident">into</span>(),
+                <span class="kw">let</span> <span class="ident">derivation_path</span>: <span class="ident">bip32</span>::<span class="ident">DerivationPath</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">keychain</span> {
+                    <span class="ident">KeychainKind</span>::<span class="ident">External</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_normal_idx</span>(<span class="number">0</span>)<span class="question-mark">?</span>].<span class="ident">into</span>(),
+                    <span class="ident">KeychainKind</span>::<span class="ident">Internal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_normal_idx</span>(<span class="number">1</span>)<span class="question-mark">?</span>].<span class="ident">into</span>(),
                 };
 
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">source_path</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="number">3</span>);
@@ -1248,7 +1248,7 @@
     <span class="kw">fn</span> <span class="ident">test_bip44_template</span>() {
         <span class="kw">let</span> <span class="ident">prvkey</span> <span class="op">=</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">ExtendedPrivKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">BIP44</span>(<span class="ident">prvkey</span>, <span class="ident">ScriptType</span>::<span class="ident">External</span>).<span class="ident">build</span>(),
+            <span class="ident">BIP44</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind</span>::<span class="ident">External</span>).<span class="ident">build</span>(),
             <span class="bool-val">false</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1258,7 +1258,7 @@
             ],
         );
         <span class="ident">check</span>(
-            <span class="ident">BIP44</span>(<span class="ident">prvkey</span>, <span class="ident">ScriptType</span>::<span class="ident">Internal</span>).<span class="ident">build</span>(),
+            <span class="ident">BIP44</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind</span>::<span class="ident">Internal</span>).<span class="ident">build</span>(),
             <span class="bool-val">false</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1275,7 +1275,7 @@
         <span class="kw">let</span> <span class="ident">pubkey</span> <span class="op">=</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">ExtendedPubKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tpubDDDzQ31JkZB7VxUr9bjvBivDdqoFLrDPyLWtLapArAi51ftfmCb2DPxwLQzX65iNcXz1DGaVvyvo6JQ6rTU73r2gqdEo8uov9QKRb7nKCSU&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">fingerprint</span> <span class="op">=</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">Fingerprint</span>::<span class="ident">from_str</span>(<span class="string">&quot;c55b303f&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">BIP44Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">ScriptType</span>::<span class="ident">External</span>).<span class="ident">build</span>(),
+            <span class="ident">BIP44Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind</span>::<span class="ident">External</span>).<span class="ident">build</span>(),
             <span class="bool-val">false</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1285,7 +1285,7 @@
             ],
         );
         <span class="ident">check</span>(
-            <span class="ident">BIP44Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">ScriptType</span>::<span class="ident">Internal</span>).<span class="ident">build</span>(),
+            <span class="ident">BIP44Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind</span>::<span class="ident">Internal</span>).<span class="ident">build</span>(),
             <span class="bool-val">false</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1301,7 +1301,7 @@
     <span class="kw">fn</span> <span class="ident">test_bip49_template</span>() {
         <span class="kw">let</span> <span class="ident">prvkey</span> <span class="op">=</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">ExtendedPrivKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">BIP49</span>(<span class="ident">prvkey</span>, <span class="ident">ScriptType</span>::<span class="ident">External</span>).<span class="ident">build</span>(),
+            <span class="ident">BIP49</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind</span>::<span class="ident">External</span>).<span class="ident">build</span>(),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1311,7 +1311,7 @@
             ],
         );
         <span class="ident">check</span>(
-            <span class="ident">BIP49</span>(<span class="ident">prvkey</span>, <span class="ident">ScriptType</span>::<span class="ident">Internal</span>).<span class="ident">build</span>(),
+            <span class="ident">BIP49</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind</span>::<span class="ident">Internal</span>).<span class="ident">build</span>(),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1328,7 +1328,7 @@
         <span class="kw">let</span> <span class="ident">pubkey</span> <span class="op">=</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">ExtendedPubKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tpubDC49r947KGK52X5rBWS4BLs5m9SRY3pYHnvRrm7HcybZ3BfdEsGFyzCMzayi1u58eT82ZeyFZwH7DD6Q83E3fM9CpfMtmnTygnLfP59jL9L&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">fingerprint</span> <span class="op">=</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">Fingerprint</span>::<span class="ident">from_str</span>(<span class="string">&quot;c55b303f&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">BIP49Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">ScriptType</span>::<span class="ident">External</span>).<span class="ident">build</span>(),
+            <span class="ident">BIP49Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind</span>::<span class="ident">External</span>).<span class="ident">build</span>(),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1338,7 +1338,7 @@
             ],
         );
         <span class="ident">check</span>(
-            <span class="ident">BIP49Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">ScriptType</span>::<span class="ident">Internal</span>).<span class="ident">build</span>(),
+            <span class="ident">BIP49Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind</span>::<span class="ident">Internal</span>).<span class="ident">build</span>(),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1354,7 +1354,7 @@
     <span class="kw">fn</span> <span class="ident">test_bip84_template</span>() {
         <span class="kw">let</span> <span class="ident">prvkey</span> <span class="op">=</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">ExtendedPrivKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">BIP84</span>(<span class="ident">prvkey</span>, <span class="ident">ScriptType</span>::<span class="ident">External</span>).<span class="ident">build</span>(),
+            <span class="ident">BIP84</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind</span>::<span class="ident">External</span>).<span class="ident">build</span>(),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1364,7 +1364,7 @@
             ],
         );
         <span class="ident">check</span>(
-            <span class="ident">BIP84</span>(<span class="ident">prvkey</span>, <span class="ident">ScriptType</span>::<span class="ident">Internal</span>).<span class="ident">build</span>(),
+            <span class="ident">BIP84</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind</span>::<span class="ident">Internal</span>).<span class="ident">build</span>(),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1381,7 +1381,7 @@
         <span class="kw">let</span> <span class="ident">pubkey</span> <span class="op">=</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">ExtendedPubKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tpubDC2Qwo2TFsaNC4ju8nrUJ9mqVT3eSgdmy1yPqhgkjwmke3PRXutNGRYAUo6RCHTcVQaDR3ohNU9we59brGHuEKPvH1ags2nevW5opEE9Z5Q&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">fingerprint</span> <span class="op">=</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">Fingerprint</span>::<span class="ident">from_str</span>(<span class="string">&quot;c55b303f&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">BIP84Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">ScriptType</span>::<span class="ident">External</span>).<span class="ident">build</span>(),
+            <span class="ident">BIP84Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind</span>::<span class="ident">External</span>).<span class="ident">build</span>(),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1391,7 +1391,7 @@
             ],
         );
         <span class="ident">check</span>(
-            <span class="ident">BIP84Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">ScriptType</span>::<span class="ident">Internal</span>).<span class="ident">build</span>(),
+            <span class="ident">BIP84Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind</span>::<span class="ident">Internal</span>).<span class="ident">build</span>(),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
