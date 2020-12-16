@@ -996,6 +996,8 @@
 <span id="993">993</span>
 <span id="994">994</span>
 <span id="995">995</span>
+<span id="996">996</span>
+<span id="997">997</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -1044,6 +1046,7 @@
 <span class="doccomment">//! # use bdk::wallet::coin_selection::*;</span>
 <span class="doccomment">//! # use bdk::database::Database;</span>
 <span class="doccomment">//! # use bdk::*;</span>
+<span class="doccomment">//! # const TXIN_BASE_WEIGHT: usize = (32 + 4 + 4 + 1) * 4;</span>
 <span class="doccomment">//! #[derive(Debug)]</span>
 <span class="doccomment">//! struct AlwaysSpendEverything;</span>
 <span class="doccomment">//!</span>
@@ -1113,9 +1116,9 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">DefaultCoinSelectionAlgorithm</span> <span class="op">=</span> <span class="ident">LargestFirstCoinSelection</span>; <span class="comment">// make the tests more predictable</span>
 
-<span class="comment">// Base weight of a Txin, not counting the weight needed for satisfaying it.</span>
+<span class="comment">// Base weight of a Txin, not counting the weight needed for satisfying it.</span>
 <span class="comment">// prev_txid (32 bytes) + prev_vout (4 bytes) + sequence (4 bytes) + script_len (1 bytes)</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TXIN_BASE_WEIGHT</span>: <span class="ident">usize</span> <span class="op">=</span> (<span class="number">32</span> <span class="op">+</span> <span class="number">4</span> <span class="op">+</span> <span class="number">4</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">*</span> <span class="number">4</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">TXIN_BASE_WEIGHT</span>: <span class="ident">usize</span> <span class="op">=</span> (<span class="number">32</span> <span class="op">+</span> <span class="number">4</span> <span class="op">+</span> <span class="number">4</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">*</span> <span class="number">4</span>;
 
 <span class="doccomment">/// Result of a successful coin selection</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
@@ -1274,6 +1277,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">BranchAndBoundCoinSelection</span> {
+    <span class="doccomment">/// Create new instance with target size for change output</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">size_of_change</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> { <span class="ident">size_of_change</span> }
     }
