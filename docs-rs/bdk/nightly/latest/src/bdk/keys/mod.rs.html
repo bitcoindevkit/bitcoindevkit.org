@@ -733,6 +733,12 @@
 <span id="730">730</span>
 <span id="731">731</span>
 <span id="732">732</span>
+<span id="733">733</span>
+<span id="734">734</span>
+<span id="735">735</span>
+<span id="736">736</span>
+<span id="737">737</span>
+<span id="738">738</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -934,7 +940,7 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use bdk::bitcoin::PublicKey;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// use bdk::keys::{ScriptContext, ToDescriptorKey, DescriptorKey, KeyError};</span>
+<span class="doccomment">/// use bdk::keys::{DescriptorKey, KeyError, ScriptContext, ToDescriptorKey};</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// pub struct MyKeyType {</span>
 <span class="doccomment">///     pubkey: PublicKey,</span>
@@ -952,7 +958,10 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use bdk::bitcoin::PublicKey;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// use bdk::keys::{mainnet_network, ScriptContext, ToDescriptorKey, DescriptorKey, DescriptorPublicKey, DescriptorSinglePub, KeyError};</span>
+<span class="doccomment">/// use bdk::keys::{</span>
+<span class="doccomment">///     mainnet_network, DescriptorKey, DescriptorPublicKey, DescriptorSinglePub, KeyError,</span>
+<span class="doccomment">///     ScriptContext, ToDescriptorKey,</span>
+<span class="doccomment">/// };</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// pub struct MyKeyType {</span>
 <span class="doccomment">///     pubkey: PublicKey,</span>
@@ -960,10 +969,13 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// impl&lt;Ctx: ScriptContext&gt; ToDescriptorKey&lt;Ctx&gt; for MyKeyType {</span>
 <span class="doccomment">///     fn to_descriptor_key(self) -&gt; Result&lt;DescriptorKey&lt;Ctx&gt;, KeyError&gt; {</span>
-<span class="doccomment">///         Ok(DescriptorKey::from_public(DescriptorPublicKey::SinglePub(DescriptorSinglePub {</span>
-<span class="doccomment">///             origin: None,</span>
-<span class="doccomment">///             key: self.pubkey</span>
-<span class="doccomment">///         }), mainnet_network()))</span>
+<span class="doccomment">///         Ok(DescriptorKey::from_public(</span>
+<span class="doccomment">///             DescriptorPublicKey::SinglePub(DescriptorSinglePub {</span>
+<span class="doccomment">///                 origin: None,</span>
+<span class="doccomment">///                 key: self.pubkey,</span>
+<span class="doccomment">///             }),</span>
+<span class="doccomment">///             mainnet_network(),</span>
+<span class="doccomment">///         ))</span>
 <span class="doccomment">///     }</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
@@ -973,7 +985,7 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use bdk::bitcoin::PublicKey;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// use bdk::keys::{ExtScriptContext, ScriptContext, ToDescriptorKey, DescriptorKey, KeyError};</span>
+<span class="doccomment">/// use bdk::keys::{DescriptorKey, ExtScriptContext, KeyError, ScriptContext, ToDescriptorKey};</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// pub struct MyKeyType {</span>
 <span class="doccomment">///     is_legacy: bool,</span>
@@ -999,10 +1011,10 @@
 <span class="doccomment">/// makes the compiler (correctly) fail.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```compile_fail</span>
-<span class="doccomment">/// use std::str::FromStr;</span>
 <span class="doccomment">/// use bdk::bitcoin::PublicKey;</span>
+<span class="doccomment">/// use std::str::FromStr;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// use bdk::keys::{ToDescriptorKey, DescriptorKey, KeyError};</span>
+<span class="doccomment">/// use bdk::keys::{DescriptorKey, KeyError, ToDescriptorKey};</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// pub struct MySegwitOnlyKeyType {</span>
 <span class="doccomment">///     pubkey: PublicKey,</span>
@@ -1017,7 +1029,7 @@
 <span class="doccomment">/// let key = MySegwitOnlyKeyType {</span>
 <span class="doccomment">///     pubkey: PublicKey::from_str(&quot;...&quot;)?,</span>
 <span class="doccomment">/// };</span>
-<span class="doccomment">/// let (descriptor, _, _) = bdk::descriptor!(pkh ( key ) )?;</span>
+<span class="doccomment">/// let (descriptor, _, _) = bdk::descriptor!(pkh(key))?;</span>
 <span class="doccomment">/// //                                       ^^^^^ changing this to `wpkh` would make it compile</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
@@ -1420,9 +1432,9 @@
     <span class="doccomment">/// Custom error message</span>
     <span class="ident">Message</span>(<span class="ident">String</span>),
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
+    <span class="doccomment">/// BIP32 error</span>
     <span class="ident">BIP32</span>(<span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">Error</span>),
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
+    <span class="doccomment">/// Miniscript error</span>
     <span class="ident">Miniscript</span>(<span class="ident">miniscript</span>::<span class="ident">Error</span>),
 }
 
