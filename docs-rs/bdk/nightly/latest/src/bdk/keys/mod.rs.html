@@ -739,6 +739,15 @@
 <span id="736">736</span>
 <span id="737">737</span>
 <span id="738">738</span>
+<span id="739">739</span>
+<span id="740">740</span>
+<span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
+<span id="747">747</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -770,6 +779,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashSet</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">Deref</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span>;
 
 <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">secp256k1</span>;
 
@@ -1406,6 +1416,14 @@
         };
 
         <span class="prelude-val">Ok</span>(<span class="ident">DescriptorKey</span>::<span class="ident">from_secret</span>(<span class="self">self</span>, <span class="ident">networks</span>))
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">ScriptContext</span><span class="op">&gt;</span> <span class="ident">ToDescriptorKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">str</span> {
+    <span class="kw">fn</span> <span class="ident">to_descriptor_key</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
+        <span class="ident">DescriptorSecretKey</span>::<span class="ident">from_str</span>(<span class="self">self</span>)
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">KeyError</span>::<span class="ident">Message</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>
+            .<span class="ident">to_descriptor_key</span>()
     }
 }
 
