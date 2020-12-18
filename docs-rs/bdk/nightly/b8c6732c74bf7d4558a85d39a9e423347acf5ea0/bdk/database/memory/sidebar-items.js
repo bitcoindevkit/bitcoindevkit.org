@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["MemoryDatabase","In-memory ephemeral database"]]});

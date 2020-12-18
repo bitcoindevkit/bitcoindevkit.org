@@ -1,0 +1,1 @@
+initSidebarItems({"type":[["MnemonicWithPassphrase","Type for a BIP39 mnemonic with an optional passphrase"]]});
