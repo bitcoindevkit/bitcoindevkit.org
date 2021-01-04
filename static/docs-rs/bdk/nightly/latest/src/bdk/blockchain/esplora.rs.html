@@ -585,39 +585,39 @@
         <span class="ident">sha256</span>::<span class="ident">Hash</span>::<span class="ident">hash</span>(<span class="ident">script</span>.<span class="ident">as_bytes</span>()).<span class="ident">into_inner</span>().<span class="ident">to_hex</span>()
     }
 
-    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">_get_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">_get_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">resp</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">client</span>
             .<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}/tx/{}/raw&quot;</span>, <span class="self">self</span>.<span class="ident">url</span>, <span class="ident">txid</span>))
             .<span class="ident">send</span>()
-            .<span class="ident">await</span><span class="question-mark">?</span>;
+            .<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">StatusCode</span>::<span class="ident">NOT_FOUND</span> <span class="op">=</span> <span class="ident">resp</span>.<span class="ident">status</span>() {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
         }
 
-        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">resp</span>.<span class="ident">error_for_status</span>()<span class="question-mark">?</span>.<span class="ident">bytes</span>().<span class="ident">await</span><span class="question-mark">?</span>)<span class="question-mark">?</span>))
+        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">resp</span>.<span class="ident">error_for_status</span>()<span class="question-mark">?</span>.<span class="ident">bytes</span>().<span class="kw">await</span><span class="question-mark">?</span>)<span class="question-mark">?</span>))
     }
 
-    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">_get_tx_no_opt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Transaction</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">_get_tx</span>(<span class="ident">txid</span>).<span class="ident">await</span> {
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">_get_tx_no_opt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Transaction</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">_get_tx</span>(<span class="ident">txid</span>).<span class="kw">await</span> {
             <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">tx</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">tx</span>),
             <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">EsploraError</span>::<span class="ident">TransactionNotFound</span>(<span class="kw-2">*</span><span class="ident">txid</span>)),
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>),
         }
     }
 
-    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">_get_header</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">block_height</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BlockHeader</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">_get_header</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">block_height</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BlockHeader</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">resp</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">client</span>
             .<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}/block-height/{}&quot;</span>, <span class="self">self</span>.<span class="ident">url</span>, <span class="ident">block_height</span>))
             .<span class="ident">send</span>()
-            .<span class="ident">await</span><span class="question-mark">?</span>;
+            .<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">StatusCode</span>::<span class="ident">NOT_FOUND</span> <span class="op">=</span> <span class="ident">resp</span>.<span class="ident">status</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">EsploraError</span>::<span class="ident">HeaderHeightNotFound</span>(<span class="ident">block_height</span>));
         }
-        <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">resp</span>.<span class="ident">bytes</span>().<span class="ident">await</span><span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">resp</span>.<span class="ident">bytes</span>().<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">hash</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">bytes</span>)
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">EsploraError</span>::<span class="ident">HeaderHeightNotFound</span>(<span class="ident">block_height</span>))<span class="question-mark">?</span>;
 
@@ -625,35 +625,35 @@
             .<span class="ident">client</span>
             .<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}/block/{}/header&quot;</span>, <span class="self">self</span>.<span class="ident">url</span>, <span class="ident">hash</span>))
             .<span class="ident">send</span>()
-            .<span class="ident">await</span><span class="question-mark">?</span>;
+            .<span class="kw">await</span><span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">Vec</span>::<span class="ident">from_hex</span>(<span class="kw-2">&amp;</span><span class="ident">resp</span>.<span class="ident">text</span>().<span class="ident">await</span><span class="question-mark">?</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">Vec</span>::<span class="ident">from_hex</span>(<span class="kw-2">&amp;</span><span class="ident">resp</span>.<span class="ident">text</span>().<span class="kw">await</span><span class="question-mark">?</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="ident">header</span>)
     }
 
-    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">_broadcast</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">Transaction</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">EsploraError</span><span class="op">&gt;</span> {
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">_broadcast</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">Transaction</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">EsploraError</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">client</span>
             .<span class="ident">post</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}/tx&quot;</span>, <span class="self">self</span>.<span class="ident">url</span>))
             .<span class="ident">body</span>(<span class="ident">serialize</span>(<span class="ident">transaction</span>).<span class="ident">to_hex</span>())
             .<span class="ident">send</span>()
-            .<span class="ident">await</span><span class="question-mark">?</span>
+            .<span class="kw">await</span><span class="question-mark">?</span>
             .<span class="ident">error_for_status</span>()<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">_get_height</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">_get_height</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">client</span>
             .<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}/blocks/tip/height&quot;</span>, <span class="self">self</span>.<span class="ident">url</span>))
             .<span class="ident">send</span>()
-            .<span class="ident">await</span><span class="question-mark">?</span>;
+            .<span class="kw">await</span><span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(<span class="ident">req</span>.<span class="ident">error_for_status</span>()<span class="question-mark">?</span>.<span class="ident">text</span>().<span class="ident">await</span><span class="question-mark">?</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>)
+        <span class="prelude-val">Ok</span>(<span class="ident">req</span>.<span class="ident">error_for_status</span>()<span class="question-mark">?</span>.<span class="ident">text</span>().<span class="kw">await</span><span class="question-mark">?</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>)
     }
 
-    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">_script_get_history</span>(
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">_script_get_history</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ELSGetHistoryRes</span><span class="op">&gt;</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
@@ -668,10 +668,10 @@
                     <span class="self">self</span>.<span class="ident">url</span>, <span class="ident">scripthash</span>
                 ))
                 .<span class="ident">send</span>()
-                .<span class="ident">await</span><span class="question-mark">?</span>
+                .<span class="kw">await</span><span class="question-mark">?</span>
                 .<span class="ident">error_for_status</span>()<span class="question-mark">?</span>
                 .<span class="ident">json</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">EsploraGetHistory</span><span class="op">&gt;</span><span class="op">&gt;</span>()
-                .<span class="ident">await</span><span class="question-mark">?</span>
+                .<span class="kw">await</span><span class="question-mark">?</span>
                 .<span class="ident">into_iter</span>()
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">ELSGetHistoryRes</span> {
                     <span class="ident">tx_hash</span>: <span class="ident">x</span>.<span class="ident">txid</span>,
@@ -696,10 +696,10 @@
                     <span class="self">self</span>.<span class="ident">url</span>, <span class="ident">scripthash</span>, <span class="ident">last_txid</span>
                 ))
                 .<span class="ident">send</span>()
-                .<span class="ident">await</span><span class="question-mark">?</span>
+                .<span class="kw">await</span><span class="question-mark">?</span>
                 .<span class="ident">error_for_status</span>()<span class="question-mark">?</span>
                 .<span class="ident">json</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">EsploraGetHistory</span><span class="op">&gt;</span><span class="op">&gt;</span>()
-                .<span class="ident">await</span><span class="question-mark">?</span>;
+                .<span class="kw">await</span><span class="question-mark">?</span>;
             <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">response</span>.<span class="ident">len</span>();
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">elem</span>) <span class="op">=</span> <span class="ident">response</span>.<span class="ident">last</span>() {
                 <span class="ident">last_txid</span> <span class="op">=</span> <span class="ident">elem</span>.<span class="ident">txid</span>.<span class="ident">to_hex</span>();
@@ -720,15 +720,15 @@
         <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
     }
 
-    <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">_get_fee_estimates</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">f64</span><span class="op">&gt;</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
+    <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">_get_fee_estimates</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">f64</span><span class="op">&gt;</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="self">self</span>
             .<span class="ident">client</span>
             .<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}/fee-estimates&quot;</span>, <span class="self">self</span>.<span class="ident">url</span>,))
             .<span class="ident">send</span>()
-            .<span class="ident">await</span><span class="question-mark">?</span>
+            .<span class="kw">await</span><span class="question-mark">?</span>
             .<span class="ident">error_for_status</span>()<span class="question-mark">?</span>
             .<span class="ident">json</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>()
-            .<span class="ident">await</span><span class="question-mark">?</span>)
+            .<span class="kw">await</span><span class="question-mark">?</span>)
     }
 }
 
@@ -738,17 +738,17 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">scripts</span>: <span class="ident">I</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ELSGetHistoryRes</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">future</span> <span class="op">=</span> <span class="ident">async</span> {
+        <span class="kw">let</span> <span class="ident">future</span> <span class="op">=</span> <span class="kw">async</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">results</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
             <span class="kw">for</span> <span class="ident">chunk</span> <span class="kw">in</span> <span class="ident">ChunksIterator</span>::<span class="ident">new</span>(<span class="ident">scripts</span>.<span class="ident">into_iter</span>(), <span class="self">self</span>.<span class="ident">concurrency</span> <span class="kw">as</span> <span class="ident">usize</span>) {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">futs</span> <span class="op">=</span> <span class="ident">FuturesOrdered</span>::<span class="ident">new</span>();
                 <span class="kw">for</span> <span class="ident">script</span> <span class="kw">in</span> <span class="ident">chunk</span> {
                     <span class="ident">futs</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">_script_get_history</span>(<span class="kw-2">&amp;</span><span class="ident">script</span>));
                 }
-                <span class="kw">let</span> <span class="ident">partial_results</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ELSGetHistoryRes</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">futs</span>.<span class="ident">try_collect</span>().<span class="ident">await</span><span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">partial_results</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ELSGetHistoryRes</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">futs</span>.<span class="ident">try_collect</span>().<span class="kw">await</span><span class="question-mark">?</span>;
                 <span class="ident">results</span>.<span class="ident">extend</span>(<span class="ident">partial_results</span>);
             }
-            <span class="prelude-val">Ok</span>(<span class="ident">stream</span>::<span class="ident">iter</span>(<span class="ident">results</span>).<span class="ident">collect</span>().<span class="ident">await</span>)
+            <span class="prelude-val">Ok</span>(<span class="ident">stream</span>::<span class="ident">iter</span>(<span class="ident">results</span>).<span class="ident">collect</span>().<span class="kw">await</span>)
         };
 
         <span class="macro">await_or_block</span><span class="macro">!</span>(<span class="ident">future</span>)
@@ -758,17 +758,17 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">txids</span>: <span class="ident">I</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">future</span> <span class="op">=</span> <span class="ident">async</span> {
+        <span class="kw">let</span> <span class="ident">future</span> <span class="op">=</span> <span class="kw">async</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">results</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
             <span class="kw">for</span> <span class="ident">chunk</span> <span class="kw">in</span> <span class="ident">ChunksIterator</span>::<span class="ident">new</span>(<span class="ident">txids</span>.<span class="ident">into_iter</span>(), <span class="self">self</span>.<span class="ident">concurrency</span> <span class="kw">as</span> <span class="ident">usize</span>) {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">futs</span> <span class="op">=</span> <span class="ident">FuturesOrdered</span>::<span class="ident">new</span>();
                 <span class="kw">for</span> <span class="ident">txid</span> <span class="kw">in</span> <span class="ident">chunk</span> {
                     <span class="ident">futs</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">_get_tx_no_opt</span>(<span class="kw-2">&amp;</span><span class="ident">txid</span>));
                 }
-                <span class="kw">let</span> <span class="ident">partial_results</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">futs</span>.<span class="ident">try_collect</span>().<span class="ident">await</span><span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">partial_results</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">futs</span>.<span class="ident">try_collect</span>().<span class="kw">await</span><span class="question-mark">?</span>;
                 <span class="ident">results</span>.<span class="ident">extend</span>(<span class="ident">partial_results</span>);
             }
-            <span class="prelude-val">Ok</span>(<span class="ident">stream</span>::<span class="ident">iter</span>(<span class="ident">results</span>).<span class="ident">collect</span>().<span class="ident">await</span>)
+            <span class="prelude-val">Ok</span>(<span class="ident">stream</span>::<span class="ident">iter</span>(<span class="ident">results</span>).<span class="ident">collect</span>().<span class="kw">await</span>)
         };
 
         <span class="macro">await_or_block</span><span class="macro">!</span>(<span class="ident">future</span>)
@@ -778,17 +778,17 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">heights</span>: <span class="ident">I</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BlockHeader</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">future</span> <span class="op">=</span> <span class="ident">async</span> {
+        <span class="kw">let</span> <span class="ident">future</span> <span class="op">=</span> <span class="kw">async</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">results</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
             <span class="kw">for</span> <span class="ident">chunk</span> <span class="kw">in</span> <span class="ident">ChunksIterator</span>::<span class="ident">new</span>(<span class="ident">heights</span>.<span class="ident">into_iter</span>(), <span class="self">self</span>.<span class="ident">concurrency</span> <span class="kw">as</span> <span class="ident">usize</span>) {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">futs</span> <span class="op">=</span> <span class="ident">FuturesOrdered</span>::<span class="ident">new</span>();
                 <span class="kw">for</span> <span class="ident">height</span> <span class="kw">in</span> <span class="ident">chunk</span> {
                     <span class="ident">futs</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">_get_header</span>(<span class="ident">height</span>));
                 }
-                <span class="kw">let</span> <span class="ident">partial_results</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BlockHeader</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">futs</span>.<span class="ident">try_collect</span>().<span class="ident">await</span><span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">partial_results</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BlockHeader</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">futs</span>.<span class="ident">try_collect</span>().<span class="kw">await</span><span class="question-mark">?</span>;
                 <span class="ident">results</span>.<span class="ident">extend</span>(<span class="ident">partial_results</span>);
             }
-            <span class="prelude-val">Ok</span>(<span class="ident">stream</span>::<span class="ident">iter</span>(<span class="ident">results</span>).<span class="ident">collect</span>().<span class="ident">await</span>)
+            <span class="prelude-val">Ok</span>(<span class="ident">stream</span>::<span class="ident">iter</span>(<span class="ident">results</span>).<span class="ident">collect</span>().<span class="kw">await</span>)
         };
 
         <span class="macro">await_or_block</span><span class="macro">!</span>(<span class="ident">future</span>)

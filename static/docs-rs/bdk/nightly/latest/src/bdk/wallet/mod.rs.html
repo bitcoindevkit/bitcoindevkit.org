@@ -3424,6 +3424,7 @@
 <span id="3421">3421</span>
 <span id="3422">3422</span>
 <span id="3423">3423</span>
+<span id="3424">3424</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -3517,7 +3518,7 @@
     <span class="ident">signers</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">SignersContainer</span><span class="op">&gt;</span>,
     <span class="ident">change_signers</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">SignersContainer</span><span class="op">&gt;</span>,
 
-    <span class="ident">address_validators</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">AddressValidator</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">address_validators</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">AddressValidator</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 
     <span class="ident">network</span>: <span class="ident">Network</span>,
 
@@ -3654,7 +3655,7 @@
         <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
         <span class="ident">id</span>: <span class="ident">SignerId</span>,
         <span class="ident">ordering</span>: <span class="ident">SignerOrdering</span>,
-        <span class="ident">signer</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">Signer</span><span class="op">&gt;</span>,
+        <span class="ident">signer</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Signer</span><span class="op">&gt;</span>,
     ) {
         <span class="kw">let</span> <span class="ident">signers</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">keychain</span> {
             <span class="ident">KeychainKind</span>::<span class="ident">External</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Arc</span>::<span class="ident">make_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">signers</span>),
@@ -3667,7 +3668,7 @@
     <span class="doccomment">/// Add an address validator</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// See [the `address_validator` module](address_validator) for an example.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_address_validator</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">validator</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">AddressValidator</span><span class="op">&gt;</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_address_validator</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">validator</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">AddressValidator</span><span class="op">&gt;</span>) {
         <span class="self">self</span>.<span class="ident">address_validators</span>.<span class="ident">push</span>(<span class="ident">validator</span>);
     }
 
@@ -3938,8 +3939,8 @@
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">InsufficientFunds</span>); <span class="comment">// TODO: or OutputBelowDustLimit?</span>
             }
             <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="kw">if</span> <span class="ident">change_val</span>.<span class="ident">is_dust</span>() <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="comment">// skip the change output because it&#39;s dust, this adds up to the fees</span>
-                <span class="ident">fee_amount</span> <span class="op">+</span><span class="op">=</span> <span class="ident">selected_amount</span> <span class="op">-</span> <span class="ident">outgoing</span>;
+                <span class="comment">// skip the change output because it&#39;s dust -- just include it in the fee.</span>
+                <span class="ident">fee_amount</span> <span class="op">+</span><span class="op">=</span> <span class="ident">change_val</span>;
             }
             <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">change_output</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">change_output</span>.<span class="ident">value</span> <span class="op">=</span> <span class="ident">change_val</span>;
@@ -5391,7 +5392,7 @@
     <span class="kw">fn</span> <span class="ident">test_create_tx_skip_change_dust</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_new_address</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">wallet</span>
+        <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">wallet</span>
             .<span class="ident">create_tx</span>(<span class="ident">TxBuilder</span>::<span class="ident">with_recipients</span>(<span class="macro">vec</span><span class="macro">!</span>[(
                 <span class="ident">addr</span>.<span class="ident">script_pubkey</span>(),
                 <span class="number">49_800</span>,
@@ -5400,6 +5401,7 @@
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span>, <span class="number">49_800</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">200</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
