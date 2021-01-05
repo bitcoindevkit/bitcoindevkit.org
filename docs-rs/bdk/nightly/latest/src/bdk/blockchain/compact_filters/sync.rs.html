@@ -310,10 +310,6 @@
 <span id="307">307</span>
 <span id="308">308</span>
 <span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -521,9 +517,8 @@
             <span class="kw">if</span> <span class="kw">let</span> <span class="ident">BundleStatus</span>::<span class="ident">CFilters</span> { <span class="ident">cf_filters</span> } <span class="op">=</span> <span class="ident">status</span> {
                 <span class="ident">log</span>::<span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;status: CFilters&quot;</span>);
 
-                <span class="kw">let</span> <span class="ident">last_sync_buried_height</span> <span class="op">=</span> (<span class="ident">start_height</span> <span class="op">+</span> <span class="ident">already_processed</span>)
-                    .<span class="ident">checked_sub</span>(<span class="ident">BURIED_CONFIRMATIONS</span>)
-                    .<span class="ident">unwrap_or</span>(<span class="number">0</span>);
+                <span class="kw">let</span> <span class="ident">last_sync_buried_height</span> <span class="op">=</span>
+                    (<span class="ident">start_height</span> <span class="op">+</span> <span class="ident">already_processed</span>).<span class="ident">saturating_sub</span>(<span class="ident">BURIED_CONFIRMATIONS</span>);
 
                 <span class="kw">for</span> (<span class="ident">filter_index</span>, <span class="ident">filter</span>) <span class="kw">in</span> <span class="ident">cf_filters</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
                     <span class="kw">let</span> <span class="ident">height</span> <span class="op">=</span> <span class="ident">filter_index</span> <span class="op">+</span> <span class="ident">start_height</span>;
@@ -597,10 +592,7 @@
 
         <span class="kw">match</span> <span class="ident">locators_map</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">headers</span>[<span class="number">0</span>].<span class="ident">prev_blockhash</span>) {
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CompactFiltersError</span>::<span class="ident">InvalidHeaders</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">from</span>) <span class="op">=</span><span class="op">&gt;</span> (
-                <span class="ident">store</span>.<span class="ident">start_snapshot</span>(<span class="kw-2">*</span><span class="ident">from</span>)<span class="question-mark">?</span>,
-                <span class="ident">headers</span>[<span class="number">0</span>].<span class="ident">prev_blockhash</span>.<span class="ident">clone</span>(),
-            ),
+            <span class="prelude-val">Some</span>(<span class="ident">from</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">store</span>.<span class="ident">start_snapshot</span>(<span class="kw-2">*</span><span class="ident">from</span>)<span class="question-mark">?</span>, <span class="ident">headers</span>[<span class="number">0</span>].<span class="ident">prev_blockhash</span>),
         }
     } <span class="kw">else</span> {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CompactFiltersError</span>::<span class="ident">InvalidResponse</span>);
