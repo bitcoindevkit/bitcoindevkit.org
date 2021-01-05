@@ -550,7 +550,6 @@
 <span id="547">547</span>
 <span id="548">548</span>
 <span id="549">549</span>
-<span id="550">550</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -887,7 +886,7 @@
                 <span class="ident">NetworkMessage</span>::<span class="ident">Alert</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">continue</span>,
                 <span class="ident">NetworkMessage</span>::<span class="ident">GetData</span>(<span class="kw-2">ref</span> <span class="ident">inv</span>) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> (<span class="ident">found</span>, <span class="ident">not_found</span>): (<span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>) <span class="op">=</span> <span class="ident">inv</span>
-                        .<span class="ident">into_iter</span>()
+                        .<span class="ident">iter</span>()
                         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">item</span><span class="op">|</span> (<span class="kw-2">*</span><span class="ident">item</span>, <span class="ident">reader_thread_mempool</span>.<span class="ident">get_tx</span>(<span class="ident">item</span>)))
                         .<span class="ident">partition</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">d</span>)<span class="op">|</span> <span class="ident">d</span>.<span class="ident">is_some</span>());
                     <span class="kw">for</span> (<span class="kw">_</span>, <span class="ident">found_tx</span>) <span class="kw">in</span> <span class="ident">found</span> {
@@ -1072,10 +1071,9 @@
         <span class="kw">let</span> <span class="ident">getdata</span> <span class="op">=</span> <span class="ident">inv</span>
             .<span class="ident">iter</span>()
             .<span class="ident">cloned</span>()
-            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">item</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">item</span> {
-                <span class="ident">Inventory</span>::<span class="ident">Transaction</span>(<span class="ident">txid</span>) <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">mempool</span>.<span class="ident">has_tx</span>(<span class="ident">txid</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
-            })
+            .<span class="ident">filter</span>(
+                <span class="op">|</span><span class="ident">item</span><span class="op">|</span> <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">item</span>, <span class="ident">Inventory</span>::<span class="ident">Transaction</span>(<span class="ident">txid</span>) <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">mempool</span>.<span class="ident">has_tx</span>(<span class="ident">txid</span>)),
+            )
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="kw">let</span> <span class="ident">num_txs</span> <span class="op">=</span> <span class="ident">getdata</span>.<span class="ident">len</span>();
         <span class="self">self</span>.<span class="ident">send</span>(<span class="ident">NetworkMessage</span>::<span class="ident">GetData</span>(<span class="ident">getdata</span>))<span class="question-mark">?</span>;
