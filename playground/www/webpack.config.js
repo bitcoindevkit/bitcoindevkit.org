@@ -4,7 +4,7 @@ module.exports = {
   entry: "./src/bootstrap.js",
   output: {
     path: path.resolve(__dirname, "dist"),
-    publicPath: "/repl/playground/",
+    publicPath: "/bdk-cli/playground/",
     filename: "playground.js",
   }
 };

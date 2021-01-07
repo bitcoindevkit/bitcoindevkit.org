@@ -20,11 +20,11 @@ server to chat with us.
 
 ## Playground
 
-As a way of demonstrating the flexibly of this project, a minimalistic command line tool (also called "repl") is available as a debugging tool in the main [`bdk`](https://github.com/bitcoindevkit/bdk)
-repo. It has been compiled to WebAssembly and can be used directly from the browser. See the [playground](/repl/playground) section to give it a try!
+As a way of demonstrating the flexibly of this project, a minimalistic command line tool (called `bdk-cli`) is available as a debugging tool in the [`bdk-cli`](https://github.com/bitcoindevkit/bdk-cli)
+repo. It has been compiled to WebAssembly and can be used directly from the browser. See the [playground](/bdk-cli/playground) section to give it a try!
 
 The playground relies on [Esplora](https://blockstream.info) to monitor the blockchain and is currently locked in testnet-only mode, for obvious safety reasons. The native command line tool can also be used in regtest mode when installed on
-a computer. See the [REPL](/repl) section to learn more.
+a computer. See the [bdk-cli](/bdk-cli) section to learn more.
 
 ## Descriptors
 

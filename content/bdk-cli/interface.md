@@ -6,23 +6,22 @@ weight: 3
 pre: "<b>3. </b>"
 ---
 
-Remember the `repl --help` command you ran before? Let's analyze its output here to figure out the interface:
+Remember the `bdk-cli --help` command you ran before? Let's analyze its output here to figure out the interface:
 
 ## Flags
 
 ```text
 FLAGS:
     -h, --help       Prints help information
-    -v               Sets the level of verbosity
     -V, --version    Prints version information
 ```
 
-These are the optional flags that can be set with every command. The `-h` flag prints the help message, the `-V` flag only prints the version and the `-v` is actually ignored at the moment.
+These are the optional flags that can be set with every command. The `-h` flag prints the help message, the `-V` flag only prints the version.
 
 ### Verbosity
 
-If you want to increase the verbosity of the output, you should use the `RUST_LOG` environment variable. You can set it like so to see a lot more of what's going on behind the scenes, before running the `repl`
-command. You only have to do this once when you open a new shell, after that you can run the `repl` command multiple times.
+If you want to increase the verbosity of the output, you should use the `RUST_LOG` environment variable. You can set it like so to see a lot more of what's going on behind the scenes, before running the `bdk-cli`
+command. You only have to do this once when you open a new shell, after that you can run the `bdk-cli` command multiple times.
 
 ```bash
 export RUST_LOG="bdk=debug"
@@ -32,14 +31,16 @@ export RUST_LOG="bdk=debug"
 
 ```text
 OPTIONS:
-    -c, --change_descriptor <DESCRIPTOR>    Sets the descriptor to use for internal addresses
-    -d, --descriptor <DESCRIPTOR>           Sets the descriptor to use for the external addresses
-    -e, --esplora <ESPLORA>                 Use the esplora server if given as parameter
-    -n, --network <NETWORK>                 Sets the network [default: testnet]  [possible values: testnet, regtest]
-    -s, --server <SERVER:PORT>              Sets the Electrum server to use [default:
-                                            ssl://electrum.blockstream.info:60002]
-    -w, --wallet <WALLET_NAME>              Selects the wallet to use [default: main]
-    -p, --proxy <SERVER:PORT>               Sets the SOCKS5 proxy for the Electrum client
+    -c, --change_descriptor <CHANGE_DESCRIPTOR>        Sets the descriptor to use for internal addresses
+    -d, --descriptor <DESCRIPTOR>                      Sets the descriptor to use for the external addresses
+        --esplora_concurrency <ESPLORA_CONCURRENCY>    Concurrency of requests made to the esplora server [default: 4]
+    -e, --esplora <ESPLORA_URL>                        Use the esplora server if given as parameter
+    -n, --network <NETWORK>                            Sets the network [default: testnet]
+    -p, --proxy <PROXY_SERVER:PORT>                    Sets the SOCKS5 proxy for the Electrum client
+    -s, --server <SERVER:PORT>
+            Sets the Electrum server to use [default: ssl://electrum.blockstream.info:60002]
+
+    -w, --wallet <WALLET_NAME>                         Selects the wallet to use [default: main]
 ```
 
 These are the global options that can be set. They are pretty much like the flags, but they also take a value. The only **required** one is the `--descriptor` or `-d` flag, since every wallet **must have an
@@ -60,10 +61,10 @@ The `--esplora` flag can be used to connect to an Esplora instance instead of us
 and `https://blockstream.info/testnet/api` for testnet.
 
 The `--proxy` flag can be optionally used to specify a SOCKS5 proxy to use when connecting to the Electrum server. Spawning a local Tor daemon and using it as a proxy will allow you to connect to `.onion` Electrum
-URLs. **Keep in mind that only plaintext server are supported over a proxy**
+URLs. **Keep in mind that only plaintext server are supported over a proxy.**
 
 The `--wallet` flag can be used to select which wallet to use, if you have more than one of them. If you get a `ChecksumMismatch` error when you make some changes to your descriptor, it's because it does not
-match anymore the one you've used to initialize the cache. One solution could be to switch to a new wallet name, or delete the cache directory at `~/.bdk` and start from scratch.
+match anymore the one you've used to initialize the cache. One solution could be to switch to a new wallet name, or delete the cache directory at `~/.bdk-bitcoin` and start from scratch.
 
 ## Subcommands
 
@@ -85,7 +86,7 @@ match anymore the one you've used to initialize the cache. One solution could be
 | [sign](#sign)              | Signs and tries to finalize a PSBT |
 | [sync](#sync)              | Syncs with the chosen Electrum server |
 
-These are the main "functions" of the wallet. Most of them are pretty self explanatory, but we'll go over them quickly anyways. You can get more details about every single command by running `repl <subcommand> --help`.
+These are the main "functions" of the wallet. Most of them are pretty self explanatory, but we'll go over them quickly anyways. You can get more details about every single command by running `bdk-cli <subcommand> --help`.
 
 ### broadcast
 
@@ -129,29 +130,35 @@ Combines multiple PSBTs by merging metadata and partial signatures. It can be us
 
 ```text
 FLAGS:
-    -a, --send_all    Sends all the funds (or all the selected utxos). Requires only one addressees of value 0
-    -r, --enable_rbf    Enables Replace-By-Fee (BIP125)
+    -r, --enable_rbf        Enables Replace-By-Fee (BIP125)
+        --offline_signer    Make a PSBT that can be signed by offline signers and hardware wallets. Forces the addition
+                            of `non_witness_utxo` and more details to let the signer identify the change output
+    -a, --send_all          Sends all the funds (or all the selected utxos). Requires only one recipients of value 0
 
 OPTIONS:
-        --external_policy <POLICY>      Selects which policy should be used to satisfy the external descriptor
-    -f, --fee_rate <SATS_VBYTE>         Fee rate to use in sat/vbyte
-        --internal_policy <POLICY>      Selects which policy should be used to satisfy the internal descriptor
-        --to <ADDRESS:SAT>...           Adds an addressee to the transaction
-        --unspendable <TXID:VOUT>...    Marks an utxo as unspendable
-        --utxos <TXID:VOUT>...          Selects which utxos *must* be spent
+        --to <ADDRESS:SAT>...                      Adds a recipient to the transaction
+        --unspendable <CANT_SPEND_TXID:VOUT>...    Marks a utxo as unspendable
+        --external_policy <EXT_POLICY>
+            Selects which policy should be used to satisfy the external descriptor
+
+        --internal_policy <INT_POLICY>
+            Selects which policy should be used to satisfy the internal descriptor
+
+        --utxos <MUST_SPEND_TXID:VOUT>...          Selects which utxos *must* be spent
+    -f, --fee_rate <SATS_VBYTE>                    Fee rate to use in sat/vbyte
 ```
 
 Creates a new unsigned PSBT. The flags allow to set a custom fee rate (the default is 1.0 sat/vbyte) with `--fee_rate` or `-f`, the list of UTXOs that should be considered unspendable with `--unspendable` (this
 option can be specified multiple times) and a list of UTXOs that must be spent with `--utxos` (again, this option can also be specified multiple times).
 
-The `--to` option sets the receiver address of the transaction, and should contain the address and amount in Satoshi separated by a colon, like: `--to --to 2NErbQPsooXRatRJdrXDm9wKR2fRiZDT9wL:50000`. This option
+The `--to` option sets the receiver address of the transaction, and should contain the address and amount in Satoshi separated by a colon, like: `--to 2NErbQPsooXRatRJdrXDm9wKR2fRiZDT9wL:50000`. This option
 can also be specified multiple times to send to multiple addresses at once.
 
 The `--send_all` flag can be used to send the value of all the spendable UTXOs to a single address, without creating a change output. If this flag is set, there must be only one `--to` address, and its value will
 be ignored (it can be set to 0).
 
 The `--external_policy` and `--internal_policy` options are two advanced flags that can be used to select the spending policy that the sender intends to satisfy in this transaction. They are normally not required if there's no ambiguity, but sometimes
-with complex descriptor one or both of them have to be specified, or you'll get a `SpendingPolicyRequired` error. Those flags should be set to a JSON object that maps a policy node id to the list of child indexes that
+with a complex descriptor one or both of them have to be specified, or you'll get a `SpendingPolicyRequired` error. Those flags should be set to a JSON object that maps a policy node id to the list of child indexes that
 the user intends to satisfy for that node. This is probably better explained with an example:
 
 Let's assume our descriptor is: `sh(thresh(2,pk(A),sj:and_v(v:pk(B),n:older(6)),snj:and_v(v:pk(C),after(630000))))`. There are three conditions and we need to satisfy two of them to be able to spend. The conditions are:
@@ -206,8 +213,8 @@ Extracts the global transaction from a PSBT. **Note that partial signatures are 
 
 ```text
 OPTIONS:
-        --assume_height <HEIGHT>    Assume the blockchain has reached a specific height
         --psbt <BASE64_PSBT>        Sets the PSBT to finalize
+        --assume_height <HEIGHT>    Assume the blockchain has reached a specific height
 ```
 
 Tries to finalize a PSBT by merging all the partial signatures and other elements back into the global transaction. This command fails if there are timelocks that have not yet expired, but the check can be overridden
@@ -507,9 +514,9 @@ This subcommand has no extra flags and launches an interactive shell session.
 
 ```text
 OPTIONS:
-        --assume_height <HEIGHT>    Assume the blockchain has reached a specific height. This affects the transaction
-                                    finalization, if there are timelocks in the descriptor
-        --psbt <BASE64_PSBT>    Sets the PSBT to sign
+          --psbt <BASE64_PSBT>        Sets the PSBT to sign
+          --assume_height <HEIGHT>    Assume the blockchain has reached a specific height. This affects the transaction
+                                      finalization, if there are timelocks in the descriptor
 ```
 
 Adds to the PSBT all the signatures it can produce with the secrets embedded in the descriptor (xprv or WIF keys). Returns the signed PSBT and, if there are enough item to satisfy the script, also the extracted raw

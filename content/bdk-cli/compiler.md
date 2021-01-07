@@ -28,7 +28,7 @@ Once the command is done, you should have a `miniscriptc` command available. You
 In this case the interface is very simple: it accepts two arguments called "POLICY" and "TYPE", in this order. The first one, as the name implies, sets the spending policy to compile. The latter defines the type
 of address that should be used to encapsulate the produced script, like a P2SH, P2WSH, etc.
 
-Optionally, the `--parsed_policy` flag can be enabled and it will make the compiler print the JSON "human-readable" version of the spending policy, as described in the [`policies subcommand`](/repl/interface/#policies) of the CLI.
+Optionally, the `--parsed_policy` flag can be enabled and it will make the compiler print the JSON "human-readable" version of the spending policy, as described in the [`policies subcommand`](/bdk-cli/interface/#policies) of the CLI.
 
 The `--network` flag can be used to change the network encoding of the address shown.
 
