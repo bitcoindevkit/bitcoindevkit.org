@@ -779,6 +779,37 @@
 <span id="776">776</span>
 <span id="777">777</span>
 <span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -831,7 +862,7 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">template</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">checksum</span>::<span class="ident">get_checksum</span>;
-<span class="kw">use</span> <span class="self">self</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">DescriptorError</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">policy</span>::<span class="ident">Policy</span>;
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">template</span>::<span class="ident">DescriptorTemplateOut</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::{<span class="ident">KeyError</span>, <span class="ident">ToDescriptorKey</span>};
@@ -854,14 +885,14 @@
     <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">KeyError</span><span class="op">&gt;</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">ToWalletDescriptor</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">str</span> {
     <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">KeyError</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">descriptor</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">contains</span>(<span class="string">&#39;#&#39;</span>) {
             <span class="kw">let</span> <span class="ident">parts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">splitn</span>(<span class="number">2</span>, <span class="string">&#39;#&#39;</span>).<span class="ident">collect</span>();
             <span class="kw">if</span> <span class="op">!</span><span class="ident">get_checksum</span>(<span class="ident">parts</span>[<span class="number">0</span>])
@@ -869,7 +900,7 @@
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">computed</span><span class="op">|</span> <span class="ident">computed</span> <span class="op">=</span><span class="op">=</span> <span class="ident">parts</span>[<span class="number">1</span>])
                 .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
             {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidChecksum</span>);
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DescriptorError</span>::<span class="ident">InvalidDescriptorChecksum</span>);
             }
 
             <span class="ident">parts</span>[<span class="number">0</span>]
@@ -885,7 +916,7 @@
     <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">KeyError</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">as_str</span>().<span class="ident">to_wallet_descriptor</span>(<span class="ident">network</span>)
     }
 }
@@ -894,7 +925,7 @@
     <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">KeyError</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         (<span class="self">self</span>, <span class="ident">KeyMap</span>::<span class="ident">default</span>()).<span class="ident">to_wallet_descriptor</span>(<span class="ident">network</span>)
     }
 }
@@ -903,7 +934,7 @@
     <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">KeyError</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::<span class="ident">DescriptorKey</span>;
 
         <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1</span>::<span class="ident">new</span>();
@@ -922,7 +953,7 @@
             <span class="kw">if</span> <span class="ident">networks</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">network</span>) {
                 <span class="prelude-val">Ok</span>(<span class="ident">pk</span>)
             } <span class="kw">else</span> {
-                <span class="prelude-val">Err</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidNetwork</span>)
+                <span class="prelude-val">Err</span>(<span class="ident">DescriptorError</span>::<span class="ident">Key</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidNetwork</span>))
             }
         };
 
@@ -937,7 +968,7 @@
     <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">KeyError</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">valid_networks</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">2</span>;
 
         <span class="kw">let</span> <span class="ident">fix_key</span> <span class="op">=</span> <span class="op">|</span><span class="ident">pk</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span><span class="op">|</span> {
@@ -959,7 +990,7 @@
 
                 <span class="prelude-val">Ok</span>(<span class="ident">pk</span>)
             } <span class="kw">else</span> {
-                <span class="prelude-val">Err</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidNetwork</span>)
+                <span class="prelude-val">Err</span>(<span class="ident">DescriptorError</span>::<span class="ident">Key</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidNetwork</span>))
             }
         };
 
@@ -970,6 +1001,22 @@
     }
 }
 
+<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="doccomment">/// Used internally mainly by the `descriptor!()` and `fragment!()` macros</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">CheckMiniscript</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">miniscript</span>::<span class="ident">ScriptContext</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">check_minsicript</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">miniscript</span>::<span class="ident">Error</span><span class="op">&gt;</span>;
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">miniscript</span>::<span class="ident">ScriptContext</span>, <span class="ident">Pk</span>: <span class="ident">miniscript</span>::<span class="ident">MiniscriptKey</span><span class="op">&gt;</span> <span class="ident">CheckMiniscript</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>
+    <span class="kw">for</span> <span class="ident">miniscript</span>::<span class="ident">Miniscript</span><span class="op">&lt;</span><span class="ident">Pk</span>, <span class="ident">Ctx</span><span class="op">&gt;</span>
+{
+    <span class="kw">fn</span> <span class="ident">check_minsicript</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">miniscript</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="ident">Ctx</span>::<span class="ident">check_global_validity</span>(<span class="self">self</span>)<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(())
+    }
+}
+
 <span class="doccomment">/// Trait implemented on [`Descriptor`]s to add a method to extract the spending [`policy`]</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ExtractPolicy</span> {
     <span class="doccomment">/// Extract the spending [`policy`]</span>
@@ -977,7 +1024,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">signers</span>: <span class="kw-2">&amp;</span><span class="ident">SignersContainer</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Policy</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Policy</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">XKeyUtils</span> {
@@ -1017,8 +1064,8 @@
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">DescriptorMeta</span>: <span class="ident">Sized</span> {
     <span class="kw">fn</span> <span class="ident">is_witness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
-    <span class="kw">fn</span> <span class="ident">get_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HDKeyPaths</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">get_extended_keys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DescriptorXKey</span><span class="op">&lt;</span><span class="ident">ExtendedPubKey</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">get_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HDKeyPaths</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">get_extended_keys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DescriptorXKey</span><span class="op">&lt;</span><span class="ident">ExtendedPubKey</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
     <span class="kw">fn</span> <span class="ident">is_fixed</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
     <span class="kw">fn</span> <span class="ident">derive_from_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">hd_keypaths</span>: <span class="kw-2">&amp;</span><span class="ident">HDKeyPaths</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
     <span class="kw">fn</span> <span class="ident">derive_from_psbt_input</span>(
@@ -1079,11 +1126,11 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">get_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HDKeyPaths</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HDKeyPaths</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">translate_key</span> <span class="op">=</span> <span class="op">|</span><span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span>,
                              <span class="ident">index</span>: <span class="ident">u32</span>,
                              <span class="ident">paths</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HDKeyPaths</span><span class="op">|</span>
-         <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DummyKey</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+         <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DummyKey</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
             <span class="kw">match</span> <span class="ident">key</span> {
                 <span class="ident">DescriptorPublicKey</span>::<span class="ident">SinglePub</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {}
                 <span class="ident">DescriptorPublicKey</span>::<span class="ident">XPub</span>(<span class="ident">xpub</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -1126,10 +1173,10 @@
         <span class="prelude-val">Ok</span>(<span class="ident">answer_pk</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_extended_keys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DescriptorXKey</span><span class="op">&lt;</span><span class="ident">ExtendedPubKey</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_extended_keys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DescriptorXKey</span><span class="op">&lt;</span><span class="ident">ExtendedPubKey</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">get_key</span> <span class="op">=</span> <span class="op">|</span><span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span>,
                        <span class="ident">keys</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DescriptorXKey</span><span class="op">&lt;</span><span class="ident">ExtendedPubKey</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">|</span>
-         <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DummyKey</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+         <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DummyKey</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
             <span class="kw">if</span> <span class="kw">let</span> <span class="ident">DescriptorPublicKey</span>::<span class="ident">XPub</span>(<span class="ident">xpub</span>) <span class="op">=</span> <span class="ident">key</span> {
                 <span class="ident">keys</span>.<span class="ident">push</span>(<span class="ident">xpub</span>.<span class="ident">clone</span>())
             }
@@ -1151,7 +1198,10 @@
     }
 
     <span class="kw">fn</span> <span class="ident">is_fixed</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">fn</span> <span class="ident">check_key</span>(<span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span>, <span class="ident">flag</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DummyKey</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">check_key</span>(
+            <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span>,
+            <span class="ident">flag</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bool</span>,
+        ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DummyKey</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
             <span class="kw">match</span> <span class="ident">key</span> {
                 <span class="ident">DescriptorPublicKey</span>::<span class="ident">SinglePub</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {}
                 <span class="ident">DescriptorPublicKey</span>::<span class="ident">XPub</span>(<span class="ident">xpub</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -1180,7 +1230,7 @@
         <span class="kw">let</span> <span class="ident">try_key</span> <span class="op">=</span> <span class="op">|</span><span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span>,
                        <span class="ident">index</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Fingerprint</span>, <span class="ident">DerivationPath</span><span class="op">&gt;</span>,
                        <span class="ident">found_path</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ChildNumber</span><span class="op">&gt;</span><span class="op">|</span>
-         <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DummyKey</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+         <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DummyKey</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
             <span class="kw">if</span> <span class="ident">found_path</span>.<span class="ident">is_some</span>() {
                 <span class="comment">// already found a matching path, we are done</span>
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">DummyKey</span>::<span class="ident">default</span>());
@@ -1214,7 +1264,7 @@
                     <span class="prelude-val">Some</span>(<span class="ident">path</span>) <span class="kw">if</span> <span class="op">!</span><span class="ident">xpub</span>.<span class="ident">is_wildcard</span> <span class="op">&amp;&amp;</span> <span class="ident">path</span>.<span class="ident">is_empty</span>() <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="kw-2">*</span><span class="ident">found_path</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ChildNumber</span>::<span class="ident">Normal</span> { <span class="ident">index</span>: <span class="number">0</span> })
                     }
-                    <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">InvalidHDKeyPath</span>),
+                    <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DescriptorError</span>::<span class="ident">InvalidHDKeyPath</span>),
                     <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
                 }
             }
@@ -1495,11 +1545,17 @@
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)#67ju93jw&quot;</span>
             .<span class="ident">to_wallet_descriptor</span>(<span class="ident">Network</span>::<span class="ident">Testnet</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">err</span>(), <span class="prelude-val">Some</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidChecksum</span>)));
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(
+            <span class="ident">desc</span>.<span class="ident">err</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">DescriptorError</span>::<span class="ident">InvalidDescriptorChecksum</span>)
+        ));
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)#67ju93jw&quot;</span>
             .<span class="ident">to_wallet_descriptor</span>(<span class="ident">Network</span>::<span class="ident">Testnet</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">err</span>(), <span class="prelude-val">Some</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidChecksum</span>)));
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(
+            <span class="ident">desc</span>.<span class="ident">err</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">DescriptorError</span>::<span class="ident">InvalidDescriptorChecksum</span>)
+        ));
     }
 
     <span class="comment">// test ToWalletDescriptor trait from &amp;str with keys from right and wrong network</span>
@@ -1531,11 +1587,17 @@
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)&quot;</span>
             .<span class="ident">to_wallet_descriptor</span>(<span class="ident">Network</span>::<span class="ident">Bitcoin</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">err</span>(), <span class="prelude-val">Some</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidNetwork</span>)));
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(
+            <span class="ident">desc</span>.<span class="ident">err</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">DescriptorError</span>::<span class="ident">Key</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidNetwork</span>))
+        ));
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/1/2/*)&quot;</span>
             .<span class="ident">to_wallet_descriptor</span>(<span class="ident">Network</span>::<span class="ident">Bitcoin</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">err</span>(), <span class="prelude-val">Some</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidNetwork</span>)));
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(
+            <span class="ident">desc</span>.<span class="ident">err</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">DescriptorError</span>::<span class="ident">Key</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidNetwork</span>))
+        ));
     }
 
     <span class="comment">// test ToWalletDescriptor trait from the output of the descriptor!() macro</span>
