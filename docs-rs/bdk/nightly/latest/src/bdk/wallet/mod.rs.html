@@ -3425,6 +3425,17 @@
 <span id="3422">3422</span>
 <span id="3423">3423</span>
 <span id="3424">3424</span>
+<span id="3425">3425</span>
+<span id="3426">3426</span>
+<span id="3427">3427</span>
+<span id="3428">3428</span>
+<span id="3429">3429</span>
+<span id="3430">3430</span>
+<span id="3431">3431</span>
+<span id="3432">3432</span>
+<span id="3433">3433</span>
+<span id="3434">3434</span>
+<span id="3435">3435</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -3487,7 +3498,10 @@
 <span class="kw">use</span> <span class="ident">address_validator</span>::<span class="ident">AddressValidator</span>;
 <span class="kw">use</span> <span class="ident">signer</span>::{<span class="ident">Signer</span>, <span class="ident">SignerId</span>, <span class="ident">SignerOrdering</span>, <span class="ident">SignersContainer</span>};
 <span class="kw">use</span> <span class="ident">tx_builder</span>::{<span class="ident">BumpFee</span>, <span class="ident">CreateTx</span>, <span class="ident">FeePolicy</span>, <span class="ident">TxBuilder</span>, <span class="ident">TxBuilderContext</span>};
-<span class="kw">use</span> <span class="ident">utils</span>::{<span class="ident">check_nlocktime</span>, <span class="ident">check_nsequence_rbf</span>, <span class="ident">descriptor_to_pk_ctx</span>, <span class="ident">After</span>, <span class="ident">Older</span>, <span class="ident">SecpCtx</span>};
+<span class="kw">use</span> <span class="ident">utils</span>::{
+    <span class="ident">check_nlocktime</span>, <span class="ident">check_nsequence_rbf</span>, <span class="ident">descriptor_to_pk_ctx</span>, <span class="ident">After</span>, <span class="ident">Older</span>, <span class="ident">SecpCtx</span>,
+    <span class="ident">DUST_LIMIT_SATOSHI</span>,
+};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">blockchain</span>::{<span class="ident">Blockchain</span>, <span class="ident">Progress</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>};
@@ -3936,7 +3950,11 @@
         <span class="kw">match</span> <span class="ident">change_output</span> {
             <span class="prelude-val">None</span> <span class="kw">if</span> <span class="ident">change_val</span>.<span class="ident">is_dust</span>() <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// single recipient, but the only output would be below dust limit</span>
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">InsufficientFunds</span>); <span class="comment">// TODO: or OutputBelowDustLimit?</span>
+                <span class="comment">// TODO: or OutputBelowDustLimit?</span>
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">InsufficientFunds</span> {
+                    <span class="ident">needed</span>: <span class="ident">DUST_LIMIT_SATOSHI</span>,
+                    <span class="ident">available</span>: <span class="ident">change_val</span>,
+                });
             }
             <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="kw">if</span> <span class="ident">change_val</span>.<span class="ident">is_dust</span>() <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// skip the change output because it&#39;s dust -- just include it in the fee.</span>
@@ -4214,7 +4232,11 @@
             }
             <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="kw">if</span> <span class="ident">change_val_after_add</span>.<span class="ident">is_dust</span>() <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// single_recipient but the only output would be below dust limit</span>
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">InsufficientFunds</span>); <span class="comment">// TODO: or OutputBelowDustLimit?</span>
+                <span class="comment">// TODO: or OutputBelowDustLimit?</span>
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">InsufficientFunds</span> {
+                    <span class="ident">needed</span>: <span class="ident">DUST_LIMIT_SATOSHI</span>,
+                    <span class="ident">available</span>: <span class="ident">change_val_after_add</span>,
+                });
             }
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">removed_updatable_output</span>.<span class="ident">value</span> <span class="op">=</span> <span class="ident">change_val_after_add</span>;
