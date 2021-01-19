@@ -2,7 +2,7 @@
 title: "Fee estimations for light-clients"
 description: ""
 author: "Riccardo Casatta"
-date: "2021-01-18"
+date: "2021-01-19"
 tags: ["rust", "fee", "machine learning"]
 hidden: true
 draft: false
@@ -71,17 +71,17 @@ To have a model, we need the data.
 
 ## The data logger
 
-The [data logger] is MIT licensed open source software written in Rust.
+The [data logger] is built with the purpose of collecting the needed data and it's MIT licensed open source software written in Rust.
 
-We need to save the time transactions enter in the node's mempool, to be more efficient and precise we should not call only the RPC endpoints but listen to [ZMQ] events. Luckily just released bitcoin core 0.21.0 added a new [ZMQ] topic `zmqpubsequence` [notifying] mempool events (and block events). The logger is also listening to `zmqpubrawtx` and `zmqpubrawblock` topics, to make less RPC calls.
+We need to save the time transactions enter in the node's mempool, to be more efficient and precise we should not call only the RPC endpoints but listen to [ZMQ] events. Luckily just released bitcoin core 0.21.0 added a new [ZMQ] topic `zmqpubsequence` notifying mempool events (and block events). The logger is also listening to `zmqpubrawtx` and `zmqpubrawblock` topics, to make less RPC calls.
 
-Other than the time, we save other data for several reasons, in the end, we are not interested only in the timestamp of the transaction when enters the mempool, but more importantly, how many blocks will pass until this transaction is confirmed. In the final dataset this field is called `confirms_in`, if `1` it means the transaction is confirmed in the next block after it has been seen. This is a reason to save blocks in the raw logs (to see when a seen transaction gets confirmed).
+We are not interested only in the timestamp of the transaction when enters the mempool, but more importantly, how many blocks will pass until this transaction is confirmed. In the final dataset this field is called `confirms_in` [^blocks target], if `confirms_in=1` it means the transaction is confirmed in the next block after it has been seen.
 
 Another critical information is the `fee_rate` of the transaction, since the absolute fee value of the fee paid by a bitcoin transaction is not available nor derivable from only the transaction itself, we need the transaction's previous outputs values.
 
-All this information (apart from the moment the transaction enter in the mempool) is recoverable from the blockchain, however, querying the bitcoin node could take a while, and I want to be able to recreate the ML dataset fast while iterating on the model training for example with different fields.
+All this information (apart from the moment the transaction enter in the mempool) is recoverable from the blockchain, however, querying the bitcoin node could take a while, and I want to be able to recreate the ML dataset fast [^fast] while iterating on the model training for example with different fields.
 
-For these reasons, the logger is split into two parts, a process listening to the node which creates raw-logs, and another process that uses this log to create the dataset data. Raw logs are self-contained, for example, they contain any previous transaction output values of relevant txs, this causes some redundancy, but it's needed to recompute the dataset fast.
+For these reasons, the logger is split into two parts, a process listening to the node which creates raw logs, and another process that uses this log to create the CSV dataset. Raw logs are self-contained, for example, they contain any previous transaction output values of relevant transactions, this causes some redundancy, but it's needed to recompute the dataset fast.
 
 ![High level graph](/images/high-level-graph.svg)
 
@@ -132,8 +132,10 @@ The blocks are available through the p2p network, and downloading the last 6 is 
 Another information the dataset contain is the block percentile fee rate, considering `r_i` to be the rate of the `ith` transaction in a block, `q_k` is the fee rate value such that for each transaction in a block `r_i` < `q_k` returns the `k%` transactions in the block that are paying lower fees.
 
 Percentiles are not used to feed the model but to filter some outliers tx.
-Removing this observations is controversial at best and considered cheating at worse. However, it should be considered that bitcoin core `estimatesmartfee` doesn't even bother to give estimation for the next block, I think because of the many transactions that are confirming in the next block are huge overestimation, or clear errors like [this one] I found when I started logging data.
-This outliers are a lot for transactions confirming in the next block (`confirms_in=1`), less so for 2, mostly disappeared for 3 or more. It's counterintuitive that overestimation exist for `confirms_in=2`, how it's possible an overestimation doesn't enter the very next block? The reason for that is network latency, the miner didn't see that transaction yet, or block building latency, the miner saw the tx, but decided it's not efficient to rebuild the block template yet.
+Removing this observations is controversial at best and considered cheating at worse. However, it should be considered that bitcoin core `estimatesmartfee` doesn't even bother to give estimation for the next block, I think because of the many transactions that are confirming in the next block are huge overestimation [^overestimation], or clear errors like [this one] I found when I started logging data.
+These outliers are a lot for transactions confirming in the next block (`confirms_in=1`), less so for `confirms_in=2`, mostly disappeared for `confirms_in=3` or more. It's counterintuitive that overestimation exist for `confirms_in>1`, by definition an overestimation is a fee rate way higher than needed, so how it's possible an overestimation doesn't enter the very next block? There are a couple of reasons why a block is discovered without containing a transaction with high fee rate:
+* network latency: my node saw the transaction but the miner didn't see that transaction yet,
+* block building latency: the miner saw the transaction, but didn't finish to rebuild the block template or decided it's more efficient to finish a cycle on the older block template.
 
 To keep the model balanced, when over-estimation are filtered out, simmetrycally under-estimation are filtered out too. This also has the effect to remove some transactions that are included because fee is payed out-of-band.
 Another reason to filter transactions, is that the dataset is over-represented by transactions with low `confirms_in`, like more tha 50% of transactions confirms in the next block, so I think it's good to filter some of this transactions.
@@ -163,7 +165,7 @@ core_econ | no | bitcoin `estimatesmartfee` result for `confirms_in` block targe
 core_cons | no | Same as previous but with conservative mode
 mempool_len | no | Sum of the mempool transaction with fee rate available (sum of every `a*` field)
 parent_in_cpfp | no | It's 1 when the transaction has outputs that are spent in the same block as the transaction is confirmed (they are parent in a CPFP relations).
-q1-q30-... | no | Transaction confirming fast could be outliers, usually paying a lot more than required, this percentiles are used to filter those txs,
+q1-q30-... | no | Transaction confirming fast could be outliers, usually paying a lot more than required, this percentiles are used to filter those transactions,
 a1-a2-... | yes | Contains the number of transaction in the mempool with known fee rate in the ith bucket.
 
 
@@ -318,7 +320,7 @@ This is just a starting point, there are many future improvements such as:
 * Build a separate model with full knowledge, thus for full, always-connected nodes could be interesting and improve network resource allocation in comparison with current estimator.
 * Tensorflow is a huge dependency, and since it contains all the feature to build and train a model, most of the feature are not needed in the prediction phase. In fact tensorflow lite exist which is specifically created for embedded and mobile device, [prediction test tool] and the final integration in [bdk] should use that.
 * There are other fields that should be explored that could improve model predictions, such as, transaction weight, time from last block, etc. Luckily the architecture of the logger allows the recreation of the dataset from the raw logs very quickly. Also some fields like `confirms_in` are so important that the model could benefit from expansion during pre-processing with technique such as [hashed feature columns].
-* Bitcoin logger could be improved by a merge command to unify raw logs files, reducing redundancy and consequently disk occupation.
+* Bitcoin logger could be improved by a merge command to unify raw logs files, reducing redundancy and consequently disk occupation. Other than CSV the dataset could be created in multiple files in [TFRecord format] to allow more parallelism during training.
 * At the moment I am training the model on a threadripper CPU, training the code on GPU or even TPU will be needed to decrease training time, especially because input data will grow and capture more mempool situations.
 * The [prediction test tool] should estimate only with p2p, without requiring a node. This work would be propedeutic for [bdk] integration
 * At the moment mempool buckets are multiple inputs `a*` as show in the model graph, since they are related, is it possible to merge them in one TensorArray?
@@ -352,6 +354,8 @@ And also this tweet that remembered me I had this work in my TODO list
 [^MAE]: MAE is Mean Absolute Error, which is the average of the series built by the absolute difference between the real value and the estimation.
 [^drift]: drift like MAE, but without the absolute value
 [^minimum relay fee]: Most node won't relay transactions with fee lower than the min relay fee, which has a default of `1.0`
+[^blocks target]: Conceptually similar to bitcoin core `estimatesmartfee` parameter called "blocks target", however, `confirms_in` is the real value not the desired target.
+[^fast]: 14GB of compressed raw logs are processed and a compressed CSV produced in about 4 minutes.
 
 
 [estimatesmartfee]: https://bitcoincore.org/en/doc/0.20.0/rpc/util/estimatesmartfee/
@@ -360,9 +364,8 @@ And also this tweet that remembered me I had this work in my TODO list
 [fee estimators]: https://b10c.me/blog/003-a-list-of-public-bitcoin-feerate-estimation-apis/
 [neutrino]: https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki
 [weekend]: https://www.blockchainresearchlab.org/2020/03/30/a-week-with-bitcoin-transaction-timing-and-transaction-fees/
-[notifying]: https://github.com/bitcoin/bitcoin/blob/master/doc/zmq.md#usage
-[ZMQ]: https://github.com/RCasatta/bitcoin-logger/src/zmq.rs
-[data logger]: https://github.com/RCasatta/bitcoin-logger
+[ZMQ]: https://github.com/bitcoin/bitcoin/blob/master/doc/zmq.md
+[data logger]: https://github.com/RCasatta/bitcoin_logger
 [this one]: https://blockstream.info/tx/33291156ab79e9b4a1019b618b0acfa18cbdf8fa6b71c43a9eed62a849b86f9a
 [dataset]: https://storage.googleapis.com/bitcoin_log/dataset_17.csv.gz
 [google colab notebook]: https://colab.research.google.com/drive/1yamwh8nE4NhmGButep-pfUT-1uRKs49a?usp=sharing
@@ -380,3 +383,4 @@ And also this tweet that remembered me I had this work in my TODO list
 [get stuck]: https://github.com/RCasatta/bitcoin_logger/blob/master/notes.md
 [hashed feature columns]: https://www.tensorflow.org/tutorials/structured_data/feature_columns#hashed_feature_columns
 [tensorflow]: https://www.tensorflow.org/
+[TFRecord format]: https://www.tensorflow.org/tutorials/load_data/tfrecord
