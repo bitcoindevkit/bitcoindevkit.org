@@ -28,7 +28,7 @@ draft: false
 
 ## Introduction: what is fee estimation?
 
-Fee estimation is the process of selecting the fee rate [^fee rate] for a bitcoin transaction we are creating, according to two main factors:
+Fee estimation is the process of selecting the fee rate[^fee rate] for a bitcoin transaction we are creating, according to two main factors:
 
 * The current congestion of the Bitcoin network.
 * The urgency, or lack thereof, of the sender to get his transaction included in a block.
@@ -58,13 +58,13 @@ esimation or, more broadly, the Bitcoin mempool.
 
 #### The challenges and the solution
 
-The hardest part of doing fee estimation on a light client is the lack of information: for example, Bitcoin Core's `estimatesmartfee` uses up to the last 1008 blocks and knows everything about the mempool [^mempool], such as
+The hardest part of doing fee estimation on a light client is the lack of information: for example, Bitcoin Core's `estimatesmartfee` uses up to the last 1008 blocks and knows everything about the mempool[^mempool], such as
 the fee rate of every transaction it contains, but a light-client doesn't.
 
 Also, there are other factors that may help doing fee estimation, such as the day of the week (it's well-known that the mempool usually empties during the [weekend]) or the time of the day to anticipate recurring daily events
 (such as the batch of [bitmex withdrawals]).
 
-The idea is to apply Machine Learning (ML) techniques [^disclaimer] to discover patterns over what a light-client knows and see if they are enough to achieve consistently good estimations.
+The idea is to apply Machine Learning (ML) techniques[^disclaimer] to discover patterns over what a light-client knows and see if they are enough to achieve consistently good estimations.
 
 However this creates another problem: machine learning needs data, or rather, a *lot* of data to work well. Can we find this anywhere?
 
@@ -92,50 +92,62 @@ The main thing that's missing is an indication of when the node first saw a tran
 within the number of blocks it actually took to be confirmed. For instance, if we see transaction `t` when the blockchain is at height `1000` and then we notice that `t` has been included in block `1006`, we can clearly say that the
 fee-rate paid by `t` was the exact value required to get confirmed within the next `6` blocks.
 
-So to build our model, we first need this data.
+So to build our model, we first need to gather this data.
 
 #### The data logger
 
-The [data logger] is built with the purpose of collecting the needed data and it's MIT licensed open source software written in Rust.
+The [data logger] is built with the purpose of collecting all the data we need, and it's MIT licensed open source software written in Rust.
 
-We need to save the time transactions enter in the node's mempool, to be more efficient and precise we should not only call the RPC endpoints but listen to [ZMQ] events. Luckily just released bitcoin core 0.21.0 added a new [ZMQ] topic `zmqpubsequence` notifying mempool events (and block events). The logger is also listening to `zmqpubrawtx` and `zmqpubrawblock` topics, to make less RPC calls.
+We start by saving when a transaction enter our node's mempool: to be more efficient and precise we should not only call the RPC endpoints but listen to [ZMQ] events.
+Luckily the newly-released Bitcoin Core 0.21.0 added a new [ZMQ] topic called `zmqpubsequence`, that sends a notification for mempool (and block) events. The logger is also listening to `zmqpubrawtx` and `zmqpubrawblock` topics, to avoid making extra RPC calls.
 
-We are not only interested in the timestamp of the transaction when it enters the mempool, but also how many blocks will pass until this transaction gets confirmed. In the final dataset this field is called `confirms_in` [^blocks target]; if `confirms_in=1` it means the transaction is confirmed in the next block after it has been seen.
+We are not only interested in the timestamp of the transaction entering the mempool, but also how many blocks it will take until the same transaction is confirmed.
+In the final dataset this field is called `confirms_in`[^blocks target]; if `confirms_in = 1` it means the transaction is confirmed in the first block created after it has been seen for the first time.
 
-Another critical information is the `fee_rate` of the transaction, since the absolute fee value of the fee paid by a bitcoin transaction is not available nor derivable from only the transaction itself, we need the transaction's previous outputs values.
+Another critical piece of information logged by the data logger is the `fee_rate` of the transaction, since the absolute fee value paid by a bitcoin transaction is not available nor derivable given only the transaction itself, as the inputs don't have explicit amounts.
 
-All this information (apart from the moment the transaction enter in the mempool) is recoverable from the blockchain. However, querying the bitcoin node could take a while, and I want to be able to recreate the ML dataset fast [^fast] while iterating on the model training, for example with different fields.
+All this data (apart from the time of the transaction entering in the mempool) can actually be reconstructed simply by looking at the blockchain: however, querying the bitcoin node can be fairly slow, and I want to be able to recreate the ML dataset rapidly[^fast] while iterating on the model training, for
+example whenever I need to modify or add a new field.
 
-For these reasons, the logger is split into two parts: a process listening to the node which creates raw logs and a second process that uses this logs to create the CSV dataset. Raw logs are self-contained, for example, they contain any previous transaction output values of relevant transactions, this causes some redundancy, but it's needed to recompute the dataset quickly.
+For these reasons, the logger is split into two parts: a process listening to the events sent by our node, which creates raw logs, and then a second process that uses these logs to create the final CSV dataset.
+Raw logs are self-contained: for example, they contain all the previous transaction output values for every relevant transaction. This causes some redundancy, but in this case it's better to trade some efficiency for more performance
+when recreating the dataset.
 
 ![High level graph](/images/high-level-graph.svg)
 
-My logger instance started collecting data on the 18th of December 2020, and as of today (18th January 2020), raw logs are about 14GB.
+My logger instance started collecting data on the 18th of December 2020, and as of today (18th January 2020), the raw logs are about 14GB.
 
-I expect and hope raw logs will be useful also for other projects, for example, to monitor transactions propagation or other works involving mempool data. I will share raw logs data through torrent soon.
+I expect (or at least hope) the raw logs will be useful also for other projects as well, like monitoring the propagation of transactions or other works involving raw mempool data. I will share raw logs data through torrent soon.
 
 ## The dataset
 
 The [dataset] is publicly available (~400MB gzip compressed, ~1.6GB as plain CSV).
 
-The output of the model is the fee rate, expressed in `[satoshi/vbytes]`.
+The output of the model is the fee rate, expressed in `[satoshi/vbytes]` **TODO: missing link??**.
 
-What about the inputs? In general we want two things:
+What about the inputs? Generally speaking, we have two main requirements for what can be included as input for our model:
 
-* Something that is correlated to the output, even with a non-linear relation.
-* It must be available to a light client, for example assuming to have the information regarding the last 1000 blocks is considered too much.
+* It must be correlated to the output, even with a non-linear relation.
+* It must be available to a light client: for instance, assuming to have knowledge and an index of the last 1000 blocks is considered too much.
 
-We want to compare model results with another available estimation, thus we have also data to compute bitcoin core `estimatesmartfee` errors, but we are not going to use this data for the model.
+To evaluate the approach we are taking, we also want to compare our model's results with another available estimation: for this reason the dataset includes data to compute the error agains Bitcoin Core's `estimatesmartfee` results, though we are not going to use it for this model.
 
-The dataset will contain only transactions with already confirmed inputs. To consider transactions with unconfirmed inputs, the fee rate should be computed as a whole; for example if transaction `t2` has an unconfirmed input coming from `t1` outputs (`t1` has all confirmed inputs) and all unspent outputs, a unique fee rate of the two transactions is to consider. Supposing `f()` is the absolute fee and `w()` is transaction weight, the fee rate is `(f(t1)+f(t2))/(w(t1)+w(t2))`. At the moment the model simply discards these transactions for complexity reasons.
+The dataset will contain only transactions that spend already confirmed inputs. If we wanted to include transactions with unconfirmed inputs as well, the fee rate would have to be computed as a whole;
+for example if transaction `t2` spends an unconfirmed input from `t1` (while `t1` only spends confirmed inputs, and all its other outputs are unspent), the aggregated fee rate would have to be used.
+Supposing `f()` is extracts the absolute fee and `w()` the transaction weight, the aggregated fee rate would be `(f(t1) + f(t2)) / (w(t1) + w(t2))`. Thus, as already said previously, to keep things simple the model simply discards all the transaction
+that would need to perform this computation.
 
-For similar reasons there is the flag `parent_in_cpfp`. When a transaction has inputs confirmed (so it's not excluded by the previous rule) but one or more of its output has been spent in the same block, `parent_in_cpfp` is 1.
-Transactions with `parent_in_cpfp=1` are included in the dataset but excluded by current model, since the miner considered an overall fee rate of the transactions group to build the block.
+For the same reason the dataset has the `parent_in_cpfp` flag. When a transaction has inputs confirmed (so it's not excluded by the previous rule) but one or more of its output have been spent by a transaction confirmed in the same block, `parent_in_cpfp` is `1`.
+Transactions with `parent_in_cpfp = 1` are included in the dataset but excluded by the current model, since the miner probably considered an aggregated fee rate while picking the transactions to build a block.
 
 #### The mempool
 
-The most important information come from the mempool status. However, we cannot feed the model with a list of mempool transactions fee rates because this array has a variable length. To overcome this the mempool is converted in buckets which are basically counters of transactions with a fee rate in a specific range. The mempool buckets array is defined by two parameters, the `percentage_increment` and the `array_max` value.
-Supposing to choose the mempool buckets array to have parameters `percentage_increment = 50%` and `array_max = 500.0 sat/vbytes` the buckets are like the following
+The most important input of our model is the current *status* of the mempool itself. However, we cannot feed the model with a list of the fee rate of every unconfirmed transaction, because this array would have a variable length.
+To overcome this, the transaction contained in the mempool are grouped in "buckets" which are basically subsets of the mempool where all the transactions contained in a bucket have a similar fee rate. In particular we only care about the
+*number* of transaction in every *bucket*, not which transactions it contains.
+
+The mempool buckets array is defined by two parameters, the `percentage_increment` and the `array_max` value.
+Supposing to choose the mempool buckets array to have parameters `percentage_increment = 50%` and `array_max = 500.0 sat/vbytes` the buckets would be constructed like so:
 
 bucket | bucket min fee rate | bucket max fee rate
 -|-|-
@@ -205,7 +217,7 @@ The code building and training the model with [tensorflow] is available in [goog
 ![graph confirm_in blocks vs fee_rate](/images/20210115-111008-confirms_in-fee_rate.png)
 <div align="center">Tired to read and want a couple simple statement? In the last month a ~50 sat/vbyte transaction never took more than a day to confirm and a ~5 sat/vbyte never took more than a week</div><br/>
 
-As a reference, in the code we have a calculation of the bitcoin core `estimatesmartfee` MAE [^MAE] and drift [^drift], note this are `[satoshi/bytes]` (not virtual bytes).
+As a reference, in the code we have a calculation of the bitcoin core `estimatesmartfee` MAE[^MAE] and drift[^drift], note this are `[satoshi/bytes]` (not virtual bytes).
 MAE is computed as `avg(abs(fee_rate_bytes - core_econ))` when `core_econ` is available (about 1.2M observations, sometime the value is not available when considered too old).
 
 
@@ -272,7 +284,7 @@ Honestly, about the neural network parameters, they are mostly the one taken fro
 
 A significant part of a ML model are the activation functions, `relu` (Rectified Linear Unit) is one of the most used lately, because it's simple and works well as I learned in this [introducing neural network video]. `relu` it's equal to zero for negative values and equal to the input for positive values. Being non-linear allows the whole model to be non-linear.
 
-For the last layer it's different: we want to enforce a minimum for the output, which is the minimum relay fee `1.0` [^minimum relay fee]. One could not simply cut the output of the model after prediction because all the training would not consider this constraint. So we need to build a custom activation function that the model training will be able to use for the [gradient descent] optimization step. Luckily this is very simple using tensorflow primitives:
+For the last layer it's different: we want to enforce a minimum for the output, which is the minimum relay fee `1.0`[^minimum relay fee]. One could not simply cut the output of the model after prediction because all the training would not consider this constraint. So we need to build a custom activation function that the model training will be able to use for the [gradient descent] optimization step. Luckily this is very simple using tensorflow primitives:
 
 ```
 def clip(x):
