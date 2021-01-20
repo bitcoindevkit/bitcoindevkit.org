@@ -8,6 +8,24 @@ hidden: true
 draft: false
 ---
 
+- [Introduction: what's fee estimation?](#introduction--what-s-fee-estimation-)
+- [The problem](#the-problem)
+    + [The difficulties and the solution](#the-difficulties-and-the-solution)
+    + [The question and the needed data](#the-question-and-the-needed-data)
+    + [The data logger](#the-data-logger)
+- [The dataset](#the-dataset)
+    + [The mempool](#the-mempool)
+    + [The outliers](#the-outliers)
+    + [Recap](#recap)
+- [The model](#the-model)
+    + [Splitting](#splitting)
+    + [Preprocessing](#preprocessing)
+    + [Build](#build)
+    + [Finally, training](#finally--training)
+- [The prediction phase](#the-prediction-phase)
+- [Conclusion and future development](#conclusion-and-future-development)
+- [Thanks](#thanks)
+
 ## Introduction: what's fee estimation?
 
 Fee estimation is the process of selecting the fee rate [^fee rate] for a bitcoin transaction according to two factors:
@@ -36,7 +54,7 @@ This work is an effort to build a **good fee estimator for purely peer to peer l
 
 In the meantime, another sub-goal is pursued: attract data-scientist interest, Indeed the initial step for this analysis consists in constructing a data set, which might be starting point of different kind of studies.
 
-## The difficulties and the solution
+#### The difficulties and the solution
 
 The difficult part in doing fee estimation on a light client is the lack of information available, for example, bitcoin core `estimatesmartfee` use up to the last 1008 blocks and has full information about the mempool [^mempool], such as the fee rate of every one of these transactions but a light-client cannot rely on all this information.
 
@@ -46,7 +64,7 @@ The idea is to apply Machine Learning (ML) techniques [^disclaimer] to discover 
 
 However this creates another problem, machine learning needs data, a lot of data to work well, is this information available?
 
-## The question and the needed data
+#### The question and the needed data
 
 We are going to use a DNN (Deep Neural Network) an ML technique in the supervised learning branch, the ELI5 is: give a lot of example inputs with the desired output to a black box, if there are relations between inputs and outputs, and if there are enough examples, the black box will give predicted output to inputs it has never seen before.
 
@@ -69,7 +87,7 @@ What's basically missing is when the node first saw a transaction that has been 
 
 To have a model, we need the data.
 
-## The data logger
+#### The data logger
 
 The [data logger] is built with the purpose of collecting the needed data and it's MIT licensed open source software written in Rust.
 
