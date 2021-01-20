@@ -1,5 +1,5 @@
 ---
-title: "Fee estimations for light-clients"
+title: "Fee estimation for light-clients"
 description: ""
 author: "Riccardo Casatta"
 date: "2021-01-19"
@@ -8,10 +8,10 @@ hidden: true
 draft: false
 ---
 
-- [Introduction: what's fee estimation?](#introduction--what-s-fee-estimation-)
+- [Introduction: what is fee estimation?](#introduction-what-is-fee-estimation)
 - [The problem](#the-problem)
-    + [The difficulties and the solution](#the-difficulties-and-the-solution)
-    + [The question and the needed data](#the-question-and-the-needed-data)
+    + [The challenges and the solution](#the-challenges-and-the-solution)
+    + [The question and the data we need](#the-question-and-the-data-we-need)
     + [The data logger](#the-data-logger)
 - [The dataset](#the-dataset)
     + [The mempool](#the-mempool)
@@ -24,55 +24,60 @@ draft: false
     + [Finally, training](#finally--training)
 - [The prediction phase](#the-prediction-phase)
 - [Conclusion and future development](#conclusion-and-future-development)
-- [Thanks](#thanks)
+- [Acknowledgements](#acknowledgements)
 
-## Introduction: what's fee estimation?
+## Introduction: what is fee estimation?
 
-Fee estimation is the process of selecting the fee rate [^fee rate] for a bitcoin transaction according to two factors:
+Fee estimation is the process of selecting the fee rate [^fee rate] for a bitcoin transaction we are creating, according to two main factors:
 
-* Current traffic of the Bitcoin network
-* The urgency, or lack of urgency, of the sender to see the transaction confirmed in a block.
+* The current congestion of the Bitcoin network.
+* The urgency, or lack thereof, of the sender to get his transaction included in a block.
 
-Selecting a too high fee rate means losing money, since the same result may have been achieved with a lower expense.
+Selecting a fee rate above what would actually be enough means wasting money, because the same result could have been achieved with a lower expense.
 
-Selecting a too low fee rate could mean waiting a long time before the transaction confirms, or even worse, never see the transaction confirmed.
+On the other end, selecting a fee rate which is too low means waiting longer than expected before the transaction confirms or, even worse, never see the transaction confirmed at all.
 
 ## The problem
 
-Bitcoin core node offers fee estimation through the RPC method [estimatesmartfee], there are also a lot of [fee estimators] online, so why we need yet another estimator?
+Bitcoin Core nodes offer fee estimation through the [`estimatesmartfee`] RPC method, and there are also a lot of third-party [fee estimators] online, so why do we need yet another estimator?
 
-Bitcoin core model is not suitable for light-clients such as mobile wallets, even in pruned mode. Online estimators are bad because:
+The answer is that the model used by Bitcoin Core is not well suited for light-clients such as mobile wallets, even when running in pruned mode. Online estimators are bad in terms of:
 
-* Privacy: Contacting the server may leak the IP, and the request timing may be used to relate the request to a transaction made soon after.
-* Security: A compromised source of fee rates could provide too high fee rates causing loss of money or too low ones causing transaction to never confirm.
+* Privacy: Contacting the server leaks your IP (unless you are using Tor or a VPN), and the request timing may be used to correlate the request to a transaction broadcasted to the network soon thereafter.
+* Security: A malicious estimator could provide a very high fee rate causing people who trust it to waste money, or even a low fee rates causing the transaction to never confirm.
 
-Replace By Fee (RBF) and Child Pay For Parents (CPFP) are techniques minimizing the fee estimation problem, because one could simply underestimate fee rate and raise if needed, however:
-* RBF and CPFP may leak more information, such as detecting patterns that may leak the kind of wallet used.
-* Requires additional interaction: the client must be online again to perform the fee bump. Sometimes this is very costly, for instance when using an offline signer.
+Replace By Fee (RBF) and Child Pays For Parent (CPFP) are techniques that can somewhat minimize the fee estimation problem, because one could simply underestimate the fee rate and then raise it when necessary, however:
+* RBF and CPFP may leak more information, such as patterns that may allow to detect the kind of wallet used, or which one of the outputs of a transaction is the change.
+* Requires additional interaction: the client must come back "online" to perform the fee bump. Sometimes this is very costly, for instance when using an offline signer or a multisignature with geographically distributed keys.
 
-This work is an effort to build a **good fee estimator for purely peer to peer light clients** such as [neutrino] based ones or determine whether it is infeasible.
+Thus, this work is an effort to build a **good fee estimator for purely peer to peer light clients** such as [neutrino] based ones, or at least determine whether the approach we take is infeasible and open the discussion
+to other, better, models.
 
-In the meantime, another sub-goal is pursued: attract data scientists interest; Indeed the initial step for this analysis consists in constructing a data set, which might be starting point of different kind of studies.
+In the meantime, another sub-goal is pursued: attract the interest of data scientists; Indeed the initial step for this analysis consists in constructing a data set, which could also also help kickstart other studies on fee
+esimation or, more broadly, the Bitcoin mempool.
 
-#### The difficulties and the solution
+#### The challenges and the solution
 
-The difficult part in doing fee estimation on a light client is the lack of information available, for example, bitcoin core `estimatesmartfee` uses up to the last 1008 blocks and has full information about the mempool [^mempool], such as the fee rate of every one of these transactions but a light-client cannot rely on all this information.
+The hardest part of doing fee estimation on a light client is the lack of information: for example, Bitcoin Core's `estimatesmartfee` uses up to the last 1008 blocks and knows everything about the mempool [^mempool], such as
+the fee rate of every transaction it contains, but a light-client doesn't.
 
-However, other factors are available and may help in fee estimation, such as the day of the week since it's well-known the mempool usually empties during the [weekend]. Or the hour of the day to predict recurring daily events such as [bitmex withdrawals].
+Also, there are other factors that may help doing fee estimation, such as the day of the week (it's well-known that the mempool usually empties during the [weekend]) or the time of the day to anticipate recurring daily events
+(such as the batch of [bitmex withdrawals]).
 
-The idea is to apply Machine Learning (ML) techniques [^disclaimer] to discover patterns over these informations and see if they are enough to achieve good estimations.
+The idea is to apply Machine Learning (ML) techniques [^disclaimer] to discover patterns over what a light-client knows and see if they are enough to achieve consistently good estimations.
 
-However this creates another problem, machine learning needs data, a lot of data to work well: is this information available?
+However this creates another problem: machine learning needs data, or rather, a *lot* of data to work well. Can we find this anywhere?
 
-#### The question and the needed data
+#### The question and the data we need
 
-We are going to use a DNN (Deep Neural Network) an ML technique in the supervised learning branch, the ELI5 is: give a lot of example inputs with the desired output to a black box, if there are relations between inputs and outputs, and if there are enough examples, the black box will give predicted output to inputs it has never seen before.
+We are going to use a DNN (Deep Neural Network), a ML technique in the supervised learning branch. The "ELI5" is: give a lot of example inputs and the desired output to a black box; if there are correlations between inputs and outputs,
+and there are enough examples, the black box will eventually start predicting the correct output even when given inputs it has never seen before.
 
-To define our input and outputs, we need the question we want to answer. The question a fee estimator needs to answer is:
+To define our input and outputs, we need to start from the question we want to answer. For a fee estimator this is:
 
 *"Which fee rate should I use if I want this transaction to be confirmed in at most `n` blocks?"*
 
-So we need a table with many rows like:
+This can be translated to a table with many rows like:
 
 confirms_in | other_informations | fee_rate
 -|-|-
@@ -80,12 +85,14 @@ confirms_in | other_informations | fee_rate
 2|...| 84.33
 10|...| 44.44
 
-where the `fee_rate` column is the output we want, called the `target` or `label` in ML terminology and the other columns are our inputs.
+where the `fee_rate` column is the output we want, also called the "*target*" or "*label*" in ML terminology, and the other columns are our inputs.
 
-Is this data already available in the blockchain? Unfortunately, it isn't.
-What's basically missing is when the node first saw a transaction that has been confirmed in a block. With hindsight, the fee-rate of that transaction is the exact value that was needed.
+Can we build this table just by looking at the Bitcoin blockchain? Unfortunately, we can't:
+The main thing that's missing is an indication of when the node first saw a transaction that has been later confirmed in a block. With that knowledge we can say that the fee-rate of that transaction was the exact value required to confirm
+within the number of blocks it actually took to be confirmed. For instance, if we see transaction `t` when the blockchain is at height `1000` and then we notice that `t` has been included in block `1006`, we can clearly say that the
+fee-rate paid by `t` was the exact value required to get confirmed within the next `6` blocks.
 
-To have a model, we need the data.
+So to build our model, we first need this data.
 
 #### The data logger
 
@@ -355,7 +362,7 @@ This is just a starting point, there are many future improvements such as:
 [2021-01-18T09:31:30Z INFO  estimate_ml_fee] Estimated fee to enter in 432 blocks is 6.9069905 sat/vbyte
 ```
 
-## Thanks
+## Acknowledgements
 
 Thanks to [Square crypto] for sponsoring this work and thanks to the reviewers TODO ADD REVIEWERS
 
@@ -376,7 +383,7 @@ And also this tweet that remembered me I had this work in my TODO list
 [^fast]: 14GB of compressed raw logs are processed and a compressed CSV produced in about 4 minutes.
 
 
-[estimatesmartfee]: https://bitcoincore.org/en/doc/0.20.0/rpc/util/estimatesmartfee/
+[`estimatesmartfee`]: https://bitcoincore.org/en/doc/0.20.0/rpc/util/estimatesmartfee/
 [core]: https://bitcoincore.org/
 [bitmex withdrawals]: https://b10c.me/mempool-observations/2-bitmex-broadcast-13-utc/
 [fee estimators]: https://b10c.me/blog/003-a-list-of-public-bitcoin-feerate-estimation-apis/
