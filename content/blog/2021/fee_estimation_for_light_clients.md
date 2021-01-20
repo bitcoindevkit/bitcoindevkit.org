@@ -60,9 +60,9 @@ The difficult part in doing fee estimation on a light client is the lack of info
 
 However, other factors are available and may help in fee estimation, such as the day of the week since it's well-known the mempool usually empties during the [weekend]. Or the hour of the day to predict recurring daily events such as [bitmex withdrawals].
 
-The idea is to apply Machine Learning (ML) techniques [^disclaimer] to discover patterns over this informations and see if it's enough to achieve good estimations.
+The idea is to apply Machine Learning (ML) techniques [^disclaimer] to discover patterns over these informations and see if they are enough to achieve good estimations.
 
-However this creates another problem, machine learning needs data, a lot of data to work well, is this information available?
+However this creates another problem, machine learning needs data, a lot of data to work well: is this information available?
 
 #### The question and the needed data
 
@@ -261,7 +261,7 @@ Non-trainable params comes from the normalization layer and are computed in the 
 49*64+65*64+ = 7361
 ```
 
-Honestly, about the neural network parameters, they are mostly the one taken from this tensorflow [example], I even tried to [tune hyperparameters], however, I preferred, for now, to take this [advise]: *"The simplest way to prevent overfitting is to start with a small model:"*. I hope this work will attract expert data-scientist to this bitcoin problem, improving the model, and also, I think a longer time for the data collection is needed to capture various situations.
+Honestly, about the neural network parameters, they are mostly the one taken from this tensorflow [example], I even tried to [tune hyperparameters], however, I decided to follow this [advice]: *"The simplest way to prevent overfitting is to start with a small model:"*. I hope this work will attract professional data scientists to this bitcoin problem, improving the model. I also think that a longer time for the data collection is needed to capture various situations.
 
 A significant part of a ML model are the activation functions, `relu` (Rectified Linear Unit) is one of the most used lately, because it's simple and works well as I learned in this [introducing neural network video]. `relu` it's equal to zero for negative values and equal to the input for positive values. Being non-linear allows the whole model to be non-linear.
 
@@ -390,7 +390,7 @@ And also this tweet that remembered me I had this work in my TODO list
 [plain python]: https://github.com/RCasatta/
 [example]: https://www.tensorflow.org/tutorials/keras/regression
 [tune hyperparameters]: https://www.tensorflow.org/tutorials/keras/keras_tuner
-[advise]: https://www.tensorflow.org/tutorials/keras/overfit_and_underfit#demonstrate_overfitting
+[advice]: https://www.tensorflow.org/tutorials/keras/overfit_and_underfit#demonstrate_overfitting
 [introducing neural network video]: https://youtu.be/aircAruvnKk?t=1035
 [gradient descent]: https://en.wikipedia.org/wiki/Gradient_descent#:~:text=Gradient%20descent%20is%20a%20first,the%20direction%20of%20steepest%20descent.
 [latest trend]: https://towardsdatascience.com/adam-latest-trends-in-deep-learning-optimization-6be9a291375c
