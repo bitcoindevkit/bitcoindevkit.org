@@ -23,7 +23,7 @@ Fee estimation is the process of selecting the fee rate[^fee rate] for a bitcoin
 * The current congestion of the Bitcoin network.
 * The urgency, or lack thereof, for the transaction confirmation, i.e, its inclusion in a block.
 
-A fee rate should be adequate to the above factors: a fee too high would be a waste of money, because the same result could have been achieved with a lower expense. On the other end, a fee rate too low would wait for a confirmation longer than planned or, even worse, could not be confirmed at all.
+A fee rate should be adequate to the above factors: a fee too high would be a waste of money, because the same result could have been achieved with a lower expense. On the other hand, a fee rate too low would wait for a confirmation longer than planned or, even worse, the transaction could not be confirmed at all.
 
 ## The problem
 
@@ -42,7 +42,7 @@ Thus, this work is an effort to build a **good fee estimator for purely peer to 
 for other, better, models.
 
 In the meantime, another sub-goal is pursued: attract the interest of data scientists; Indeed the initial step for this analysis consists in constructing a data set, which could also also help kickstart other studies on fee
-esimation or, more broadly, the Bitcoin mempool.
+esimation or, more broadly, on the Bitcoin mempool.
 
 #### The challenges and the solution
 
@@ -61,11 +61,11 @@ and there are enough examples, the black box will eventually start predicting th
 
 To define our inputs and outputs, we need to start from the question we want to answer. For a fee estimator this is:
 
-*"Which fee rate should I use if I want this transaction to be confirmed in at most `n` blocks?"*
+*"Which minimum fee rate should I use if I want this transaction to be confirmed in at most `n` blocks?"*
 
 This can be translated to a table with many rows like:
 
-confirms_in | other_informations | fee_rate
+confirms_in | other_information | fee_rate
 -|-|-
 1|...|100.34
 2|...| 84.33
@@ -78,7 +78,7 @@ The main thing that's missing is an indication of when the node first saw a tran
 within the number of blocks it actually took to be confirmed. For instance, if we see transaction `t` when the blockchain is at height `1000` and then we notice that `t` has been included in block `1006`, we can deduce that the
 fee-rate paid by `t` was the exact value required to get confirmed within the next `6` blocks.
 
-So to build our model, we first need to gather this data, and machine learning needs a *lot* of data to work well.
+So to build our model, we first need to gather these data, and machine learning needs a *lot* of data to work well.
 
 #### The data logger
 
@@ -91,7 +91,7 @@ In the final dataset this field is called `confirms_in`[^blocks target]; if `con
 
 Another critical piece of information logged by the data logger is the `fee_rate` of the transaction, since the absolute fee value paid by a bitcoin transaction is not available nor derivable given only the transaction itself, as the inputs don't have explicit amounts.
 
-All this data (apart from the time of the transaction entering in the mempool) can actually be reconstructed simply by looking at the blockchain. However, querying the bitcoin node can be fairly slow, and during the model training iterations we want to recreate the ML dataset rapidly[^fast], for example whenever we need to modify or add a new field.
+All these data (apart from the time of the transaction entering in the mempool) can actually be reconstructed simply by looking at the blockchain. However, querying the bitcoin node can be fairly slow, and during the model training iterations we want to recreate the ML dataset rapidly[^fast], for example whenever we need to modify or add a new field.
 
 For these reasons, the logger is split into two parts: a process listening to the events sent by our node, which creates raw logs, and then a second process that uses these logs to create the final CSV dataset.
 Raw logs are self-contained: for example, they contain all the previous transaction output values for every relevant transaction. This causes some redundancy, but in this case it's better to trade some efficiency for more performance
@@ -101,7 +101,7 @@ when recreating the dataset.
 
 My logger instance started collecting data on the 18th of December 2020, and as of today (18th January 2020), the raw logs are about 14GB.
 
-I expect (or at least hope) the raw logs will be useful also for other projects as well, like monitoring the propagation of transactions or other works involving raw mempool data. We will share raw logs data through torrent soon.
+I expect (or at least hope) the raw logs, the CSV dataset, or the data logger will be useful also for other projects as well, like monitoring the propagation of transactions or other works involving raw mempool data. We will share raw logs data through torrent soon.
 
 In the following [Part 2] we are going to talk about the dataset.
 

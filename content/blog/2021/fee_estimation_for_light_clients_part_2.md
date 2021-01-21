@@ -65,7 +65,7 @@ The blocks are available through the p2p network, and downloading the last 6 is 
 Another information the dataset contain is the block percentile fee rate, considering `r_i` to be the rate of the `ith` transaction in a block, `q_k` is the fee rate value such that for each transaction in a block `r_i` < `q_k` returns the `k%` transactions in the block that are paying lower fees.
 
 Percentiles are not used to feed the model but to filter some outliers tx.
-Removing this observations is controversial at best and considered cheating at worse. However, it should be considered that bitcoin core `estimatesmartfee` doesn't even bother to give estimation for the next block, we think this is due to the fact that many transactions that are confirming in the next block are huge overestimation [^overestimation], or clearly errors like [this one] we found when we started logging data.
+Removing this observations is controversial at best and considered cheating at worse. However, it should be considered that Bitcoin Core `estimatesmartfee` doesn't even bother to give estimation for the next block, we think this is due to the fact that many transactions that are confirming in the next block are huge overestimation [^overestimation], or clearly errors like [this one] we found when we started logging data.
 These outliers are a lot for transactions confirming in the next block (`confirms_in=1`), less so for `confirms_in=2`, mostly disappeared for `confirms_in=3` or more. It's counterintuitive that overestimation exist for `confirms_in>1`, by definition an overestimation is a fee rate way higher than needed, so how is possible that an overestimation doesn't enter the very next block? There are a couple of reasons why a block is discovered without containing a transaction with high fee rate:
 * network latency: my node saw the transaction but the miner didn't see that transaction yet,
 * block building latency: the miner saw the transaction, but didn't finish to rebuild the block template or decided it's more efficient to finish a cycle on the older block template.
@@ -92,7 +92,7 @@ timestamp | converted | The time when the transaction has been added in the memp
 current_height | no | The blockchain height seen by the node in this moment
 confirms_in | yes | This transaction confirmed at block height `current_height+confirms_in`
 fee_rate | target | This transaction fee rate measured in `[sat/vbytes]`
-fee_rate_bytes | no | fee rate in satoshi / bytes, used to check bitcoin core `estimatesmartfee` predictions
+fee_rate_bytes | no | fee rate in satoshi / bytes, used to check Bitcoin Core `estimatesmartfee` predictions
 block_avg_fee | no | block average fee rate `[sat/vbytes]` of block `current_height+confirms_in`
 core_econ | no | bitcoin `estimatesmartfee` result for `confirms_in` block target and in economic mode. Could be not available `?` when a block is connected more recently than the estimation has been requested, estimation are requested every 10 secs.
 core_cons | no | Same as above but with conservative mode
@@ -117,8 +117,8 @@ In the following [Part 3] we are going to talk about the model.
 [^MAE]: MAE is Mean Absolute Error, which is the average of the series built by the absolute difference between the real value and the estimation.
 [^drift]: drift like MAE, but without the absolute value
 [^minimum relay fee]: Most node won't relay transactions with fee lower than the min relay fee, which has a default of `1.0`
-[^blocks target]: Conceptually similar to bitcoin core `estimatesmartfee` parameter called "blocks target", however, `confirms_in` is the real value not the desired target.
-[^fast]: 14GB of compressed raw logs are processed and a compressed CSV produced in about 4 minutes.
+[^blocks target]: Conceptually similar to Bitcoin Core `estimatesmartfee` parameter called "blocks target", however, `confirms_in` is the real value not the desired target.
+[^fast]: 14GB of compressed raw logs are processed and a compressed CSV is produced in about 4 minutes.
 
 [Part 1]: /blog/2021/01/fee-estimation-for-light-clients-part-1/
 [Part 2]: /blog/2021/01/fee-estimation-for-light-clients-part-2/
