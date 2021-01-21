@@ -11,7 +11,7 @@ draft: false
 - [Introduction: what is fee estimation?](#introduction-what-is-fee-estimation)
 - [The problem](#the-problem)
     + [The challenges and the solution](#the-challenges-and-the-solution)
-    + [The question and the data we need](#the-question-and-the-data-we-need)
+    + [The question](#the-question)
     + [The data logger](#the-data-logger)
 - [The dataset](#the-dataset)
     + [The mempool](#the-mempool)
@@ -111,7 +111,7 @@ when recreating the dataset.
 
 My logger instance started collecting data on the 18th of December 2020, and as of today (18th January 2020), the raw logs are about 14GB.
 
-I expect (or at least hope) the raw logs will be useful also for other projects as well, like monitoring the propagation of transactions or other works involving raw mempool data. I will share raw logs data through torrent soon.
+I expect (or at least hope) the raw logs will be useful also for other projects as well, like monitoring the propagation of transactions or other works involving raw mempool data. We will share raw logs data through torrent soon.
 
 ## The dataset
 
@@ -163,13 +163,13 @@ The blocks are available through the p2p network, and downloading the last 6 is 
 Another information the dataset contain is the block percentile fee rate, considering `r_i` to be the rate of the `ith` transaction in a block, `q_k` is the fee rate value such that for each transaction in a block `r_i` < `q_k` returns the `k%` transactions in the block that are paying lower fees.
 
 Percentiles are not used to feed the model but to filter some outliers tx.
-Removing this observations is controversial at best and considered cheating at worse. However, it should be considered that bitcoin core `estimatesmartfee` doesn't even bother to give estimation for the next block, I think this is due to the fact that many transactions that are confirming in the next block are huge overestimation [^overestimation], or clearly errors like [this one] I found when I started logging data.
+Removing this observations is controversial at best and considered cheating at worse. However, it should be considered that bitcoin core `estimatesmartfee` doesn't even bother to give estimation for the next block, we think this is due to the fact that many transactions that are confirming in the next block are huge overestimation [^overestimation], or clearly errors like [this one] we found when we started logging data.
 These outliers are a lot for transactions confirming in the next block (`confirms_in=1`), less so for `confirms_in=2`, mostly disappeared for `confirms_in=3` or more. It's counterintuitive that overestimation exist for `confirms_in>1`, by definition an overestimation is a fee rate way higher than needed, so how is possible that an overestimation doesn't enter the very next block? There are a couple of reasons why a block is discovered without containing a transaction with high fee rate:
 * network latency: my node saw the transaction but the miner didn't see that transaction yet,
 * block building latency: the miner saw the transaction, but didn't finish to rebuild the block template or decided it's more efficient to finish a cycle on the older block template.
 
 To keep the model balanced, when overestimation is filtered out, underestimation are filtered out as well. This also has the effect to remove some of the transactions possibly included because a fee is payed out-of-band.
-Another reason to filter transactions is that the dataset is over-represented by transactions with low `confirms_in`: more than 50% of transactions get confirmed in the next block, so I think it's good to filter some of these transactions.
+Another reason to filter transactions is that the dataset is over-represented by transactions with low `confirms_in`: more than 50% of transactions get confirmed in the next block, so we think it's good to filter some of these transactions.
 
 The applied filters are the following:
 
@@ -220,7 +220,7 @@ estimatesmartfee mode | MAE [satoshi/bytes] | drift
 economic| 35.22 | 29.76
 conservative | 54.28 | 53.13
 
-As I said in the introduction, network traffic is correlated with time and we have the timestamp of when the transaction has been first seen, however a ML model doesn't like plain numbers too much, but it behaves better with "number that repeats", like categories, so we are converting the timestamp in `day_of_week` a number from 0 to 6, and `hours` a number from 0 to 24.
+As we said in the introduction, network traffic is correlated with time and we have the timestamp of when the transaction has been first seen, however a ML model doesn't like plain numbers too much, but it behaves better with "number that repeats", like categories, so we are converting the timestamp in `day_of_week` a number from 0 to 6, and `hours` a number from 0 to 24.
 
 #### Splitting
 
@@ -274,9 +274,9 @@ Non-trainable params comes from the normalization layer and are computed in the 
 49*64+65*64+ = 7361
 ```
 
-Honestly, about the neural network parameters, they are mostly the one taken from this tensorflow [example], I even tried to [tune hyperparameters], however, I decided to follow this [advice]: *"The simplest way to prevent overfitting is to start with a small model:"*. I hope this work will attract other data scientists to this bitcoin problem, improving the model. I also think that a longer time for the data collection is needed to capture various situations.
+Honestly, about the neural network parameters, they are mostly the one taken from this tensorflow [example], we even tried to [tune hyperparameters], however, we decided to follow this [advice]: *"The simplest way to prevent overfitting is to start with a small model:"*. We hope this work will attract other data scientists to this bitcoin problem, improving the model. We also think that a longer time for the data collection is needed to capture various situations.
 
-A significant part of a ML model are the activation functions, `relu` (Rectified Linear Unit) is one of the most used lately, because it's simple and works well as I learned in this [introducing neural network video]. `relu` it's equal to zero for negative values and equal to the input for positive values. Being non-linear allows the whole model to be non-linear.
+A significant part of a ML model are the activation functions, `relu` (Rectified Linear Unit) is one of the most used lately, because it's simple and works well as we learned in this [introducing neural network video]. `relu` it's equal to zero for negative values and equal to the input for positive values. Being non-linear allows the whole model to be non-linear.
 
 For the last layer it is different: we want to enforce a minimum for the output, which is the minimum relay fee `1.0`[^minimum relay fee]. One could not simply cut the output of the model after prediction because all the training would not consider this constraint. So we need to build a custom activation function that the model training will be able to use for the [gradient descent] optimization step. Luckily this is very simple using tensorflow primitives:
 
@@ -286,8 +286,8 @@ def clip(x):
   return tf.where(tf.less(x, min), min, x)
 ```
 
-Another important part is the optimizer, when I first read the aforementioned [example] the optimizer used was `RMSProp` however the example updated lately and I noticed the optimizer changed in favor of `Adam` which I read is the [latest trend] in data science. I changed the model to use `Adam` and effectively the training is faster with `Adam` and even slightly lower error is achieved.
-Another important parameter is the learning rate, which I set to `0.01` after manual trials; however there might be space for improvements such as using [exponential decay], starting with an high learning rate and decreasing it through training epochs.
+Another important part is the optimizer, when we first read the aforementioned [example] the optimizer used was `RMSProp` however the example updated lately and we noticed the optimizer changed in favor of `Adam` which we read is the [latest trend] in data science. We changed the model to use `Adam` and effectively the training is faster with `Adam` and even slightly lower error is achieved.
+Another important parameter is the learning rate, which we set to `0.01` after manual trials; however there might be space for improvements such as using [exponential decay], starting with an high learning rate and decreasing it through training epochs.
 
 The last part of the model configuration is the loss function: the objective of the training is to find the minimum of this function. Usually for regression problem (the ones having a number as output, not a category) the most used is the Mean squared error (MSE). MSE is measured as the average of squared difference between predictions and actual observations, giving larger penalties to large difference because of the square. An interesting property is that the bigger the error the faster the changes is good at the beginning of the training, while slowing down when the model predicts better is desirable to avoid "jumping out" the local minimum.
 
@@ -321,7 +321,7 @@ The number `5617` represent the number of steps. Theoretically the whole trainin
 
 The `40s` is the time it takes to process the epoch on google colab (my threadripper cpu takes `20s`, but GPU or TPU could do better).
 
-The value `loss` is the MSE on the training data while `val_loss` is the MSE value on the validation data. As far as I understand the separated validation data helps to detect the machine learning enemy, overfitting. Because in case of overfitting the value `loss` continue to improve (almost indefinitely) while `val_loss` start improving with the loss but a certain point diverge, indicating the network is memorizing the training data to improve `loss` but in doing so losing generalizing capabilities.
+The value `loss` is the MSE on the training data while `val_loss` is the MSE value on the validation data. As far as we understand the separated validation data helps to detect the machine learning enemy, overfitting. Because in case of overfitting the value `loss` continue to improve (almost indefinitely) while `val_loss` start improving with the loss but a certain point diverge, indicating the network is memorizing the training data to improve `loss` but in doing so losing generalizing capabilities.
 
 Our model doesn't look to suffer overfitting cause `loss` and `val_loss` doesn't diverge during training
 
@@ -370,9 +370,9 @@ This is just a starting point, there are many future improvements such as:
 
 ## Acknowledgements
 
-Thanks to [Square crypto] for sponsoring this work and thanks to the reviewers TODO ADD REVIEWERS
+Thanks to [Square crypto] for sponsoring this work and thanks to the reviewers: [Leonardo Comandini], [Domenico Gabriele], [Alekos Filini], [Ferdinando Ametrano].
 
-And also this tweet that remembered me I had this work in my TODO list
+And also this tweet that remembered me [I] had this work in my TODO list
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I don&#39;t understand Machine Learning(ML), but is it horrible to use ML to predict bitcoin fees? <br><br>I have heard tales of this &quot;Deep Learning&quot; thing where you throw a bunch of data at it and it gives you good results with high accuracy.</p>&mdash; sanket1729 (@sanket1729) <a href="https://twitter.com/sanket1729/status/1336624662365822977?ref_src=twsrc%5Etfw">December 9, 2020</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
@@ -415,3 +415,8 @@ And also this tweet that remembered me I had this work in my TODO list
 [hashed feature columns]: https://www.tensorflow.org/tutorials/structured_data/feature_columns#hashed_feature_columns
 [tensorflow]: https://www.tensorflow.org/
 [TFRecord format]: https://www.tensorflow.org/tutorials/load_data/tfrecord
+[Leonardo Comandini]: https://twitter.com/LeoComandini
+[Domenico Gabriele]: https://twitter.com/domegabri
+[Alekos Filini]: https://twitter.com/afilini
+[Ferdinando Ametrano]: https://twitter.com/Ferdinando1970
+[I]: https://twitter.com/RCasatta
