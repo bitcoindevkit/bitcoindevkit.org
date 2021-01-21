@@ -1,22 +1,15 @@
 ---
-title: "Fee estimation for light-clients"
+title: "Fee estimation for light-clients (Part 3)"
 description: ""
 author: "Riccardo Casatta"
-date: "2021-01-19"
-tags: ["rust", "fee", "machine learning"]
+date: "2021-01-21"
+tags: ["fee", "machine learning"]
 hidden: true
 draft: false
 ---
 
-- [Introduction: what is fee estimation?](#introduction-what-is-fee-estimation)
-- [The problem](#the-problem)
-    + [The challenges and the solution](#the-challenges-and-the-solution)
-    + [The question](#the-question)
-    + [The data logger](#the-data-logger)
-- [The dataset](#the-dataset)
-    + [The mempool](#the-mempool)
-    + [The outliers](#the-outliers)
-    + [Recap](#recap)
+This post is part 2 of 3 of a series. ([Part 1], [Part 2])
+
 - [The model](#the-model)
     + [Splitting](#splitting)
     + [Preprocessing](#preprocessing)
@@ -25,184 +18,6 @@ draft: false
 - [The prediction phase](#the-prediction-phase)
 - [Conclusion and future development](#conclusion-and-future-development)
 - [Acknowledgements](#acknowledgements)
-
-## Introduction: what is fee estimation?
-
-Fee estimation is the process of selecting the fee rate[^fee rate] for a bitcoin transaction being created, according to two main factors:
-
-* The current congestion of the Bitcoin network.
-* The urgency, or lack thereof, for the transaction confirmation, i.e, its inclusion in a block.
-
-A fee rate should be adequate to the above factors: a fee too high would be a waste of money, because the same result could have been achieved with a lower expense. On the other end, a fee rate too low would wait for a confirmation longer than planned or, even worse, could not be confirmed at all.
-
-## The problem
-
-Bitcoin Core offers fee estimation through the [`estimatesmartfee`] RPC method, and there are also a lot of third-party [fee estimators] online, so do we need yet another estimator?
-
-The model used by Bitcoin Core is not well suited for light-clients such as mobile wallets, even when running in pruned mode. Online estimators are lacking in terms of:
-
-* Privacy: Contacting the server leaks your IP (unless you are using Tor or a VPN), and the request timing may be used to correlate the request to a transaction broadcasted to the network soon thereafter.
-* Security: A malicious estimator could provide a high fee rate leading to a waste of money, or a low fee rate hampering the transaction confirmation.
-
-Replace By Fee (RBF) and Child Pays For Parent (CPFP) are techniques that can somewhat minimize the fee estimation problem, because one could simply underestimate the fee rate and then raise it when necessary, however:
-* RBF and CPFP may leak more information, such as patterns that may allow to detect the kind of wallet used, or which one of the transaction outputs is the change.
-* Requires additional interaction: the client must come back "online" to perform the fee bump. Sometimes this might be impractical or risky, for instance when using an offline signer or a multisignature with geographically distributed keys.
-
-Thus, this work is an effort to build a **good fee estimator for purely peer to peer light clients** such as [neutrino] based ones, or at least determine whether the approach we take is infeasible and open the discussion
-for other, better, models.
-
-In the meantime, another sub-goal is pursued: attract the interest of data scientists; Indeed the initial step for this analysis consists in constructing a data set, which could also also help kickstart other studies on fee
-esimation or, more broadly, the Bitcoin mempool.
-
-#### The challenges and the solution
-
-The hardest part of doing fee estimation on a light client is the lack of information: for example, Bitcoin Core's `estimatesmartfee` uses up to the last 1008 blocks and knows everything about the mempool[^mempool], such as
-the fee rate of every transaction it contains, but a light-client does not.
-
-Also, there are other factors that may help doing fee estimation, such as the day of the week (the mempool usually empties during the [weekend]) or the time of the day to anticipate recurring daily events
-(such as the batch of [bitmex withdrawals]).
-
-The idea is to apply Machine Learning (ML) techniques[^disclaimer] to discover patterns over what a light-client knows and see if they are enough to achieve consistently good estimations.
-
-#### The question
-
-We are going to use a DNN (Deep Neural Network), a ML technique in the supervised learning branch. The "ELI5" is: give a lot of example inputs and the desired output to a black box; if there are correlations between inputs and outputs,
-and there are enough examples, the black box will eventually start predicting the correct output even with inputs it has never seen before.
-
-To define our inputs and outputs, we need to start from the question we want to answer. For a fee estimator this is:
-
-*"Which fee rate should I use if I want this transaction to be confirmed in at most `n` blocks?"*
-
-This can be translated to a table with many rows like:
-
-confirms_in | other_informations | fee_rate
--|-|-
-1|...|100.34
-2|...| 84.33
-10|...| 44.44
-
-where the `fee_rate` column is the output we want, also called the "*target*" or "*label*" in ML terminology, and the other columns are our inputs.
-
-Can we build this table just by looking at the Bitcoin blockchain? Unfortunately, we can't:
-The main thing that's missing is an indication of when the node first saw a transaction that has been later confirmed in a block. With that knowledge we can say that the fee-rate of that transaction was the exact value required to confirm
-within the number of blocks it actually took to be confirmed. For instance, if we see transaction `t` when the blockchain is at height `1000` and then we notice that `t` has been included in block `1006`, we can deduce that the
-fee-rate paid by `t` was the exact value required to get confirmed within the next `6` blocks.
-
-So to build our model, we first need to gather this data, and machine learning needs a *lot* of data to work well.
-
-#### The data logger
-
-The [data logger] is built with the purpose of collecting all the data we need, and it's MIT licensed open source software written in Rust.
-
-We need to register the moment in time when transactions enter in the node's mempool; to be efficient and precise we should not only call the RPC endpoints but listen to [ZMQ] events. Luckily, the just released bitcoin core 0.21.0 added a new [ZMQ] topic `zmqpubsequence` notifying mempool events (and block events). The logger is also listening to `zmqpubrawtx` and `zmqpubrawblock` topics, to make less RPC calls.
-
-We are not only interested in the timestamp of the transaction entering the mempool, but also how many blocks it will take until the same transaction is confirmed.
-In the final dataset this field is called `confirms_in`[^blocks target]; if `confirms_in = 1` it means the transaction is confirmed in the first block created after it has been seen for the first time.
-
-Another critical piece of information logged by the data logger is the `fee_rate` of the transaction, since the absolute fee value paid by a bitcoin transaction is not available nor derivable given only the transaction itself, as the inputs don't have explicit amounts.
-
-All this data (apart from the time of the transaction entering in the mempool) can actually be reconstructed simply by looking at the blockchain. However, querying the bitcoin node can be fairly slow, and during the model training iterations we want to recreate the ML dataset rapidly[^fast], for example whenever we need to modify or add a new field.
-
-For these reasons, the logger is split into two parts: a process listening to the events sent by our node, which creates raw logs, and then a second process that uses these logs to create the final CSV dataset.
-Raw logs are self-contained: for example, they contain all the previous transaction output values for every relevant transaction. This causes some redundancy, but in this case it's better to trade some efficiency for more performance
-when recreating the dataset.
-
-![High level graph](/images/high-level-graph.svg)
-
-My logger instance started collecting data on the 18th of December 2020, and as of today (18th January 2020), the raw logs are about 14GB.
-
-I expect (or at least hope) the raw logs will be useful also for other projects as well, like monitoring the propagation of transactions or other works involving raw mempool data. We will share raw logs data through torrent soon.
-
-## The dataset
-
-The [dataset] is publicly available (~400MB gzip compressed, ~1.6GB as plain CSV).
-
-The output of the model is the fee rate, expressed in `[satoshi/vbytes]` **TODO: missing link??**.
-
-What about the inputs? Generally speaking, we have two main requirements for what can be included as input for our model:
-
-* It must be correlated to the output, even with a non-linear relation.
-* It must be available to a light client: for instance, assuming to have knowledge and an index of the last 1000 blocks is considered too much.
-
-To evaluate the approach we are taking, we also want to compare our model's results with another available estimation: for this reason the dataset includes data to compute the error agains Bitcoin Core's `estimatesmartfee` results, though we are not going to use it for this model.
-
-The dataset will contain only transactions that spend already confirmed inputs. If we wanted to include transactions with unconfirmed inputs as well, the fee rate would have to be computed as a whole;
-for example if transaction `t2` spends an unconfirmed input from `t1` (while `t1` only spends confirmed inputs, and all its other outputs are unspent), the aggregated fee rate would have to be used.
-Supposing `f()` is extracts the absolute fee and `w()` the transaction weight, the aggregated fee rate would be `(f(t1) + f(t2)) / (w(t1) + w(t2))`. Thus, as already said previously, to keep things simple the model simply discards all the transaction
-that would need to perform this computation.
-
-For the same reason the dataset has the `parent_in_cpfp` flag. When a transaction has inputs confirmed (so it's not excluded by the previous rule) but one or more of its output have been spent by a transaction confirmed in the same block, `parent_in_cpfp` is `1`.
-Transactions with `parent_in_cpfp = 1` are included in the dataset but excluded by the current model, since the miner probably considered an aggregated fee rate while picking the transactions to build a block.
-
-#### The mempool
-
-The most important input of our model is the current *status* of the mempool itself. However, we cannot feed the model with a list of the fee rate of every unconfirmed transaction, because this array would have a variable length.
-To overcome this, the transaction contained in the mempool are grouped in "buckets" which are basically subsets of the mempool where all the transactions contained in a bucket have a similar fee rate. In particular we only care about the
-*number* of transaction in every *bucket*, not which transactions it contains.
-
-The mempool buckets array is defined by two parameters, the `percentage_increment` and the `array_max` value.
-Supposing to choose the mempool buckets array to have parameters `percentage_increment = 50%` and `array_max = 500.0 sat/vbytes` the buckets would be constructed like so:
-
-bucket | bucket min fee rate | bucket max fee rate
--|-|-
-a0|1.0|1.5 = min*(1+`percentage_increment`)
-a1|1.5 = previous max|2.25
-a2|2.25| 3.375
-...|...|...
-a15|437.89|inf
-
-The array stops at `a15` because `a16` would have a bucket min greater than `array_max`.
-
-We previously stated this model is for light-client such as [neutrino] based ones. In these clients the mempool is already available (it's needed to check for received transactions) but the problem is we can't compute fee rates of this transactions because previous confirmed inputs are not in the mempool!
-
-Luckily, **thanks to temporal locality [^temporal locality], an important part of mempool transactions spend outputs created very recently**, for example in the last 6 blocks.
-The blocks are available through the p2p network, and downloading the last 6 is considered a good compromise between resource consumption and accurate prediction. We need the model to be built with the same data available in the prediction phase, as a consequence the mempool data in the dataset refers only to transactions having their inputs in the last 6 blocks. However the `bitcoin-csv` tool inside the [data logger] allows to configure this parameter.
-
-#### The outliers
-
-Another information the dataset contain is the block percentile fee rate, considering `r_i` to be the rate of the `ith` transaction in a block, `q_k` is the fee rate value such that for each transaction in a block `r_i` < `q_k` returns the `k%` transactions in the block that are paying lower fees.
-
-Percentiles are not used to feed the model but to filter some outliers tx.
-Removing this observations is controversial at best and considered cheating at worse. However, it should be considered that bitcoin core `estimatesmartfee` doesn't even bother to give estimation for the next block, we think this is due to the fact that many transactions that are confirming in the next block are huge overestimation [^overestimation], or clearly errors like [this one] we found when we started logging data.
-These outliers are a lot for transactions confirming in the next block (`confirms_in=1`), less so for `confirms_in=2`, mostly disappeared for `confirms_in=3` or more. It's counterintuitive that overestimation exist for `confirms_in>1`, by definition an overestimation is a fee rate way higher than needed, so how is possible that an overestimation doesn't enter the very next block? There are a couple of reasons why a block is discovered without containing a transaction with high fee rate:
-* network latency: my node saw the transaction but the miner didn't see that transaction yet,
-* block building latency: the miner saw the transaction, but didn't finish to rebuild the block template or decided it's more efficient to finish a cycle on the older block template.
-
-To keep the model balanced, when overestimation is filtered out, underestimation are filtered out as well. This also has the effect to remove some of the transactions possibly included because a fee is payed out-of-band.
-Another reason to filter transactions is that the dataset is over-represented by transactions with low `confirms_in`: more than 50% of transactions get confirmed in the next block, so we think it's good to filter some of these transactions.
-
-The applied filters are the following:
-
-confirms_in|lower|higher
--|-|-
-1|q45|q55
-2|q30|q70
-3|q1|q99
-
-Not yet convinced by the removal of these outliers? The [dataset] contains all the observations, make your model :)
-
-#### Recap
-
-column | used in the model | description
--|-|-
-txid | no | Transaction hash, useful for debugging
-timestamp | converted | The time when the transaction has been added in the mempool, in the model is used in the form `day_of_week` and `hour`
-current_height | no | The blockchain height seen by the node in this moment
-confirms_in | yes | This transaction confirmed at block height `current_height+confirms_in`
-fee_rate | target | This transaction fee rate measured in `[sat/vbytes]`
-fee_rate_bytes | no | fee rate in satoshi / bytes, used to check bitcoin core `estimatesmartfee` predictions
-block_avg_fee | no | block average fee rate `[sat/vbytes]` of block `current_height+confirms_in`
-core_econ | no | bitcoin `estimatesmartfee` result for `confirms_in` block target and in economic mode. Could be not available `?` when a block is connected more recently than the estimation has been requested, estimation are requested every 10 secs.
-core_cons | no | Same as above but with conservative mode
-mempool_len | no | Sum of the mempool transaction with fee rate available (sum of every `a*` field)
-parent_in_cpfp | no | It's 1 when the transaction has outputs that are spent in the same block in which the transaction is confirmed (they are parent in a CPFP relations).
-q1-q30-... | no | Transaction confirming fast could be outliers, usually paying a lot more than required, this percentiles are used to filter those transactions,
-a1-a2-... | yes | Contains the number of transaction in the mempool with known fee rate in the ith bucket.
-
-
-![The good, the bad and the ugly](/images/the-good-the-bad-the-ugly.jpg)
-<div align="center">My biological neural network fired this, I think it's because a lot of chapters start with "The"</div>
-
 
 ## The model
 
@@ -219,6 +34,9 @@ estimatesmartfee mode | MAE [satoshi/bytes] | drift
 -|-|-
 economic| 35.22 | 29.76
 conservative | 54.28 | 53.13
+
+As seen from the table, the error is quite high, but the positive drift suggests `estimatesmartfee` prefers to overestimate to avoid transactions not confirming.
+
 
 As we said in the introduction, network traffic is correlated with time and we have the timestamp of when the transaction has been first seen, however a ML model doesn't like plain numbers too much, but it behaves better with "number that repeats", like categories, so we are converting the timestamp in `day_of_week` a number from 0 to 6, and `hours` a number from 0 to 24.
 
@@ -376,7 +194,7 @@ And also this tweet that remembered me [I] had this work in my TODO list
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">I don&#39;t understand Machine Learning(ML), but is it horrible to use ML to predict bitcoin fees? <br><br>I have heard tales of this &quot;Deep Learning&quot; thing where you throw a bunch of data at it and it gives you good results with high accuracy.</p>&mdash; sanket1729 (@sanket1729) <a href="https://twitter.com/sanket1729/status/1336624662365822977?ref_src=twsrc%5Etfw">December 9, 2020</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-<br/><br/>
+This is the final part of the series. In the previous [Part 1] we talked about the problem and in [Part 3] we talked about the dataset.
 
 [^fee rate]: The transaction fee rate is the ratio between the absolute fee expressed in satoshi, over the weight of the transaction measured in virtual bytes. The weight of the transaction is similar to the byte size, however a part of the transaction (the segwit part) is discounted, their byte size is considered less because it creates less burden for the network.
 [^mempool]: mempool is the set of transactions that are valid by consensus rules (for example, they are spending existing bitcoin), broadcasted in the bitcoin peer to peer network, but they are not yet part of the blockchain.
@@ -389,6 +207,9 @@ And also this tweet that remembered me [I] had this work in my TODO list
 [^fast]: 14GB of compressed raw logs are processed and a compressed CSV produced in about 4 minutes.
 
 
+[Part 1]: /blog/2021/01/fee-estimation-for-light-clients-part-1/
+[Part 2]: /blog/2021/01/fee-estimation-for-light-clients-part-2/
+[Part 3]: /blog/2021/01/fee-estimation-for-light-clients-part-3/
 [`estimatesmartfee`]: https://bitcoincore.org/en/doc/0.20.0/rpc/util/estimatesmartfee/
 [core]: https://bitcoincore.org/
 [bitmex withdrawals]: https://b10c.me/mempool-observations/2-bitmex-broadcast-13-utc/
