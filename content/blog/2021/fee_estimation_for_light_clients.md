@@ -28,30 +28,28 @@ draft: false
 
 ## Introduction: what is fee estimation?
 
-Fee estimation is the process of selecting the fee rate[^fee rate] for a bitcoin transaction we are creating, according to two main factors:
+Fee estimation is the process of selecting the fee rate[^fee rate] for a bitcoin transaction being created, according to two main factors:
 
 * The current congestion of the Bitcoin network.
-* The urgency, or lack thereof, of the sender to get his transaction included in a block.
+* The urgency, or lack thereof, for the transaction confirmation, i.e, its inclusion in a block.
 
-Selecting a fee rate above what would actually be enough means wasting money, because the same result could have been achieved with a lower expense.
-
-On the other end, selecting a fee rate which is too low means waiting longer than expected before the transaction confirms or, even worse, never see the transaction confirmed at all.
+A fee rate should be adequate to the above factors: a fee too high would be a waste of money, because the same result could have been achieved with a lower expense. On the other end, a fee rate too low would wait for a confirmation longer than planned or, even worse, could not be confirmed at all.
 
 ## The problem
 
-Bitcoin Core nodes offer fee estimation through the [`estimatesmartfee`] RPC method, and there are also a lot of third-party [fee estimators] online, so why do we need yet another estimator?
+Bitcoin Core offers fee estimation through the [`estimatesmartfee`] RPC method, and there are also a lot of third-party [fee estimators] online, so do we need yet another estimator?
 
-The answer is that the model used by Bitcoin Core is not well suited for light-clients such as mobile wallets, even when running in pruned mode. Online estimators are bad in terms of:
+The model used by Bitcoin Core is not well suited for light-clients such as mobile wallets, even when running in pruned mode. Online estimators are lacking in terms of:
 
 * Privacy: Contacting the server leaks your IP (unless you are using Tor or a VPN), and the request timing may be used to correlate the request to a transaction broadcasted to the network soon thereafter.
-* Security: A malicious estimator could provide a very high fee rate causing people who trust it to waste money, or even a low fee rates causing the transaction to never confirm.
+* Security: A malicious estimator could provide a high fee rate leading to a waste of money, or a low fee rate hampering the transaction confirmation.
 
 Replace By Fee (RBF) and Child Pays For Parent (CPFP) are techniques that can somewhat minimize the fee estimation problem, because one could simply underestimate the fee rate and then raise it when necessary, however:
-* RBF and CPFP may leak more information, such as patterns that may allow to detect the kind of wallet used, or which one of the outputs of a transaction is the change.
-* Requires additional interaction: the client must come back "online" to perform the fee bump. Sometimes this is very costly, for instance when using an offline signer or a multisignature with geographically distributed keys.
+* RBF and CPFP may leak more information, such as patterns that may allow to detect the kind of wallet used, or which one of the transaction outputs is the change.
+* Requires additional interaction: the client must come back "online" to perform the fee bump. Sometimes this might be impractical or risky, for instance when using an offline signer or a multisignature with geographically distributed keys.
 
 Thus, this work is an effort to build a **good fee estimator for purely peer to peer light clients** such as [neutrino] based ones, or at least determine whether the approach we take is infeasible and open the discussion
-to other, better, models.
+for other, better, models.
 
 In the meantime, another sub-goal is pursued: attract the interest of data scientists; Indeed the initial step for this analysis consists in constructing a data set, which could also also help kickstart other studies on fee
 esimation or, more broadly, the Bitcoin mempool.
@@ -59,21 +57,19 @@ esimation or, more broadly, the Bitcoin mempool.
 #### The challenges and the solution
 
 The hardest part of doing fee estimation on a light client is the lack of information: for example, Bitcoin Core's `estimatesmartfee` uses up to the last 1008 blocks and knows everything about the mempool[^mempool], such as
-the fee rate of every transaction it contains, but a light-client doesn't.
+the fee rate of every transaction it contains, but a light-client does not.
 
-Also, there are other factors that may help doing fee estimation, such as the day of the week (it's well-known that the mempool usually empties during the [weekend]) or the time of the day to anticipate recurring daily events
+Also, there are other factors that may help doing fee estimation, such as the day of the week (the mempool usually empties during the [weekend]) or the time of the day to anticipate recurring daily events
 (such as the batch of [bitmex withdrawals]).
 
 The idea is to apply Machine Learning (ML) techniques[^disclaimer] to discover patterns over what a light-client knows and see if they are enough to achieve consistently good estimations.
 
-However this creates another problem: machine learning needs data, or rather, a *lot* of data to work well. Can we find this anywhere?
-
-#### The question and the data we need
+#### The question
 
 We are going to use a DNN (Deep Neural Network), a ML technique in the supervised learning branch. The "ELI5" is: give a lot of example inputs and the desired output to a black box; if there are correlations between inputs and outputs,
-and there are enough examples, the black box will eventually start predicting the correct output even when given inputs it has never seen before.
+and there are enough examples, the black box will eventually start predicting the correct output even with inputs it has never seen before.
 
-To define our input and outputs, we need to start from the question we want to answer. For a fee estimator this is:
+To define our inputs and outputs, we need to start from the question we want to answer. For a fee estimator this is:
 
 *"Which fee rate should I use if I want this transaction to be confirmed in at most `n` blocks?"*
 
@@ -89,25 +85,23 @@ where the `fee_rate` column is the output we want, also called the "*target*" or
 
 Can we build this table just by looking at the Bitcoin blockchain? Unfortunately, we can't:
 The main thing that's missing is an indication of when the node first saw a transaction that has been later confirmed in a block. With that knowledge we can say that the fee-rate of that transaction was the exact value required to confirm
-within the number of blocks it actually took to be confirmed. For instance, if we see transaction `t` when the blockchain is at height `1000` and then we notice that `t` has been included in block `1006`, we can clearly say that the
+within the number of blocks it actually took to be confirmed. For instance, if we see transaction `t` when the blockchain is at height `1000` and then we notice that `t` has been included in block `1006`, we can deduce that the
 fee-rate paid by `t` was the exact value required to get confirmed within the next `6` blocks.
 
-So to build our model, we first need to gather this data.
+So to build our model, we first need to gather this data, and machine learning needs a *lot* of data to work well.
 
 #### The data logger
 
 The [data logger] is built with the purpose of collecting all the data we need, and it's MIT licensed open source software written in Rust.
 
-We start by saving when a transaction enter our node's mempool: to be more efficient and precise we should not only call the RPC endpoints but listen to [ZMQ] events.
-Luckily the newly-released Bitcoin Core 0.21.0 added a new [ZMQ] topic called `zmqpubsequence`, that sends a notification for mempool (and block) events. The logger is also listening to `zmqpubrawtx` and `zmqpubrawblock` topics, to avoid making extra RPC calls.
+We need to register the moment in time when transactions enter in the node's mempool; to be efficient and precise we should not only call the RPC endpoints but listen to [ZMQ] events. Luckily, the just released bitcoin core 0.21.0 added a new [ZMQ] topic `zmqpubsequence` notifying mempool events (and block events). The logger is also listening to `zmqpubrawtx` and `zmqpubrawblock` topics, to make less RPC calls.
 
 We are not only interested in the timestamp of the transaction entering the mempool, but also how many blocks it will take until the same transaction is confirmed.
 In the final dataset this field is called `confirms_in`[^blocks target]; if `confirms_in = 1` it means the transaction is confirmed in the first block created after it has been seen for the first time.
 
 Another critical piece of information logged by the data logger is the `fee_rate` of the transaction, since the absolute fee value paid by a bitcoin transaction is not available nor derivable given only the transaction itself, as the inputs don't have explicit amounts.
 
-All this data (apart from the time of the transaction entering in the mempool) can actually be reconstructed simply by looking at the blockchain: however, querying the bitcoin node can be fairly slow, and I want to be able to recreate the ML dataset rapidly[^fast] while iterating on the model training, for
-example whenever I need to modify or add a new field.
+All this data (apart from the time of the transaction entering in the mempool) can actually be reconstructed simply by looking at the blockchain. However, querying the bitcoin node can be fairly slow, and during the model training iterations we want to recreate the ML dataset rapidly[^fast], for example whenever we need to modify or add a new field.
 
 For these reasons, the logger is split into two parts: a process listening to the events sent by our node, which creates raw logs, and then a second process that uses these logs to create the final CSV dataset.
 Raw logs are self-contained: for example, they contain all the previous transaction output values for every relevant transaction. This causes some redundancy, but in this case it's better to trade some efficiency for more performance
@@ -170,12 +164,12 @@ Another information the dataset contain is the block percentile fee rate, consid
 
 Percentiles are not used to feed the model but to filter some outliers tx.
 Removing this observations is controversial at best and considered cheating at worse. However, it should be considered that bitcoin core `estimatesmartfee` doesn't even bother to give estimation for the next block, I think this is due to the fact that many transactions that are confirming in the next block are huge overestimation [^overestimation], or clearly errors like [this one] I found when I started logging data.
-These outliers are a lot for transactions confirming in the next block (`confirms_in=1`), less so for `confirms_in=2`, mostly disappeared for `confirms_in=3` or more. It's counterintuitive that overestimation exist for `confirms_in>1`, by definition an overestimation is a fee rate way higher than needed, so how it's possible an overestimation doesn't enter the very next block? There are a couple of reasons why a block is discovered without containing a transaction with high fee rate:
+These outliers are a lot for transactions confirming in the next block (`confirms_in=1`), less so for `confirms_in=2`, mostly disappeared for `confirms_in=3` or more. It's counterintuitive that overestimation exist for `confirms_in>1`, by definition an overestimation is a fee rate way higher than needed, so how is possible that an overestimation doesn't enter the very next block? There are a couple of reasons why a block is discovered without containing a transaction with high fee rate:
 * network latency: my node saw the transaction but the miner didn't see that transaction yet,
 * block building latency: the miner saw the transaction, but didn't finish to rebuild the block template or decided it's more efficient to finish a cycle on the older block template.
 
-To keep the model balanced, when overestimation is filtered out, underestimation are filtered out as well. This also has the effect to remove some transactions that are included because fee is payed out-of-band.
-Another reason to filter transactions is that the dataset is over-represented by transactions with low `confirms_in`: more than 50% of transactions get confirmed in the next block, so I think it's good to filter some of this transactions.
+To keep the model balanced, when overestimation is filtered out, underestimation are filtered out as well. This also has the effect to remove some of the transactions possibly included because a fee is payed out-of-band.
+Another reason to filter transactions is that the dataset is over-represented by transactions with low `confirms_in`: more than 50% of transactions get confirmed in the next block, so I think it's good to filter some of these transactions.
 
 The applied filters are the following:
 
@@ -215,7 +209,7 @@ a1-a2-... | yes | Contains the number of transaction in the mempool with known f
 The code building and training the model with [tensorflow] is available in [google colab notebook] (jupyter notebook); you can also download the file as plain python and run it locally. About 30 minutes are needed to train the model, but it heavily depends on the hardware available.
 
 ![graph confirm_in blocks vs fee_rate](/images/20210115-111008-confirms_in-fee_rate.png)
-<div align="center">Tired to read and want a couple simple statement? In the last month a ~50 sat/vbyte transaction never took more than a day to confirm and a ~5 sat/vbyte never took more than a week</div><br/>
+<div align="center">Tired to read and want a short interesting evidence? In the last month a ~50 sat/vbyte transaction never took more than a day to confirm and a ~5 sat/vbyte never took more than a week</div><br/>
 
 As a reference, in the code we have a calculation of the bitcoin core `estimatesmartfee` MAE[^MAE] and drift[^drift], note this are `[satoshi/bytes]` (not virtual bytes).
 MAE is computed as `avg(abs(fee_rate_bytes - core_econ))` when `core_econ` is available (about 1.2M observations, sometime the value is not available when considered too old).
@@ -280,11 +274,11 @@ Non-trainable params comes from the normalization layer and are computed in the 
 49*64+65*64+ = 7361
 ```
 
-Honestly, about the neural network parameters, they are mostly the one taken from this tensorflow [example], I even tried to [tune hyperparameters], however, I decided to follow this [advice]: *"The simplest way to prevent overfitting is to start with a small model:"*. I hope this work will attract professional data scientists to this bitcoin problem, improving the model. I also think that a longer time for the data collection is needed to capture various situations.
+Honestly, about the neural network parameters, they are mostly the one taken from this tensorflow [example], I even tried to [tune hyperparameters], however, I decided to follow this [advice]: *"The simplest way to prevent overfitting is to start with a small model:"*. I hope this work will attract other data scientists to this bitcoin problem, improving the model. I also think that a longer time for the data collection is needed to capture various situations.
 
 A significant part of a ML model are the activation functions, `relu` (Rectified Linear Unit) is one of the most used lately, because it's simple and works well as I learned in this [introducing neural network video]. `relu` it's equal to zero for negative values and equal to the input for positive values. Being non-linear allows the whole model to be non-linear.
 
-For the last layer it's different: we want to enforce a minimum for the output, which is the minimum relay fee `1.0`[^minimum relay fee]. One could not simply cut the output of the model after prediction because all the training would not consider this constraint. So we need to build a custom activation function that the model training will be able to use for the [gradient descent] optimization step. Luckily this is very simple using tensorflow primitives:
+For the last layer it is different: we want to enforce a minimum for the output, which is the minimum relay fee `1.0`[^minimum relay fee]. One could not simply cut the output of the model after prediction because all the training would not consider this constraint. So we need to build a custom activation function that the model training will be able to use for the [gradient descent] optimization step. Luckily this is very simple using tensorflow primitives:
 
 ```
 def clip(x):
@@ -297,7 +291,7 @@ Another important parameter is the learning rate, which I set to `0.01` after ma
 
 The last part of the model configuration is the loss function: the objective of the training is to find the minimum of this function. Usually for regression problem (the ones having a number as output, not a category) the most used is the Mean squared error (MSE). MSE is measured as the average of squared difference between predictions and actual observations, giving larger penalties to large difference because of the square. An interesting property is that the bigger the error the faster the changes is good at the beginning of the training, while slowing down when the model predicts better is desirable to avoid "jumping out" the local minimum.
 
-#### Finally, training
+#### Finally, the model training
 
 ```
 PATIENCE = 20
@@ -350,7 +344,7 @@ The following chart is instead a distribution of the errors, which for good mode
 
 ## Conclusion and future development
 
-I think results have shown deep neural network are a tool capable to estimate bitcoin transactions fees with good results and more work should be spent in this area.
+The results have shown deep neural network are a tool capable of good bitcoin transaction fee estimations; this suggests that further ML research in this area might be promising.
 
 This is just a starting point, there are many future improvements such as:
 
@@ -358,10 +352,10 @@ This is just a starting point, there are many future improvements such as:
 * Tensorflow is a huge dependency, and since it contains all the feature to build and train a model, most of the feature are not needed in the prediction phase. In fact tensorflow lite exists which is specifically created for embedded and mobile devices; the [prediction test tool] and the final integration in [bdk] should use it.
 * There are other fields that should be explored that could improve model predictions, such as transaction weight, time from last block and many others. Luckily the architecture of the logger allows the generation of the dataset from the raw logs very quickly. Also some fields like `confirms_in` are so important that the model could benefit from expansion during pre-processing with technique such as [hashed feature columns].
 * Bitcoin logger could be improved by a merge command to unify raw logs files, reducing redundancy and consequently disk occupation. Other than CSV the dataset could be created in multiple files in [TFRecord format] to allow more parallelism during training.
-* At the moment I am training the model on a threadripper CPU, training the code on GPU or even TPU will be needed to decrease training time, especially because input data will grow and capture more mempool situations.
+* At the moment we are training the model on a threadripper CPU, training the code on GPU or even TPU will be needed to decrease training time, especially because input data will grow and capture more mempool situations.
 * The [prediction test tool] should estimate only using the p2p bitcoin network, without requiring a node. This work would be propedeutic for [bdk] integration
 * At the moment mempool buckets are multiple inputs `a*` as show in the model graph; since they are related, is it possible to merge them in one TensorArray?
-* Why the model sometimes doesn't learn and [gets stuck]? It may depend on a particular configuration of the weight random initialization and the first derivative being zero for relu for negative number. If this is the case Leaky relu should solve the problem
+* Sometimes the model does not learn and [gets stuck]. It may depend on a particular configuration of the weight random initialization and the first derivative being zero for relu for negative number. If this is the case Leaky relu should solve the problem
 * There are issues regarding dead neurons (going to 0) or neurons with big weight, weight results should be monitored for this events, and also weight decay and L2 regularization should be explored.
 * Tune hyper-parameters technique should be re-tested.
 * Predictions should be monotonic decreasing for growing `confirms_in` parameter; for obvious reason it doesn't make sense that an higher fee rate will result in a higher confirmation time. Since this is not enforced anywhere in the model, situation like this could happen and should be avoided.
