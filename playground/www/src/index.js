@@ -10,7 +10,12 @@ async function startWallet(desc, change_desc) {
     const history = [];
     let historyIndex = 0;
 
-    const inst = await new WalletWrapper("testnet", desc, change_desc, "https://blockstream.info/testnet/api");
+    let inst = null;
+    try {
+        inst = await new WalletWrapper("testnet", desc, change_desc, "https://blockstream.info/testnet/api");
+    } catch(e) {
+        console.error(e);
+    }
 
     const run = (command) => {
         if (command == "clear") {

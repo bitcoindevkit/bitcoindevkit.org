@@ -10,7 +10,9 @@ use log::{debug, info};
 
 use serde::Deserialize;
 
-use clap::AppSettings;
+use bdk_cli::bdk;
+use bdk_cli::structopt::StructOpt;
+use bdk_cli::WalletSubCommand;
 
 use bdk::bitcoin;
 use bdk::blockchain::EsploraBlockchain;
@@ -78,14 +80,14 @@ impl WalletWrapper {
 
     #[wasm_bindgen]
     pub fn run(&self, line: String) -> Promise {
-        let mut app = cli::make_cli_subcommands().setting(AppSettings::NoBinaryName);
         let wallet = Rc::clone(&self.wallet);
 
         future_to_promise(async move {
-            let matches = app
-                .get_matches_from_safe_borrow(line.split(" "))
-                .map_err(|e| e.message)?;
-            let res = cli::handle_matches(&wallet, matches)
+            let subcommand =
+                WalletSubCommand::from_iter_safe(vec![""].into_iter().chain(line.split(" ")))
+                    .map_err(|e| e.to_string())?;
+
+            let res = bdk_cli::handle_wallet_subcommand(&wallet, subcommand)
                 .await
                 .map(|json| json.to_string())
                 .map_err(|e| format!("{:?}", e))?;
