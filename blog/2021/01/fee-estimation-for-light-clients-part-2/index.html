@@ -17,7 +17,7 @@
 <meta name="msapplication-TileColor" content="#da532c">
 <meta name="theme-color" content="#ffffff">
 
-    <title>Blog :: Bitcoin Dev Kit</title>
+    <title>Fee estimation for light-clients (Part 2) :: Bitcoin Dev Kit</title>
 
     
     <link href="/css/nucleus.css?1611582772" rel="stylesheet">
@@ -34,18 +34,25 @@
     
     <link href="/css/style.css?1611582772" rel="stylesheet"><link href="/css/jsonview.css?1611582772" rel="stylesheet"><link href="/css/blog.css?1611582772" rel="stylesheet">
 
-    <meta property="og:title" content="Blog" />
-<meta property="og:description" content="The Bitcoin Dev Kit project aims to build a collection of tools and libraries that are designed to be a solid foundation for Bitcoin wallets." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://bitcoindevkit.org/blog/" />
+    <meta property="og:title" content="Fee estimation for light-clients (Part 2)" />
+<meta property="og:description" content="This post is part 2 of 3 of a series. (Part 1, Part 3)
+ The dataset  The mempool The outliers Recap    The dataset The dataset is publicly available (~500MB gzip compressed, ~2GB as plain CSV).
+The output of the model is the fee rate, expressed in [satoshi/vbytes].
+What about the inputs? Generally speaking, we have two main requirements for what can be included as input for our model:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://bitcoindevkit.org/blog/2021/01/fee-estimation-for-light-clients-part-2/" />
 <meta property="og:image" content="https://bitcoindevkit.org/images/logo-wide.jpg"/>
-<meta property="og:updated_time" content="2021-01-25T00:00:00+00:00" />
+<meta property="article:published_time" content="2021-01-25T00:00:00+00:00" />
+<meta property="article:modified_time" content="2021-01-25T00:00:00+00:00" />
 
     <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://bitcoindevkit.org/images/logo-wide.jpg"/>
 
-<meta name="twitter:title" content="Blog"/>
-<meta name="twitter:description" content="The Bitcoin Dev Kit project aims to build a collection of tools and libraries that are designed to be a solid foundation for Bitcoin wallets."/>
+<meta name="twitter:title" content="Fee estimation for light-clients (Part 2)"/>
+<meta name="twitter:description" content="This post is part 2 of 3 of a series. (Part 1, Part 3)
+ The dataset  The mempool The outliers Recap    The dataset The dataset is publicly available (~500MB gzip compressed, ~2GB as plain CSV).
+The output of the model is the fee rate, expressed in [satoshi/vbytes].
+What about the inputs? Generally speaking, we have two main requirements for what can be included as input for our model:"/>
 
 
     <script src="/js/jquery-3.3.1.min.js?1611582772"></script>
@@ -62,7 +69,7 @@
     </style>
     
   </head>
-  <body class="" data-url="/blog/">
+  <body class="" data-url="/blog/2021/01/fee-estimation-for-light-clients-part-2/">
     
 
 
@@ -120,7 +127,7 @@
     
     <li data-nav-id="/blog/" title="Blog" class="dd-item
         parent
-        active
+        
         
         ">
       <a href="/blog/">
@@ -406,7 +413,7 @@
                   
                   
                   <div id="top-github-link">
-                    <a class="github-link" title='Edit this page' href="https://github.com/bitcoindevkit/bitcoindevkit.org/edit/master/content/blog/_index.md" target="blank">
+                    <a class="github-link" title='Edit this page' href="https://github.com/bitcoindevkit/bitcoindevkit.org/edit/master/content/blog/2021/fee_estimation_for_light_clients_part_2.md" target="blank">
                       <i class="fas fa-code-branch"></i>
                       <span id="top-github-link-text">Edit this page</span>
                     </a>
@@ -426,14 +433,22 @@
                   <span class="links">
                  
                  
-                   Blog
+                   Fee estimation for light-clients (Part 2)
                  
                   </span>
                 </div>
                 
                     <div class="progress">
     <div class="wrapper">
-<nav id="TableOfContents"></nav>
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#the-dataset">The dataset</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
     </div>
 </div>
 
@@ -445,13 +460,24 @@
         
 
 
+<div class="tags">
+
+  <a class="tag-link" href="/blog/tags/fee">fee</a>
+
+  <a class="tag-link" href="/blog/tags/machine-learning">machine learning</a>
+
+</div>
+
 
         </div>
         
         <div id="body-inner">
           
             
-            <h1 class="blog-title">Blog </h1>
+            <h1 class="blog-title">Fee estimation for light-clients (Part 2) </h1>
+                
+                    <span class="blog-author">By <a href="/blog/author/riccardo-casatta">Riccardo Casatta</a></span>
+                    <hr>
                 
             
           
@@ -459,144 +485,222 @@
         
 
 
+<p>This post is part 2 of 3 of a series. (<a href="/blog/2021/01/fee-estimation-for-light-clients-part-1/">Part 1</a>, <a href="/blog/2021/01/fee-estimation-for-light-clients-part-3/">Part 3</a>)</p>
+<ul>
+<li><a href="#the-dataset">The dataset</a>
+<ul>
+<li><a href="#the-mempool">The mempool</a></li>
+<li><a href="#the-outliers">The outliers</a></li>
+<li><a href="#recap">Recap</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="the-dataset">The dataset</h2>
+<p>The <a href="https://storage.googleapis.com/bitcoin_log/dataset_18.csv.gz">dataset</a> is publicly available (~500MB gzip compressed, ~2GB as plain CSV).</p>
+<p>The output of the model is the fee rate, expressed in <code>[satoshi/vbytes]</code>.</p>
+<p>What about the inputs? Generally speaking, we have two main requirements for what can be included as input for our model:</p>
+<ul>
+<li>It must be correlated to the output, even with a non-linear relation.</li>
+<li>It must be available to a light client: for instance, assuming to have knowledge and an index of the last 1000 blocks is considered too much.</li>
+</ul>
+<p>To evaluate the approach we are taking, we also want to compare our model&rsquo;s results with another available estimation: for this reason the dataset includes data to compute the error agains Bitcoin Core&rsquo;s <code>estimatesmartfee</code> results, even though we are not going to use it for this model.</p>
+<p>The dataset will contain only transactions that spend already confirmed inputs. If we wanted to include transactions with unconfirmed inputs as well, the fee rate would have to be computed as a whole;
+for example if transaction <code>t2</code> spends an unconfirmed input from <code>t1</code> (while <code>t1</code> only spends confirmed inputs, and all its other outputs are unspent), the aggregated fee rate would have to be used.
+Supposing <code>f()</code> is extracts the absolute fee and <code>w()</code> the transaction weight, the aggregated fee rate would be <code>(f(t1) + f(t2)) / (w(t1) + w(t2))</code>. Thus, as already said previously, to keep things simple the model simply discards all the transaction
+that would need to perform this computation.</p>
+<p>For the same reason the dataset has the <code>parent_in_cpfp</code> flag. When a transaction has inputs confirmed (so it&rsquo;s not excluded by the previous rule) but one or more of its output have been spent by a transaction confirmed in the same block, <code>parent_in_cpfp</code> is <code>1</code>.
+Transactions with <code>parent_in_cpfp = 1</code> are included in the dataset but excluded by the current model, since the miner probably considered an aggregated fee rate while picking the transactions to build a block.</p>
+<h4 id="the-mempool">The mempool</h4>
+<p>The most important input of our model is the current <em>status</em> of the mempool itself. However, we cannot feed the model with a list of the fee rate of every unconfirmed transaction, because this array would have a variable length.
+To overcome this, the transaction contained in the mempool are grouped in &ldquo;buckets&rdquo; which are basically subsets of the mempool where all the transactions contained in a bucket have a similar fee rate. In particular we only care about the
+<em>number</em> of transaction in every <em>bucket</em>, not which transactions it contains.</p>
+<p>The mempool buckets array is defined by two parameters, the <code>percentage_increment</code> and the <code>array_max</code> value.
+Starting from the minimum fee rate value <code>min_relay_fee=1.0</code>, the <code>ith</code> element is: <code>a_i=min_relay_fee * (1+percentage_increment)^(i+1)</code></p>
+<p>For instance, choosing the mempool buckets array to have parameters <code>percentage_increment = 50%</code> and <code>array_max = 500.0 sat/vbytes</code> the buckets would be constructed like so:</p>
+<table>
+<thead>
+<tr>
+<th>bucket</th>
+<th>bucket min fee rate</th>
+<th>bucket max fee rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a_0</td>
+<td>1.0</td>
+<td>1.5</td>
+</tr>
+<tr>
+<td>a_1</td>
+<td>1.5</td>
+<td>2.25</td>
+</tr>
+<tr>
+<td>a_2</td>
+<td>2.25</td>
+<td>3.375</td>
+</tr>
+<tr>
+<td>a_15</td>
+<td>437.89</td>
+<td>inf</td>
+</tr>
+</tbody>
+</table>
+<p>The array stops at <code>a15</code> because <code>a16</code> would have a bucket min greater than <code>array_max</code>.</p>
+<p>The model is for light-client such as <a href="https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki">neutrino</a> based ones. In these clients the mempool is already available (it&rsquo;s needed to check for received transactions) but we can&rsquo;t compute fee rates of this transactions because previous confirmed inputs are not in the mempool!</p>
+<p>Luckily, <strong>thanks to temporal locality <sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>, an important part of mempool transactions spend outputs created very recently</strong>, for example in the last 6 blocks.
+The blocks are available through the p2p network, and downloading the last 6 is considered a good compromise between resource consumption and accurate prediction. We need the model to be built with the same data available in the prediction phase, as a consequence <em>the mempool data in the dataset refers only to transactions having their inputs in the last 6 blocks</em>. However the <code>bitcoin-csv</code> tool inside the <a href="https://github.com/RCasatta/bitcoin_logger">data logger</a> allows to configure this parameter.</p>
+<h4 id="the-outliers">The outliers</h4>
+<p>The dataset also contains the block percentile fee rate <code>q_k</code>, considering <code>r_i</code> to be the rate of the <code>ith</code> transaction in a block, <code>q_k</code> is the fee rate value such that for each transaction in a block <code>r_i</code> &lt; <code>q_k</code> returns the <code>k%</code> transactions in the block that are paying lower fees.</p>
+<p>Percentiles are not used to feed the model but to filter some outliers tx.
+Removing this observations is controversial at best and considered cheating at worse. However, it should be considered that Bitcoin Core <code>estimatesmartfee</code> doesn&rsquo;t even bother to give estimation for the next block, we think this is due to the fact that many transactions that are confirming in the next block are huge overestimation, or clearly errors like <a href="https://blockstream.info/tx/33291156ab79e9b4a1019b618b0acfa18cbdf8fa6b71c43a9eed62a849b86f9a">this one</a> we found when we started logging data.
+These outliers are several for transactions confirming in the next block (<code>confirms_in=1</code>), less so for <code>confirms_in=2</code>, mostly disappeared for <code>confirms_in=3</code> or more. It&rsquo;s counterintuitive that overestimation exists for <code>confirms_in&gt;1</code>, by definition an overestimation is a fee rate way higher than needed, so how is possible that an overestimation doesn&rsquo;t enter the very next block? There are a couple of reasons why a block is discovered without containing a transaction with high fee rate:</p>
+<ul>
+<li>network latency: my node saw the transaction but the miner didn&rsquo;t see that transaction yet,</li>
+<li>block building latency: the miner saw the transaction, but didn&rsquo;t finish to rebuild the block template or decided it&rsquo;s more efficient to finish a cycle on the older block template.</li>
+</ul>
+<p>To keep the model balanced, when overestimation is filtered out, underestimation are filtered out as well. This also has the effect to remove some of the transactions possibly included because a fee is payed out-of-band.
+Another reason to filter transactions is that the dataset is over-represented by transactions with low <code>confirms_in</code>: more than 50% of transactions get confirmed in the next block, so we think it&rsquo;s good to filter some of these transactions.</p>
+<p>The applied filters are the following:</p>
+<table>
+<thead>
+<tr>
+<th>confirms_in</th>
+<th>lower</th>
+<th>higher</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>q45</td>
+<td>q55</td>
+</tr>
+<tr>
+<td>2</td>
+<td>q30</td>
+<td>q70</td>
+</tr>
+<tr>
+<td>3</td>
+<td>q1</td>
+<td>q99</td>
+</tr>
+</tbody>
+</table>
+<p>Not yet convinced by the removal of these outliers? The <a href="https://storage.googleapis.com/bitcoin_log/dataset_18.csv.gz">dataset</a> contains all the observations, make your model :)</p>
+<h4 id="recap">Recap</h4>
+<table>
+<thead>
+<tr>
+<th>column</th>
+<th>used in the model</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>txid</td>
+<td>no</td>
+<td>Transaction hash, useful for debugging</td>
+</tr>
+<tr>
+<td>timestamp</td>
+<td>converted</td>
+<td>The time when the transaction has been added in the mempool, in the model is used in the form <code>day_of_week</code> and <code>hour</code></td>
+</tr>
+<tr>
+<td>current_height</td>
+<td>no</td>
+<td>The blockchain height seen by the node in this moment</td>
+</tr>
+<tr>
+<td>confirms_in</td>
+<td>yes</td>
+<td>This transaction confirmed at block height <code>current_height+confirms_in</code></td>
+</tr>
+<tr>
+<td>fee_rate</td>
+<td>target</td>
+<td>This transaction fee rate measured in <code>[sat/vbytes]</code></td>
+</tr>
+<tr>
+<td>fee_rate_bytes</td>
+<td>no</td>
+<td>fee rate in satoshi / bytes, used to check Bitcoin Core <code>estimatesmartfee</code> predictions</td>
+</tr>
+<tr>
+<td>block_avg_fee</td>
+<td>no</td>
+<td>block average fee rate <code>[sat/vbytes]</code> of block <code>current_height+confirms_in</code></td>
+</tr>
+<tr>
+<td>core_econ</td>
+<td>no</td>
+<td>bitcoin <code>estimatesmartfee</code> result for <code>confirms_in</code> block target and in economic mode. Could be not available <code>?</code> when a block is connected more recently than the estimation has been requested, estimation are requested every 10 secs.</td>
+</tr>
+<tr>
+<td>core_cons</td>
+<td>no</td>
+<td>Same as above but with conservative mode</td>
+</tr>
+<tr>
+<td>mempool_len</td>
+<td>no</td>
+<td>Sum of the mempool transactions with fee rate available (sum of every <code>a*</code> field)</td>
+</tr>
+<tr>
+<td>parent_in_cpfp</td>
+<td>no</td>
+<td>It&rsquo;s 1 when the transaction has outputs that are spent in the same block in which the transaction is confirmed (they are parent in a CPFP relations).</td>
+</tr>
+<tr>
+<td>q1-q30-&hellip;</td>
+<td>no</td>
+<td>Transaction confirming fast could be outliers, usually paying a lot more than required, this percentiles are used to filter those transactions,</td>
+</tr>
+<tr>
+<td>a1-a2-&hellip;</td>
+<td>yes</td>
+<td>Contains the number of transaction in the mempool with known fee rate in the ith bucket.</td>
+</tr>
+</tbody>
+</table>
+<p><img src="/images/fee-estimation-for-light-clients/the-good-the-bad-the-ugly.jpg" alt="The good, the bad and the ugly"></p>
+<div align="center">My biological neural network fired this, I think it's because a lot of chapters start with "The"</div>
+<br/><br/>
+<p>In the previous <a href="/blog/2021/01/fee-estimation-for-light-clients-part-1/">Part 1</a> we talked about the problem.</p>
+<p>In the following <a href="/blog/2021/01/fee-estimation-for-light-clients-part-3/">Part 3</a> we are going to talk about the model.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>In computer science temporal locality refers to the tendency to access recent data more often than older data. <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</section>
 
-	<p>This blog is used to publish announcements, guides and more regarding the BDK project.
-Anybody can contribute by sending a pull request to our <a href="https://github.com/bitcoindevkit/bitcoindevkit.org">GitHub repository</a>.</p>
 
-
-
-
-    <h2>Posts in 2021</h2>
-
-    
-        <h3 class="blog-post"><span class="date">Jan 25</span> <a href="/blog/2021/01/fee-estimation-for-light-clients-part-3/" class="permalink">Fee estimation for light-clients (Part 3)</a></h3>
-        
-	<span class="blog-post-tags">
-            
-                By <a href="/blog/author/riccardo-casatta">Riccardo Casatta</a> ·
-            
-
-            
-            
-	    Tags: 
-                <a href="/blog/tags/fee">fee</a>  · 
-	    
-                <a href="/blog/tags/machine-learning">machine learning</a> 
-	    
-	</span>
-        
-    
-        <h3 class="blog-post"><span class="date">Jan 25</span> <a href="/blog/2021/01/fee-estimation-for-light-clients-part-2/" class="permalink">Fee estimation for light-clients (Part 2)</a></h3>
-        
-	<span class="blog-post-tags">
-            
-                By <a href="/blog/author/riccardo-casatta">Riccardo Casatta</a> ·
-            
-
-            
-            
-	    Tags: 
-                <a href="/blog/tags/fee">fee</a>  · 
-	    
-                <a href="/blog/tags/machine-learning">machine learning</a> 
-	    
-	</span>
-        
-    
-        <h3 class="blog-post"><span class="date">Jan 25</span> <a href="/blog/2021/01/fee-estimation-for-light-clients-part-1/" class="permalink">Fee estimation for light-clients (Part 1)</a></h3>
-        
-	<span class="blog-post-tags">
-            
-                By <a href="/blog/author/riccardo-casatta">Riccardo Casatta</a> ·
-            
-
-            
-            
-	    Tags: 
-                <a href="/blog/tags/fee">fee</a>  · 
-	    
-                <a href="/blog/tags/machine-learning">machine learning</a> 
-	    
-	</span>
-        
-    
-        <h3 class="blog-post"><span class="date">Jan 20</span> <a href="/blog/2021/01/release-v0.3.0/" class="permalink">Release v0.3.0</a></h3>
-        
-	<span class="blog-post-tags">
-            
-                By <a href="/blog/author/alekos-filini">Alekos Filini</a> ·
-            
-
-            
-            
-	    Tags: 
-                <a href="/blog/tags/rust">rust</a>  · 
-	    
-                <a href="/blog/tags/release">release</a> 
-	    
-	</span>
-        
-    
-
-    <h2>Posts in 2020</h2>
-
-    
-        <h3 class="blog-post"><span class="date">Dec 21</span> <a href="/blog/2020/12/release-v0.2.0/" class="permalink">Release v0.2.0</a></h3>
-        
-	<span class="blog-post-tags">
-            
-                By <a href="/blog/author/alekos-filini">Alekos Filini</a> ·
-            
-
-            
-            
-	    Tags: 
-                <a href="/blog/tags/rust">rust</a>  · 
-	    
-                <a href="/blog/tags/release">release</a> 
-	    
-	</span>
-        
-    
-        <h3 class="blog-post"><span class="date">Dec 18</span> <a href="/blog/2020/12/hello-world/" class="permalink">Hello World!</a></h3>
-        
-	<span class="blog-post-tags">
-            
-                By <a href="/blog/author/alekos-filini">Alekos Filini</a> ·
-            
-
-            
-            
-	    Tags: 
-                <a href="/blog/tags/getting-started">getting started</a>  · 
-	    
-                <a href="/blog/tags/rust">rust</a> 
-	    
-	</span>
-        
-    
-        <h3 class="blog-post"><span class="date">Nov 18</span> <a href="/blog/2020/11/descriptors-in-the-wild/" class="permalink">Descriptors in the wild</a></h3>
-        
-	<span class="blog-post-tags">
-            
-                By <a href="/blog/author/gabriele-domenichini">Gabriele Domenichini</a> ·
-            
-
-            
-            
-	    Tags: 
-                <a href="/blog/tags/guide">guide</a>  · 
-	    
-                <a href="/blog/tags/descriptor">descriptor</a> 
-	    
-	</span>
-        
-    
-
+<footer class="footline">
+	
+</footer>
 
         
         </div>
         
+
+<script src="https://utteranc.es/client.js"
+        repo="bitcoindevkit/blog-comments"
+        issue-term="pathname"
+        label="blog-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
 
       </div>
 
