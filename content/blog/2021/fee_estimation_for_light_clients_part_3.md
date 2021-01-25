@@ -21,10 +21,10 @@ This post is part 2 of 3 of a series. ([Part 1], [Part 2])
 
 ## The model
 
-The code building and training the model with [tensorflow] is available in [google colab notebook] (jupyter notebook); you can also download the file as plain python and run it locally. About 30 minutes are needed to train the model, but it heavily depends on the hardware available.
+The code building and training the model with [tensorflow] is available in [google colab notebook] (jupyter notebook); you can also download the file as plain python and run it locally. At least 1 hour is needed to train the full model, but it heavily depends on the hardware available.
 
 ![graph confirm_in blocks vs fee_rate](/images/20210125-091313-confirms_in-fee_rate.png)
-<div align="center">Tired to read and want a short interesting evidence? In the last month a ~50 sat/vbyte transaction never took more than a day to confirm and a ~5 sat/vbyte never took more than a week</div><br/>
+<div align="center">Do you want to choose the fee without a model? In the last 5 weeks a ~50 sat/vbyte transaction never took more than a day to confirm and a ~10 sat/vbyte never took more than a week</div><br/>
 
 As a reference, in the code we have a calculation of the bitcoin core `estimatesmartfee` MAE[^MAE] and drift[^drift].
 MAE is computed as `avg(abs(fee_rate - core_econ))` when `core_econ` is available (about 1.2M observations, sometime the value is not available when considered too old).
@@ -45,7 +45,7 @@ The dataset is splitted in training and test data with a 80/20 proportion. As th
 
 During the training the data is splitted again in 80/20 for training and validation respectively, validation is basically testing during training.
 
-During splitting dataset is converted from a pandas data frame to tensorflow dataset, decreasing training times.
+During splitting, the dataset is converted from a pandas data frame to tensorflow dataset, decreasing training times.
 
 #### Preprocessing
 
@@ -88,7 +88,7 @@ Non-trainable params comes from the normalization layer and are computed in the 
 + (64 input_values_weights + 1 bias) * (64 second layer neurons)
 + (64 input values weights + 1 bias)
 
-49*64+65*64+ = 7361
+49*64+65*64+65 = 7361
 ```
 
 Honestly, neural network parameters are mostly the one taken from this tensorflow [example], we even tried to [tune hyperparameters], however, we decided to follow this [advice]: *"The simplest way to prevent overfitting is to start with a small model:"*. We hope this work will attract other data scientists to this bitcoin problem, improving the model. We also think that a longer time for the data collection is needed to capture various situations.
@@ -135,9 +135,9 @@ Epoch 158/200
 
 Training is done in epochs, under every epoch all the training data is iterated and model parameters updated to minimize the loss function.
 
-The number `5617` represent the number of steps. Theoretically the whole training data should be processed at once and parameters updated accordingly, however in practice this is infeasible for example for memory resource, thus the training happens in batch. In our case we have `1,437,841` observations in the training set and our batch size is `256`, thus we have `1,437,841/256=5616.56` which by excess result in `5617` steps.
+The number `7559` represent the number of steps. Theoretically the whole training data should be processed at once and parameters updated accordingly, however in practice this is infeasible for example for memory resource, thus the training happens in batch. In our case we have `1,934,999` observations in the training set and our batch size is `256`, thus we have `1,437,841/256=7,558.58` which by excess result in `7559` steps.
 
-The `40s` is the time it takes to process the epoch on google colab (my threadripper cpu takes `20s`, but GPU or TPU could do better).
+The `~31s` is the time it takes to process the epoch on a threadripper CPU but GPU or TPU could do better.
 
 The value `loss` is the MSE on the training data while `val_loss` is the MSE value on the validation data. As far as we understand the separated validation data helps to detect the machine learning enemy, overfitting. Because in case of overfitting the value `loss` continue to improve (almost indefinitely) while `val_loss` start improving with the loss but a certain point diverge, indicating the network is memorizing the training data to improve `loss` but in doing so losing generalizing capabilities.
 
@@ -145,14 +145,14 @@ Our model doesn't look to suffer overfitting cause `loss` and `val_loss` doesn't
 
 ![train history](/images/20210125-091313-train-history.png)
 
-While we told the training to do 200 epochs, the training stopped at 198 because we added an `early_stop` call back with `20` as  `PATIENCE`, meaning that after 20 epoch and no improvement in `val_loss` the training is halted, saving time and potentially avoiding overfitting.
+While we told the training to do 200 epochs, the training stopped at 158 because we added an `early_stop` call back with `20` as  `PATIENCE`, meaning that after 20 epoch and no improvement in `val_loss` the training is halted, saving time and potentially avoiding overfitting.
 
 ## The prediction phase
 
 A [prediction test tool] is available on github. At the moment it uses a bitcoin core node to provide network data for simplicity, but it queries it only for the mempool and the last 6 blocks, so it's something that also a light-client could do.
 
 The following chart is probably the best visualization to evaluate the model, on the x axis there is the real fee rate while on the y axis there is the prediction, the more the points are centered on the bisection, the more the model is good.
-We can see the model is doing quite well, the MAE is 8 which is way lower than `estimatesmartfee`. However, there are big errors some times, in particular for prediction for low blocks target as shown by the orange points. Creating a model only for blocks target greater than 2 instead of simply remove some observations may be an option.
+We can see the model is doing quite well, the MAE is 8 which is way lower than `estimatesmartfee`. However, there are big errors some times, in particular for prediction for fast confirmation (`confirms_in=1 or confirms_in=2`) as shown by the orange points. Creating a model only for blocks target greater than 2 instead of simply remove some observations may be an option.
 
 ![prediction results](/images/20210125-091313-true-and-predictions.png)
 
@@ -168,23 +168,21 @@ This is just a starting point, there are many future improvements such as:
 
 * Build a separate model with full knowledge, thus for full, always-connected nodes could be interesting and improve network resource allocation with respect to current estimators.
 * Tensorflow is a huge dependency, and since it contains all the feature to build and train a model, most of the feature are not needed in the prediction phase. In fact tensorflow lite exists which is specifically created for embedded and mobile devices; the [prediction test tool] and the final integration in [bdk] should use it.
-* There are other fields that should be explored that could improve model predictions, such as transaction weight, time from last block and many others. Luckily the architecture of the logger allows the generation of the dataset from the raw logs very quickly. Also some fields like `confirms_in` are so important that the model could benefit from expansion during pre-processing with technique such as [hashed feature columns].
-* Bitcoin logger could be improved by a merge command to unify raw logs files, reducing redundancy and consequently disk occupation. Other than CSV the dataset could be created in multiple files in [TFRecord format] to allow more parallelism during training.
-* At the moment we are training the model on a threadripper CPU, training the code on GPU or even TPU will be needed to decrease training time, especially because input data will grow and capture more mempool situations.
+* Explore other fields to improve model predictions such as:
+  * A bucket array of the transactions in the last 6 blocks with known fee rates. This should in particular help estimations with almost empty mempool.
+  * Transaction weight
+  * Time from last block
+* Some fields are very important and could benefit from pre-processing expansion, for instance applying [hashed feature columns] to `confirms_in`.
+* Bitcoin logger could be improved by a merge command to unify raw logs files, reducing redundancy and consequently disk occupation.
+* The dataset could be created in multiple files to allow more parallelism and use less memory during training.
+* Saving the dataset in [TFRecord format] instead of CSV
+* At the moment we are training the model on a threadripper CPU, training the code on GPU or even TPU will be needed to decrease training time, especially because input data will grow.
 * The [prediction test tool] should estimate only using the p2p bitcoin network, without requiring a node. This work would be propedeutic for [bdk] integration
 * At the moment mempool buckets are multiple inputs `a*` as show in the model graph; since they are related, is it possible to merge them in one TensorArray?
 * Sometimes the model does not learn and [gets stuck]. It may depend on a particular configuration of the weight random initialization and the first derivative being zero for relu for negative number. If this is the case Leaky relu should solve the problem
 * There are issues regarding dead neurons (going to 0) or neurons with big weight, weight results should be monitored for this events, and also weight decay and L2 regularization should be explored.
 * Tune hyper-parameters technique should be re-tested.
-* Predictions should be monotonic decreasing for growing `confirms_in` parameter; for obvious reason it doesn't make sense that an higher fee rate will result in a higher confirmation time. Since this is not enforced anywhere in the model, situation like this could happen and should be avoided.
-```
-[2021-01-18T09:31:30Z INFO  estimate_ml_fee] Estimated fee to enter in 1 blocks is 47.151127 sat/vbyte
-[2021-01-18T09:31:30Z INFO  estimate_ml_fee] Estimated fee to enter in 6 blocks is 1.0932393 sat/vbyte
-[2021-01-18T09:31:30Z INFO  estimate_ml_fee] Estimated fee to enter in 36 blocks is 4.499987 sat/vbyte
-[2021-01-18T09:31:30Z INFO  estimate_ml_fee] Estimated fee to enter in 72 blocks is 12.659084 sat/vbyte
-[2021-01-18T09:31:30Z INFO  estimate_ml_fee] Estimated fee to enter in 144 blocks is 9.928209 sat/vbyte
-[2021-01-18T09:31:30Z INFO  estimate_ml_fee] Estimated fee to enter in 432 blocks is 6.9069905 sat/vbyte
-```
+* Predictions should be monotonic decreasing for growing `confirms_in` parameter; for obvious reason it doesn't make sense that an higher fee rate will result in a higher confirmation time. But since this is not enforced anywhere in the model, at the moment this could happen.
 
 ## Acknowledgements
 
@@ -196,28 +194,13 @@ And also this tweet that remembered me [I] had this work in my TODO list
 
 This is the final part of the series. In the previous [Part 1] we talked about the problem and in [Part 3] we talked about the dataset.
 
-[^fee rate]: The transaction fee rate is the ratio between the absolute fee expressed in satoshi, over the weight of the transaction measured in virtual bytes. The weight of the transaction is similar to the byte size, however a part of the transaction (the segwit part) is discounted, their byte size is considered less because it creates less burden for the network.
-[^mempool]: mempool is the set of transactions that are valid by consensus rules (for example, they are spending existing bitcoin), broadcasted in the bitcoin peer to peer network, but they are not yet part of the blockchain.
-[^temporal locality]: In computer science temporal locality refers to the tendency to access recent data more often than older data.
-[^disclaimer]: DISCLAIMER: I am not an expert data-scientist!
 [^MAE]: MAE is Mean Absolute Error, which is the average of the series built by the absolute difference between the real value and the estimation.
 [^drift]: drift like MAE, but without the absolute value
 [^minimum relay fee]: Most node won't relay transactions with fee lower than the min relay fee, which has a default of `1.0`
-[^blocks target]: Conceptually similar to bitcoin core `estimatesmartfee` parameter called "blocks target", however, `confirms_in` is the real value not the desired target.
-
 
 [Part 1]: /blog/2021/01/fee-estimation-for-light-clients-part-1/
 [Part 2]: /blog/2021/01/fee-estimation-for-light-clients-part-2/
 [Part 3]: /blog/2021/01/fee-estimation-for-light-clients-part-3/
-[`estimatesmartfee`]: https://bitcoincore.org/en/doc/0.20.0/rpc/util/estimatesmartfee/
-[core]: https://bitcoincore.org/
-[bitmex withdrawals]: https://b10c.me/mempool-observations/2-bitmex-broadcast-13-utc/
-[fee estimators]: https://b10c.me/blog/003-a-list-of-public-bitcoin-feerate-estimation-apis/
-[neutrino]: https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki
-[weekend]: https://www.blockchainresearchlab.org/2020/03/30/a-week-with-bitcoin-transaction-timing-and-transaction-fees/
-[ZMQ]: https://github.com/bitcoin/bitcoin/blob/master/doc/zmq.md
-[data logger]: https://github.com/RCasatta/bitcoin_logger
-[this one]: https://blockstream.info/tx/33291156ab79e9b4a1019b618b0acfa18cbdf8fa6b71c43a9eed62a849b86f9a
 [google colab notebook]: https://colab.research.google.com/drive/1yamwh8nE4NhmGButep-pfUT-1uRKs49a?usp=sharing
 [example]: https://www.tensorflow.org/tutorials/keras/regression
 [tune hyperparameters]: https://www.tensorflow.org/tutorials/keras/keras_tuner

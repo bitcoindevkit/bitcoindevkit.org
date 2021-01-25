@@ -43,15 +43,16 @@ To overcome this, the transaction contained in the mempool are grouped in "bucke
 *number* of transaction in every *bucket*, not which transactions it contains.
 
 The mempool buckets array is defined by two parameters, the `percentage_increment` and the `array_max` value.
-Supposing to choose the mempool buckets array to have parameters `percentage_increment = 50%` and `array_max = 500.0 sat/vbytes` the buckets would be constructed like so:
+Starting from the minimum fee rate value `min_relay_fee=1.0`, the `ith` element is: `a_i=min_relay_fee * (1+percentage_increment)^(i+1)`
+
+For instance, choosing the mempool buckets array to have parameters `percentage_increment = 50%` and `array_max = 500.0 sat/vbytes` the buckets would be constructed like so:
 
 bucket | bucket min fee rate | bucket max fee rate
 -|-|-
-a0| 1.0 = `min_relay_fee` | 1.5 = min*(1+`percentage_increment`)
-a1| 1.5 = previous max | 2.25
-a2| 2.25 | 3.375
-ai| ... | `min_relay_fee` * (1+`percentage_increment`)^(i+1)
-a15| 437.89 | inf
+a_0| 1.0 | 1.5
+a_1| 1.5 | 2.25
+a_2| 2.25 | 3.375
+a_15| 437.89 | inf
 
 The array stops at `a15` because `a16` would have a bucket min greater than `array_max`.
 
@@ -65,7 +66,7 @@ The blocks are available through the p2p network, and downloading the last 6 is 
 The dataset also contains the block percentile fee rate `q_k`, considering `r_i` to be the rate of the `ith` transaction in a block, `q_k` is the fee rate value such that for each transaction in a block `r_i` < `q_k` returns the `k%` transactions in the block that are paying lower fees.
 
 Percentiles are not used to feed the model but to filter some outliers tx.
-Removing this observations is controversial at best and considered cheating at worse. However, it should be considered that Bitcoin Core `estimatesmartfee` doesn't even bother to give estimation for the next block, we think this is due to the fact that many transactions that are confirming in the next block are huge overestimation [^overestimation], or clearly errors like [this one] we found when we started logging data.
+Removing this observations is controversial at best and considered cheating at worse. However, it should be considered that Bitcoin Core `estimatesmartfee` doesn't even bother to give estimation for the next block, we think this is due to the fact that many transactions that are confirming in the next block are huge overestimation, or clearly errors like [this one] we found when we started logging data.
 These outliers are several for transactions confirming in the next block (`confirms_in=1`), less so for `confirms_in=2`, mostly disappeared for `confirms_in=3` or more. It's counterintuitive that overestimation exists for `confirms_in>1`, by definition an overestimation is a fee rate way higher than needed, so how is possible that an overestimation doesn't enter the very next block? There are a couple of reasons why a block is discovered without containing a transaction with high fee rate:
 * network latency: my node saw the transaction but the miner didn't see that transaction yet,
 * block building latency: the miner saw the transaction, but didn't finish to rebuild the block template or decided it's more efficient to finish a cycle on the older block template.
@@ -110,45 +111,12 @@ In the previous [Part 1] we talked about the problem.
 
 In the following [Part 3] we are going to talk about the model.
 
-[^fee rate]: The transaction fee rate is the ratio between the absolute fee expressed in satoshi, over the weight of the transaction measured in virtual bytes. The weight of the transaction is similar to the byte size, however a part of the transaction (the segwit part) is discounted, their byte size is considered less because it creates less burden for the network.
-[^mempool]: mempool is the set of transactions that are valid by consensus rules (for example, they are spending existing bitcoin), broadcasted in the bitcoin peer to peer network, but they are not yet part of the blockchain.
 [^temporal locality]: In computer science temporal locality refers to the tendency to access recent data more often than older data.
-[^disclaimer]: DISCLAIMER: I am not an expert data-scientist!
-[^MAE]: MAE is Mean Absolute Error, which is the average of the series built by the absolute difference between the real value and the estimation.
-[^drift]: drift like MAE, but without the absolute value
-[^minimum relay fee]: Most node won't relay transactions with fee lower than the min relay fee, which has a default of `1.0`
-[^blocks target]: Conceptually similar to Bitcoin Core `estimatesmartfee` parameter called "blocks target", however, `confirms_in` is the real value not the desired target.
 
 [Part 1]: /blog/2021/01/fee-estimation-for-light-clients-part-1/
 [Part 2]: /blog/2021/01/fee-estimation-for-light-clients-part-2/
 [Part 3]: /blog/2021/01/fee-estimation-for-light-clients-part-3/
-[`estimatesmartfee`]: https://bitcoincore.org/en/doc/0.20.0/rpc/util/estimatesmartfee/
-[core]: https://bitcoincore.org/
-[bitmex withdrawals]: https://b10c.me/mempool-observations/2-bitmex-broadcast-13-utc/
-[fee estimators]: https://b10c.me/blog/003-a-list-of-public-bitcoin-feerate-estimation-apis/
 [neutrino]: https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki
-[weekend]: https://www.blockchainresearchlab.org/2020/03/30/a-week-with-bitcoin-transaction-timing-and-transaction-fees/
-[ZMQ]: https://github.com/bitcoin/bitcoin/blob/master/doc/zmq.md
 [data logger]: https://github.com/RCasatta/bitcoin_logger
 [this one]: https://blockstream.info/tx/33291156ab79e9b4a1019b618b0acfa18cbdf8fa6b71c43a9eed62a849b86f9a
 [dataset]: https://storage.googleapis.com/bitcoin_log/dataset_18.csv.gz
-[google colab notebook]: https://colab.research.google.com/drive/1yamwh8nE4NhmGButep-pfUT-1uRKs49a?usp=sharing
-[example]: https://www.tensorflow.org/tutorials/keras/regression
-[tune hyperparameters]: https://www.tensorflow.org/tutorials/keras/keras_tuner
-[advice]: https://www.tensorflow.org/tutorials/keras/overfit_and_underfit#demonstrate_overfitting
-[introducing neural network video]: https://youtu.be/aircAruvnKk?t=1035
-[gradient descent]: https://en.wikipedia.org/wiki/Gradient_descent#:~:text=Gradient%20descent%20is%20a%20first,the%20direction%20of%20steepest%20descent.
-[latest trend]: https://towardsdatascience.com/adam-latest-trends-in-deep-learning-optimization-6be9a291375c
-[exponential decay]: https://www.tensorflow.org/api_docs/python/tf/compat/v1/train/exponential_decay
-[prediction test tool]: https://github.com/RCasatta/estimate_ml_fee
-[bdk]: https://github.com/bitcoindevkit/bdk
-[Square crypto]: https://squarecrypto.org/
-[get stuck]: https://github.com/RCasatta/bitcoin_logger/blob/master/notes.md
-[hashed feature columns]: https://www.tensorflow.org/tutorials/structured_data/feature_columns#hashed_feature_columns
-[tensorflow]: https://www.tensorflow.org/
-[TFRecord format]: https://www.tensorflow.org/tutorials/load_data/tfrecord
-[Leonardo Comandini]: https://twitter.com/LeoComandini
-[Domenico Gabriele]: https://twitter.com/domegabri
-[Alekos Filini]: https://twitter.com/afilini
-[Ferdinando Ametrano]: https://twitter.com/Ferdinando1970
-[I]: https://twitter.com/RCasatta
