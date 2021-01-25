@@ -1,6 +1,6 @@
 ---
 title: "Fee estimation for light-clients (Part 2)"
-description: ""
+description: "Applying machine learning to the bitcoin fee estimation problem"
 author: "Riccardo Casatta"
 date: "2021-01-25"
 tags: ["fee", "machine learning"]
