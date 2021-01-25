@@ -2,7 +2,7 @@
 title: "Fee estimation for light-clients (Part 2)"
 description: ""
 author: "Riccardo Casatta"
-date: "2021-01-21"
+date: "2021-01-25"
 tags: ["fee", "machine learning"]
 hidden: true
 draft: false
@@ -17,16 +17,16 @@ This post is part 2 of 3 of a series. ([Part 1], [Part 3])
 
 ## The dataset
 
-The [dataset] is publicly available (~400MB gzip compressed, ~1.6GB as plain CSV).
+The [dataset] is publicly available (~500MB gzip compressed, ~2GB as plain CSV).
 
-The output of the model is the fee rate, expressed in `[satoshi/vbytes]` **TODO: missing link??**.
+The output of the model is the fee rate, expressed in `[satoshi/vbytes]`.
 
 What about the inputs? Generally speaking, we have two main requirements for what can be included as input for our model:
 
 * It must be correlated to the output, even with a non-linear relation.
 * It must be available to a light client: for instance, assuming to have knowledge and an index of the last 1000 blocks is considered too much.
 
-To evaluate the approach we are taking, we also want to compare our model's results with another available estimation: for this reason the dataset includes data to compute the error agains Bitcoin Core's `estimatesmartfee` results, though we are not going to use it for this model.
+To evaluate the approach we are taking, we also want to compare our model's results with another available estimation: for this reason the dataset includes data to compute the error agains Bitcoin Core's `estimatesmartfee` results, even though we are not going to use it for this model.
 
 The dataset will contain only transactions that spend already confirmed inputs. If we wanted to include transactions with unconfirmed inputs as well, the fee rate would have to be computed as a whole;
 for example if transaction `t2` spends an unconfirmed input from `t1` (while `t1` only spends confirmed inputs, and all its other outputs are unspent), the aggregated fee rate would have to be used.
@@ -47,26 +47,26 @@ Supposing to choose the mempool buckets array to have parameters `percentage_inc
 
 bucket | bucket min fee rate | bucket max fee rate
 -|-|-
-a0|1.0|1.5 = min*(1+`percentage_increment`)
-a1|1.5 = previous max|2.25
-a2|2.25| 3.375
-...|...|...
-a15|437.89|inf
+a0| 1.0 = `min_relay_fee` | 1.5 = min*(1+`percentage_increment`)
+a1| 1.5 = previous max | 2.25
+a2| 2.25 | 3.375
+ai| ... | `min_relay_fee` * (1+`percentage_increment`)^(i+1)
+a15| 437.89 | inf
 
 The array stops at `a15` because `a16` would have a bucket min greater than `array_max`.
 
-We previously stated this model is for light-client such as [neutrino] based ones. In these clients the mempool is already available (it's needed to check for received transactions) but the problem is we can't compute fee rates of this transactions because previous confirmed inputs are not in the mempool!
+The model is for light-client such as [neutrino] based ones. In these clients the mempool is already available (it's needed to check for received transactions) but we can't compute fee rates of this transactions because previous confirmed inputs are not in the mempool!
 
 Luckily, **thanks to temporal locality [^temporal locality], an important part of mempool transactions spend outputs created very recently**, for example in the last 6 blocks.
-The blocks are available through the p2p network, and downloading the last 6 is considered a good compromise between resource consumption and accurate prediction. We need the model to be built with the same data available in the prediction phase, as a consequence the mempool data in the dataset refers only to transactions having their inputs in the last 6 blocks. However the `bitcoin-csv` tool inside the [data logger] allows to configure this parameter.
+The blocks are available through the p2p network, and downloading the last 6 is considered a good compromise between resource consumption and accurate prediction. We need the model to be built with the same data available in the prediction phase, as a consequence *the mempool data in the dataset refers only to transactions having their inputs in the last 6 blocks*. However the `bitcoin-csv` tool inside the [data logger] allows to configure this parameter.
 
 #### The outliers
 
-Another information the dataset contain is the block percentile fee rate, considering `r_i` to be the rate of the `ith` transaction in a block, `q_k` is the fee rate value such that for each transaction in a block `r_i` < `q_k` returns the `k%` transactions in the block that are paying lower fees.
+The dataset also contains the block percentile fee rate `q_k`, considering `r_i` to be the rate of the `ith` transaction in a block, `q_k` is the fee rate value such that for each transaction in a block `r_i` < `q_k` returns the `k%` transactions in the block that are paying lower fees.
 
 Percentiles are not used to feed the model but to filter some outliers tx.
 Removing this observations is controversial at best and considered cheating at worse. However, it should be considered that Bitcoin Core `estimatesmartfee` doesn't even bother to give estimation for the next block, we think this is due to the fact that many transactions that are confirming in the next block are huge overestimation [^overestimation], or clearly errors like [this one] we found when we started logging data.
-These outliers are a lot for transactions confirming in the next block (`confirms_in=1`), less so for `confirms_in=2`, mostly disappeared for `confirms_in=3` or more. It's counterintuitive that overestimation exist for `confirms_in>1`, by definition an overestimation is a fee rate way higher than needed, so how is possible that an overestimation doesn't enter the very next block? There are a couple of reasons why a block is discovered without containing a transaction with high fee rate:
+These outliers are several for transactions confirming in the next block (`confirms_in=1`), less so for `confirms_in=2`, mostly disappeared for `confirms_in=3` or more. It's counterintuitive that overestimation exists for `confirms_in>1`, by definition an overestimation is a fee rate way higher than needed, so how is possible that an overestimation doesn't enter the very next block? There are a couple of reasons why a block is discovered without containing a transaction with high fee rate:
 * network latency: my node saw the transaction but the miner didn't see that transaction yet,
 * block building latency: the miner saw the transaction, but didn't finish to rebuild the block template or decided it's more efficient to finish a cycle on the older block template.
 
@@ -96,7 +96,7 @@ fee_rate_bytes | no | fee rate in satoshi / bytes, used to check Bitcoin Core `e
 block_avg_fee | no | block average fee rate `[sat/vbytes]` of block `current_height+confirms_in`
 core_econ | no | bitcoin `estimatesmartfee` result for `confirms_in` block target and in economic mode. Could be not available `?` when a block is connected more recently than the estimation has been requested, estimation are requested every 10 secs.
 core_cons | no | Same as above but with conservative mode
-mempool_len | no | Sum of the mempool transaction with fee rate available (sum of every `a*` field)
+mempool_len | no | Sum of the mempool transactions with fee rate available (sum of every `a*` field)
 parent_in_cpfp | no | It's 1 when the transaction has outputs that are spent in the same block in which the transaction is confirmed (they are parent in a CPFP relations).
 q1-q30-... | no | Transaction confirming fast could be outliers, usually paying a lot more than required, this percentiles are used to filter those transactions,
 a1-a2-... | yes | Contains the number of transaction in the mempool with known fee rate in the ith bucket.
@@ -118,7 +118,6 @@ In the following [Part 3] we are going to talk about the model.
 [^drift]: drift like MAE, but without the absolute value
 [^minimum relay fee]: Most node won't relay transactions with fee lower than the min relay fee, which has a default of `1.0`
 [^blocks target]: Conceptually similar to Bitcoin Core `estimatesmartfee` parameter called "blocks target", however, `confirms_in` is the real value not the desired target.
-[^fast]: 14GB of compressed raw logs are processed and a compressed CSV is produced in about 4 minutes.
 
 [Part 1]: /blog/2021/01/fee-estimation-for-light-clients-part-1/
 [Part 2]: /blog/2021/01/fee-estimation-for-light-clients-part-2/
@@ -132,9 +131,8 @@ In the following [Part 3] we are going to talk about the model.
 [ZMQ]: https://github.com/bitcoin/bitcoin/blob/master/doc/zmq.md
 [data logger]: https://github.com/RCasatta/bitcoin_logger
 [this one]: https://blockstream.info/tx/33291156ab79e9b4a1019b618b0acfa18cbdf8fa6b71c43a9eed62a849b86f9a
-[dataset]: https://storage.googleapis.com/bitcoin_log/dataset_17.csv.gz
+[dataset]: https://storage.googleapis.com/bitcoin_log/dataset_18.csv.gz
 [google colab notebook]: https://colab.research.google.com/drive/1yamwh8nE4NhmGButep-pfUT-1uRKs49a?usp=sharing
-[plain python]: https://github.com/RCasatta/
 [example]: https://www.tensorflow.org/tutorials/keras/regression
 [tune hyperparameters]: https://www.tensorflow.org/tutorials/keras/keras_tuner
 [advice]: https://www.tensorflow.org/tutorials/keras/overfit_and_underfit#demonstrate_overfitting

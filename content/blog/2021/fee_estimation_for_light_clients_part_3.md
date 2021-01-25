@@ -2,7 +2,7 @@
 title: "Fee estimation for light-clients (Part 3)"
 description: ""
 author: "Riccardo Casatta"
-date: "2021-01-21"
+date: "2021-01-25"
 tags: ["fee", "machine learning"]
 hidden: true
 draft: false
@@ -23,20 +23,19 @@ This post is part 2 of 3 of a series. ([Part 1], [Part 2])
 
 The code building and training the model with [tensorflow] is available in [google colab notebook] (jupyter notebook); you can also download the file as plain python and run it locally. About 30 minutes are needed to train the model, but it heavily depends on the hardware available.
 
-![graph confirm_in blocks vs fee_rate](/images/20210115-111008-confirms_in-fee_rate.png)
+![graph confirm_in blocks vs fee_rate](/images/20210125-091313-confirms_in-fee_rate.png)
 <div align="center">Tired to read and want a short interesting evidence? In the last month a ~50 sat/vbyte transaction never took more than a day to confirm and a ~5 sat/vbyte never took more than a week</div><br/>
 
-As a reference, in the code we have a calculation of the bitcoin core `estimatesmartfee` MAE[^MAE] and drift[^drift], note this are `[satoshi/bytes]` (not virtual bytes).
-MAE is computed as `avg(abs(fee_rate_bytes - core_econ))` when `core_econ` is available (about 1.2M observations, sometime the value is not available when considered too old).
+As a reference, in the code we have a calculation of the bitcoin core `estimatesmartfee` MAE[^MAE] and drift[^drift].
+MAE is computed as `avg(abs(fee_rate - core_econ))` when `core_econ` is available (about 1.2M observations, sometime the value is not available when considered too old).
 
 
-estimatesmartfee mode | MAE [satoshi/bytes] | drift
+estimatesmartfee mode | MAE [satoshi/vbytes] | drift
 -|-|-
-economic| 35.22 | 29.76
-conservative | 54.28 | 53.13
+economic| 28.77 | 20.79
+conservative | 46.49 | 44.73
 
 As seen from the table, the error is quite high, but the positive drift suggests `estimatesmartfee` prefers to overestimate to avoid transactions not confirming.
-
 
 As we said in the introduction, network traffic is correlated with time and we have the timestamp of when the transaction has been first seen, however a ML model doesn't like plain numbers too much, but it behaves better with "number that repeats", like categories, so we are converting the timestamp in `day_of_week` a number from 0 to 6, and `hours` a number from 0 to 24.
 
@@ -73,7 +72,7 @@ model.compile(loss='mse',
               metrics=['mae', 'mse'])
 ```
 
-![model graph](/images/20210115-111008-model.png)
+![model graph](/images/20210125-091313-model.png)
 
 The model is fed with the `encoded_features` coming from the processing phase, then there are 2 layers with 64 neurons each followed by one neuron giving the `fee_rate` as output.
 
@@ -92,7 +91,7 @@ Non-trainable params comes from the normalization layer and are computed in the 
 49*64+65*64+ = 7361
 ```
 
-Honestly, about the neural network parameters, they are mostly the one taken from this tensorflow [example], we even tried to [tune hyperparameters], however, we decided to follow this [advice]: *"The simplest way to prevent overfitting is to start with a small model:"*. We hope this work will attract other data scientists to this bitcoin problem, improving the model. We also think that a longer time for the data collection is needed to capture various situations.
+Honestly, neural network parameters are mostly the one taken from this tensorflow [example], we even tried to [tune hyperparameters], however, we decided to follow this [advice]: *"The simplest way to prevent overfitting is to start with a small model:"*. We hope this work will attract other data scientists to this bitcoin problem, improving the model. We also think that a longer time for the data collection is needed to capture various situations.
 
 A significant part of a ML model are the activation functions, `relu` (Rectified Linear Unit) is one of the most used lately, because it's simple and works well as we learned in this [introducing neural network video]. `relu` it's equal to zero for negative values and equal to the input for positive values. Being non-linear allows the whole model to be non-linear.
 
@@ -127,10 +126,11 @@ This steps is the core of the neural network, it takes a while, let's analyze th
 
 ```
 Epoch 1/200
-5617/5617 [==============================] - 40s 6ms/step - loss: 546.4828 - mae: 16.7178 - mse: 546.4828 - val_loss: 297.0464 - val_mae: 11.4745 - val_mse: 297.0464
+7559/7559 [==============================] - 34s 3ms/step - loss: 547.8023 - mae: 16.9547 - mse: 547.8023 - val_loss: 300.5965 - val_ma
+e: 11.9202 - val_mse: 300.5965
 ...
-Epoch 198/200
-5617/5617 [==============================] - 38s 6ms/step - loss: 147.4738 - mae: 7.8188 - mse: 147.4738 - val_loss: 147.7298 - val_mae: 7.7628 - val_mse: 147.7298
+Epoch 158/200
+7559/7559 [==============================] - 31s 3ms/step - loss: 163.2548 - mae: 8.3126 - mse: 163.2548 - val_loss: 164.8296 - val_mae: 8.3402 - val_mse: 164.8296
 ```
 
 Training is done in epochs, under every epoch all the training data is iterated and model parameters updated to minimize the loss function.
@@ -143,7 +143,7 @@ The value `loss` is the MSE on the training data while `val_loss` is the MSE val
 
 Our model doesn't look to suffer overfitting cause `loss` and `val_loss` doesn't diverge during training
 
-![train history](/images/20210115-111008-train-history.png)
+![train history](/images/20210125-091313-train-history.png)
 
 While we told the training to do 200 epochs, the training stopped at 198 because we added an `early_stop` call back with `20` as  `PATIENCE`, meaning that after 20 epoch and no improvement in `val_loss` the training is halted, saving time and potentially avoiding overfitting.
 
@@ -154,11 +154,11 @@ A [prediction test tool] is available on github. At the moment it uses a bitcoin
 The following chart is probably the best visualization to evaluate the model, on the x axis there is the real fee rate while on the y axis there is the prediction, the more the points are centered on the bisection, the more the model is good.
 We can see the model is doing quite well, the MAE is 8 which is way lower than `estimatesmartfee`. However, there are big errors some times, in particular for prediction for low blocks target as shown by the orange points. Creating a model only for blocks target greater than 2 instead of simply remove some observations may be an option.
 
-![prediction results](/images/20210115-111008-true-and-predictions.png)
+![prediction results](/images/20210125-091313-true-and-predictions.png)
 
 The following chart is instead a distribution of the errors, which for good model should resemble the normal distribution centered in 0, and it loooks like the model is respecting that.
 
-![error distribution](/images/20210115-111008-error-distribution.png)
+![error distribution](/images/20210125-091313-error-distribution.png)
 
 ## Conclusion and future development
 
@@ -204,7 +204,6 @@ This is the final part of the series. In the previous [Part 1] we talked about t
 [^drift]: drift like MAE, but without the absolute value
 [^minimum relay fee]: Most node won't relay transactions with fee lower than the min relay fee, which has a default of `1.0`
 [^blocks target]: Conceptually similar to bitcoin core `estimatesmartfee` parameter called "blocks target", however, `confirms_in` is the real value not the desired target.
-[^fast]: 14GB of compressed raw logs are processed and a compressed CSV produced in about 4 minutes.
 
 
 [Part 1]: /blog/2021/01/fee-estimation-for-light-clients-part-1/
@@ -219,9 +218,7 @@ This is the final part of the series. In the previous [Part 1] we talked about t
 [ZMQ]: https://github.com/bitcoin/bitcoin/blob/master/doc/zmq.md
 [data logger]: https://github.com/RCasatta/bitcoin_logger
 [this one]: https://blockstream.info/tx/33291156ab79e9b4a1019b618b0acfa18cbdf8fa6b71c43a9eed62a849b86f9a
-[dataset]: https://storage.googleapis.com/bitcoin_log/dataset_17.csv.gz
 [google colab notebook]: https://colab.research.google.com/drive/1yamwh8nE4NhmGButep-pfUT-1uRKs49a?usp=sharing
-[plain python]: https://github.com/RCasatta/
 [example]: https://www.tensorflow.org/tutorials/keras/regression
 [tune hyperparameters]: https://www.tensorflow.org/tutorials/keras/keras_tuner
 [advice]: https://www.tensorflow.org/tutorials/keras/overfit_and_underfit#demonstrate_overfitting
