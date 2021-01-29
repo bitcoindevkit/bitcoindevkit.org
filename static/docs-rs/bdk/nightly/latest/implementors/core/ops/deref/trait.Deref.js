@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["bdk"] = [{"text":"impl&lt;K, Ctx:&nbsp;ScriptContext&gt; Deref for GeneratedKey&lt;K, Ctx&gt;","synthetic":false,"types":[]}];
+implementors["bdk"] = [{"text":"impl&lt;K, Ctx:&nbsp;<a class=\"trait\" href=\"bdk/keys/trait.ScriptContext.html\" title=\"trait bdk::keys::ScriptContext\">ScriptContext</a>&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/ops/deref/trait.Deref.html\" title=\"trait core::ops::deref::Deref\">Deref</a> for <a class=\"struct\" href=\"bdk/keys/struct.GeneratedKey.html\" title=\"struct bdk::keys::GeneratedKey\">GeneratedKey</a>&lt;K, Ctx&gt;","synthetic":false,"types":["bdk::keys::GeneratedKey"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
