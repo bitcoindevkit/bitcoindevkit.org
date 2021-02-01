@@ -567,6 +567,37 @@
 <span id="564">564</span>
 <span id="565">565</span>
 <span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -1028,16 +1059,17 @@
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">impl</span> <span class="ident">MemoryDatabase</span> {
-    <span class="comment">// Artificially insert a tx in the database, as if we had found it with a `sync`</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">received_tx</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">tx_meta</span>: <span class="ident">testutils</span>::<span class="ident">TestIncomingTx</span>,
-        <span class="ident">current_height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bitcoin</span>::<span class="ident">Txid</span> {
-        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span>;
-
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
+<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="doccomment">/// Artificially insert a tx in the database, as if we had found it with a `sync`. This is a hidden</span>
+<span class="doccomment">/// macro and not a `[cfg(test)]` function so it can be called within the context of doctests which</span>
+<span class="doccomment">/// don&#39;t have `test` set.</span>
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">populate_test_db</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">db</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">tx_meta</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">current_height</span>:<span class="ident">expr</span>$(,)<span class="question-mark">?</span>) <span class="op">=</span><span class="op">&gt;</span> {{
+        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">database</span>::<span class="ident">BatchOperations</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">db</span>;
+        <span class="kw">let</span> <span class="ident">tx_meta</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">tx_meta</span>;
+        <span class="kw">let</span> <span class="ident">current_height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">current_height</span>;
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">Transaction</span> {
             <span class="ident">version</span>: <span class="number">1</span>,
             <span class="ident">lock_time</span>: <span class="number">0</span>,
@@ -1069,9 +1101,9 @@
             <span class="ident">fees</span>: <span class="number">0</span>,
         };
 
-        <span class="self">self</span>.<span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="ident">tx_details</span>).<span class="ident">unwrap</span>();
+        <span class="ident">db</span>.<span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="ident">tx_details</span>).<span class="ident">unwrap</span>();
         <span class="kw">for</span> (<span class="ident">vout</span>, <span class="ident">out</span>) <span class="kw">in</span> <span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="self">self</span>.<span class="ident">set_utxo</span>(<span class="kw-2">&amp;</span><span class="ident">UTXO</span> {
+            <span class="ident">db</span>.<span class="ident">set_utxo</span>(<span class="kw-2">&amp;</span><span class="ident">UTXO</span> {
                 <span class="ident">txout</span>: <span class="ident">out</span>.<span class="ident">clone</span>(),
                 <span class="ident">outpoint</span>: <span class="ident">OutPoint</span> {
                     <span class="ident">txid</span>,
@@ -1083,7 +1115,37 @@
         }
 
         <span class="ident">txid</span>
-    }
+    }};
+}
+
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
+<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="doccomment">/// Macro for getting a wallet for use in a doctest</span>
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">doctest_wallet</span> {
+    () <span class="op">=</span><span class="op">&gt;</span> {{
+        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">bitcoin</span>::<span class="ident">Network</span>;
+        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">database</span>::<span class="ident">MemoryDatabase</span>;
+        <span class="kw">use</span> <span class="ident">testutils</span>::<span class="ident">testutils</span>;
+        <span class="kw">let</span> <span class="ident">descriptor</span> <span class="op">=</span> <span class="string">&quot;wpkh(cVpPVruEDdmutPzisEsYvtST1usBR3ntr8pXSyt6D2YYqXRyPcFW)&quot;</span>;
+        <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="macro">testutils</span><span class="macro">!</span>(@<span class="ident">descriptors</span> (<span class="ident">descriptor</span>) (<span class="ident">descriptor</span>));
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDatabase</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="macro">populate_test_db</span><span class="macro">!</span>(
+            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">db</span>,
+            <span class="macro">testutils</span><span class="macro">!</span> {
+                @<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">500_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)
+            },
+            <span class="prelude-val">Some</span>(<span class="number">100</span>),
+        );
+
+        <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">Wallet</span>::<span class="ident">new_offline</span>(
+            <span class="kw-2">&amp;</span><span class="ident">descriptors</span>.<span class="number">0</span>,
+            <span class="ident">descriptors</span>.<span class="number">1</span>.<span class="ident">as_ref</span>(),
+            <span class="ident">Network</span>::<span class="ident">Regtest</span>,
+            <span class="ident">db</span>
+        )
+        .<span class="ident">unwrap</span>()
+    }}
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>

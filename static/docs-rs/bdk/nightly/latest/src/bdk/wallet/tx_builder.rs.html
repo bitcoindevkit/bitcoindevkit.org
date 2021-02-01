@@ -739,6 +739,40 @@
 <span id="736">736</span>
 <span id="737">737</span>
 <span id="738">738</span>
+<span id="739">739</span>
+<span id="740">740</span>
+<span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
+<span id="747">747</span>
+<span id="748">748</span>
+<span id="749">749</span>
+<span id="750">750</span>
+<span id="751">751</span>
+<span id="752">752</span>
+<span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -774,14 +808,21 @@
 <span class="doccomment">//! # use bdk::*;</span>
 <span class="doccomment">//! # use bdk::wallet::tx_builder::CreateTx;</span>
 <span class="doccomment">//! # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();</span>
-<span class="doccomment">//! // Create a transaction with one output to `to_address` of 50_000 satoshi, with a custom fee rate</span>
-<span class="doccomment">//! // of 5.0 satoshi/vbyte, only spending non-change outputs and with RBF signaling</span>
-<span class="doccomment">//! // enabled</span>
-<span class="doccomment">//! let builder = TxBuilder::with_recipients(vec![(to_address.script_pubkey(), 50_000)])</span>
+<span class="doccomment">//! # let wallet = doctest_wallet!();</span>
+<span class="doccomment">//! // create a TxBuilder from a wallet</span>
+<span class="doccomment">//! let mut tx_builder = wallet.build_tx();</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! tx_builder</span>
+<span class="doccomment">//!     // Create a transaction with one output to `to_address` of 50_000 satoshi</span>
+<span class="doccomment">//!     .add_recipient(to_address.script_pubkey(), 50_000)</span>
+<span class="doccomment">//!     // With a custom fee rate of 5.0 satoshi/vbyte</span>
 <span class="doccomment">//!     .fee_rate(FeeRate::from_sat_per_vb(5.0))</span>
+<span class="doccomment">//!     // Only spend non-change outputs</span>
 <span class="doccomment">//!     .do_not_spend_change()</span>
+<span class="doccomment">//!     // Turn on RBF signaling</span>
 <span class="doccomment">//!     .enable_rbf();</span>
-<span class="doccomment">//! # let builder: TxBuilder&lt;bdk::database::MemoryDatabase, _, CreateTx&gt; = builder;</span>
+<span class="doccomment">//! let (psbt, tx_details) = tx_builder.finish()?;</span>
+<span class="doccomment">//! # Ok::&lt;(), bdk::Error&gt;(())</span>
 <span class="doccomment">//! ```</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">BTreeMap</span>;
@@ -789,39 +830,101 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">default</span>::<span class="ident">Default</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span>;
 
+<span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">psbt</span>::<span class="ident">PartiallySignedTransaction</span> <span class="kw">as</span> <span class="ident">PSBT</span>;
 <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">OutPoint</span>, <span class="ident">Script</span>, <span class="ident">SigHashType</span>, <span class="ident">Transaction</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">coin_selection</span>::{<span class="ident">CoinSelectionAlgorithm</span>, <span class="ident">DefaultCoinSelectionAlgorithm</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">database</span>::<span class="ident">Database</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">types</span>::{<span class="ident">FeeRate</span>, <span class="ident">KeychainKind</span>, <span class="ident">UTXO</span>};
-
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">database</span>::<span class="ident">BatchDatabase</span>, <span class="ident">Error</span>, <span class="ident">Wallet</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{
+    <span class="ident">types</span>::{<span class="ident">FeeRate</span>, <span class="ident">KeychainKind</span>, <span class="ident">UTXO</span>},
+    <span class="ident">TransactionDetails</span>,
+};
 <span class="doccomment">/// Context in which the [`TxBuilder`] is valid</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">TxBuilderContext</span>: <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="op">+</span> <span class="ident">Default</span> <span class="op">+</span> <span class="ident">Clone</span> {}
 
-<span class="doccomment">/// [`Wallet::create_tx`](super::Wallet::create_tx) context</span>
+<span class="doccomment">/// Marker type to indicate the [`TxBuilder`] is being used to create a new transaction (as opposed</span>
+<span class="doccomment">/// to bumping the fee of an existing one).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CreateTx</span>;
 <span class="kw">impl</span> <span class="ident">TxBuilderContext</span> <span class="kw">for</span> <span class="ident">CreateTx</span> {}
 
-<span class="doccomment">/// [`Wallet::bump_fee`](super::Wallet::bump_fee) context</span>
+<span class="doccomment">/// Marker type to indicate the [`TxBuilder`] is being used to bump the fee of an existing transaction.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BumpFee</span>;
 <span class="kw">impl</span> <span class="ident">TxBuilderContext</span> <span class="kw">for</span> <span class="ident">BumpFee</span> {}
 
 <span class="doccomment">/// A transaction builder</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// This structure contains the configuration that the wallet must follow to build a transaction.</span>
+<span class="doccomment">/// A `TxBuilder` is created by calling [`build_tx`] or [`build_fee_bump`] on a wallet. After</span>
+<span class="doccomment">/// assigning it, you set options on it until finally calling [`finish`] to consume the builder and</span>
+<span class="doccomment">/// generate the transaction.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// For an example see [this module](super::tx_builder)&#39;s documentation;</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Database</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">Ctx</span>: <span class="ident">TxBuilderContext</span><span class="op">&gt;</span> {
+<span class="doccomment">/// Each option setting method on `TxBuilder` takes and returns `&amp;mut self` so you can chain calls</span>
+<span class="doccomment">/// as in the following example:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// # use bdk::*;</span>
+<span class="doccomment">/// # use bdk::wallet::tx_builder::*;</span>
+<span class="doccomment">/// # use bitcoin::*;</span>
+<span class="doccomment">/// # use core::str::FromStr;</span>
+<span class="doccomment">/// # let wallet = doctest_wallet!();</span>
+<span class="doccomment">/// # let addr1 = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();</span>
+<span class="doccomment">/// # let addr2 = addr1.clone();</span>
+<span class="doccomment">/// // chaining</span>
+<span class="doccomment">/// let (psbt1, details) = {</span>
+<span class="doccomment">///     let mut builder = wallet.build_tx();</span>
+<span class="doccomment">///     builder</span>
+<span class="doccomment">///        .ordering(TxOrdering::Untouched)</span>
+<span class="doccomment">///        .add_recipient(addr1.script_pubkey(), 50_000)</span>
+<span class="doccomment">///        .add_recipient(addr2.script_pubkey(), 50_000);</span>
+<span class="doccomment">///     builder.finish()?</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // non-chaining</span>
+<span class="doccomment">/// let (psbt2, details) = {</span>
+<span class="doccomment">///     let mut builder = wallet.build_tx();</span>
+<span class="doccomment">///     builder.ordering(TxOrdering::Untouched);</span>
+<span class="doccomment">///     for addr in &amp;[addr1, addr2] {</span>
+<span class="doccomment">///         builder.add_recipient(addr.script_pubkey(), 50_000);</span>
+<span class="doccomment">///     }</span>
+<span class="doccomment">///     builder.finish()?</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// assert_eq!(psbt1.global.unsigned_tx.output[..2], psbt2.global.unsigned_tx.output[..2]);</span>
+<span class="doccomment">/// # Ok::&lt;(), bdk::Error&gt;(())</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// At the moment [`coin_selection`] is an exception to the rule as it consumes `self`.</span>
+<span class="doccomment">/// This means it is usually best to call [`coin_selection`] on the return value of `build_tx` before assigning it.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For further examples see [this module](super::tx_builder)&#39;s documentation;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`build_tx`]: Wallet::build_tx</span>
+<span class="doccomment">/// [`build_fee_bump`]: Wallet::build_fee_bump</span>
+<span class="doccomment">/// [`finish`]: Self::finish</span>
+<span class="doccomment">/// [`coin_selection`]: Self::coin_selection</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">wallet</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Wallet</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">D</span><span class="op">&gt;</span>,
+    <span class="comment">// params and coin_selection are Options not becasue they are optionally set (they are always</span>
+    <span class="comment">// there) but because `.finish()` uses `Option::take` to get an owned value from a &amp;mut self.</span>
+    <span class="comment">// They are only `None` after `.finish()` is called.</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">params</span>: <span class="ident">TxParams</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">coin_selection</span>: <span class="ident">Cs</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">phantom</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>,
+}
+
+<span class="doccomment">/// The parameters for transaction creation sans coin selection algorithm.</span>
+<span class="comment">//TODO: TxParams should eventually be exposed publicly.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">TxParams</span> {
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">recipients</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Script</span>, <span class="ident">u64</span>)<span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">drain_wallet</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">single_recipient</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">fee_policy</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">FeePolicy</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">internal_policy_path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">external_policy_path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutPoint</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">UTXO</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">unspendable</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">OutPoint</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">manually_selected_only</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">sighash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SigHashType</span><span class="op">&gt;</span>,
@@ -832,13 +935,17 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">change_policy</span>: <span class="ident">ChangeSpendPolicy</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">force_non_witness_utxo</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">add_global_xpubs</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">coin_selection</span>: <span class="ident">Cs</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">include_output_redeem_witness_script</span>: <span class="ident">bool</span>,
-
-    <span class="ident">phantom</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span>(<span class="ident">D</span>, <span class="ident">Ctx</span>)<span class="op">&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">bumping_fee</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PreviousFee</span><span class="op">&gt;</span>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">PreviousFee</span> {
+    <span class="kw">pub</span> <span class="ident">absolute</span>: <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">rate</span>: <span class="ident">f32</span>,
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">FeePolicy</span> {
     <span class="ident">FeeRate</span>(<span class="ident">FeeRate</span>),
     <span class="ident">FeeAmount</span>(<span class="ident">u64</span>),
@@ -850,58 +957,19 @@
     }
 }
 
-<span class="comment">// Unfortunately derive doesn&#39;t work with `PhantomData`: https://github.com/rust-lang/rust/issues/26925</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Database</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">Ctx</span>: <span class="ident">TxBuilderContext</span><span class="op">&gt;</span> <span class="ident">Default</span>
-    <span class="kw">for</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">Cs</span>: <span class="ident">Default</span>,
-{
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">TxBuilder</span> {
-            <span class="ident">recipients</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">drain_wallet</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">single_recipient</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">fee_policy</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">internal_policy_path</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">external_policy_path</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">utxos</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">unspendable</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">manually_selected_only</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">sighash</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">ordering</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">locktime</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">rbf</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">version</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">change_policy</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">force_non_witness_utxo</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">add_global_xpubs</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">coin_selection</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-            <span class="ident">include_output_redeem_witness_script</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
-
-            <span class="ident">phantom</span>: <span class="ident">PhantomData</span>,
-        }
-    }
-}
-
-<span class="comment">// methods supported by both contexts, but only for `DefaultCoinSelectionAlgorithm`</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Database</span>, <span class="ident">Ctx</span>: <span class="ident">TxBuilderContext</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="ident">D</span>, <span class="ident">DefaultCoinSelectionAlgorithm</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Create an empty builder</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span>::<span class="ident">default</span>()
-    }
-}
-
 <span class="comment">// methods supported by both contexts, for any CoinSelectionAlgorithm</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Database</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">Ctx</span>: <span class="ident">TxBuilderContext</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">Ctx</span>: <span class="ident">TxBuilderContext</span><span class="op">&gt;</span>
+    <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span>
+{
     <span class="doccomment">/// Set a custom fee rate</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fee_rate</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">fee_rate</span>: <span class="ident">FeeRate</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">fee_policy</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">FeePolicy</span>::<span class="ident">FeeRate</span>(<span class="ident">fee_rate</span>));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fee_rate</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">fee_rate</span>: <span class="ident">FeeRate</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">fee_policy</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">FeePolicy</span>::<span class="ident">FeeRate</span>(<span class="ident">fee_rate</span>));
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Set an absolute fee</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fee_absolute</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">fee_amount</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">fee_policy</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">FeePolicy</span>::<span class="ident">FeeAmount</span>(<span class="ident">fee_amount</span>));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fee_absolute</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">fee_amount</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">fee_policy</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">FeePolicy</span>::<span class="ident">FeeAmount</span>(<span class="ident">fee_amount</span>));
         <span class="self">self</span>
     }
 
@@ -953,96 +1021,108 @@
     <span class="doccomment">/// # use bitcoin::*;</span>
     <span class="doccomment">/// # use bdk::*;</span>
     <span class="doccomment">/// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();</span>
+    <span class="doccomment">/// # let wallet = doctest_wallet!();</span>
     <span class="doccomment">/// let mut path = BTreeMap::new();</span>
     <span class="doccomment">/// path.insert(&quot;aabbccdd&quot;.to_string(), vec![0, 1]);</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// let builder = TxBuilder::with_recipients(vec![(to_address.script_pubkey(), 50_000)])</span>
+    <span class="doccomment">/// let builder = wallet.build_tx()</span>
+    <span class="doccomment">///     .add_recipient(to_address.script_pubkey(), 50_000)</span>
     <span class="doccomment">///     .policy_path(path, KeychainKind::External);</span>
-    <span class="doccomment">/// # let builder: TxBuilder&lt;bdk::database::MemoryDatabase, _, _&gt; = builder;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Ok::&lt;(), bdk::Error&gt;(())</span>
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">policy_path</span>(
-        <span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">policy_path</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">to_update</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">keychain</span> {
-            <span class="ident">KeychainKind</span>::<span class="ident">Internal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">internal_policy_path</span>,
-            <span class="ident">KeychainKind</span>::<span class="ident">External</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">external_policy_path</span>,
+            <span class="ident">KeychainKind</span>::<span class="ident">Internal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">internal_policy_path</span>,
+            <span class="ident">KeychainKind</span>::<span class="ident">External</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">external_policy_path</span>,
         };
 
         <span class="kw-2">*</span><span class="ident">to_update</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">policy_path</span>);
         <span class="self">self</span>
     }
 
-    <span class="doccomment">/// Replace the internal list of utxos that **must** be spent with a new list</span>
+    <span class="doccomment">/// Add the list of outpoints to the internal list of UTXOs that **must** be spent.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If an error occurs while adding any of the UTXOs then none of them are added and the error is returned.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// These have priority over the &quot;unspendable&quot; utxos, meaning that if a utxo is present both in</span>
     <span class="doccomment">/// the &quot;utxos&quot; and the &quot;unspendable&quot; list, it will be spent.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">utxos</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutPoint</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">utxos</span> <span class="op">=</span> <span class="ident">utxos</span>;
-        <span class="self">self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_utxos</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">outpoints</span>: <span class="kw-2">&amp;</span>[<span class="ident">OutPoint</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">deriv_ctx</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">wallet</span>::<span class="ident">descriptor_to_pk_ctx</span>(<span class="self">self</span>.<span class="ident">wallet</span>.<span class="ident">secp_ctx</span>());
+        <span class="kw">let</span> <span class="ident">utxos</span> <span class="op">=</span> <span class="ident">outpoints</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">outpoint</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">wallet</span>.<span class="ident">get_utxo</span>(<span class="kw-2">*</span><span class="ident">outpoint</span>)<span class="question-mark">?</span>.<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="ident">UnknownUTXO</span>))
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+
+        <span class="kw">for</span> <span class="ident">utxo</span> <span class="kw">in</span> <span class="ident">utxos</span> {
+            <span class="kw">let</span> <span class="ident">descriptor</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">wallet</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">utxo</span>.<span class="ident">keychain</span>);
+            <span class="kw">let</span> <span class="ident">satisfaction_weight</span> <span class="op">=</span> <span class="ident">descriptor</span>.<span class="ident">max_satisfaction_weight</span>(<span class="ident">deriv_ctx</span>).<span class="ident">unwrap</span>();
+            <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">utxos</span>.<span class="ident">push</span>((<span class="ident">utxo</span>, <span class="ident">satisfaction_weight</span>));
+        }
+
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
     <span class="doccomment">/// Add a utxo to the internal list of utxos that **must** be spent</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// These have priority over the &quot;unspendable&quot; utxos, meaning that if a utxo is present both in</span>
     <span class="doccomment">/// the &quot;utxos&quot; and the &quot;unspendable&quot; list, it will be spent.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_utxo</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">utxo</span>: <span class="ident">OutPoint</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">utxos</span>.<span class="ident">push</span>(<span class="ident">utxo</span>);
-        <span class="self">self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_utxo</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">outpoint</span>: <span class="ident">OutPoint</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">add_utxos</span>(<span class="kw-2">&amp;</span>[<span class="ident">outpoint</span>])
     }
 
-    <span class="doccomment">/// Only spend utxos added by [`add_utxo`] and [`utxos`].</span>
+    <span class="doccomment">/// Only spend utxos added by [`add_utxo`].</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The wallet will **not** add additional utxos to the transaction even if they are needed to</span>
     <span class="doccomment">/// make the transaction valid.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`add_utxo`]: Self::add_utxo</span>
-    <span class="doccomment">/// [`utxos`]: Self::utxos</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">manually_selected_only</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">manually_selected_only</span> <span class="op">=</span> <span class="bool-val">true</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">manually_selected_only</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">manually_selected_only</span> <span class="op">=</span> <span class="bool-val">true</span>;
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Replace the internal list of unspendable utxos with a new list</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// It&#39;s important to note that the &quot;must-be-spent&quot; utxos added with [`TxBuilder::utxos`] and</span>
-    <span class="doccomment">/// [`TxBuilder::add_utxo`] have priority over these. See the docs of the two linked methods</span>
-    <span class="doccomment">/// for more details.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unspendable</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">unspendable</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutPoint</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">unspendable</span> <span class="op">=</span> <span class="ident">unspendable</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
+    <span class="doccomment">/// It&#39;s important to note that the &quot;must-be-spent&quot; utxos added with [`TxBuilder::add_utxo`]</span>
+    <span class="doccomment">/// have priority over these. See the docs of the two linked methods for more details.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unspendable</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">unspendable</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutPoint</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">unspendable</span> <span class="op">=</span> <span class="ident">unspendable</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Add a utxo to the internal list of unspendable utxos</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// It&#39;s important to note that the &quot;must-be-spent&quot; utxos added with [`TxBuilder::utxos`] and</span>
-    <span class="doccomment">/// [`TxBuilder::add_utxo`] have priority over this. See the docs of the two linked methods</span>
-    <span class="doccomment">/// for more details.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_unspendable</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">unspendable</span>: <span class="ident">OutPoint</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">unspendable</span>.<span class="ident">insert</span>(<span class="ident">unspendable</span>);
+    <span class="doccomment">/// It&#39;s important to note that the &quot;must-be-spent&quot; utxos added with [`TxBuilder::add_utxo`]</span>
+    <span class="doccomment">/// have priority over this. See the docs of the two linked methods for more details.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_unspendable</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">unspendable</span>: <span class="ident">OutPoint</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">unspendable</span>.<span class="ident">insert</span>(<span class="ident">unspendable</span>);
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Sign with a specific sig hash</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **Use this option very carefully**</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sighash</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">sighash</span>: <span class="ident">SigHashType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">sighash</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">sighash</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sighash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">sighash</span>: <span class="ident">SigHashType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">sighash</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">sighash</span>);
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Choose the ordering for inputs and outputs of the transaction</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ordering</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ordering</span>: <span class="ident">TxOrdering</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">ordering</span> <span class="op">=</span> <span class="ident">ordering</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ordering</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ordering</span>: <span class="ident">TxOrdering</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">ordering</span> <span class="op">=</span> <span class="ident">ordering</span>;
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Use a specific nLockTime while creating the transaction</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This can cause conflicts if the wallet&#39;s descriptors contain an &quot;after&quot; (OP_CLTV) operator.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">nlocktime</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">locktime</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">locktime</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">locktime</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">nlocktime</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">locktime</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">locktime</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">locktime</span>);
         <span class="self">self</span>
     }
 
@@ -1050,8 +1130,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// The `version` should always be greater than `0` and greater than `1` if the wallet&#39;s</span>
     <span class="doccomment">/// descriptors contain an &quot;older&quot; (OP_CSV) operator.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">version</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">version</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">version</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">Version</span>(<span class="ident">version</span>));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">version</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">version</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">version</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">Version</span>(<span class="ident">version</span>));
         <span class="self">self</span>
     }
 
@@ -1059,8 +1139,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This effectively adds all the change outputs to the &quot;unspendable&quot; list. See</span>
     <span class="doccomment">/// [`TxBuilder::unspendable`].</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">do_not_spend_change</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">change_policy</span> <span class="op">=</span> <span class="ident">ChangeSpendPolicy</span>::<span class="ident">ChangeForbidden</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">do_not_spend_change</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">change_policy</span> <span class="op">=</span> <span class="ident">ChangeSpendPolicy</span>::<span class="ident">ChangeForbidden</span>;
         <span class="self">self</span>
     }
 
@@ -1068,15 +1148,15 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This effectively adds all the non-change outputs to the &quot;unspendable&quot; list. See</span>
     <span class="doccomment">/// [`TxBuilder::unspendable`].</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">only_spend_change</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">change_policy</span> <span class="op">=</span> <span class="ident">ChangeSpendPolicy</span>::<span class="ident">OnlyChange</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">only_spend_change</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">change_policy</span> <span class="op">=</span> <span class="ident">ChangeSpendPolicy</span>::<span class="ident">OnlyChange</span>;
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Set a specific [`ChangeSpendPolicy`]. See [`TxBuilder::do_not_spend_change`] and</span>
     <span class="doccomment">/// [`TxBuilder::only_spend_change`] for some shortcuts.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">change_policy</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">change_policy</span>: <span class="ident">ChangeSpendPolicy</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">change_policy</span> <span class="op">=</span> <span class="ident">change_policy</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">change_policy</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">change_policy</span>: <span class="ident">ChangeSpendPolicy</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">change_policy</span> <span class="op">=</span> <span class="ident">change_policy</span>;
         <span class="self">self</span>
     }
 
@@ -1084,8 +1164,8 @@
     <span class="doccomment">/// descriptors.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is useful for signers which always require it, like Trezor hardware wallets.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">force_non_witness_utxo</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">force_non_witness_utxo</span> <span class="op">=</span> <span class="bool-val">true</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">force_non_witness_utxo</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">force_non_witness_utxo</span> <span class="op">=</span> <span class="bool-val">true</span>;
         <span class="self">self</span>
     }
 
@@ -1093,8 +1173,8 @@
     <span class="doccomment">/// [`psbt::Output::witness_script`](bitcoin::util::psbt::Output::witness_script) fields.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is useful for signers which always require it, like ColdCard hardware wallets.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">include_output_redeem_witness_script</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">include_output_redeem_witness_script</span> <span class="op">=</span> <span class="bool-val">true</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">include_output_redeem_witness_script</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">include_output_redeem_witness_script</span> <span class="op">=</span> <span class="bool-val">true</span>;
         <span class="self">self</span>
     }
 
@@ -1103,69 +1183,54 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is useful for offline signers that take part to a multisig. Some hardware wallets like</span>
     <span class="doccomment">/// BitBox and ColdCard are known to require this.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_global_xpubs</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">add_global_xpubs</span> <span class="op">=</span> <span class="bool-val">true</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_global_xpubs</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">add_global_xpubs</span> <span class="op">=</span> <span class="bool-val">true</span>;
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Spend all the available inputs. This respects filters like [`TxBuilder::unspendable`] and the change policy.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">drain_wallet</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">drain_wallet</span> <span class="op">=</span> <span class="bool-val">true</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">drain_wallet</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">drain_wallet</span> <span class="op">=</span> <span class="bool-val">true</span>;
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Choose the coin selection algorithm</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Overrides the [`DefaultCoinSelectionAlgorithm`](super::coin_selection::DefaultCoinSelectionAlgorithm).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Note that this function consumes the builder and returns it so it is usually best to put this as the first call on the builder.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">coin_selection</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">coin_selection</span>: <span class="ident">P</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="ident">D</span>, <span class="ident">P</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">P</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
         <span class="ident">TxBuilder</span> {
-            <span class="ident">recipients</span>: <span class="self">self</span>.<span class="ident">recipients</span>,
-            <span class="ident">drain_wallet</span>: <span class="self">self</span>.<span class="ident">drain_wallet</span>,
-            <span class="ident">single_recipient</span>: <span class="self">self</span>.<span class="ident">single_recipient</span>,
-            <span class="ident">fee_policy</span>: <span class="self">self</span>.<span class="ident">fee_policy</span>,
-            <span class="ident">internal_policy_path</span>: <span class="self">self</span>.<span class="ident">internal_policy_path</span>,
-            <span class="ident">external_policy_path</span>: <span class="self">self</span>.<span class="ident">external_policy_path</span>,
-            <span class="ident">utxos</span>: <span class="self">self</span>.<span class="ident">utxos</span>,
-            <span class="ident">unspendable</span>: <span class="self">self</span>.<span class="ident">unspendable</span>,
-            <span class="ident">manually_selected_only</span>: <span class="self">self</span>.<span class="ident">manually_selected_only</span>,
-            <span class="ident">sighash</span>: <span class="self">self</span>.<span class="ident">sighash</span>,
-            <span class="ident">ordering</span>: <span class="self">self</span>.<span class="ident">ordering</span>,
-            <span class="ident">locktime</span>: <span class="self">self</span>.<span class="ident">locktime</span>,
-            <span class="ident">rbf</span>: <span class="self">self</span>.<span class="ident">rbf</span>,
-            <span class="ident">version</span>: <span class="self">self</span>.<span class="ident">version</span>,
-            <span class="ident">change_policy</span>: <span class="self">self</span>.<span class="ident">change_policy</span>,
-            <span class="ident">force_non_witness_utxo</span>: <span class="self">self</span>.<span class="ident">force_non_witness_utxo</span>,
-            <span class="ident">add_global_xpubs</span>: <span class="self">self</span>.<span class="ident">add_global_xpubs</span>,
-            <span class="ident">include_output_redeem_witness_script</span>: <span class="self">self</span>.<span class="ident">include_output_redeem_witness_script</span>,
+            <span class="ident">wallet</span>: <span class="self">self</span>.<span class="ident">wallet</span>,
+            <span class="ident">params</span>: <span class="self">self</span>.<span class="ident">params</span>,
             <span class="ident">coin_selection</span>,
-
             <span class="ident">phantom</span>: <span class="ident">PhantomData</span>,
         }
     }
-}
 
-<span class="comment">// methods supported only by create_tx, and only for `DefaultCoinSelectionAlgorithm`</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Database</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="ident">D</span>, <span class="ident">DefaultCoinSelectionAlgorithm</span>, <span class="ident">CreateTx</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Create a builder starting from a list of recipients</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_recipients</span>(<span class="ident">recipients</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Script</span>, <span class="ident">u64</span>)<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span>::<span class="ident">default</span>().<span class="ident">set_recipients</span>(<span class="ident">recipients</span>)
+    <span class="doccomment">/// Finish the building the transaction.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Returns the [`BIP174`] &quot;PSBT&quot; and summary details about the transaction.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`BIP174`]: https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">finish</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">PSBT</span>, <span class="ident">TransactionDetails</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">wallet</span>.<span class="ident">create_tx</span>(<span class="self">self</span>.<span class="ident">coin_selection</span>, <span class="self">self</span>.<span class="ident">params</span>)
     }
 }
 
-<span class="comment">// methods supported only by create_tx, for any `CoinSelectionAlgorithm`</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Database</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">CreateTx</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">CreateTx</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Replace the recipients already added with a new list</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_recipients</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">recipients</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Script</span>, <span class="ident">u64</span>)<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">recipients</span> <span class="op">=</span> <span class="ident">recipients</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_recipients</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">recipients</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Script</span>, <span class="ident">u64</span>)<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">recipients</span> <span class="op">=</span> <span class="ident">recipients</span>;
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Add a recipient to the internal list</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_recipient</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">script_pubkey</span>: <span class="ident">Script</span>, <span class="ident">amount</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">recipients</span>.<span class="ident">push</span>((<span class="ident">script_pubkey</span>, <span class="ident">amount</span>));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_recipient</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">script_pubkey</span>: <span class="ident">Script</span>, <span class="ident">amount</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">recipients</span>.<span class="ident">push</span>((<span class="ident">script_pubkey</span>, <span class="ident">amount</span>));
         <span class="self">self</span>
     }
 
@@ -1178,14 +1243,14 @@
     <span class="doccomment">/// It can only be used in conjunction with [`drain_wallet`](Self::drain_wallet) to send the</span>
     <span class="doccomment">/// entire content of the wallet (minus filters) to a single recipient or with a</span>
     <span class="doccomment">/// list of manually selected UTXOs by enabling [`manually_selected_only`](Self::manually_selected_only)</span>
-    <span class="doccomment">/// and selecting them with [`utxos`](Self::utxos) or [`add_utxo`](Self::add_utxo).</span>
+    <span class="doccomment">/// and selecting them with or [`add_utxo`](Self::add_utxo).</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// When bumping the fees of a transaction made with this option, the user should remeber to</span>
     <span class="doccomment">/// add [`maintain_single_recipient`](Self::maintain_single_recipient) to correctly update the</span>
     <span class="doccomment">/// single output instead of adding one more for the change.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_single_recipient</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">recipient</span>: <span class="ident">Script</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">single_recipient</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">recipient</span>);
-        <span class="self">self</span>.<span class="ident">recipients</span>.<span class="ident">clear</span>();
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_single_recipient</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">recipient</span>: <span class="ident">Script</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">single_recipient</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">recipient</span>);
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">recipients</span>.<span class="ident">clear</span>();
 
         <span class="self">self</span>
     }
@@ -1193,8 +1258,8 @@
     <span class="doccomment">/// Enable signaling RBF</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This will use the default nSequence value of `0xFFFFFFFD`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_rbf</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">rbf</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">RBFValue</span>::<span class="ident">Default</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_rbf</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">rbf</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">RBFValue</span>::<span class="ident">Default</span>);
         <span class="self">self</span>
     }
 
@@ -1205,17 +1270,17 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// If the `nsequence` is higher than `0xFFFFFFFD` an error will be thrown, since it would not</span>
     <span class="doccomment">/// be a valid nSequence to signal RBF.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_rbf_with_sequence</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">nsequence</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">rbf</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">RBFValue</span>::<span class="ident">Value</span>(<span class="ident">nsequence</span>));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_rbf_with_sequence</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">nsequence</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">rbf</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">RBFValue</span>::<span class="ident">Value</span>(<span class="ident">nsequence</span>));
         <span class="self">self</span>
     }
 }
 
 <span class="comment">// methods supported only by bump_fee</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Database</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="ident">D</span>, <span class="ident">DefaultCoinSelectionAlgorithm</span>, <span class="ident">BumpFee</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">DefaultCoinSelectionAlgorithm</span>, <span class="ident">BumpFee</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Bump the fees of a transaction made with [`set_single_recipient`](Self::set_single_recipient)</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Unless extra inputs are specified with [`add_utxo`] or [`utxos`], this flag will make</span>
+    <span class="doccomment">/// Unless extra inputs are specified with [`add_utxo`], this flag will make</span>
     <span class="doccomment">/// `bump_fee` reduce the value of the existing output, or fail if it would be consumed</span>
     <span class="doccomment">/// entirely given the higher new fee rate.</span>
     <span class="doccomment">///</span>
@@ -1225,10 +1290,13 @@
     <span class="doccomment">/// Fails if the transaction has more than one outputs.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`add_utxo`]: Self::add_utxo</span>
-    <span class="doccomment">/// [`utxos`]: Self::utxos</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">maintain_single_recipient</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">single_recipient</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">Script</span>::<span class="ident">default</span>());
-        <span class="self">self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">maintain_single_recipient</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">recipients</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">recipients</span>.<span class="ident">drain</span>(..).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+        <span class="kw">if</span> <span class="ident">recipients</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">SingleRecipientMultipleOutputs</span>);
+        }
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">single_recipient</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">recipients</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>().<span class="number">0</span>);
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 }
 
