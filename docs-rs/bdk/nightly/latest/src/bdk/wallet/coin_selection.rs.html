@@ -1004,7 +1004,6 @@
 <span id="1001">1001</span>
 <span id="1002">1002</span>
 <span id="1003">1003</span>
-<span id="1004">1004</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -1035,19 +1034,16 @@
 <span class="doccomment">//! This module provides the trait [`CoinSelectionAlgorithm`] that can be implemented to</span>
 <span class="doccomment">//! define custom coin selection algorithms.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! The coin selection algorithm is not globally part of a [`Wallet`](super::Wallet), instead it</span>
-<span class="doccomment">//! is selected whenever a [`Wallet::create_tx`](super::Wallet::create_tx) call is made, through</span>
-<span class="doccomment">//! the use of the [`TxBuilder`] structure, specifically with</span>
-<span class="doccomment">//! [`TxBuilder::coin_selection`](super::tx_builder::TxBuilder::coin_selection) method.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The [`DefaultCoinSelectionAlgorithm`] selects the default coin selection algorithm that</span>
-<span class="doccomment">//! [`TxBuilder`] uses, if it&#39;s not explicitly overridden.</span>
+<span class="doccomment">//! You can specify a custom coin selection algorithm through the [`coin_selection`] method on</span>
+<span class="doccomment">//! [`TxBuilder`]. [`DefaultCoinSelectionAlgorithm`] aliases the coin selection algorithm that will</span>
+<span class="doccomment">//! be used if it is not explicitly set.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! [`TxBuilder`]: super::tx_builder::TxBuilder</span>
+<span class="doccomment">//! [`coin_selection`]: super::tx_builder::TxBuilder::coin_selection</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Example</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! ```no_run</span>
+<span class="doccomment">//! ```</span>
 <span class="doccomment">//! # use std::str::FromStr;</span>
 <span class="doccomment">//! # use bitcoin::*;</span>
 <span class="doccomment">//! # use bdk::wallet::coin_selection::*;</span>
@@ -1092,14 +1088,16 @@
 <span class="doccomment">//!     }</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! # let wallet = Wallet::new_offline(&quot;&quot;, None, Network::Testnet, bdk::database::MemoryDatabase::default())?;</span>
+<span class="doccomment">//! # let wallet = doctest_wallet!();</span>
 <span class="doccomment">//! // create wallet, sync, ...</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();</span>
-<span class="doccomment">//! let (psbt, details) = wallet.create_tx(</span>
-<span class="doccomment">//!     TxBuilder::with_recipients(vec![(to_address.script_pubkey(), 50_000)])</span>
-<span class="doccomment">//!         .coin_selection(AlwaysSpendEverything),</span>
-<span class="doccomment">//! )?;</span>
+<span class="doccomment">//! let (psbt, details) = {</span>
+<span class="doccomment">//!     let mut builder = wallet.build_tx().coin_selection(AlwaysSpendEverything);</span>
+<span class="doccomment">//!     builder</span>
+<span class="doccomment">//!         .add_recipient(to_address.script_pubkey(), 50_000);</span>
+<span class="doccomment">//!     builder.finish()?</span>
+<span class="doccomment">//! };</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! // inspect, sign, broadcast, ...</span>
 <span class="doccomment">//!</span>
