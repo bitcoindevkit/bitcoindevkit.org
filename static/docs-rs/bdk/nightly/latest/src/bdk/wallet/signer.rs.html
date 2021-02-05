@@ -697,6 +697,8 @@
 <span id="694">694</span>
 <span id="695">695</span>
 <span id="696">696</span>
+<span id="697">697</span>
+<span id="698">698</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -920,7 +922,7 @@
         }
 
         <span class="kw">let</span> (<span class="ident">public_key</span>, <span class="ident">deriv_path</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>]
-            .<span class="ident">hd_keypaths</span>
+            .<span class="ident">bip32_derivation</span>
             .<span class="ident">iter</span>()
             .<span class="ident">filter_map</span>(<span class="op">|</span>(<span class="ident">pk</span>, <span class="kw-2">&amp;</span>(<span class="ident">fingerprint</span>, <span class="kw-2">ref</span> <span class="ident">path</span>))<span class="op">|</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">matches</span>(<span class="kw-2">&amp;</span>(<span class="ident">fingerprint</span>, <span class="ident">path</span>.<span class="ident">clone</span>()), <span class="kw-2">&amp;</span><span class="ident">secp</span>).<span class="ident">is_some</span>() {
@@ -1262,7 +1264,7 @@
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">descriptor</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">descriptor</span>::<span class="ident">ToWalletDescriptor</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::{<span class="ident">DescriptorKey</span>, <span class="ident">ToDescriptorKey</span>};
-    <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">secp256k1</span>::<span class="ident">All</span>;
+    <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">secp256k1</span>::{<span class="ident">All</span>, <span class="ident">Secp256k1</span>};
     <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>;
     <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">psbt</span>::<span class="ident">PartiallySignedTransaction</span>;
     <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">Network</span>;
@@ -1274,10 +1276,12 @@
     <span class="comment">// This happens usually when a set of signers is created from a descriptor with private keys.</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">signers_with_same_ordering</span>() {
+        <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1</span>::<span class="ident">new</span>();
+
         <span class="kw">let</span> (<span class="ident">prvkey1</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">setup_keys</span>(<span class="ident">TPRV0_STR</span>);
         <span class="kw">let</span> (<span class="ident">prvkey2</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">setup_keys</span>(<span class="ident">TPRV1_STR</span>);
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">sh</span>(<span class="ident">multi</span>(<span class="number">2</span>, <span class="ident">prvkey1</span>, <span class="ident">prvkey2</span>))).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">keymap</span>) <span class="op">=</span> <span class="ident">desc</span>.<span class="ident">to_wallet_descriptor</span>(<span class="ident">Network</span>::<span class="ident">Testnet</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">keymap</span>) <span class="op">=</span> <span class="ident">desc</span>.<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">signers</span> <span class="op">=</span> <span class="ident">SignersContainer</span>::<span class="ident">from</span>(<span class="ident">keymap</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">signers</span>.<span class="ident">ids</span>().<span class="ident">len</span>(), <span class="number">2</span>);

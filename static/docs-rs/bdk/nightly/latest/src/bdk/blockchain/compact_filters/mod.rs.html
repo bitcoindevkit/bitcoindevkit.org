@@ -575,6 +575,13 @@
 <span id="572">572</span>
 <span id="573">573</span>
 <span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -961,7 +968,12 @@
         }
         <span class="ident">database</span>.<span class="ident">commit_batch</span>(<span class="ident">updates</span>)<span class="question-mark">?</span>;
 
-        <span class="ident">first_peer</span>.<span class="ident">ask_for_mempool</span>()<span class="question-mark">?</span>;
+        <span class="kw">match</span> <span class="ident">first_peer</span>.<span class="ident">ask_for_mempool</span>() {
+            <span class="prelude-val">Err</span>(<span class="ident">CompactFiltersError</span>::<span class="ident">PeerBloomDisabled</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">log</span>::<span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Peer has BLOOM disabled, we can&#39;t ask for the mempool&quot;</span>)
+            }
+            <span class="ident">e</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">e</span><span class="question-mark">?</span>,
+        };
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">internal_max_deriv</span> <span class="op">=</span> <span class="prelude-val">None</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">external_max_deriv</span> <span class="op">=</span> <span class="prelude-val">None</span>;
@@ -1115,6 +1127,8 @@
     <span class="ident">NotConnected</span>,
     <span class="doccomment">/// A peer took too long to reply to one of our messages</span>
     <span class="ident">Timeout</span>,
+    <span class="doccomment">/// The peer doesn&#39;t advertise the [`BLOOM`](bitcoin::network::constants::ServiceFlags::BLOOM) service flag</span>
+    <span class="ident">PeerBloomDisabled</span>,
 
     <span class="doccomment">/// No peers have been specified</span>
     <span class="ident">NoPeers</span>,

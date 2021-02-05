@@ -343,6 +343,23 @@
 <span id="340">340</span>
 <span id="341">341</span>
 <span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -422,6 +439,7 @@
 
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 
+<span class="kw">use</span> <span class="ident">miniscript</span>::<span class="ident">descriptor</span>::{<span class="ident">ShInner</span>, <span class="ident">WshInner</span>};
 <span class="kw">use</span> <span class="ident">miniscript</span>::{<span class="ident">Descriptor</span>, <span class="ident">DescriptorPublicKey</span>, <span class="ident">ScriptContext</span>, <span class="ident">Terminal</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">database</span>::<span class="ident">BatchDatabase</span>;
@@ -453,6 +471,10 @@
     }
 }
 
+<span class="kw">fn</span> <span class="ident">remove_checksum</span>(<span class="ident">s</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="ident">s</span>.<span class="ident">splitn</span>(<span class="number">2</span>, <span class="string">&#39;#&#39;</span>).<span class="ident">next</span>().<span class="ident">map</span>(<span class="ident">String</span>::<span class="ident">from</span>).<span class="ident">unwrap</span>()
+}
+
 <span class="kw">impl</span> <span class="ident">WalletExport</span> {
     <span class="doccomment">/// Export a wallet</span>
     <span class="doccomment">///</span>
@@ -473,6 +495,7 @@
         <span class="kw">let</span> <span class="ident">descriptor</span> <span class="op">=</span> <span class="ident">wallet</span>
             .<span class="ident">descriptor</span>
             .<span class="ident">to_string_with_secret</span>(<span class="kw-2">&amp;</span><span class="ident">wallet</span>.<span class="ident">signers</span>.<span class="ident">as_key_map</span>(<span class="ident">wallet</span>.<span class="ident">secp_ctx</span>()));
+        <span class="kw">let</span> <span class="ident">descriptor</span> <span class="op">=</span> <span class="ident">remove_checksum</span>(<span class="ident">descriptor</span>);
         <span class="self">Self</span>::<span class="ident">is_compatible_with_core</span>(<span class="kw-2">&amp;</span><span class="ident">descriptor</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">blockheight</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow</span>().<span class="ident">iter_txs</span>(<span class="bool-val">false</span>) {
@@ -496,7 +519,9 @@
         };
 
         <span class="kw">let</span> <span class="ident">desc_to_string</span> <span class="op">=</span> <span class="op">|</span><span class="ident">d</span>: <span class="kw-2">&amp;</span><span class="ident">Descriptor</span><span class="op">&lt;</span><span class="ident">DescriptorPublicKey</span><span class="op">&gt;</span><span class="op">|</span> {
-            <span class="ident">d</span>.<span class="ident">to_string_with_secret</span>(<span class="kw-2">&amp;</span><span class="ident">wallet</span>.<span class="ident">change_signers</span>.<span class="ident">as_key_map</span>(<span class="ident">wallet</span>.<span class="ident">secp_ctx</span>()))
+            <span class="kw">let</span> <span class="ident">descriptor</span> <span class="op">=</span>
+                <span class="ident">d</span>.<span class="ident">to_string_with_secret</span>(<span class="kw-2">&amp;</span><span class="ident">wallet</span>.<span class="ident">change_signers</span>.<span class="ident">as_key_map</span>(<span class="ident">wallet</span>.<span class="ident">secp_ctx</span>()));
+            <span class="ident">remove_checksum</span>(<span class="ident">descriptor</span>)
         };
         <span class="kw">if</span> <span class="ident">export</span>.<span class="ident">change_descriptor</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">change_descriptor</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="ident">desc_to_string</span>) {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Incompatible change descriptor&quot;</span>);
@@ -507,7 +532,7 @@
 
     <span class="kw">fn</span> <span class="ident">is_compatible_with_core</span>(<span class="ident">descriptor</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
         <span class="kw">fn</span> <span class="ident">check_ms</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">ScriptContext</span><span class="op">&gt;</span>(
-            <span class="ident">terminal</span>: <span class="ident">Terminal</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Ctx</span><span class="op">&gt;</span>,
+            <span class="ident">terminal</span>: <span class="kw-2">&amp;</span><span class="ident">Terminal</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Ctx</span><span class="op">&gt;</span>,
         ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
             <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Terminal</span>::<span class="ident">Multi</span>(<span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">terminal</span> {
                 <span class="prelude-val">Ok</span>(())
@@ -516,13 +541,22 @@
             }
         }
 
+        <span class="comment">// pkh(), wpkh(), sh(wpkh()) are always fine, as well as multi() and sortedmulti()</span>
         <span class="kw">match</span> <span class="ident">Descriptor</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>::<span class="ident">from_str</span>(<span class="ident">descriptor</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;Invalid descriptor&quot;</span>)<span class="question-mark">?</span> {
-            <span class="ident">Descriptor</span>::<span class="ident">Pk</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Descriptor</span>::<span class="ident">Pkh</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Descriptor</span>::<span class="ident">Wpkh</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">Descriptor</span>::<span class="ident">ShWpkh</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
-            <span class="ident">Descriptor</span>::<span class="ident">Sh</span>(<span class="ident">ms</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">check_ms</span>(<span class="ident">ms</span>.<span class="ident">node</span>),
-            <span class="ident">Descriptor</span>::<span class="ident">Wsh</span>(<span class="ident">ms</span>) <span class="op">|</span> <span class="ident">Descriptor</span>::<span class="ident">ShWsh</span>(<span class="ident">ms</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">check_ms</span>(<span class="ident">ms</span>.<span class="ident">node</span>),
+            <span class="ident">Descriptor</span>::<span class="ident">Pkh</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Descriptor</span>::<span class="ident">Wpkh</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
+            <span class="ident">Descriptor</span>::<span class="ident">Sh</span>(<span class="ident">sh</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">sh</span>.<span class="ident">as_inner</span>() {
+                <span class="ident">ShInner</span>::<span class="ident">Wpkh</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
+                <span class="ident">ShInner</span>::<span class="ident">SortedMulti</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
+                <span class="ident">ShInner</span>::<span class="ident">Wsh</span>(<span class="ident">wsh</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">wsh</span>.<span class="ident">as_inner</span>() {
+                    <span class="ident">WshInner</span>::<span class="ident">SortedMulti</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
+                    <span class="ident">WshInner</span>::<span class="ident">Ms</span>(<span class="ident">ms</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">check_ms</span>(<span class="kw-2">&amp;</span><span class="ident">ms</span>.<span class="ident">node</span>),
+                },
+                <span class="ident">ShInner</span>::<span class="ident">Ms</span>(<span class="ident">ms</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">check_ms</span>(<span class="kw-2">&amp;</span><span class="ident">ms</span>.<span class="ident">node</span>),
+            },
+            <span class="ident">Descriptor</span>::<span class="ident">Wsh</span>(<span class="ident">wsh</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">wsh</span>.<span class="ident">as_inner</span>() {
+                <span class="ident">WshInner</span>::<span class="ident">SortedMulti</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
+                <span class="ident">WshInner</span>::<span class="ident">Ms</span>(<span class="ident">ms</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">check_ms</span>(<span class="kw-2">&amp;</span><span class="ident">ms</span>.<span class="ident">node</span>),
+            },
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;The descriptor is not compatible with Bitcoin Core&quot;</span>),
         }
     }
