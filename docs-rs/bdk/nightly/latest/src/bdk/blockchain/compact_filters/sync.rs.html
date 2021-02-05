@@ -339,7 +339,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">Duration</span>;
 
-<span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">hash_types</span>::{<span class="ident">BlockHash</span>, <span class="ident">FilterHash</span>};
+<span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">hash_types</span>::{<span class="ident">BlockHash</span>, <span class="ident">FilterHeader</span>};
 <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">network</span>::<span class="ident">message</span>::<span class="ident">NetworkMessage</span>;
 <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">network</span>::<span class="ident">message_blockdata</span>::<span class="ident">GetHeadersMessage</span>;
 <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip158</span>::<span class="ident">BlockFilter</span>;
@@ -355,7 +355,7 @@
     <span class="ident">headers_store</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">Full</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">cf_store</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">CFStore</span><span class="op">&gt;</span>,
     <span class="ident">skip_blocks</span>: <span class="ident">usize</span>,
-    <span class="ident">bundles</span>: <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">VecDeque</span><span class="op">&lt;</span>(<span class="ident">BundleStatus</span>, <span class="ident">FilterHash</span>, <span class="ident">usize</span>)<span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">bundles</span>: <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">VecDeque</span><span class="op">&lt;</span>(<span class="ident">BundleStatus</span>, <span class="ident">FilterHeader</span>, <span class="ident">usize</span>)<span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">CFSync</span> {
@@ -461,7 +461,7 @@
 
                 <span class="kw">let</span> <span class="ident">resp</span> <span class="op">=</span> <span class="ident">peer</span>.<span class="ident">get_cf_headers</span>(<span class="number">0x00</span>, <span class="ident">start_height</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="ident">stop_hash</span>)<span class="question-mark">?</span>;
 
-                <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">resp</span>.<span class="ident">previous_filter</span> <span class="op">=</span><span class="op">=</span> <span class="ident">checkpoint</span>);
+                <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">resp</span>.<span class="ident">previous_filter_header</span> <span class="op">=</span><span class="op">=</span> <span class="ident">checkpoint</span>);
                 <span class="ident">status</span> <span class="op">=</span>
                     <span class="self">self</span>.<span class="ident">cf_store</span>
                         .<span class="ident">advance_to_cf_headers</span>(<span class="ident">index</span>, <span class="ident">checkpoint</span>, <span class="ident">resp</span>.<span class="ident">filter_hashes</span>)<span class="question-mark">?</span>;
