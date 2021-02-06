@@ -149,7 +149,7 @@ While we told the training to do 200 epochs, the training stopped at 158 because
 
 ## The prediction phase
 
-A [prediction test tool] is available on github. At the moment it uses a bitcoin core node to provide network data for simplicity, but it queries it only for the mempool and the last 6 blocks, so it's something that also a light-client could do.
+A [prediction test tool] is available on github. At the moment it uses a bitcoin core node to provide network data for simplicity, but it queries it only for the mempool and the last 6 blocks, so it's something that also a light-client could do[^disabled bloom filter].
 
 The following chart is probably the best visualization to evaluate the model, on the x axis there is the real fee rate while on the y axis there is the prediction, the more the points are centered on the bisection, the more the model is good.
 We can see the model is doing quite well, the MAE is 8 which is way lower than `estimatesmartfee`. However, there are big errors some times, in particular for prediction for fast confirmation (`confirms_in=1 or confirms_in=2`) as shown by the orange points. Creating a model only for blocks target greater than 2 instead of simply remove some observations may be an option.
@@ -183,6 +183,7 @@ This is just a starting point, there are many future improvements such as:
 * There are issues regarding dead neurons (going to 0) or neurons with big weight, weight results should be monitored for this events, and also weight decay and L2 regularization should be explored.
 * Tune hyper-parameters technique should be re-tested.
 * Predictions should be monotonic decreasing for growing `confirms_in` parameter; for obvious reason it doesn't make sense that an higher fee rate will result in a higher confirmation time. But since this is not enforced anywhere in the model, at the moment this could happen.
+* Since nodes with bloom filter disabled doesn't serve the mempool anymore, a model based only on last blocks should be evaluated.
 
 ## Acknowledgements
 
@@ -197,6 +198,7 @@ This is the final part of the series. In the previous [Part 1] we talked about t
 [^MAE]: MAE is Mean Absolute Error, which is the average of the series built by the absolute difference between the real value and the estimation.
 [^drift]: drift like MAE, but without the absolute value
 [^minimum relay fee]: Most node won't relay transactions with fee lower than the min relay fee, which has a default of `1.0`
+[^disabled bloom filter]: An important issue emerged after the article came out, a bitcoin core client with bloom filter disabled (default as of 0.21) doesn't serve the mempool via p2p.
 
 [Part 1]: /blog/2021/01/fee-estimation-for-light-clients-part-1/
 [Part 2]: /blog/2021/01/fee-estimation-for-light-clients-part-2/

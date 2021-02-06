@@ -41,13 +41,11 @@ Replace By Fee (RBF) and Child Pays For Parent (CPFP) are techniques that can so
 Thus, this work is an effort to build a **good fee estimator for purely peer to peer light clients** such as [neutrino] based ones, or at least determine whether the approach we take is infeasible and open the discussion
 for other, better, models.
 
-In the meantime, another sub-goal is pursued: attract the interest of data scientists; Indeed the initial step for this analysis consists in constructing a data set, which could also also help kickstart other studies on fee
-esimation or, more broadly, on the Bitcoin mempool.
+In the meantime, another sub-goal is pursued: attract the interest of data scientists; Indeed the initial step for this analysis consists in constructing a data set, which could also also help kickstart other studies on fee estimation or, more broadly, on the Bitcoin mempool.
 
 #### The challenges and the solution
 
-The hardest part of doing fee estimation on a light client is the lack of information: for example, Bitcoin Core's `estimatesmartfee` uses up to the last 1008 blocks and knows everything about the mempool[^mempool], such as
-the fee rate of every transaction it contains, but a light-client does not.
+The hardest part of doing fee estimation on a light client is the lack of information: for example, Bitcoin Core's `estimatesmartfee` uses up to the last 1008 blocks and knows everything about the mempool[^mempool], such as the fee rate of every transaction it contains, but a light-client does not.
 
 Also, there are other factors that may help doing fee estimation, such as the day of the week (the mempool usually empties during the [weekend]) or the time of the day to anticipate recurring daily events
 (such as the batch of [bitmex withdrawals]).
