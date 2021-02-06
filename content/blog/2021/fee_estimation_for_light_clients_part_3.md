@@ -179,7 +179,7 @@ This is just a starting point, there are many future improvements such as:
 * At the moment we are training the model on a threadripper CPU, training the code on GPU or even TPU will be needed to decrease training time, especially because input data will grow.
 * The [prediction test tool] should estimate only using the p2p bitcoin network, without requiring a node. This work would be propedeutic for [bdk] integration
 * At the moment mempool buckets are multiple inputs `a*` as show in the model graph; since they are related, is it possible to merge them in one TensorArray?
-* Sometimes the model does not learn and [gets stuck]. It may depend on a particular configuration of the weight random initialization and the first derivative being zero for relu for negative number. If this is the case Leaky relu should solve the problem
+* Sometimes the model does not learn and [gets stuck]. The reason is the `clip` function applied in the last layer is constant for a value lower than 1. In this case, the derivative is 0 and the gradient descent doesn't know where to go. Instead of using the `clip` function apply penalties to the loss function for values lower than 1.
 * There are issues regarding dead neurons (going to 0) or neurons with big weight, weight results should be monitored for this events, and also weight decay and L2 regularization should be explored.
 * Tune hyper-parameters technique should be re-tested.
 * Predictions should be monotonic decreasing for growing `confirms_in` parameter; for obvious reason it doesn't make sense that an higher fee rate will result in a higher confirmation time. But since this is not enforced anywhere in the model, at the moment this could happen.
@@ -216,6 +216,7 @@ This is the final part of the series. In the previous [Part 1] we talked about t
 [hashed feature columns]: https://www.tensorflow.org/tutorials/structured_data/feature_columns#hashed_feature_columns
 [tensorflow]: https://www.tensorflow.org/
 [TFRecord format]: https://www.tensorflow.org/tutorials/load_data/tfrecord
+[gets stuck]: https://github.com/RCasatta/bitcoin_logger/blob/master/notes.md
 [Leonardo Comandini]: https://twitter.com/LeoComandini
 [Domenico Gabriele]: https://twitter.com/domegabri
 [Alekos Filini]: https://twitter.com/afilini
