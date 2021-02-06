@@ -8,7 +8,7 @@ hidden: true
 draft: false
 ---
 
-This post is part 2 of 3 of a series. ([Part 1], [Part 2])
+This post is part 3 of 3 of a series. ([Part 1], [Part 2])
 
 - [The model](#the-model)
     + [Splitting](#splitting)
