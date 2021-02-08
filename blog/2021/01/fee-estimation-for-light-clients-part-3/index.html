@@ -20,19 +20,19 @@
     <title>Fee estimation for light-clients (Part 3) :: Bitcoin Dev Kit</title>
 
     
-    <link href="/css/nucleus.css?1612564464" rel="stylesheet">
-    <link href="/css/fontawesome-all.min.css?1612564464" rel="stylesheet">
-    <link href="/css/hybrid.css?1612564464" rel="stylesheet">
-    <link href="/css/featherlight.min.css?1612564464" rel="stylesheet">
-    <link href="/css/perfect-scrollbar.min.css?1612564464" rel="stylesheet">
-    <link href="/css/auto-complete.css?1612564464" rel="stylesheet">
-    <link href="/css/atom-one-dark-reasonable.css?1612564464" rel="stylesheet">
-    <link href="/css/theme.css?1612564464" rel="stylesheet">
-    <link href="/css/hugo-theme.css?1612564464" rel="stylesheet">
+    <link href="/css/nucleus.css?1612794760" rel="stylesheet">
+    <link href="/css/fontawesome-all.min.css?1612794760" rel="stylesheet">
+    <link href="/css/hybrid.css?1612794760" rel="stylesheet">
+    <link href="/css/featherlight.min.css?1612794760" rel="stylesheet">
+    <link href="/css/perfect-scrollbar.min.css?1612794760" rel="stylesheet">
+    <link href="/css/auto-complete.css?1612794760" rel="stylesheet">
+    <link href="/css/atom-one-dark-reasonable.css?1612794760" rel="stylesheet">
+    <link href="/css/theme.css?1612794760" rel="stylesheet">
+    <link href="/css/hugo-theme.css?1612794760" rel="stylesheet">
     
-    <link href="/css/theme-blue.css?1612564464" rel="stylesheet">
+    <link href="/css/theme-blue.css?1612794760" rel="stylesheet">
     
-    <link href="/css/style.css?1612564464" rel="stylesheet"><link href="/css/jsonview.css?1612564464" rel="stylesheet"><link href="/css/blog.css?1612564464" rel="stylesheet">
+    <link href="/css/style.css?1612794760" rel="stylesheet"><link href="/css/jsonview.css?1612794760" rel="stylesheet"><link href="/css/blog.css?1612794760" rel="stylesheet">
 
     <meta property="og:title" content="Fee estimation for light-clients (Part 3)" />
 <meta property="og:description" content="Applying machine learning to the bitcoin fee estimation problem" />
@@ -49,7 +49,7 @@
 <meta name="twitter:description" content="Applying machine learning to the bitcoin fee estimation problem"/>
 
 
-    <script src="/js/jquery-3.3.1.min.js?1612564464"></script>
+    <script src="/js/jquery-3.3.1.min.js?1612794760"></script>
 
     <style>
       :root #header + #content > #left > #rlblock_left{
@@ -85,14 +85,14 @@
     <span data-search-clear=""><i class="fas fa-times"></i></span>
 </div>
 
-<script type="text/javascript" src="/js/lunr.min.js?1612564464"></script>
-<script type="text/javascript" src="/js/auto-complete.js?1612564464"></script>
+<script type="text/javascript" src="/js/lunr.min.js?1612794760"></script>
+<script type="text/javascript" src="/js/auto-complete.js?1612794760"></script>
 <script type="text/javascript">
     
         var baseurl = "https:\/\/bitcoindevkit.org\/";
     
 </script>
-<script type="text/javascript" src="/js/search.js?1612564464"></script>
+<script type="text/javascript" src="/js/search.js?1612794760"></script>
 
     
   </div>
@@ -482,7 +482,7 @@
         
 
 
-<p>This post is part 2 of 3 of a series. (<a href="/blog/2021/01/fee-estimation-for-light-clients-part-1/">Part 1</a>, <a href="/blog/2021/01/fee-estimation-for-light-clients-part-2/">Part 2</a>)</p>
+<p>This post is part 3 of 3 of a series. (<a href="/blog/2021/01/fee-estimation-for-light-clients-part-1/">Part 1</a>, <a href="/blog/2021/01/fee-estimation-for-light-clients-part-2/">Part 2</a>)</p>
 <ul>
 <li><a href="#the-model">The model</a>
 <ul>
@@ -599,7 +599,7 @@ Epoch 158/200
 <p><img src="/images/fee-estimation-for-light-clients/20210125-091313-train-history.png" alt="train history"></p>
 <p>While we told the training to do 200 epochs, the training stopped at 158 because we added an <code>early_stop</code> call back with <code>20</code> as  <code>PATIENCE</code>, meaning that after 20 epoch and no improvement in <code>val_loss</code> the training is halted, saving time and potentially avoiding overfitting.</p>
 <h2 id="the-prediction-phase">The prediction phase</h2>
-<p>A <a href="https://github.com/RCasatta/estimate_ml_fee">prediction test tool</a> is available on github. At the moment it uses a bitcoin core node to provide network data for simplicity, but it queries it only for the mempool and the last 6 blocks, so it&rsquo;s something that also a light-client could do.</p>
+<p>A <a href="https://github.com/RCasatta/estimate_ml_fee">prediction test tool</a> is available on github. At the moment it uses a bitcoin core node to provide network data for simplicity, but it queries it only for the mempool and the last 6 blocks, so it&rsquo;s something that also a light-client could do<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup>.</p>
 <p>The following chart is probably the best visualization to evaluate the model, on the x axis there is the real fee rate while on the y axis there is the prediction, the more the points are centered on the bisection, the more the model is good.
 We can see the model is doing quite well, the MAE is 8 which is way lower than <code>estimatesmartfee</code>. However, there are big errors some times, in particular for prediction for fast confirmation (<code>confirms_in=1 or confirms_in=2</code>) as shown by the orange points. Creating a model only for blocks target greater than 2 instead of simply remove some observations may be an option.</p>
 <p><img src="/images/fee-estimation-for-light-clients/20210125-091313-true-and-predictions.png" alt="prediction results"></p>
@@ -625,10 +625,11 @@ We can see the model is doing quite well, the MAE is 8 which is way lower than <
 <li>At the moment we are training the model on a threadripper CPU, training the code on GPU or even TPU will be needed to decrease training time, especially because input data will grow.</li>
 <li>The <a href="https://github.com/RCasatta/estimate_ml_fee">prediction test tool</a> should estimate only using the p2p bitcoin network, without requiring a node. This work would be propedeutic for <a href="https://github.com/bitcoindevkit/bdk">bdk</a> integration</li>
 <li>At the moment mempool buckets are multiple inputs <code>a*</code> as show in the model graph; since they are related, is it possible to merge them in one TensorArray?</li>
-<li>Sometimes the model does not learn and [gets stuck]. It may depend on a particular configuration of the weight random initialization and the first derivative being zero for relu for negative number. If this is the case Leaky relu should solve the problem</li>
+<li>Sometimes the model does not learn and <a href="https://github.com/RCasatta/bitcoin_logger/blob/master/notes.md">gets stuck</a>. The reason is the <code>clip</code> function applied in the last layer is constant for a value lower than 1. In this case, the derivative is 0 and the gradient descent doesn&rsquo;t know where to go. Instead of using the <code>clip</code> function apply penalties to the loss function for values lower than 1.</li>
 <li>There are issues regarding dead neurons (going to 0) or neurons with big weight, weight results should be monitored for this events, and also weight decay and L2 regularization should be explored.</li>
 <li>Tune hyper-parameters technique should be re-tested.</li>
 <li>Predictions should be monotonic decreasing for growing <code>confirms_in</code> parameter; for obvious reason it doesn&rsquo;t make sense that an higher fee rate will result in a higher confirmation time. But since this is not enforced anywhere in the model, at the moment this could happen.</li>
+<li>Since nodes with bloom filter disabled doesn&rsquo;t serve the mempool anymore, a model based only on last blocks should be evaluated.</li>
 </ul>
 <h2 id="acknowledgements">Acknowledgements</h2>
 <p>Thanks to <a href="https://squarecrypto.org/">Square crypto</a> for sponsoring this work and thanks to the reviewers: <a href="https://twitter.com/LeoComandini">Leonardo Comandini</a>, <a href="https://twitter.com/domegabri">Domenico Gabriele</a>, <a href="https://twitter.com/afilini">Alekos Filini</a>, <a href="https://twitter.com/Ferdinando1970">Ferdinando Ametrano</a>.</p>
@@ -646,6 +647,9 @@ We can see the model is doing quite well, the MAE is 8 which is way lower than <
 </li>
 <li id="fn:3" role="doc-endnote">
 <p>Most node won&rsquo;t relay transactions with fee lower than the min relay fee, which has a default of <code>1.0</code> <a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p>An important issue emerged after the article came out, a bitcoin core client with bloom filter disabled (default as of 0.21) doesn&rsquo;t serve the mempool via p2p. <a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 </ol>
 </section>
@@ -906,19 +910,19 @@ We can see the model is doing quite well, the MAE is 8 which is way lower than <
     <div style="left: -1000px; overflow: scroll; position: absolute; top: -1000px; border: none; box-sizing: content-box; height: 200px; margin: 0px; padding: 0px; width: 200px;">
       <div style="border: none; box-sizing: content-box; height: 200px; margin: 0px; padding: 0px; width: 200px;"></div>
     </div>
-    <script src="/js/clipboard.min.js?1612564464"></script>
-    <script src="/js/perfect-scrollbar.min.js?1612564464"></script>
-    <script src="/js/perfect-scrollbar.jquery.min.js?1612564464"></script>
-    <script src="/js/jquery.sticky.js?1612564464"></script>
-    <script src="/js/featherlight.min.js?1612564464"></script>
-    <script src="/js/highlight.pack.js?1612564464"></script>
+    <script src="/js/clipboard.min.js?1612794760"></script>
+    <script src="/js/perfect-scrollbar.min.js?1612794760"></script>
+    <script src="/js/perfect-scrollbar.jquery.min.js?1612794760"></script>
+    <script src="/js/jquery.sticky.js?1612794760"></script>
+    <script src="/js/featherlight.min.js?1612794760"></script>
+    <script src="/js/highlight.pack.js?1612794760"></script>
     <script>hljs.initHighlightingOnLoad();</script>
-    <script src="/js/modernizr.custom-3.6.0.js?1612564464"></script>
-    <script src="/js/learn.js?1612564464"></script>
-    <script src="/js/hugo-learn.js?1612564464"></script>
+    <script src="/js/modernizr.custom-3.6.0.js?1612794760"></script>
+    <script src="/js/learn.js?1612794760"></script>
+    <script src="/js/hugo-learn.js?1612794760"></script>
     
         
-            <script src="/mermaid/mermaid.js?1612564464"></script>
+            <script src="/mermaid/mermaid.js?1612794760"></script>
         
         <script>
             mermaid.initialize({ startOnLoad: true });
