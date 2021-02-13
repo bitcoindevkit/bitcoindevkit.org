@@ -765,9 +765,9 @@
 
 <span class="kw">use</span> <span class="ident">miniscript</span>::{<span class="ident">Legacy</span>, <span class="ident">Segwitv0</span>};
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>, <span class="ident">ToWalletDescriptor</span>};
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">ExtendedDescriptor</span>, <span class="ident">IntoWalletDescriptor</span>, <span class="ident">KeyMap</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">descriptor</span>::<span class="ident">DescriptorError</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::{<span class="ident">DerivableKey</span>, <span class="ident">ToDescriptorKey</span>, <span class="ident">ValidNetworks</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::{<span class="ident">DerivableKey</span>, <span class="ident">IntoDescriptorKey</span>, <span class="ident">ValidNetworks</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">wallet</span>::<span class="ident">utils</span>::<span class="ident">SecpCtx</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">descriptor</span>, <span class="ident">KeychainKind</span>};
 
@@ -776,20 +776,20 @@
 
 <span class="doccomment">/// Trait for descriptor templates that can be built into a full descriptor</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// Since [`ToWalletDescriptor`] is implemented for any [`DescriptorTemplate`], they can also be</span>
+<span class="doccomment">/// Since [`IntoWalletDescriptor`] is implemented for any [`DescriptorTemplate`], they can also be</span>
 <span class="doccomment">/// passed directly to the [`Wallet`](crate::Wallet) constructor.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ## Example</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use bdk::descriptor::error::Error as DescriptorError;</span>
-<span class="doccomment">/// use bdk::keys::{KeyError, ToDescriptorKey};</span>
+<span class="doccomment">/// use bdk::keys::{KeyError, IntoDescriptorKey};</span>
 <span class="doccomment">/// use bdk::miniscript::Legacy;</span>
 <span class="doccomment">/// use bdk::template::{DescriptorTemplate, DescriptorTemplateOut};</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// struct MyP2PKH&lt;K: ToDescriptorKey&lt;Legacy&gt;&gt;(K);</span>
+<span class="doccomment">/// struct MyP2PKH&lt;K: IntoDescriptorKey&lt;Legacy&gt;&gt;(K);</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// impl&lt;K: ToDescriptorKey&lt;Legacy&gt;&gt; DescriptorTemplate for MyP2PKH&lt;K&gt; {</span>
+<span class="doccomment">/// impl&lt;K: IntoDescriptorKey&lt;Legacy&gt;&gt; DescriptorTemplate for MyP2PKH&lt;K&gt; {</span>
 <span class="doccomment">///     fn build(self) -&gt; Result&lt;DescriptorTemplateOut, DescriptorError&gt; {</span>
 <span class="doccomment">///         Ok(bdk::descriptor!(pkh(self.0))?)</span>
 <span class="doccomment">///     }</span>
@@ -802,13 +802,13 @@
 
 <span class="doccomment">/// Turns a [`DescriptorTemplate`] into a valid wallet descriptor by calling its</span>
 <span class="doccomment">/// [`build`](DescriptorTemplate::build) method</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">DescriptorTemplate</span><span class="op">&gt;</span> <span class="ident">ToWalletDescriptor</span> <span class="kw">for</span> <span class="ident">T</span> {
-    <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">DescriptorTemplate</span><span class="op">&gt;</span> <span class="ident">IntoWalletDescriptor</span> <span class="kw">for</span> <span class="ident">T</span> {
+    <span class="kw">fn</span> <span class="ident">into_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">build</span>()<span class="question-mark">?</span>.<span class="ident">to_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)<span class="question-mark">?</span>)
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">build</span>()<span class="question-mark">?</span>.<span class="ident">into_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)<span class="question-mark">?</span>)
     }
 }
 
@@ -837,9 +837,9 @@
 <span class="doccomment">/// );</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">P2PKH</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">ToDescriptorKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">P2PKH</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>);
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">ToDescriptorKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">P2PKH</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">P2PKH</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">pkh</span>(<span class="self">self</span>.<span class="number">0</span>))<span class="question-mark">?</span>)
     }
@@ -871,9 +871,9 @@
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">P2WPKH_P2SH</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">ToDescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">P2WPKH_P2SH</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>);
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">ToDescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">P2WPKH_P2SH</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">P2WPKH_P2SH</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">sh</span>(<span class="ident">wpkh</span>(<span class="self">self</span>.<span class="number">0</span>)))<span class="question-mark">?</span>)
     }
@@ -904,9 +904,9 @@
 <span class="doccomment">/// );</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">P2WPKH</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">ToDescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">P2WPKH</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>);
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">ToDescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">P2WPKH</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">P2WPKH</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">wpkh</span>(<span class="self">self</span>.<span class="number">0</span>))<span class="question-mark">?</span>)
     }
@@ -1143,7 +1143,7 @@
                 <span class="ident">bip</span>: <span class="ident">u32</span>,
                 <span class="ident">key</span>: <span class="ident">K</span>,
                 <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
-            ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">ToDescriptorKey</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ctx</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+            ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ctx</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">derivation_path</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="number">4</span>);
                 <span class="ident">derivation_path</span>.<span class="ident">push</span>(<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_hardened_idx</span>(<span class="ident">bip</span>)<span class="question-mark">?</span>);
                 <span class="ident">derivation_path</span>.<span class="ident">push</span>(<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_hardened_idx</span>(<span class="number">0</span>)<span class="question-mark">?</span>);
@@ -1167,7 +1167,7 @@
                 <span class="ident">key</span>: <span class="ident">K</span>,
                 <span class="ident">parent_fingerprint</span>: <span class="ident">bip32</span>::<span class="ident">Fingerprint</span>,
                 <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
-            ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">ToDescriptorKey</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ctx</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+            ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ctx</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">derivation_path</span>: <span class="ident">bip32</span>::<span class="ident">DerivationPath</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">keychain</span> {
                     <span class="ident">KeychainKind</span>::<span class="ident">External</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_normal_idx</span>(<span class="number">0</span>)<span class="question-mark">?</span>].<span class="ident">into</span>(),
                     <span class="ident">KeychainKind</span>::<span class="ident">Internal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">bip32</span>::<span class="ident">ChildNumber</span>::<span class="ident">from_normal_idx</span>(<span class="number">1</span>)<span class="question-mark">?</span>].<span class="ident">into</span>(),

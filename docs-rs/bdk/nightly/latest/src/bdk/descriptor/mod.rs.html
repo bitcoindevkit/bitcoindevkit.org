@@ -739,6 +739,11 @@
 <span id="736">736</span>
 <span id="737">737</span>
 <span id="738">738</span>
+<span id="739">739</span>
+<span id="740">740</span>
+<span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -796,7 +801,7 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">DescriptorError</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">policy</span>::<span class="ident">Policy</span>;
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">template</span>::<span class="ident">DescriptorTemplateOut</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::{<span class="ident">KeyError</span>, <span class="ident">ToDescriptorKey</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::{<span class="ident">IntoDescriptorKey</span>, <span class="ident">KeyError</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">wallet</span>::<span class="ident">signer</span>::<span class="ident">SignersContainer</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">wallet</span>::<span class="ident">utils</span>::<span class="ident">SecpCtx</span>;
 
@@ -814,17 +819,17 @@
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">HDKeyPaths</span> <span class="op">=</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">PublicKey</span>, <span class="ident">KeySource</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// Trait for types which can be converted into an [`ExtendedDescriptor`] and a [`KeyMap`] usable by a wallet in a specific [`Network`]</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ToWalletDescriptor</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">IntoWalletDescriptor</span> {
     <span class="doccomment">/// Convert to wallet descriptor</span>
-    <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
+    <span class="kw">fn</span> <span class="ident">into_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
 }
 
-<span class="kw">impl</span> <span class="ident">ToWalletDescriptor</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">str</span> {
-    <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
+<span class="kw">impl</span> <span class="ident">IntoWalletDescriptor</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">str</span> {
+    <span class="kw">fn</span> <span class="ident">into_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
@@ -844,32 +849,33 @@
             <span class="self">self</span>
         };
 
-        <span class="ident">ExtendedDescriptor</span>::<span class="ident">parse_descriptor</span>(<span class="ident">secp</span>, <span class="ident">descriptor</span>)<span class="question-mark">?</span>.<span class="ident">to_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)
+        <span class="ident">ExtendedDescriptor</span>::<span class="ident">parse_descriptor</span>(<span class="ident">secp</span>, <span class="ident">descriptor</span>)<span class="question-mark">?</span>
+            .<span class="ident">into_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">ToWalletDescriptor</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">String</span> {
-    <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
+<span class="kw">impl</span> <span class="ident">IntoWalletDescriptor</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">into_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">as_str</span>().<span class="ident">to_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)
+        <span class="self">self</span>.<span class="ident">as_str</span>().<span class="ident">into_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">ToWalletDescriptor</span> <span class="kw">for</span> <span class="ident">ExtendedDescriptor</span> {
-    <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
+<span class="kw">impl</span> <span class="ident">IntoWalletDescriptor</span> <span class="kw">for</span> <span class="ident">ExtendedDescriptor</span> {
+    <span class="kw">fn</span> <span class="ident">into_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
-        (<span class="self">self</span>, <span class="ident">KeyMap</span>::<span class="ident">default</span>()).<span class="ident">to_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)
+        (<span class="self">self</span>, <span class="ident">KeyMap</span>::<span class="ident">default</span>()).<span class="ident">into_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">ToWalletDescriptor</span> <span class="kw">for</span> (<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>) {
-    <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
+<span class="kw">impl</span> <span class="ident">IntoWalletDescriptor</span> <span class="kw">for</span> (<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>) {
+    <span class="kw">fn</span> <span class="ident">into_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
@@ -879,11 +885,11 @@
         <span class="kw">let</span> <span class="ident">check_key</span> <span class="op">=</span> <span class="op">|</span><span class="ident">pk</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span><span class="op">|</span> {
             <span class="kw">let</span> (<span class="ident">pk</span>, <span class="kw">_</span>, <span class="ident">networks</span>) <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">is_witness</span>() {
                 <span class="kw">let</span> <span class="ident">desciptor_key</span>: <span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="ident">miniscript</span>::<span class="ident">Segwitv0</span><span class="op">&gt;</span> <span class="op">=</span>
-                    <span class="ident">pk</span>.<span class="ident">clone</span>().<span class="ident">to_descriptor_key</span>()<span class="question-mark">?</span>;
+                    <span class="ident">pk</span>.<span class="ident">clone</span>().<span class="ident">into_descriptor_key</span>()<span class="question-mark">?</span>;
                 <span class="ident">desciptor_key</span>.<span class="ident">extract</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>)<span class="question-mark">?</span>
             } <span class="kw">else</span> {
                 <span class="kw">let</span> <span class="ident">desciptor_key</span>: <span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="ident">miniscript</span>::<span class="ident">Legacy</span><span class="op">&gt;</span> <span class="op">=</span>
-                    <span class="ident">pk</span>.<span class="ident">clone</span>().<span class="ident">to_descriptor_key</span>()<span class="question-mark">?</span>;
+                    <span class="ident">pk</span>.<span class="ident">clone</span>().<span class="ident">into_descriptor_key</span>()<span class="question-mark">?</span>;
                 <span class="ident">desciptor_key</span>.<span class="ident">extract</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>)<span class="question-mark">?</span>
             };
 
@@ -901,8 +907,8 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">ToWalletDescriptor</span> <span class="kw">for</span> <span class="ident">DescriptorTemplateOut</span> {
-    <span class="kw">fn</span> <span class="ident">to_wallet_descriptor</span>(
+<span class="kw">impl</span> <span class="ident">IntoWalletDescriptor</span> <span class="kw">for</span> <span class="ident">DescriptorTemplateOut</span> {
+    <span class="kw">fn</span> <span class="ident">into_wallet_descriptor</span>(
         <span class="self">self</span>,
         <span class="ident">_secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
@@ -1355,7 +1361,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_to_wallet_descriptor_fixup_networks</span>() {
-        <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::{<span class="ident">any_network</span>, <span class="ident">ToDescriptorKey</span>};
+        <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::{<span class="ident">any_network</span>, <span class="ident">IntoDescriptorKey</span>};
 
         <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1</span>::<span class="ident">new</span>();
 
@@ -1364,116 +1370,120 @@
 
         <span class="comment">// here `to_descriptor_key` will set the valid networks for the key to only mainnet, since</span>
         <span class="comment">// we are using an &quot;xpub&quot;</span>
-        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> (<span class="ident">xpub</span>, <span class="ident">path</span>).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> (<span class="ident">xpub</span>, <span class="ident">path</span>).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
         <span class="comment">// override it with any. this happens in some key conversions, like bip39</span>
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">key</span>.<span class="ident">override_valid_networks</span>(<span class="ident">any_network</span>());
 
         <span class="comment">// make a descriptor out of it</span>
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">wpkh</span>(<span class="ident">key</span>)).<span class="ident">unwrap</span>();
         <span class="comment">// this should conver the key that supports &quot;any_network&quot; to the right network (testnet)</span>
-        <span class="kw">let</span> (<span class="ident">wallet_desc</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">desc</span>.<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="ident">wallet_desc</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">desc</span>
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>)
+            .<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wallet_desc</span>.<span class="ident">to_string</span>(), <span class="string">&quot;wpkh(tpubDEnoLuPdBep9bzw5LoGYpsxUQYheRQ9gcgrJhJEcdKFB9cWQRyYmkCyRoTqeD4tJYiVVgt6A3rN6rWn9RYhR9sBsGxji29LYWHuKKbdb1ev/0/*)#y8p7e8kk&quot;</span>);
     }
 
-    <span class="comment">// test ToWalletDescriptor trait from &amp;str with and without checksum appended</span>
+    <span class="comment">// test IntoWalletDescriptor trait from &amp;str with and without checksum appended</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_descriptor_from_str_with_checksum</span>() {
         <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1</span>::<span class="ident">new</span>();
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)#tqz0nc62&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">is_ok</span>());
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">is_ok</span>());
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/1/2/*)#67ju93jw&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">is_ok</span>());
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/1/2/*)&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">is_ok</span>());
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)#67ju93jw&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(
             <span class="ident">desc</span>.<span class="ident">err</span>(),
             <span class="prelude-val">Some</span>(<span class="ident">DescriptorError</span>::<span class="ident">InvalidDescriptorChecksum</span>)
         ));
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)#67ju93jw&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(
             <span class="ident">desc</span>.<span class="ident">err</span>(),
             <span class="prelude-val">Some</span>(<span class="ident">DescriptorError</span>::<span class="ident">InvalidDescriptorChecksum</span>)
         ));
     }
 
-    <span class="comment">// test ToWalletDescriptor trait from &amp;str with keys from right and wrong network</span>
+    <span class="comment">// test IntoWalletDescriptor trait from &amp;str with keys from right and wrong network</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_descriptor_from_str_with_keys_network</span>() {
         <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1</span>::<span class="ident">new</span>();
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">is_ok</span>());
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Regtest</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Regtest</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">is_ok</span>());
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/1/2/*)&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">is_ok</span>());
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/1/2/*)&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Regtest</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Regtest</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">is_ok</span>());
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;sh(wpkh(02864bb4ad00cefa806098a69e192bbda937494e69eb452b87bb3f20f6283baedb))&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">is_ok</span>());
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;sh(wpkh(02864bb4ad00cefa806098a69e192bbda937494e69eb452b87bb3f20f6283baedb))&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Bitcoin</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Bitcoin</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">is_ok</span>());
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Bitcoin</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Bitcoin</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(
             <span class="ident">desc</span>.<span class="ident">err</span>(),
             <span class="prelude-val">Some</span>(<span class="ident">DescriptorError</span>::<span class="ident">Key</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidNetwork</span>))
         ));
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="string">&quot;wpkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/1/2/*)&quot;</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Bitcoin</span>);
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Bitcoin</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(
             <span class="ident">desc</span>.<span class="ident">err</span>(),
             <span class="prelude-val">Some</span>(<span class="ident">DescriptorError</span>::<span class="ident">Key</span>(<span class="ident">KeyError</span>::<span class="ident">InvalidNetwork</span>))
         ));
     }
 
-    <span class="comment">// test ToWalletDescriptor trait from the output of the descriptor!() macro</span>
+    <span class="comment">// test IntoWalletDescriptor trait from the output of the descriptor!() macro</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_descriptor_from_str_from_output_of_macro</span>() {
         <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1</span>::<span class="ident">new</span>();
 
         <span class="kw">let</span> <span class="ident">tpub</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">ExtendedPubKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/1/2&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> (<span class="ident">tpub</span>, <span class="ident">path</span>).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> (<span class="ident">tpub</span>, <span class="ident">path</span>).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
 
         <span class="comment">// make a descriptor out of it</span>
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">wpkh</span>(<span class="ident">key</span>)).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> (<span class="ident">wallet_desc</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">desc</span>.<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="ident">wallet_desc</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">desc</span>
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>)
+            .<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">wallet_desc_str</span> <span class="op">=</span> <span class="ident">wallet_desc</span>.<span class="ident">to_string</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wallet_desc_str</span>, <span class="string">&quot;wpkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/1/2/*)#67ju93jw&quot;</span>);
 
         <span class="kw">let</span> (<span class="ident">wallet_desc2</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">wallet_desc_str</span>
-            .<span class="ident">to_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>)
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>)
             .<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wallet_desc</span>, <span class="ident">wallet_desc2</span>)
     }

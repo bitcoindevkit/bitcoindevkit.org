@@ -1138,10 +1138,10 @@
         <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">miniscript</span>::<span class="ident">descriptor</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">inner_type</span>;
 
         <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
-        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">keys</span>::{<span class="ident">DescriptorKey</span>, <span class="ident">ToDescriptorKey</span>};
+        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">keys</span>::{<span class="ident">DescriptorKey</span>, <span class="ident">IntoDescriptorKey</span>};
         <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">bitcoin</span>::<span class="ident">secp256k1</span>::<span class="ident">Secp256k1</span>::<span class="ident">new</span>();
 
-        <span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>.<span class="ident">to_descriptor_key</span>()
+        <span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>.<span class="ident">into_descriptor_key</span>()
             .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">key</span>: <span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ctx</span><span class="op">&gt;</span><span class="op">|</span> <span class="ident">key</span>.<span class="ident">extract</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>))
             .<span class="ident">map_err</span>(<span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">descriptor</span>::<span class="ident">DescriptorError</span>::<span class="ident">Key</span>)
             .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">pk</span>, <span class="ident">key_map</span>, <span class="ident">valid_networks</span>)<span class="op">|</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">inner_type</span>::<span class="ident">new</span>(<span class="ident">pk</span>), <span class="ident">key_map</span>, <span class="ident">valid_networks</span>))
@@ -1287,12 +1287,12 @@
         <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">keys</span>::<span class="ident">make_sortedmulti</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">thresh</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">keys</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">build_desc</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>)
     });
     ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">build_desc</span>:<span class="ident">expr</span>, <span class="ident">sortedmulti</span> ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">thresh</span>:<span class="ident">expr</span> $(, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">expr</span> )<span class="op">+</span> ) ) <span class="op">=</span><span class="op">&gt;</span> ({
-        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">keys</span>::<span class="ident">ToDescriptorKey</span>;
+        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">keys</span>::<span class="ident">IntoDescriptorKey</span>;
         <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">bitcoin</span>::<span class="ident">secp256k1</span>::<span class="ident">Secp256k1</span>::<span class="ident">new</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">keys</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
         $(
-            <span class="ident">keys</span>.<span class="ident">push</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>.<span class="ident">to_descriptor_key</span>());
+            <span class="ident">keys</span>.<span class="ident">push</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>.<span class="ident">into_descriptor_key</span>());
         )<span class="op">*</span>
 
         <span class="ident">keys</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
@@ -1388,11 +1388,11 @@
 <span class="doccomment">/// broken up to `s:d:v:older(144)`.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// The `pk()`, `pk_k()` and `pk_h()` operands can take as argument any type that implements</span>
-<span class="doccomment">/// [`ToDescriptorKey`]. This means that keys can also be written inline as strings, but in that</span>
+<span class="doccomment">/// [`IntoDescriptorKey`]. This means that keys can also be written inline as strings, but in that</span>
 <span class="doccomment">/// case they must be wrapped in quotes, which is another difference compared to the standard</span>
 <span class="doccomment">/// descriptor syntax.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// [`ToDescriptorKey`]: crate::keys::ToDescriptorKey</span>
+<span class="doccomment">/// [`IntoDescriptorKey`]: crate::keys::IntoDescriptorKey</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ## Example</span>
 <span class="doccomment">///</span>
@@ -1715,12 +1715,12 @@
         <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">keys</span>::<span class="ident">make_multi</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">thresh</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">keys</span>)
     });
     ( <span class="ident">multi</span> ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">thresh</span>:<span class="ident">expr</span> $(, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">expr</span> )<span class="op">+</span> ) ) <span class="op">=</span><span class="op">&gt;</span> ({
-        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">keys</span>::<span class="ident">ToDescriptorKey</span>;
+        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">keys</span>::<span class="ident">IntoDescriptorKey</span>;
         <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">bitcoin</span>::<span class="ident">secp256k1</span>::<span class="ident">Secp256k1</span>::<span class="ident">new</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">keys</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
         $(
-            <span class="ident">keys</span>.<span class="ident">push</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>.<span class="ident">to_descriptor_key</span>());
+            <span class="ident">keys</span>.<span class="ident">push</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>.<span class="ident">into_descriptor_key</span>());
         )<span class="op">*</span>
 
         <span class="ident">keys</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
@@ -1747,7 +1747,7 @@
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span>;
 
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">descriptor</span>::{<span class="ident">DescriptorError</span>, <span class="ident">DescriptorMeta</span>};
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::{<span class="ident">DescriptorKey</span>, <span class="ident">ToDescriptorKey</span>, <span class="ident">ValidNetworks</span>};
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::{<span class="ident">DescriptorKey</span>, <span class="ident">IntoDescriptorKey</span>, <span class="ident">ValidNetworks</span>};
     <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">network</span>::<span class="ident">constants</span>::<span class="ident">Network</span>::{<span class="ident">Bitcoin</span>, <span class="ident">Regtest</span>, <span class="ident">Signet</span>, <span class="ident">Testnet</span>};
     <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>;
     <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">PrivateKey</span>;
@@ -1786,7 +1786,7 @@
     }
 
     <span class="comment">// - at least one of each &quot;type&quot; of operator; ie. one modifier, one leaf_opcode, one leaf_opcode_value, etc.</span>
-    <span class="comment">// - mixing up key types that implement ToDescriptorKey in multi() or thresh()</span>
+    <span class="comment">// - mixing up key types that implement IntoDescriptorKey in multi() or thresh()</span>
 
     <span class="comment">// expected script for pk and bare manually created</span>
     <span class="comment">// expected addresses created with `bitcoin-cli getdescriptorinfo` (for hash) and `bitcoin-cli deriveaddresses`</span>
@@ -1870,7 +1870,7 @@
         <span class="kw">let</span> <span class="ident">xprv</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">ExtendedPrivKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/0&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
             <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">pk</span>(<span class="ident">desc_key</span>)),
             <span class="bool-val">false</span>,
@@ -1882,7 +1882,7 @@
             ],
         );
 
-        <span class="kw">let</span> <span class="ident">desc_key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
             <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">pkh</span>(<span class="ident">desc_key</span>)),
             <span class="bool-val">false</span>,
@@ -1895,8 +1895,8 @@
         );
 
         <span class="kw">let</span> <span class="ident">path2</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/2147483647&#39;/0&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key1</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key2</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path2</span>).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key1</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key2</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path2</span>).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
 
         <span class="ident">check</span>(
             <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">sh</span>(<span class="ident">multi</span>(<span class="number">1</span>, <span class="ident">desc_key1</span>, <span class="ident">desc_key2</span>))),
@@ -1915,7 +1915,7 @@
         <span class="kw">let</span> <span class="ident">xprv</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">ExtendedPrivKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/0&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
             <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">wpkh</span>(<span class="ident">desc_key</span>)),
             <span class="bool-val">true</span>,
@@ -1927,7 +1927,7 @@
             ],
         );
 
-        <span class="kw">let</span> <span class="ident">desc_key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
             <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">sh</span>(<span class="ident">wpkh</span>(<span class="ident">desc_key</span>))),
             <span class="bool-val">true</span>,
@@ -1940,8 +1940,8 @@
         );
 
         <span class="kw">let</span> <span class="ident">path2</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/2147483647&#39;/0&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key1</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key2</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path2</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key1</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key2</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path2</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
             <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">wsh</span>(<span class="ident">multi</span>(<span class="number">1</span>, <span class="ident">desc_key1</span>, <span class="ident">desc_key2</span>))),
             <span class="bool-val">true</span>,
@@ -1953,8 +1953,8 @@
             ],
         );
 
-        <span class="kw">let</span> <span class="ident">desc_key1</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key2</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path2</span>).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key1</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key2</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path2</span>).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
             <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">sh</span>(<span class="ident">wsh</span>(<span class="ident">multi</span>(<span class="number">1</span>, <span class="ident">desc_key1</span>, <span class="ident">desc_key2</span>)))),
             <span class="bool-val">true</span>,
@@ -2030,7 +2030,7 @@
     <span class="kw">fn</span> <span class="ident">test_valid_networks</span>() {
         <span class="kw">let</span> <span class="ident">xprv</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">ExtendedPrivKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/0&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> (<span class="ident">_desc</span>, <span class="ident">_key_map</span>, <span class="ident">valid_networks</span>) <span class="op">=</span> <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">pkh</span>(<span class="ident">desc_key</span>)).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(
@@ -2040,7 +2040,7 @@
 
         <span class="kw">let</span> <span class="ident">xprv</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">ExtendedPrivKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/10/20/30/40&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> (<span class="ident">_desc</span>, <span class="ident">_key_map</span>, <span class="ident">valid_networks</span>) <span class="op">=</span> <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">wpkh</span>(<span class="ident">desc_key</span>)).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">valid_networks</span>, [<span class="ident">Bitcoin</span>].<span class="ident">iter</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>());
@@ -2053,26 +2053,26 @@
 
         <span class="kw">let</span> <span class="ident">xprv1</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">ExtendedPrivKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">path1</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/0&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key1</span> <span class="op">=</span> (<span class="ident">xprv1</span>, <span class="ident">path1</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key1</span> <span class="op">=</span> (<span class="ident">xprv1</span>, <span class="ident">path1</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">xprv2</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">ExtendedPrivKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPegBHHnq7YEgM815dG24M2Jk5RVqipgDxF1HJ1tsnT815X5Fd5FRfMVUs8NZs9XCb6y9an8hRPThnhfwfXJ36intaekySHGF&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">path2</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/2147483647&#39;/0&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key2</span> <span class="op">=</span> (<span class="ident">xprv2</span>, <span class="ident">path2</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key2</span> <span class="op">=</span> (<span class="ident">xprv2</span>, <span class="ident">path2</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">xprv3</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">ExtendedPrivKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPdZXrcHNLf5JAJWFAoJ2TrstMRdSKtEggz6PddbuSkvHKM9oKJyFgZV1B7rw8oChspxyYbtmEXYyg1AjfWbL3ho3XHDpHRZf&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">path3</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/10/20/30/40&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key3</span> <span class="op">=</span> (<span class="ident">xprv3</span>, <span class="ident">path3</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key3</span> <span class="op">=</span> (<span class="ident">xprv3</span>, <span class="ident">path3</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> (<span class="ident">_desc</span>, <span class="ident">key_map</span>, <span class="ident">_valid_networks</span>) <span class="op">=</span>
             <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">sh</span>(<span class="ident">wsh</span>(<span class="ident">multi</span>(<span class="number">2</span>, <span class="ident">desc_key1</span>, <span class="ident">desc_key2</span>, <span class="ident">desc_key3</span>)))).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">key_map</span>.<span class="ident">len</span>(), <span class="number">3</span>);
 
         <span class="kw">let</span> <span class="ident">desc_key1</span>: <span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span> <span class="op">=</span>
-            (<span class="ident">xprv1</span>, <span class="ident">path1</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+            (<span class="ident">xprv1</span>, <span class="ident">path1</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">desc_key2</span>: <span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span> <span class="op">=</span>
-            (<span class="ident">xprv2</span>, <span class="ident">path2</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+            (<span class="ident">xprv2</span>, <span class="ident">path2</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">desc_key3</span>: <span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span> <span class="op">=</span>
-            (<span class="ident">xprv3</span>, <span class="ident">path3</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+            (<span class="ident">xprv3</span>, <span class="ident">path3</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> (<span class="ident">key1</span>, <span class="ident">_key_map</span>, <span class="ident">_valid_networks</span>) <span class="op">=</span> <span class="ident">desc_key1</span>.<span class="ident">extract</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> (<span class="ident">key2</span>, <span class="ident">_key_map</span>, <span class="ident">_valid_networks</span>) <span class="op">=</span> <span class="ident">desc_key2</span>.<span class="ident">extract</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>).<span class="ident">unwrap</span>();
@@ -2082,19 +2082,19 @@
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">key_map</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">key3</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(), <span class="string">&quot;tprv8ZgxMBicQKsPdZXrcHNLf5JAJWFAoJ2TrstMRdSKtEggz6PddbuSkvHKM9oKJyFgZV1B7rw8oChspxyYbtmEXYyg1AjfWbL3ho3XHDpHRZf/10/20/30/40/*&quot;</span>);
     }
 
-    <span class="comment">// - verify the ScriptContext is correctly validated (i.e. passing a type that only impl ToDescriptorKey&lt;Segwitv0&gt; to a pkh() descriptor should throw a compilation error</span>
+    <span class="comment">// - verify the ScriptContext is correctly validated (i.e. passing a type that only impl IntoDescriptorKey&lt;Segwitv0&gt; to a pkh() descriptor should throw a compilation error</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_script_context_validation</span>() {
         <span class="comment">// this compiles</span>
         <span class="kw">let</span> <span class="ident">xprv</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">ExtendedPrivKey</span>::<span class="ident">from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/0&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">desc_key</span>: <span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">to_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc_key</span>: <span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> (<span class="ident">desc</span>, <span class="ident">_key_map</span>, <span class="ident">_valid_networks</span>) <span class="op">=</span> <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">pkh</span>(<span class="ident">desc_key</span>)).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">desc</span>.<span class="ident">to_string</span>(), <span class="string">&quot;pkh(tpubD6NzVbkrYhZ4WR7a4vY1VT3khMJMeAxVsfq9TBJyJWrNk247zCJtV7AWf6UJP7rAVsn8NNKdJi3gFyKPTmWZS9iukb91xbn2HbFSMQm2igY/0/*)#yrnz9pp2&quot;</span>);
 
         <span class="comment">// as expected this does not compile due to invalid context</span>
-        <span class="comment">//let desc_key:DescriptorKey&lt;Segwitv0&gt; = (xprv, path.clone()).to_descriptor_key().unwrap();</span>
+        <span class="comment">//let desc_key:DescriptorKey&lt;Segwitv0&gt; = (xprv, path.clone()).into_descriptor_key().unwrap();</span>
         <span class="comment">//let (desc, _key_map, _valid_networks) = descriptor!(pkh(desc_key)).unwrap();</span>
     }
 
