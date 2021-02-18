@@ -1261,6 +1261,53 @@
 <span id="1258">1258</span>
 <span id="1259">1259</span>
 <span id="1260">1260</span>
+<span id="1261">1261</span>
+<span id="1262">1262</span>
+<span id="1263">1263</span>
+<span id="1264">1264</span>
+<span id="1265">1265</span>
+<span id="1266">1266</span>
+<span id="1267">1267</span>
+<span id="1268">1268</span>
+<span id="1269">1269</span>
+<span id="1270">1270</span>
+<span id="1271">1271</span>
+<span id="1272">1272</span>
+<span id="1273">1273</span>
+<span id="1274">1274</span>
+<span id="1275">1275</span>
+<span id="1276">1276</span>
+<span id="1277">1277</span>
+<span id="1278">1278</span>
+<span id="1279">1279</span>
+<span id="1280">1280</span>
+<span id="1281">1281</span>
+<span id="1282">1282</span>
+<span id="1283">1283</span>
+<span id="1284">1284</span>
+<span id="1285">1285</span>
+<span id="1286">1286</span>
+<span id="1287">1287</span>
+<span id="1288">1288</span>
+<span id="1289">1289</span>
+<span id="1290">1290</span>
+<span id="1291">1291</span>
+<span id="1292">1292</span>
+<span id="1293">1293</span>
+<span id="1294">1294</span>
+<span id="1295">1295</span>
+<span id="1296">1296</span>
+<span id="1297">1297</span>
+<span id="1298">1298</span>
+<span id="1299">1299</span>
+<span id="1300">1300</span>
+<span id="1301">1301</span>
+<span id="1302">1302</span>
+<span id="1303">1303</span>
+<span id="1304">1304</span>
+<span id="1305">1305</span>
+<span id="1306">1306</span>
+<span id="1307">1307</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -1311,7 +1358,7 @@
 <span class="doccomment">//! # Ok::&lt;(), bdk::Error&gt;(())</span>
 <span class="doccomment">//! ```</span>
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::{<span class="ident">max</span>, <span class="ident">Ordering</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">max</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">HashSet</span>, <span class="ident">VecDeque</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 
@@ -1770,13 +1817,11 @@
 }
 
 <span class="doccomment">/// Errors that can happen while extracting and manipulating policies</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PolicyError</span> {
-    <span class="doccomment">/// Not enough items are selected to satisfy a [`SatisfiableItem::Thresh`]</span>
+    <span class="doccomment">/// Not enough items are selected to satisfy a [`SatisfiableItem::Thresh`] or a [`SatisfiableItem::Multisig`]</span>
     <span class="ident">NotEnoughItemsSelected</span>(<span class="ident">String</span>),
-    <span class="doccomment">/// Too many items are selected to satisfy a [`SatisfiableItem::Thresh`]</span>
-    <span class="ident">TooManyItemsSelected</span>(<span class="ident">String</span>),
-    <span class="doccomment">/// Index out of range for an item to satisfy a [`SatisfiableItem::Thresh`]</span>
+    <span class="doccomment">/// Index out of range for an item to satisfy a [`SatisfiableItem::Thresh`] or a [`SatisfiableItem::Multisig`]</span>
     <span class="ident">IndexOutOfRange</span>(<span class="ident">usize</span>),
     <span class="doccomment">/// Can not add to an item that is [`Satisfaction::None`] or [`Satisfaction::Complete`]</span>
     <span class="ident">AddOnLeaf</span>,
@@ -1908,10 +1953,10 @@
             <span class="ident">SatisfiableItem</span>::<span class="ident">Thresh</span> { <span class="ident">items</span>, <span class="ident">threshold</span> } <span class="kw">if</span> <span class="ident">items</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">threshold</span> <span class="op">=</span><span class="op">&gt;</span> {
                 (<span class="number">0</span>..<span class="kw-2">*</span><span class="ident">threshold</span>).<span class="ident">collect</span>()
             }
+            <span class="ident">SatisfiableItem</span>::<span class="ident">Multisig</span> { <span class="ident">keys</span>, .. } <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>..<span class="ident">keys</span>.<span class="ident">len</span>()).<span class="ident">collect</span>(),
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec</span><span class="macro">!</span>[],
         };
         <span class="kw">let</span> <span class="ident">selected</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">path</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">id</span>) {
-            <span class="kw">_</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">default</span>.<span class="ident">is_empty</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">default</span>,
             <span class="prelude-val">Some</span>(<span class="ident">arr</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">arr</span>,
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">default</span>,
         };
@@ -1932,14 +1977,8 @@
                 <span class="comment">// if we have something, make sure we have enough items. note that the user can set</span>
                 <span class="comment">// an empty value for this step in case of n-of-n, because `selected` is set to all</span>
                 <span class="comment">// the elements above</span>
-                <span class="kw">match</span> <span class="ident">selected</span>.<span class="ident">len</span>().<span class="ident">cmp</span>(<span class="ident">threshold</span>) {
-                    <span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=</span><span class="op">&gt;</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">PolicyError</span>::<span class="ident">NotEnoughItemsSelected</span>(<span class="self">self</span>.<span class="ident">id</span>.<span class="ident">clone</span>()))
-                    }
-                    <span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=</span><span class="op">&gt;</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">PolicyError</span>::<span class="ident">TooManyItemsSelected</span>(<span class="self">self</span>.<span class="ident">id</span>.<span class="ident">clone</span>()))
-                    }
-                    <span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=</span><span class="op">&gt;</span> (),
+                <span class="kw">if</span> <span class="ident">selected</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">threshold</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">PolicyError</span>::<span class="ident">NotEnoughItemsSelected</span>(<span class="self">self</span>.<span class="ident">id</span>.<span class="ident">clone</span>()));
                 }
 
                 <span class="comment">// check the selected items, see if there are conflicting requirements</span>
@@ -1954,7 +1993,16 @@
 
                 <span class="prelude-val">Ok</span>(<span class="ident">requirements</span>)
             }
-            <span class="kw">_</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">selected</span>.<span class="ident">is_empty</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">PolicyError</span>::<span class="ident">TooManyItemsSelected</span>(<span class="self">self</span>.<span class="ident">id</span>.<span class="ident">clone</span>())),
+            <span class="ident">SatisfiableItem</span>::<span class="ident">Multisig</span> { <span class="ident">keys</span>, <span class="ident">threshold</span> } <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="ident">selected</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">threshold</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">PolicyError</span>::<span class="ident">NotEnoughItemsSelected</span>(<span class="self">self</span>.<span class="ident">id</span>.<span class="ident">clone</span>()));
+                }
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">item</span>) <span class="op">=</span> <span class="ident">selected</span>.<span class="ident">iter</span>().<span class="ident">find</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">i</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">keys</span>.<span class="ident">len</span>()) {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">PolicyError</span>::<span class="ident">IndexOutOfRange</span>(<span class="kw-2">*</span><span class="ident">item</span>));
+                }
+
+                <span class="prelude-val">Ok</span>(<span class="ident">Condition</span>::<span class="ident">default</span>())
+            }
             <span class="ident">SatisfiableItem</span>::<span class="ident">AbsoluteTimelock</span> { <span class="ident">value</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Condition</span> {
                 <span class="ident">csv</span>: <span class="prelude-val">None</span>,
                 <span class="ident">timelock</span>: <span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">value</span>),
@@ -2521,6 +2569,52 @@
     <span class="comment">//</span>
     <span class="comment">//     // TODO how should this merge timelocks?</span>
     <span class="comment">// }</span>
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_get_condition_multisig</span>() {
+        <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1</span>::<span class="ident">gen_new</span>();
+
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">pk0</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">setup_keys</span>(<span class="ident">TPRV0_STR</span>);
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">pk1</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">setup_keys</span>(<span class="ident">TPRV1_STR</span>);
+
+        <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">wsh</span>(<span class="ident">multi</span>(<span class="number">1</span>, <span class="ident">pk0</span>, <span class="ident">pk1</span>))).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="ident">wallet_desc</span>, <span class="ident">keymap</span>) <span class="op">=</span> <span class="ident">desc</span>
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">signers</span> <span class="op">=</span> <span class="ident">keymap</span>.<span class="ident">into</span>();
+
+        <span class="kw">let</span> <span class="ident">policy</span> <span class="op">=</span> <span class="ident">wallet_desc</span>
+            .<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="ident">signers</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>)
+            .<span class="ident">unwrap</span>()
+            .<span class="ident">unwrap</span>();
+
+        <span class="comment">// no args, choose the default</span>
+        <span class="kw">let</span> <span class="ident">no_args</span> <span class="op">=</span> <span class="ident">policy</span>.<span class="ident">get_condition</span>(<span class="kw-2">&amp;</span><span class="macro">vec</span><span class="macro">!</span>[].<span class="ident">into_iter</span>().<span class="ident">collect</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">no_args</span>, <span class="prelude-val">Ok</span>(<span class="ident">Condition</span>::<span class="ident">default</span>()));
+
+        <span class="comment">// enough args</span>
+        <span class="kw">let</span> <span class="ident">eq_thresh</span> <span class="op">=</span>
+            <span class="ident">policy</span>.<span class="ident">get_condition</span>(<span class="kw-2">&amp;</span><span class="macro">vec</span><span class="macro">!</span>[(<span class="ident">policy</span>.<span class="ident">id</span>.<span class="ident">clone</span>(), <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>])].<span class="ident">into_iter</span>().<span class="ident">collect</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">eq_thresh</span>, <span class="prelude-val">Ok</span>(<span class="ident">Condition</span>::<span class="ident">default</span>()));
+
+        <span class="comment">// more args, it doesn&#39;t really change anything</span>
+        <span class="kw">let</span> <span class="ident">gt_thresh</span> <span class="op">=</span>
+            <span class="ident">policy</span>.<span class="ident">get_condition</span>(<span class="kw-2">&amp;</span><span class="macro">vec</span><span class="macro">!</span>[(<span class="ident">policy</span>.<span class="ident">id</span>.<span class="ident">clone</span>(), <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>, <span class="number">1</span>])].<span class="ident">into_iter</span>().<span class="ident">collect</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">gt_thresh</span>, <span class="prelude-val">Ok</span>(<span class="ident">Condition</span>::<span class="ident">default</span>()));
+
+        <span class="comment">// not enough args, error</span>
+        <span class="kw">let</span> <span class="ident">lt_thresh</span> <span class="op">=</span>
+            <span class="ident">policy</span>.<span class="ident">get_condition</span>(<span class="kw-2">&amp;</span><span class="macro">vec</span><span class="macro">!</span>[(<span class="ident">policy</span>.<span class="ident">id</span>.<span class="ident">clone</span>(), <span class="macro">vec</span><span class="macro">!</span>[])].<span class="ident">into_iter</span>().<span class="ident">collect</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">lt_thresh</span>,
+            <span class="prelude-val">Err</span>(<span class="ident">PolicyError</span>::<span class="ident">NotEnoughItemsSelected</span>(<span class="ident">policy</span>.<span class="ident">id</span>.<span class="ident">clone</span>()))
+        );
+
+        <span class="comment">// index out of range</span>
+        <span class="kw">let</span> <span class="ident">out_of_range</span> <span class="op">=</span>
+            <span class="ident">policy</span>.<span class="ident">get_condition</span>(<span class="kw-2">&amp;</span><span class="macro">vec</span><span class="macro">!</span>[(<span class="ident">policy</span>.<span class="ident">id</span>.<span class="ident">clone</span>(), <span class="macro">vec</span><span class="macro">!</span>[<span class="number">5</span>])].<span class="ident">into_iter</span>().<span class="ident">collect</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">out_of_range</span>, <span class="prelude-val">Err</span>(<span class="ident">PolicyError</span>::<span class="ident">IndexOutOfRange</span>(<span class="number">5</span>)));
+    }
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="bdk"></div>
