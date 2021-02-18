@@ -744,6 +744,50 @@
 <span id="741">741</span>
 <span id="742">742</span>
 <span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
+<span id="747">747</span>
+<span id="748">748</span>
+<span id="749">749</span>
+<span id="750">750</span>
+<span id="751">751</span>
+<span id="752">752</span>
+<span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -943,6 +987,36 @@
 
         <span class="prelude-val">Ok</span>((<span class="ident">translated</span>, <span class="self">self</span>.<span class="number">1</span>))
     }
+}
+
+<span class="doccomment">/// Wrapper for `IntoWalletDescriptor` that performs additional checks on the keys contained in the</span>
+<span class="doccomment">/// descriptor</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">into_wallet_descriptor_checked</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">IntoWalletDescriptor</span><span class="op">&gt;</span>(
+    <span class="ident">inner</span>: <span class="ident">T</span>,
+    <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
+    <span class="ident">network</span>: <span class="ident">Network</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> (<span class="ident">descriptor</span>, <span class="ident">keymap</span>) <span class="op">=</span> <span class="ident">inner</span>.<span class="ident">into_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)<span class="question-mark">?</span>;
+
+    <span class="comment">// Ensure the keys don&#39;t contain any hardened derivation steps or hardened wildcards</span>
+    <span class="kw">let</span> <span class="ident">descriptor_contains_hardened_steps</span> <span class="op">=</span> <span class="ident">descriptor</span>.<span class="ident">for_any_key</span>(<span class="op">|</span><span class="ident">k</span><span class="op">|</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">DescriptorPublicKey</span>::<span class="ident">XPub</span>(<span class="ident">DescriptorXKey</span> {
+            <span class="ident">derivation_path</span>,
+            <span class="ident">wildcard</span>,
+            ..
+        }) <span class="op">=</span> <span class="ident">k</span>.<span class="ident">as_key</span>()
+        {
+            <span class="kw">return</span> <span class="kw-2">*</span><span class="ident">wildcard</span> <span class="op">=</span><span class="op">=</span> <span class="ident">Wildcard</span>::<span class="ident">Hardened</span>
+                <span class="op">|</span><span class="op">|</span> <span class="ident">derivation_path</span>.<span class="ident">into_iter</span>().<span class="ident">any</span>(<span class="ident">ChildNumber</span>::<span class="ident">is_hardened</span>);
+        }
+
+        <span class="bool-val">false</span>
+    });
+    <span class="kw">if</span> <span class="ident">descriptor_contains_hardened_steps</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DescriptorError</span>::<span class="ident">HardenedDerivationXpub</span>);
+    }
+
+    <span class="prelude-val">Ok</span>((<span class="ident">descriptor</span>, <span class="ident">keymap</span>))
 }
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
@@ -1486,6 +1560,20 @@
             .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>)
             .<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wallet_desc</span>, <span class="ident">wallet_desc2</span>)
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_into_wallet_descriptor_checked</span>() {
+        <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1</span>::<span class="ident">new</span>();
+
+        <span class="kw">let</span> <span class="ident">descriptor</span> <span class="op">=</span> <span class="string">&quot;wpkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/0&#39;/1/2/*)&quot;</span>;
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">into_wallet_descriptor_checked</span>(<span class="ident">descriptor</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>);
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">is_err</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(
+            <span class="ident">result</span>.<span class="ident">unwrap_err</span>(),
+            <span class="ident">DescriptorError</span>::<span class="ident">HardenedDerivationXpub</span>
+        ));
     }
 }
 </pre></div>
