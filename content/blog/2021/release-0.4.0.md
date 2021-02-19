@@ -90,16 +90,13 @@ fn main() -> Result<(), CompactFiltersError> {
 
 A huge thanks to everybody who contributed to this new release with suggestions, pull requests and bug reports.
 
-# TODO: update numbers after release
-# TODO: update changelog URL
-
-Since the `v0.3.0` release around a month ago, we've had `59` new commits made by `8` different contributors for a total of `2462` additions and `1988` deletions. Here's the [full diff][gh_diff].
+Since the `v0.3.0` release around a month ago, we've had `59` new commits made by `8` different contributors for a total of `2463` additions and `1991` deletions. Here's the [full diff][gh_diff].
 
 A special thanks to the new contributor for this release:
 
 - [@luckysori][@luckysori] - Lucas Soriano
 
-[changelog]: https://github.com/bitcoindevkit/bdk/blob/75669049268bbc294564f8c6e0528e07a546258f/CHANGELOG.md#v030---v020
+[changelog]: https://github.com/bitcoindevkit/bdk/blob/5e352489a0ac9dd92002a73aa64789a9ae2f0794/CHANGELOG.md#v040---v030
 [foreign_utxo]: https://github.com/bitcoindevkit/bdk/pull/279
 [bump_fee_batched]: https://github.com/bitcoindevkit/bdk/issues/280
 [gh_diff]: https://github.com/bitcoindevkit/bdk/compare/v0.3.0...v0.4.0
