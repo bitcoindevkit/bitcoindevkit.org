@@ -30,11 +30,11 @@ In a real-world wallet a longer relative time-lock would probably be used, but w
 ## Step 0: Install a recent version `bdk-cli`
 
 ```bash
-cargo install --all-features --git https://github.com/bitcoindevkit/bdk-cli.git
+cargo install bdk-cli --features repl,electrum,esplora
 
 # confirm bdk-cli is installed
 bdk-cli --version
-BDK CLI 0.1.1-dev
+BDK CLI 0.2.0
 
 # bdk-cli usage can be explored with the `help` sub-command
 bdk-cli help
