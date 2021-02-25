@@ -25,9 +25,9 @@ In a real-world wallet a longer relative time-lock would probably be used, but w
 
 *Note: If you repeat these instructions on your own your extended keys, addresses, and other values will be different than shown in this post, but the end results should be the same.*
 
-# Initial Setup
+## Initial Setup
 
-## Step 0: Install a recent version `bdk-cli`
+### Step 0: Install a recent version `bdk-cli`
 
 ```bash
 cargo install bdk-cli --features repl,electrum,esplora
@@ -40,7 +40,7 @@ BDK CLI 0.2.0
 bdk-cli help
 ```
 
-## Step 1: Generate private extended keys
+### Step 1: Generate private extended keys
 
 Generate new extended private keys for each of our wallet participants:
 
@@ -67,7 +67,7 @@ bdk-cli key generate | tee carol-key.json
 }
 ```
 
-## Step 2: Extract private extended keys
+### Step 2: Extract private extended keys
 
 Here we use the `jq` Unix command to parse the json output of the `bdk-cli` commands.
 
@@ -79,7 +79,7 @@ export BOB_XPRV=$(cat bob-key.json | jq -r '.xprv')
 export CAROL_XPRV=$(cat carol-key.json | jq -r '.xprv')
 ```
 
-## Step 3: Derive public extended keys
+### Step 3: Derive public extended keys
 
 For this example we are using the [BIP-84](https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki) key path: `m/84h/1h/0h/0/*` to derive extended public keys to share with other wallet participants. 
 
@@ -99,7 +99,7 @@ echo \"$CAROL_XPUB\"
 "tpubDCdxmvzJ5QBjTN8oCjjyT2V58AyZvA1fkmCeZRC75QMoaHcVP2m45Bv3hmnR7ttAwkb2UNYyoXdHVt4gwBqRrJqLUU2JrM43HippxiWpHra/0/*"
 ```
 
-## Step 4: Create wallet descriptors for each participant
+### Step 4: Create wallet descriptors for each participant
 
 We used the [BDK Playground Policy Compiler](https://bitcoindevkit.org/bdk-cli/playground/) to compile the [miniscript](http://bitcoin.sipa.be/miniscript/) policy:
 
@@ -121,9 +121,9 @@ export BOB_DESCRIPTOR="wsh(thresh(3,pk($ALICE_XPUB),s:pk($BOB_XPRV/84'/1'/0'/0/*
 export CAROL_DESCRIPTOR="wsh(thresh(3,pk($ALICE_XPUB),s:pk($BOB_XPUB),s:pk($CAROL_XPRV/84'/1'/0'/0/*),sdv:older(2)))"
 ```
 
-# Policy A. Three signatures
+## Policy A. Three signatures
 
-## Step 1a: Create a testnet [segwit0](https://en.bitcoin.it/wiki/Segregated_Witness) receive address
+### Step 1a: Create a testnet [segwit0](https://en.bitcoin.it/wiki/Segregated_Witness) receive address
 
 This step can be done independently by Alice, Bob, or Carol.
 
@@ -134,13 +134,13 @@ bdk-cli wallet -w carol -d $CAROL_DESCRIPTOR get_new_address
 }
 ```
 
-## Step 2a: Send testnet bitcoin from a faucet to receive address
+### Step 2a: Send testnet bitcoin from a faucet to receive address
 
 After a faucet payment is sent, use a testnet block explorer to confirm the transaction was included in a block. 
 
 [https://mempool.space/testnet/address/tb1qpqglt6yntay0se5vj3a7g36rql5pyzzp0w6jknfch2c0unwphsxs22g96e](https://mempool.space/testnet/address/tb1qpqglt6yntay0se5vj3a7g36rql5pyzzp0w6jknfch2c0unwphsxs22g96e)
 
-## Step 3a: Sync participant wallets and confirm balance
+### Step 3a: Sync participant wallets and confirm balance
 
 This step must be done by Alice, Bob, and Carol so their individual descriptor wallets know about the faucet transaction they will later be spending the output of.
 
@@ -167,7 +167,7 @@ bdk-cli wallet -w carol -d $CAROL_DESCRIPTOR get_balance
 }
 ```
 
-## Step 4a: View wallet spending policies
+### Step 4a: View wallet spending policies
 
 This can also be done by any wallet participant, as long as they have the same descriptor and extended public keys from the other particpants..
 
@@ -255,7 +255,7 @@ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR policies
 }
 ```
 
-## Step 5a: Create spending transaction
+### Step 5a: Create spending transaction
 
 The transaction can also be created by Alice, Bob, or Carol.
 
@@ -277,7 +277,7 @@ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx -a --to tb1qm5tfegjevj27y
 export ALICE_PSBT=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx -a --to tb1qm5tfegjevj27yvvna9elym9lnzcf0zraxgl8z2:0 --external_policy "{\"tjdhrksc\": [0,1,2]}" | jq -r ".psbt")
 ```
 
-## Step 6a: Sign and finalize PSBTs
+### Step 6a: Sign and finalize PSBTs
 
 ```bash
 # ALICE SIGNS
@@ -296,7 +296,7 @@ bdk-cli wallet -w carol -d $CAROL_DESCRIPTOR sign --psbt $CAROL_PSBT
   "psbt": "cHNidP8BAFIBAAAAAYx7T0cL7EoUYBEU0mSL6+DS4VQafUzJgAf0Ftlbkya5AQAAAAD/////AWcmAAAAAAAAFgAU3RacollkleIxk+lz8my/mLCXiH0AAAAAAAEBKxAnAAAAAAAAIgAgCBH16JNfSPhmjJR75EdDB+gSCEF7tStNOLqw/k3BvA0iAgIvNjaP+mwNC0DtgaB6ENB/DPPlbUDR6+NZ4Sw070jzOEcwRAIgRPXSwFLfzD1YQzw5FGYA0TgiQ+D88hSOVDbvyUZDiPUCIAbguaSGgCbBAXo5sIxpZ4c1dcGkYyrrqnDjc1jcdJ1CASICA3c1Ak2kcGOzOh6eRXFKfpnpzP1lzfcXIYhxFGZG51mxSDBFAiEA0kdkvlA+k5kUBWVUM8SkR4Ua9pnXF66ECVwIM1l0doACIF0aMiORVC35+M3GHF2Vl8Q7t455mebrr1HuLaAyxBOYASICA75YDXRLDLt+eX5UsE03mIGUSsQP2MrJ9lm17cGXDw2mRzBEAiBPJlQEnuVDHgfgOdTZNlIcRZz2iqHoMWfDmLMFqJSOQAIgCuOcTKp/VaaqwIjnYfMKO3eQ1k9pOygSWt6teT1o13QBAQV3IQN3NQJNpHBjszoenkVxSn6Z6cz9Zc33FyGIcRRmRudZsax8IQO+WA10Swy7fnl+VLBNN5iBlErED9jKyfZZte3Blw8NpqyTfCECLzY2j/psDQtA7YGgehDQfwzz5W1A0evjWeEsNO9I8zisk3x2Y1KyaWiTU4ciBgIvNjaP+mwNC0DtgaB6ENB/DPPlbUDR6+NZ4Sw070jzOBjeQeVtVAAAgAEAAIAAAACAAAAAAAAAAAAiBgN3NQJNpHBjszoenkVxSn6Z6cz9Zc33FyGIcRRmRudZsQwpbm6KAAAAAAAAAAAiBgO+WA10Swy7fnl+VLBNN5iBlErED9jKyfZZte3Blw8NpgxDMaXmAAAAAAAAAAABBwABCP1TAQUARzBEAiBE9dLAUt/MPVhDPDkUZgDROCJD4PzyFI5UNu/JRkOI9QIgBuC5pIaAJsEBejmwjGlnhzV1waRjKuuqcONzWNx0nUIBRzBEAiBPJlQEnuVDHgfgOdTZNlIcRZz2iqHoMWfDmLMFqJSOQAIgCuOcTKp/VaaqwIjnYfMKO3eQ1k9pOygSWt6teT1o13QBSDBFAiEA0kdkvlA+k5kUBWVUM8SkR4Ua9pnXF66ECVwIM1l0doACIF0aMiORVC35+M3GHF2Vl8Q7t455mebrr1HuLaAyxBOYAXchA3c1Ak2kcGOzOh6eRXFKfpnpzP1lzfcXIYhxFGZG51mxrHwhA75YDXRLDLt+eX5UsE03mIGUSsQP2MrJ9lm17cGXDw2mrJN8IQIvNjaP+mwNC0DtgaB6ENB/DPPlbUDR6+NZ4Sw070jzOKyTfHZjUrJpaJNThwAA"
 ```
 
-## Step 7a: Broadcast finalized PSBT
+### Step 7a: Broadcast finalized PSBT
 
 ```bash
 bdk-cli wallet -w carol -d $CAROL_DESCRIPTOR broadcast --psbt $FINAL_PSBT
@@ -305,7 +305,7 @@ bdk-cli wallet -w carol -d $CAROL_DESCRIPTOR broadcast --psbt $FINAL_PSBT
 }
 ```
 
-## Step 8a: Confirm transaction included in a testnet block
+### Step 8a: Confirm transaction included in a testnet block
 
 [https://mempool.space/testnet/tx/3b9a7ac610afc91f1d1a0dd844e609376278fe7210c69b7ef663c5a8e8308f3e](https://mempool.space/testnet/tx/3b9a7ac610afc91f1d1a0dd844e609376278fe7210c69b7ef663c5a8e8308f3e)
 
@@ -320,13 +320,13 @@ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR get_balance
 }
 ```
 
-## DONE!
+### DONE!
 
-# Policy B. Two signatures after a relative time lock
+## Policy B. Two signatures after a relative time lock
 
 Now we will use the same extended private and public keys, and the same descriptors to receive and spend testnet bitcoin using only two of our participants signatures after the transaction input's relative time-lock has expired. 
 
-## Step 1b: Create a new testnet receive address
+### Step 1b: Create a new testnet receive address
 
 The receive address can still be generated by Alice, Bob, or Carol.
 
@@ -337,13 +337,13 @@ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR get_new_address
 }
 ```
 
-## Step 2b: Fund new address from testnet faucet
+### Step 2b: Fund new address from testnet faucet
 
 After the faucet payment is sent, confirm using a testnet block explorer to verify the transaction was included in a block. 
 
 [https://mempool.space/testnet/address/tb1q886w2zmtakwxpngs9kn7y0a7tvd6e24u58sse2sv92zrjpnenfhqtfnmw9](https://mempool.space/testnet/address/tb1q886w2zmtakwxpngs9kn7y0a7tvd6e24u58sse2sv92zrjpnenfhqtfnmw9)
 
-## Step 3b: Sync wallet and confirm wallet balance
+### Step 3b: Sync wallet and confirm wallet balance
 
 This step must be done by Alice and Bob so their individual descriptor wallets know about the faucet transaction they will later be spending the output of.
 
@@ -365,7 +365,7 @@ bdk-cli wallet -w bob -d $BOB_DESCRIPTOR get_balance
 # NO CAROL SHE LOST HER KEY!
 ```
 
-## Step 4b: Create spending transaction
+### Step 4b: Create spending transaction
 
 This spending transaction uses Alice and Bob's keys plus the ~17 minute (512x2 second) relative time-lock, see above [Step 4a](#step-4a-view-wallet-spending-policies) for the policy id. The transaction can be created by Alice or Bob.
 
@@ -387,7 +387,7 @@ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx -a --to tb1qm5tfegjevj27y
 export ALICE_PSBT2=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx -a --to tb1qm5tfegjevj27yvvna9elym9lnzcf0zraxgl8z2:0 --external_policy "{\"tjdhrksc\": [0,1,3]}" | jq -r ".psbt")
 ```
 
-## Step 5b: Sign and finalize PSBTs
+### Step 5b: Sign and finalize PSBTs
 
 ```bash
 # ALICE SIGNS
@@ -399,7 +399,7 @@ export FINAL_PSBT2=$(bdk-cli wallet -w bob -d $BOB_DESCRIPTOR sign --psbt $BOB_P
 # CAROL DOES *NOT* SIGN
 ```
 
-## Step 6b: Broadcast finalized PSBT
+### Step 6b: Broadcast finalized PSBT
 
 ```bash
 bdk-cli wallet -w bob -d $BOB_DESCRIPTOR broadcast --psbt $FINAL_PSBT2
@@ -415,7 +415,7 @@ bdk-cli wallet -w bob -d $BOB_DESCRIPTOR broadcast --psbt $FINAL_PSBT2
 }
 ```
 
-## Step 7b: View confirmed transaction
+### Step 7b: View confirmed transaction
 
 [https://mempool.space/testnet/tx/6a04c60dff8eeb14dc0848c663d669c34ddc30125d9564364c9414e3ff4a7d28](https://mempool.space/testnet/tx/6a04c60dff8eeb14dc0848c663d669c34ddc30125d9564364c9414e3ff4a7d28)
 
@@ -430,6 +430,6 @@ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR get_balance
 }
 ```
 
-## Done again!
+### Done again!
 
 In this demo we showed how to receive and spend bitcoin using two different descriptor wallet policies using the `bdk` library and `bdk-cli` wallet tool.
