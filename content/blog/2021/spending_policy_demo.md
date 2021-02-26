@@ -83,6 +83,8 @@ export CAROL_XPRV=$(cat carol-key.json | jq -r '.xprv')
 
 For this example we are using the [BIP-84](https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki) key path: `m/84h/1h/0h/0/*` to derive extended public keys to share with other wallet participants. 
 
+Note that the `key derive` sub-command will generate a tpub for the last hardened node in the given derivation path. You'll also notice that `bdk-cli` will returns our tpub with the key origin (fingerprint/path) added to it (the metadata part that looks like `[5adb4683/84'/1'/0']` right before the tpub). This key origin information is not necessary in order to use a tpub and generate addresses, but it's good practice to include it because some signers require it.
+
 ```bash
 export ALICE_XPUB=$(bdk-cli key derive --xprv $ALICE_XPRV --path "m/84'/1'/0'/0" | jq -r ".xpub")
 echo \"$ALICE_XPUB\"
@@ -255,7 +257,9 @@ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR policies
 
 ### Step 5a: Create spending transaction
 
-The transaction can also be created by Alice, Bob, or Carol.
+The transaction can also be created by Alice, Bob, or Carol, or even an untrusted coordinator that only has all three tpubs. 
+
+Note that the argument provided to the --external_policy flag contains the id retrieved from the `policies` subcommand in the above step, in this case `ydtnup84`.
 
 ```bash
 bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx -a --to tb1qm5tfegjevj27yvvna9elym9lnzcf0zraxgl8z2:0 --external_policy "{\"ydtnup84\": [0,1,2]}"
@@ -272,23 +276,23 @@ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx -a --to tb1qm5tfegjevj27y
   "psbt": "cHNidP8BAFIBAAAAAYx7T0cL7EoUYBEU0mSL6+DS4VQafUzJgAf0Ftlbkya5AQAAAAD/////AWcmAAAAAAAAFgAU3RacollkleIxk+lz8my/mLCXiH0AAAAAAAEBKxAnAAAAAAAAIgAgCBH16JNfSPhmjJR75EdDB+gSCEF7tStNOLqw/k3BvA0BBXchA3c1Ak2kcGOzOh6eRXFKfpnpzP1lzfcXIYhxFGZG51mxrHwhA75YDXRLDLt+eX5UsE03mIGUSsQP2MrJ9lm17cGXDw2mrJN8IQIvNjaP+mwNC0DtgaB6ENB/DPPlbUDR6+NZ4Sw070jzOKyTfHZjUrJpaJNThyIGAi82No/6bA0LQO2BoHoQ0H8M8+VtQNHr41nhLDTvSPM4DO66tnIAAAAAAAAAACIGA3c1Ak2kcGOzOh6eRXFKfpnpzP1lzfcXIYhxFGZG51mxGFrbRoNUAACAAQAAgAAAAIAAAAAAAAAAACIGA75YDXRLDLt+eX5UsE03mIGUSsQP2MrJ9lm17cGXDw2mDEMxpeYAAAAAAAAAAAAA"
 }
 
-export ALICE_PSBT=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx -a --to tb1qm5tfegjevj27yvvna9elym9lnzcf0zraxgl8z2:0 --external_policy "{\"ydtnup84\": [0,1,2]}" | jq -r ".psbt")
+export UNSIGNED_PSBT=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx -a --to tb1qm5tfegjevj27yvvna9elym9lnzcf0zraxgl8z2:0 --external_policy "{\"ydtnup84\": [0,1,2]}" | jq -r ".psbt")
 ```
 
 ### Step 6a: Sign and finalize PSBTs
 
 ```bash
 # ALICE SIGNS
-export BOB_PSBT=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR sign --psbt $ALICE_PSBT | jq -r ".psbt")
+export ALICE_SIGNED_PSBT=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR sign --psbt $UNSIGNED_PSBT | jq -r ".psbt")
 
 # BOB SIGNS
-export CAROL_PSBT=$(bdk-cli wallet -w bob -d $BOB_DESCRIPTOR sign --psbt $BOB_PSBT | jq -r ".psbt")
+export ALICE_BOB_SIGNED_PSBT=$(bdk-cli wallet -w bob -d $BOB_DESCRIPTOR sign --psbt $ALICE_SIGNED_PSBT | jq -r ".psbt")
 
 # CAROL SIGNS
-export FINAL_PSBT=$(bdk-cli wallet -w carol -d $CAROL_DESCRIPTOR sign --psbt $CAROL_PSBT | jq -r ".psbt")
+export FINAL_PSBT=$(bdk-cli wallet -w carol -d $CAROL_DESCRIPTOR sign --psbt $ALICE_BOB_SIGNED_PSBT | jq -r ".psbt")
 
 ## PSBT is finalized
-bdk-cli wallet -w carol -d $CAROL_DESCRIPTOR sign --psbt $CAROL_PSBT
+bdk-cli wallet -w carol -d $CAROL_DESCRIPTOR sign --psbt $ALICE_BOB_SIGNED_PSBT
 {
   "is_finalized": true,
   "psbt": "cHNidP8BAFIBAAAAAYx7T0cL7EoUYBEU0mSL6+DS4VQafUzJgAf0Ftlbkya5AQAAAAD/////AWcmAAAAAAAAFgAU3RacollkleIxk+lz8my/mLCXiH0AAAAAAAEBKxAnAAAAAAAAIgAgCBH16JNfSPhmjJR75EdDB+gSCEF7tStNOLqw/k3BvA0iAgIvNjaP+mwNC0DtgaB6ENB/DPPlbUDR6+NZ4Sw070jzOEcwRAIgRPXSwFLfzD1YQzw5FGYA0TgiQ+D88hSOVDbvyUZDiPUCIAbguaSGgCbBAXo5sIxpZ4c1dcGkYyrrqnDjc1jcdJ1CASICA3c1Ak2kcGOzOh6eRXFKfpnpzP1lzfcXIYhxFGZG51mxSDBFAiEA0kdkvlA+k5kUBWVUM8SkR4Ua9pnXF66ECVwIM1l0doACIF0aMiORVC35+M3GHF2Vl8Q7t455mebrr1HuLaAyxBOYASICA75YDXRLDLt+eX5UsE03mIGUSsQP2MrJ9lm17cGXDw2mRzBEAiBPJlQEnuVDHgfgOdTZNlIcRZz2iqHoMWfDmLMFqJSOQAIgCuOcTKp/VaaqwIjnYfMKO3eQ1k9pOygSWt6teT1o13QBAQV3IQN3NQJNpHBjszoenkVxSn6Z6cz9Zc33FyGIcRRmRudZsax8IQO+WA10Swy7fnl+VLBNN5iBlErED9jKyfZZte3Blw8NpqyTfCECLzY2j/psDQtA7YGgehDQfwzz5W1A0evjWeEsNO9I8zisk3x2Y1KyaWiTU4ciBgIvNjaP+mwNC0DtgaB6ENB/DPPlbUDR6+NZ4Sw070jzOBjeQeVtVAAAgAEAAIAAAACAAAAAAAAAAAAiBgN3NQJNpHBjszoenkVxSn6Z6cz9Zc33FyGIcRRmRudZsQwpbm6KAAAAAAAAAAAiBgO+WA10Swy7fnl+VLBNN5iBlErED9jKyfZZte3Blw8NpgxDMaXmAAAAAAAAAAABBwABCP1TAQUARzBEAiBE9dLAUt/MPVhDPDkUZgDROCJD4PzyFI5UNu/JRkOI9QIgBuC5pIaAJsEBejmwjGlnhzV1waRjKuuqcONzWNx0nUIBRzBEAiBPJlQEnuVDHgfgOdTZNlIcRZz2iqHoMWfDmLMFqJSOQAIgCuOcTKp/VaaqwIjnYfMKO3eQ1k9pOygSWt6teT1o13QBSDBFAiEA0kdkvlA+k5kUBWVUM8SkR4Ua9pnXF66ECVwIM1l0doACIF0aMiORVC35+M3GHF2Vl8Q7t455mebrr1HuLaAyxBOYAXchA3c1Ak2kcGOzOh6eRXFKfpnpzP1lzfcXIYhxFGZG51mxrHwhA75YDXRLDLt+eX5UsE03mIGUSsQP2MrJ9lm17cGXDw2mrJN8IQIvNjaP+mwNC0DtgaB6ENB/DPPlbUDR6+NZ4Sw070jzOKyTfHZjUrJpaJNThwAA"
@@ -385,17 +389,17 @@ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx -a --to tb1qm5tfegjevj27y
   "psbt": "cHNidP8BAFICAAAAAYmc6mhj4Cf4pcJyBvxSbCd9IB1yDGs+plzb95t7++v0AAAAAAACAAAAAWcmAAAAAAAAFgAU3RacollkleIxk+lz8my/mLCXiH0AAAAAAAEBKxAnAAAAAAAAIgAgOfTlC2vtnGDNEC2n4j++Wxusqryh4QyqDCqEOQZ5mm4BBXchAlUVWMkNwGkCxDe4ZAcyz7HI+Vpmo4A5//OvkV33PCpprHwhAq9NOHBbPEdKr8IzYEomNTk1eokAkLQ9+ZMuS/OlX+nFrJN8IQOrU70B/wo/oUUCKFQ2cIsBxx6SysE7uVwxyu0ozM4zYqyTfHZjUrJpaJNThyIGAlUVWMkNwGkCxDe4ZAcyz7HI+Vpmo4A5//OvkV33PCppGFrbRoNUAACAAQAAgAAAAIAAAAAAAQAAACIGAq9NOHBbPEdKr8IzYEomNTk1eokAkLQ9+ZMuS/OlX+nFDEMxpeYAAAAAAQAAACIGA6tTvQH/Cj+hRQIoVDZwiwHHHpLKwTu5XDHK7SjMzjNiDO66tnIAAAAAAQAAAAAA"
 }
 
-export ALICE_PSBT2=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx -a --to tb1qm5tfegjevj27yvvna9elym9lnzcf0zraxgl8z2:0 --external_policy "{\"ydtnup84\": [0,1,3]}" | jq -r ".psbt")
+export UNSIGNED_PSBT2=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx -a --to tb1qm5tfegjevj27yvvna9elym9lnzcf0zraxgl8z2:0 --external_policy "{\"ydtnup84\": [0,1,3]}" | jq -r ".psbt")
 ```
 
 ### Step 5b: Sign and finalize PSBTs
 
 ```bash
 # ALICE SIGNS
-export BOB_PSBT2=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR sign --psbt $ALICE_PSBT2 | jq -r ".psbt")
+export ALICE_SIGNED_PSBT2=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR sign --psbt $UNSIGNED_PSBT2 | jq -r ".psbt")
 
 # BOB SIGNS
-export FINAL_PSBT2=$(bdk-cli wallet -w bob -d $BOB_DESCRIPTOR sign --psbt $BOB_PSBT2 | jq -r ".psbt")
+export FINAL_PSBT2=$(bdk-cli wallet -w bob -d $BOB_DESCRIPTOR sign --psbt $ALICE_SIGNED_PSBT2 | jq -r ".psbt")
 
 # CAROL DOES *NOT* SIGN
 ```
