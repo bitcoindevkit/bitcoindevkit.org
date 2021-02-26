@@ -1004,6 +1004,17 @@
 <span id="1001">1001</span>
 <span id="1002">1002</span>
 <span id="1003">1003</span>
+<span id="1004">1004</span>
+<span id="1005">1005</span>
+<span id="1006">1006</span>
+<span id="1007">1007</span>
+<span id="1008">1008</span>
+<span id="1009">1009</span>
+<span id="1010">1010</span>
+<span id="1011">1011</span>
+<span id="1012">1012</span>
+<span id="1013">1013</span>
+<span id="1014">1014</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -1057,8 +1068,8 @@
 <span class="doccomment">//!     fn coin_select(</span>
 <span class="doccomment">//!         &amp;self,</span>
 <span class="doccomment">//!         database: &amp;D,</span>
-<span class="doccomment">//!         required_utxos: Vec&lt;(UTXO, usize)&gt;,</span>
-<span class="doccomment">//!         optional_utxos: Vec&lt;(UTXO, usize)&gt;,</span>
+<span class="doccomment">//!         required_utxos: Vec&lt;WeightedUtxo&gt;,</span>
+<span class="doccomment">//!         optional_utxos: Vec&lt;WeightedUtxo&gt;,</span>
 <span class="doccomment">//!         fee_rate: FeeRate,</span>
 <span class="doccomment">//!         amount_needed: u64,</span>
 <span class="doccomment">//!         fee_amount: f32,</span>
@@ -1067,11 +1078,10 @@
 <span class="doccomment">//!         let mut additional_weight = 0;</span>
 <span class="doccomment">//!         let all_utxos_selected = required_utxos</span>
 <span class="doccomment">//!             .into_iter().chain(optional_utxos)</span>
-<span class="doccomment">//!             .scan((&amp;mut selected_amount, &amp;mut additional_weight), |(selected_amount, additional_weight), (utxo, weight)| {</span>
-<span class="doccomment">//!                 **selected_amount += utxo.txout.value;</span>
-<span class="doccomment">//!                 **additional_weight += TXIN_BASE_WEIGHT + weight;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!                 Some(utxo)</span>
+<span class="doccomment">//!             .scan((&amp;mut selected_amount, &amp;mut additional_weight), |(selected_amount, additional_weight), weighted_utxo| {</span>
+<span class="doccomment">//!                 **selected_amount += weighted_utxo.utxo.txout().value;</span>
+<span class="doccomment">//!                 **additional_weight += TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight;</span>
+<span class="doccomment">//!                 Some(weighted_utxo.utxo)</span>
 <span class="doccomment">//!             })</span>
 <span class="doccomment">//!             .collect::&lt;Vec&lt;_&gt;&gt;();</span>
 <span class="doccomment">//!         let additional_fees = additional_weight as f32 * fee_rate.as_sat_vb() / 4.0;</span>
@@ -1082,7 +1092,6 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//!         Ok(CoinSelectionResult {</span>
 <span class="doccomment">//!             selected: all_utxos_selected,</span>
-<span class="doccomment">//!             selected_amount,</span>
 <span class="doccomment">//!             fee_amount: fee_amount + additional_fees,</span>
 <span class="doccomment">//!         })</span>
 <span class="doccomment">//!     }</span>
@@ -1104,9 +1113,9 @@
 <span class="doccomment">//! # Ok::&lt;(), bdk::Error&gt;(())</span>
 <span class="doccomment">//! ```</span>
 
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">database</span>::<span class="ident">Database</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">types</span>::{<span class="ident">FeeRate</span>, <span class="ident">UTXO</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">types</span>::<span class="ident">FeeRate</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">database</span>::<span class="ident">Database</span>, <span class="ident">WeightedUtxo</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">error</span>::<span class="ident">Error</span>, <span class="ident">Utxo</span>};
 
 <span class="kw">use</span> <span class="ident">rand</span>::<span class="ident">seq</span>::<span class="ident">SliceRandom</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">test</span>))]</span>
@@ -1129,11 +1138,27 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CoinSelectionResult</span> {
     <span class="doccomment">/// List of outputs selected for use as inputs</span>
-    <span class="kw">pub</span> <span class="ident">selected</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">UTXO</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Sum of the selected inputs&#39; value</span>
-    <span class="kw">pub</span> <span class="ident">selected_amount</span>: <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">selected</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Utxo</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Total fee amount in satoshi</span>
     <span class="kw">pub</span> <span class="ident">fee_amount</span>: <span class="ident">f32</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">CoinSelectionResult</span> {
+    <span class="doccomment">/// The total value of the inputs selected.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">selected_amount</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+        <span class="self">self</span>.<span class="ident">selected</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="ident">txout</span>().<span class="ident">value</span>).<span class="ident">sum</span>()
+    }
+
+    <span class="doccomment">/// The total value of the inputs selected from the local wallet.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">local_selected_amount</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+        <span class="self">self</span>.<span class="ident">selected</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">u</span> {
+                <span class="ident">Utxo</span>::<span class="ident">Local</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">u</span>.<span class="ident">txout</span>().<span class="ident">value</span>),
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            })
+            .<span class="ident">sum</span>()
+    }
 }
 
 <span class="doccomment">/// Trait for generalized coin selection algorithms</span>
@@ -1158,8 +1183,8 @@
     <span class="kw">fn</span> <span class="ident">coin_select</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">database</span>: <span class="kw-2">&amp;</span><span class="ident">D</span>,
-        <span class="ident">required_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">UTXO</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>,
-        <span class="ident">optional_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">UTXO</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>,
+        <span class="ident">required_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>,
+        <span class="ident">optional_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>,
         <span class="ident">fee_rate</span>: <span class="ident">FeeRate</span>,
         <span class="ident">amount_needed</span>: <span class="ident">u64</span>,
         <span class="ident">fee_amount</span>: <span class="ident">f32</span>,
@@ -1170,15 +1195,15 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This coin selection algorithm sorts the available UTXOs by value and then picks them starting</span>
 <span class="doccomment">/// from the largest ones until the required amount is reached.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LargestFirstCoinSelection</span>;
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Database</span><span class="op">&gt;</span> <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">LargestFirstCoinSelection</span> {
     <span class="kw">fn</span> <span class="ident">coin_select</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">_database</span>: <span class="kw-2">&amp;</span><span class="ident">D</span>,
-        <span class="ident">required_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">UTXO</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>,
-        <span class="kw-2">mut</span> <span class="ident">optional_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">UTXO</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>,
+        <span class="ident">required_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>,
+        <span class="kw-2">mut</span> <span class="ident">optional_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>,
         <span class="ident">fee_rate</span>: <span class="ident">FeeRate</span>,
         <span class="ident">amount_needed</span>: <span class="ident">u64</span>,
         <span class="kw-2">mut</span> <span class="ident">fee_amount</span>: <span class="ident">f32</span>,
@@ -1195,7 +1220,7 @@
         <span class="comment">// We put the &quot;required UTXOs&quot; first and make sure the optional UTXOs are sorted,</span>
         <span class="comment">// initially smallest to largest, before being reversed with `.rev()`.</span>
         <span class="kw">let</span> <span class="ident">utxos</span> <span class="op">=</span> {
-            <span class="ident">optional_utxos</span>.<span class="ident">sort_unstable_by_key</span>(<span class="op">|</span>(<span class="ident">utxo</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">utxo</span>.<span class="ident">txout</span>.<span class="ident">value</span>);
+            <span class="ident">optional_utxos</span>.<span class="ident">sort_unstable_by_key</span>(<span class="op">|</span><span class="ident">wu</span><span class="op">|</span> <span class="ident">wu</span>.<span class="ident">utxo</span>.<span class="ident">txout</span>().<span class="ident">value</span>);
             <span class="ident">required_utxos</span>
                 .<span class="ident">into_iter</span>()
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">utxo</span><span class="op">|</span> (<span class="bool-val">true</span>, <span class="ident">utxo</span>))
@@ -1208,18 +1233,19 @@
         <span class="kw">let</span> <span class="ident">selected</span> <span class="op">=</span> <span class="ident">utxos</span>
             .<span class="ident">scan</span>(
                 (<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">selected_amount</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fee_amount</span>),
-                <span class="op">|</span>(<span class="ident">selected_amount</span>, <span class="ident">fee_amount</span>), (<span class="ident">must_use</span>, (<span class="ident">utxo</span>, <span class="ident">weight</span>))<span class="op">|</span> {
+                <span class="op">|</span>(<span class="ident">selected_amount</span>, <span class="ident">fee_amount</span>), (<span class="ident">must_use</span>, <span class="ident">weighted_utxo</span>)<span class="op">|</span> {
                     <span class="kw">if</span> <span class="ident">must_use</span> <span class="op">|</span><span class="op">|</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">selected_amount</span> <span class="op">&lt;</span> <span class="ident">amount_needed</span> <span class="op">+</span> (<span class="ident">fee_amount</span>.<span class="ident">ceil</span>() <span class="kw">as</span> <span class="ident">u64</span>) {
-                        <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">fee_amount</span> <span class="op">+</span><span class="op">=</span> <span class="ident">calc_fee_bytes</span>(<span class="ident">TXIN_BASE_WEIGHT</span> <span class="op">+</span> <span class="ident">weight</span>);
-                        <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">selected_amount</span> <span class="op">+</span><span class="op">=</span> <span class="ident">utxo</span>.<span class="ident">txout</span>.<span class="ident">value</span>;
+                        <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">fee_amount</span> <span class="op">+</span><span class="op">=</span>
+                            <span class="ident">calc_fee_bytes</span>(<span class="ident">TXIN_BASE_WEIGHT</span> <span class="op">+</span> <span class="ident">weighted_utxo</span>.<span class="ident">satisfaction_weight</span>);
+                        <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">selected_amount</span> <span class="op">+</span><span class="op">=</span> <span class="ident">weighted_utxo</span>.<span class="ident">utxo</span>.<span class="ident">txout</span>().<span class="ident">value</span>;
 
                         <span class="ident">log</span>::<span class="macro">debug</span><span class="macro">!</span>(
                             <span class="string">&quot;Selected {}, updated fee_amount = `{}`&quot;</span>,
-                            <span class="ident">utxo</span>.<span class="ident">outpoint</span>,
+                            <span class="ident">weighted_utxo</span>.<span class="ident">utxo</span>.<span class="ident">outpoint</span>(),
                             <span class="ident">fee_amount</span>
                         );
 
-                        <span class="prelude-val">Some</span>(<span class="ident">utxo</span>)
+                        <span class="prelude-val">Some</span>(<span class="ident">weighted_utxo</span>.<span class="ident">utxo</span>)
                     } <span class="kw">else</span> {
                         <span class="prelude-val">None</span>
                     }
@@ -1238,7 +1264,6 @@
         <span class="prelude-val">Ok</span>(<span class="ident">CoinSelectionResult</span> {
             <span class="ident">selected</span>,
             <span class="ident">fee_amount</span>,
-            <span class="ident">selected_amount</span>,
         })
     }
 }
@@ -1246,9 +1271,7 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="comment">// Adds fee information to an UTXO.</span>
 <span class="kw">struct</span> <span class="ident">OutputGroup</span> {
-    <span class="ident">utxo</span>: <span class="ident">UTXO</span>,
-    <span class="comment">// weight needed to satisfy the UTXO, as described in `Descriptor::max_satisfaction_weight`</span>
-    <span class="ident">satisfaction_weight</span>: <span class="ident">usize</span>,
+    <span class="ident">weighted_utxo</span>: <span class="ident">WeightedUtxo</span>,
     <span class="comment">// Amount of fees for spending a certain utxo, calculated using a certain FeeRate</span>
     <span class="ident">fee</span>: <span class="ident">f32</span>,
     <span class="comment">// The effective value of the UTXO, i.e., the utxo value minus the fee for spending it</span>
@@ -1256,12 +1279,12 @@
 }
 
 <span class="kw">impl</span> <span class="ident">OutputGroup</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">utxo</span>: <span class="ident">UTXO</span>, <span class="ident">satisfaction_weight</span>: <span class="ident">usize</span>, <span class="ident">fee_rate</span>: <span class="ident">FeeRate</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">fee</span> <span class="op">=</span> (<span class="ident">TXIN_BASE_WEIGHT</span> <span class="op">+</span> <span class="ident">satisfaction_weight</span>) <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> <span class="number">4.0</span> <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>();
-        <span class="kw">let</span> <span class="ident">effective_value</span> <span class="op">=</span> <span class="ident">utxo</span>.<span class="ident">txout</span>.<span class="ident">value</span> <span class="kw">as</span> <span class="ident">i64</span> <span class="op">-</span> <span class="ident">fee</span>.<span class="ident">ceil</span>() <span class="kw">as</span> <span class="ident">i64</span>;
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">weighted_utxo</span>: <span class="ident">WeightedUtxo</span>, <span class="ident">fee_rate</span>: <span class="ident">FeeRate</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">fee</span> <span class="op">=</span> (<span class="ident">TXIN_BASE_WEIGHT</span> <span class="op">+</span> <span class="ident">weighted_utxo</span>.<span class="ident">satisfaction_weight</span>) <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> <span class="number">4.0</span>
+            <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>();
+        <span class="kw">let</span> <span class="ident">effective_value</span> <span class="op">=</span> <span class="ident">weighted_utxo</span>.<span class="ident">utxo</span>.<span class="ident">txout</span>().<span class="ident">value</span> <span class="kw">as</span> <span class="ident">i64</span> <span class="op">-</span> <span class="ident">fee</span>.<span class="ident">ceil</span>() <span class="kw">as</span> <span class="ident">i64</span>;
         <span class="ident">OutputGroup</span> {
-            <span class="ident">utxo</span>,
-            <span class="ident">satisfaction_weight</span>,
+            <span class="ident">weighted_utxo</span>,
             <span class="ident">effective_value</span>,
             <span class="ident">fee</span>,
         }
@@ -1298,8 +1321,8 @@
     <span class="kw">fn</span> <span class="ident">coin_select</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">_database</span>: <span class="kw-2">&amp;</span><span class="ident">D</span>,
-        <span class="ident">required_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">UTXO</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>,
-        <span class="ident">optional_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">UTXO</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>,
+        <span class="ident">required_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>,
+        <span class="ident">optional_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>,
         <span class="ident">fee_rate</span>: <span class="ident">FeeRate</span>,
         <span class="ident">amount_needed</span>: <span class="ident">u64</span>,
         <span class="ident">fee_amount</span>: <span class="ident">f32</span>,
@@ -1307,7 +1330,7 @@
         <span class="comment">// Mapping every (UTXO, usize) to an output group</span>
         <span class="kw">let</span> <span class="ident">required_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutputGroup</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">required_utxos</span>
             .<span class="ident">into_iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>.<span class="number">0</span>, <span class="ident">u</span>.<span class="number">1</span>, <span class="ident">fee_rate</span>))
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>, <span class="ident">fee_rate</span>))
             .<span class="ident">collect</span>();
 
         <span class="comment">// Mapping every (UTXO, usize) to an output group.</span>
@@ -1315,7 +1338,7 @@
         <span class="comment">// adding them is more than their value</span>
         <span class="kw">let</span> <span class="ident">optional_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutputGroup</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">optional_utxos</span>
             .<span class="ident">into_iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>.<span class="number">0</span>, <span class="ident">u</span>.<span class="number">1</span>, <span class="ident">fee_rate</span>))
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>, <span class="ident">fee_rate</span>))
             .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="ident">effective_value</span> <span class="op">&gt;</span> <span class="number">0</span>)
             .<span class="ident">collect</span>();
 
@@ -1514,14 +1537,12 @@
         <span class="ident">fee_amount</span> <span class="op">+</span><span class="op">=</span> <span class="ident">selected_utxos</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="ident">fee</span>).<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>();
         <span class="kw">let</span> <span class="ident">selected</span> <span class="op">=</span> <span class="ident">selected_utxos</span>
             .<span class="ident">into_iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="ident">utxo</span>)
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="ident">weighted_utxo</span>.<span class="ident">utxo</span>)
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-        <span class="kw">let</span> <span class="ident">selected_amount</span> <span class="op">=</span> <span class="ident">selected</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="ident">txout</span>.<span class="ident">value</span>).<span class="ident">sum</span>();
 
         <span class="ident">CoinSelectionResult</span> {
             <span class="ident">selected</span>,
             <span class="ident">fee_amount</span>,
-            <span class="ident">selected_amount</span>,
         }
     }
 }
@@ -1542,10 +1563,11 @@
 
     <span class="kw">const</span> <span class="ident">P2WPKH_WITNESS_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">73</span> <span class="op">+</span> <span class="number">33</span> <span class="op">+</span> <span class="number">2</span>;
 
-    <span class="kw">fn</span> <span class="ident">get_test_utxos</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">UTXO</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_test_utxos</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span> {
         <span class="macro">vec</span><span class="macro">!</span>[
-            (
-                <span class="ident">UTXO</span> {
+            <span class="ident">WeightedUtxo</span> {
+                <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
+                <span class="ident">utxo</span>: <span class="ident">Utxo</span>::<span class="ident">Local</span>(<span class="ident">LocalUtxo</span> {
                     <span class="ident">outpoint</span>: <span class="ident">OutPoint</span>::<span class="ident">from_str</span>(
                         <span class="string">&quot;ebd9813ecebc57ff8f30797de7c205e3c7498ca950ea4341ee51a685ff2fa30a:0&quot;</span>,
                     )
@@ -1555,11 +1577,11 @@
                         <span class="ident">script_pubkey</span>: <span class="ident">Script</span>::<span class="ident">new</span>(),
                     },
                     <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>::<span class="ident">External</span>,
-                },
-                <span class="ident">P2WPKH_WITNESS_SIZE</span>,
-            ),
-            (
-                <span class="ident">UTXO</span> {
+                }),
+            },
+            <span class="ident">WeightedUtxo</span> {
+                <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
+                <span class="ident">utxo</span>: <span class="ident">Utxo</span>::<span class="ident">Local</span>(<span class="ident">LocalUtxo</span> {
                     <span class="ident">outpoint</span>: <span class="ident">OutPoint</span>::<span class="ident">from_str</span>(
                         <span class="string">&quot;65d92ddff6b6dc72c89624a6491997714b90f6004f928d875bc0fd53f264fa85:0&quot;</span>,
                     )
@@ -1569,17 +1591,17 @@
                         <span class="ident">script_pubkey</span>: <span class="ident">Script</span>::<span class="ident">new</span>(),
                     },
                     <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>::<span class="ident">Internal</span>,
-                },
-                <span class="ident">P2WPKH_WITNESS_SIZE</span>,
-            ),
+                }),
+            },
         ]
     }
 
-    <span class="kw">fn</span> <span class="ident">generate_random_utxos</span>(<span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">StdRng</span>, <span class="ident">utxos_number</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">UTXO</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">generate_random_utxos</span>(<span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">StdRng</span>, <span class="ident">utxos_number</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">utxos_number</span> {
-            <span class="ident">res</span>.<span class="ident">push</span>((
-                <span class="ident">UTXO</span> {
+            <span class="ident">res</span>.<span class="ident">push</span>(<span class="ident">WeightedUtxo</span> {
+                <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
+                <span class="ident">utxo</span>: <span class="ident">Utxo</span>::<span class="ident">Local</span>(<span class="ident">LocalUtxo</span> {
                     <span class="ident">outpoint</span>: <span class="ident">OutPoint</span>::<span class="ident">from_str</span>(
                         <span class="string">&quot;ebd9813ecebc57ff8f30797de7c205e3c7498ca950ea4341ee51a685ff2fa30a:0&quot;</span>,
                     )
@@ -1589,16 +1611,16 @@
                         <span class="ident">script_pubkey</span>: <span class="ident">Script</span>::<span class="ident">new</span>(),
                     },
                     <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>::<span class="ident">External</span>,
-                },
-                <span class="ident">P2WPKH_WITNESS_SIZE</span>,
-            ));
+                }),
+            });
         }
         <span class="ident">res</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">generate_same_value_utxos</span>(<span class="ident">utxos_value</span>: <span class="ident">u64</span>, <span class="ident">utxos_number</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">UTXO</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">utxo</span> <span class="op">=</span> (
-            <span class="ident">UTXO</span> {
+    <span class="kw">fn</span> <span class="ident">generate_same_value_utxos</span>(<span class="ident">utxos_value</span>: <span class="ident">u64</span>, <span class="ident">utxos_number</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">utxo</span> <span class="op">=</span> <span class="ident">WeightedUtxo</span> {
+            <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
+            <span class="ident">utxo</span>: <span class="ident">Utxo</span>::<span class="ident">Local</span>(<span class="ident">LocalUtxo</span> {
                 <span class="ident">outpoint</span>: <span class="ident">OutPoint</span>::<span class="ident">from_str</span>(
                     <span class="string">&quot;ebd9813ecebc57ff8f30797de7c205e3c7498ca950ea4341ee51a685ff2fa30a:0&quot;</span>,
                 )
@@ -1608,18 +1630,18 @@
                     <span class="ident">script_pubkey</span>: <span class="ident">Script</span>::<span class="ident">new</span>(),
                 },
                 <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>::<span class="ident">External</span>,
-            },
-            <span class="ident">P2WPKH_WITNESS_SIZE</span>,
-        );
+            }),
+        };
         <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">utxo</span>; <span class="ident">utxos_number</span>]
     }
 
-    <span class="kw">fn</span> <span class="ident">sum_random_utxos</span>(<span class="kw-2">mut</span> <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">StdRng</span>, <span class="ident">utxos</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">UTXO</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">sum_random_utxos</span>(<span class="kw-2">mut</span> <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">StdRng</span>, <span class="ident">utxos</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="kw">let</span> <span class="ident">utxos_picked_len</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">2</span>, <span class="ident">utxos</span>.<span class="ident">len</span>() <span class="op">/</span> <span class="number">2</span>);
         <span class="ident">utxos</span>.<span class="ident">shuffle</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
         <span class="ident">utxos</span>[..<span class="ident">utxos_picked_len</span>]
             .<span class="ident">iter</span>()
-            .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="number">0</span>.<span class="ident">txout</span>.<span class="ident">value</span>)
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="ident">utxo</span>.<span class="ident">txout</span>().<span class="ident">value</span>)
+            .<span class="ident">sum</span>()
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1639,7 +1661,7 @@
             .<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>, <span class="number">300_000</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_000</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">186.0</span>);
     }
 
@@ -1660,7 +1682,7 @@
             .<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>, <span class="number">300_000</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_000</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">186.0</span>);
     }
 
@@ -1681,7 +1703,7 @@
             .<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>, <span class="number">200_000</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">200_000</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">118.0</span>);
     }
 
@@ -1741,7 +1763,7 @@
             .<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">3</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>, <span class="number">300_000</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_000</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">254.0</span>);
     }
 
@@ -1762,7 +1784,7 @@
             .<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>, <span class="number">300_000</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_000</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">186.0</span>);
     }
 
@@ -1819,7 +1841,7 @@
             .<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>, <span class="number">100_000</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">100_000</span>);
         <span class="kw">let</span> <span class="ident">input_size</span> <span class="op">=</span> (<span class="ident">TXIN_BASE_WEIGHT</span> <span class="kw">as</span> <span class="ident">f32</span>) <span class="op">/</span> <span class="number">4.0</span> <span class="op">+</span> <span class="ident">P2WPKH_WITNESS_SIZE</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> <span class="number">4.0</span>;
         <span class="kw">let</span> <span class="ident">epsilon</span> <span class="op">=</span> <span class="number">0.5</span>;
         <span class="macro">assert</span><span class="macro">!</span>((<span class="number">1.0</span> <span class="op">-</span> (<span class="ident">result</span>.<span class="ident">fee_amount</span> <span class="op">/</span> <span class="ident">input_size</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">epsilon</span>);
@@ -1844,7 +1866,7 @@
                     <span class="number">0.0</span>,
                 )
                 .<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>, <span class="ident">target_amount</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="ident">target_amount</span>);
         }
     }
 
@@ -1854,7 +1876,7 @@
         <span class="kw">let</span> <span class="ident">fee_rate</span> <span class="op">=</span> <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">10.0</span>);
         <span class="kw">let</span> <span class="ident">utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutputGroup</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">get_test_utxos</span>()
             .<span class="ident">into_iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>.<span class="number">0</span>, <span class="ident">u</span>.<span class="number">1</span>, <span class="ident">fee_rate</span>))
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>, <span class="ident">fee_rate</span>))
             .<span class="ident">collect</span>();
 
         <span class="kw">let</span> <span class="ident">curr_available_value</span> <span class="op">=</span> <span class="ident">utxos</span>
@@ -1882,7 +1904,7 @@
         <span class="kw">let</span> <span class="ident">fee_rate</span> <span class="op">=</span> <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">10.0</span>);
         <span class="kw">let</span> <span class="ident">utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutputGroup</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">generate_same_value_utxos</span>(<span class="number">100_000</span>, <span class="number">100_000</span>)
             .<span class="ident">into_iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>.<span class="number">0</span>, <span class="ident">u</span>.<span class="number">1</span>, <span class="ident">fee_rate</span>))
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>, <span class="ident">fee_rate</span>))
             .<span class="ident">collect</span>();
 
         <span class="kw">let</span> <span class="ident">curr_available_value</span> <span class="op">=</span> <span class="ident">utxos</span>
@@ -1915,7 +1937,7 @@
 
         <span class="kw">let</span> <span class="ident">utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">generate_same_value_utxos</span>(<span class="number">50_000</span>, <span class="number">10</span>)
             .<span class="ident">into_iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>.<span class="number">0</span>, <span class="ident">u</span>.<span class="number">1</span>, <span class="ident">fee_rate</span>))
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>, <span class="ident">fee_rate</span>))
             .<span class="ident">collect</span>();
 
         <span class="kw">let</span> <span class="ident">curr_value</span> <span class="op">=</span> <span class="number">0</span>;
@@ -1940,7 +1962,7 @@
             )
             .<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">186.0</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>, <span class="number">100_000</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">100_000</span>);
     }
 
     <span class="comment">// TODO: bnb() function should be optimized, and this test should be done with more utxos</span>
@@ -1953,7 +1975,7 @@
         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">200</span> {
             <span class="kw">let</span> <span class="ident">optional_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">generate_random_utxos</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>, <span class="number">40</span>)
                 .<span class="ident">into_iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>.<span class="number">0</span>, <span class="ident">u</span>.<span class="number">1</span>, <span class="ident">fee_rate</span>))
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>, <span class="ident">fee_rate</span>))
                 .<span class="ident">collect</span>();
 
             <span class="kw">let</span> <span class="ident">curr_value</span> <span class="op">=</span> <span class="number">0</span>;
@@ -1976,7 +1998,7 @@
                     <span class="number">0.0</span>,
                 )
                 .<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>, <span class="ident">target_amount</span>);
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="ident">target_amount</span>);
         }
     }
 
@@ -1990,7 +2012,7 @@
         <span class="kw">let</span> <span class="ident">fee_rate</span> <span class="op">=</span> <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">1.0</span>);
         <span class="kw">let</span> <span class="ident">utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutputGroup</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">utxos</span>
             .<span class="ident">into_iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>.<span class="number">0</span>, <span class="ident">u</span>.<span class="number">1</span>, <span class="ident">fee_rate</span>))
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>, <span class="ident">fee_rate</span>))
             .<span class="ident">collect</span>();
 
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">BranchAndBoundCoinSelection</span>::<span class="ident">default</span>().<span class="ident">single_random_draw</span>(
@@ -2001,7 +2023,7 @@
             <span class="number">50.0</span>,
         );
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span> <span class="op">&gt;</span> <span class="ident">target_amount</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>() <span class="op">&gt;</span> <span class="ident">target_amount</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">result</span>.<span class="ident">fee_amount</span>,
             <span class="number">50.0</span> <span class="op">+</span> <span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="number">68.0</span>
