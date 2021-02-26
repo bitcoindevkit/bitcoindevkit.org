@@ -3454,6 +3454,9 @@
 <span id="3451">3451</span>
 <span id="3452">3452</span>
 <span id="3453">3453</span>
+<span id="3454">3454</span>
+<span id="3455">3455</span>
+<span id="3456">3456</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Magical Bitcoin Library</span>
 <span class="comment">// Written in 2020 by</span>
@@ -5427,7 +5430,7 @@
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">values</span>().<span class="ident">nth</span>(<span class="number">0</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">values</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>(),
             <span class="kw-2">&amp;</span>(
                 <span class="ident">Fingerprint</span>::<span class="ident">from_str</span>(<span class="string">&quot;d34db33f&quot;</span>).<span class="ident">unwrap</span>(),
                 <span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/44&#39;/0&#39;/0&#39;/0/0&quot;</span>).<span class="ident">unwrap</span>()
@@ -5453,7 +5456,7 @@
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">outputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">psbt</span>.<span class="ident">outputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">values</span>().<span class="ident">nth</span>(<span class="number">0</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">psbt</span>.<span class="ident">outputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">values</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>(),
             <span class="kw-2">&amp;</span>(
                 <span class="ident">Fingerprint</span>::<span class="ident">from_str</span>(<span class="string">&quot;d34db33f&quot;</span>).<span class="ident">unwrap</span>(),
                 <span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="string">&quot;m/44&#39;/0&#39;/0&#39;/0/5&quot;</span>).<span class="ident">unwrap</span>()
@@ -6886,15 +6889,18 @@
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="comment">// add another input to the psbt that is at least passable.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dud_input</span> <span class="op">=</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">psbt</span>::<span class="ident">Input</span>::<span class="ident">default</span>();
-        <span class="ident">dud_input</span>.<span class="ident">witness_utxo</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">TxOut</span> {
-            <span class="ident">value</span>: <span class="number">100_000</span>,
-            <span class="ident">script_pubkey</span>: <span class="ident">miniscript</span>::<span class="ident">Descriptor</span>::<span class="op">&lt;</span><span class="ident">bitcoin</span>::<span class="ident">PublicKey</span><span class="op">&gt;</span>::<span class="ident">from_str</span>(
-                <span class="string">&quot;wpkh(025476c2e83188368da1ff3e292e7acafcdb3566bb0ad253f62fc70f07aeee6357)&quot;</span>,
-            )
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">script_pubkey</span>(),
-        });
+        <span class="kw">let</span> <span class="ident">dud_input</span> <span class="op">=</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">psbt</span>::<span class="ident">Input</span> {
+            <span class="ident">witness_utxo</span>: <span class="prelude-val">Some</span>(<span class="ident">TxOut</span> {
+                <span class="ident">value</span>: <span class="number">100_000</span>,
+                <span class="ident">script_pubkey</span>: <span class="ident">miniscript</span>::<span class="ident">Descriptor</span>::<span class="op">&lt;</span><span class="ident">bitcoin</span>::<span class="ident">PublicKey</span><span class="op">&gt;</span>::<span class="ident">from_str</span>(
+                    <span class="string">&quot;wpkh(025476c2e83188368da1ff3e292e7acafcdb3566bb0ad253f62fc70f07aeee6357)&quot;</span>,
+                )
+                .<span class="ident">unwrap</span>()
+                .<span class="ident">script_pubkey</span>(),
+            }),
+            ..<span class="ident">Default</span>::<span class="ident">default</span>()
+        };
+
         <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">push</span>(<span class="ident">dud_input</span>);
         <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">push</span>(<span class="ident">bitcoin</span>::<span class="ident">TxIn</span>::<span class="ident">default</span>());
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">is_final</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
