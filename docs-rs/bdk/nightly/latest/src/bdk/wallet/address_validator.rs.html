@@ -153,6 +153,8 @@
 <span id="150">150</span>
 <span id="151">151</span>
 <span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -176,7 +178,7 @@
 <span class="doccomment">//! An address validator can be attached to a [`Wallet`](super::Wallet) by using the</span>
 <span class="doccomment">//! [`Wallet::add_address_validator`](super::Wallet::add_address_validator) method, and</span>
 <span class="doccomment">//! whenever a new address is generated (either explicitly by the user with</span>
-<span class="doccomment">//! [`Wallet::get_new_address`](super::Wallet::get_new_address) or internally to create a change</span>
+<span class="doccomment">//! [`Wallet::get_address`](super::Wallet::get_address) or internally to create a change</span>
 <span class="doccomment">//! address) all the attached validators will be polled, in sequence. All of them must complete</span>
 <span class="doccomment">//! successfully to continue.</span>
 <span class="doccomment">//!</span>
@@ -188,6 +190,7 @@
 <span class="doccomment">//! # use bdk::address_validator::*;</span>
 <span class="doccomment">//! # use bdk::database::*;</span>
 <span class="doccomment">//! # use bdk::*;</span>
+<span class="doccomment">//! # use bdk::wallet::AddressIndex::New;</span>
 <span class="doccomment">//! #[derive(Debug)]</span>
 <span class="doccomment">//! struct PrintAddressAndContinue;</span>
 <span class="doccomment">//!</span>
@@ -213,7 +216,7 @@
 <span class="doccomment">//! let mut wallet = Wallet::new_offline(descriptor, None, Network::Testnet, MemoryDatabase::default())?;</span>
 <span class="doccomment">//! wallet.add_address_validator(Arc::new(PrintAddressAndContinue));</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! let address = wallet.get_new_address()?;</span>
+<span class="doccomment">//! let address = wallet.get_address(New)?;</span>
 <span class="doccomment">//! println!(&quot;Address: {}&quot;, address);</span>
 <span class="doccomment">//! # Ok::&lt;(), bdk::Error&gt;(())</span>
 <span class="doccomment">//! ```</span>
@@ -271,6 +274,7 @@
 
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">wallet</span>::<span class="ident">test</span>::{<span class="ident">get_funded_wallet</span>, <span class="ident">get_test_wpkh</span>};
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">wallet</span>::<span class="ident">AddressIndex</span>::<span class="ident">New</span>;
 
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
     <span class="kw">struct</span> <span class="ident">TestValidator</span>;
@@ -291,7 +295,7 @@
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="ident">wallet</span>.<span class="ident">add_address_validator</span>(<span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">TestValidator</span>));
 
-        <span class="ident">wallet</span>.<span class="ident">get_new_address</span>().<span class="ident">unwrap</span>();
+        <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
