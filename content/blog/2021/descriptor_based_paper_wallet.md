@@ -2,7 +2,7 @@
 title: "Descriptor-based paper wallets"
 description: "Demonstrate how to create descriptor-based paper wallet and how to spend them with bdk"
 author: "Riccardo Casatta and Steve Myers"
-date: "2021-03-24"
+date: "2021-03-26"
 tags: ["guide", "descriptor", "paper wallets"]
 hidden: true
 draft: false
@@ -12,7 +12,7 @@ In this post, we will use the [Rusty Paper Wallet] tool to create a multi-owned 
 
 ## About paper wallets
 
-Paper wallets have a lot of drawbacks, as explained in the [paper wallet Wikipedia article], as always, do your own research before deciding to use it with mainnet bitcoins. In this post we will 
+Paper wallets have a lot of drawbacks, as explained in the [paper wallet Wikipedia article], as always, do your own research before deciding to use it with mainnet bitcoins. In this post we will
 only be using testnet coins.
 
 ## Descriptors
@@ -21,17 +21,17 @@ only be using testnet coins.
 
 There were intentions to [support mnemonic](https://github.com/RCasatta/rusty-paper-wallet/issues/5) instead of WIF because it may[^WIF core] save the sweep transaction[^sweep] and there are more wallets capable of importing a mnemonic instead of a WIF.
 
-However, choosing a single address type or having wallet support for a specific format is the kind of problem descriptors are solve perfectly, so the latest [Rusty Paper Wallet] version now accepts a descriptor and the network as parameters.
+However, choosing a single address type or having wallet support for a specific format is the kind of problem descriptors solve perfectly, so the latest [Rusty Paper Wallet] version now accepts a descriptor and the network as parameters.
 
 ## Use case
 
 So let's say your grandma wants to buy bitcoin and asked for your help.
 
-You are a little afraid she may lose the private key. At the same time, you don't want to duplicate the keys and give those to her daughters Alice and Barbara, because both of them could spend and accuse the other of having done so. 
+You are a little afraid she may lose the private key. At the same time, you don't want to duplicate the keys and give those to her daughters Alice and Barbara, because both of them could spend and accuse the other of having done so.
 
-Even though we trust everyone in the family it is better to play it safe and divide the responsibility of protecting Grandma's bitcoin. 
+Even though we trust everyone in the family it is better to play it safe and divide the responsibility of protecting Grandma's bitcoin.
 
-This is a perfect case for a 2 of 3 multi-signature paper wallet. This way also protects the participants from having their copy of the wallet stolen. To compromise Grandma's wallet a thief would need to find and steal at least two of them. 
+This is a perfect case for a 2 of 3 multi-signature paper wallet. This way also protects the participants from having their copy of the wallet stolen. To compromise Grandma's wallet a thief would need to find and steal at least two of them.
 
 Note you as the wallet creator are still the single point of trust because you are going to generate the keys for everyone. Setups combining keys from the participants are possible future work.
 
@@ -41,9 +41,9 @@ The spending descriptor would be:
 
 `wsh(multi(2,Grandma,Alice,Barbara))`
 
-You need [rust] installed to use [Rusty Paper Wallet]. The -n option below explicitly selects 
-generating `testnet` keys. Use `rusty-paper-wallet --help` to see usage instructions and other 
-options. 
+You need [rust] installed to use [Rusty Paper Wallet]. The -n option below explicitly selects
+generating `testnet` keys. Use `rusty-paper-wallet --help` to see usage instructions and other
+options.
 
 ```
 $ cargo install rusty-paper-wallet
@@ -68,11 +68,10 @@ Then the paper wallet must be cut along the dotted lines, the secret part should
 
 ## BDK
 
-Any descriptor based wallet could be used to check the balance of and sweep the funds from 
-Grandma's paper wallet. For this post we'll demonstrate use the [bdk-cli] tool to do these steps. 
-Another area where [bdk-cli] could be used with [rust-paper-wallet] is to compile a more 
-complicated miniscript spending policy into a descriptor, but we'll stick with our original
-descriptor from above.
+Any descriptor based wallet could be used to check the balance of and sweep the funds from
+Grandma's paper wallet. For this post we'll demonstrate use the [bdk-cli] tool to do these steps.
+Another area where [bdk-cli] could be used with [Rusty Paper Wallet] is to compile a more
+complicated miniscript spending policy into a descriptor, like we have done in the [spending policy demo post].
 
 ## Funding tx
 
@@ -84,7 +83,7 @@ address and a testnet explorer to [confirm the funds were received].
 ## Sweep tx
 
 Now that Grandma's paper wallet is funded we can demonstrate how to use [bdk-cli] to sweep these
-funds to a new address. Let's assume Grandma lost her original paper wallet and has asked 
+funds to a new address. Let's assume Grandma lost her original paper wallet and has asked
 her daughters to sweep them a new single signature wallet so she can spend them.
 
 ### Step 1: Alice creates and signs a PSBT  
@@ -109,7 +108,7 @@ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR get_new_address
 }
 
 # sync the wallet and show the balance
-bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR sync 
+bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR sync
 {}
 
 bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR get_balance
@@ -126,7 +125,7 @@ export ALICE_SIGNED_PSBT=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR sign --p
 ### Step 2: Barbara signs Alice's signed PSBT and broadcasts the tx
 
 Now it's Barbara's turn to use the private text or QR code from her paper wallet to get her private
-key and the public keys for Grandma and Alice. With this info plus Alice's signed PSBT she can 
+key and the public keys for Grandma and Alice. With this info plus Alice's signed PSBT she can
 create a fully signed PSBT to broadcast and complete the sweep Grandma's funds.
 
 ```
@@ -142,7 +141,7 @@ bdk-cli wallet -w barbara -d $BARBARA_DESCRIPTOR get_new_address
 }
 
 # sync the wallet and show the balance
-bdk-cli wallet -w barbara -d $BARBARA_DESCRIPTOR sync 
+bdk-cli wallet -w barbara -d $BARBARA_DESCRIPTOR sync
 {}
 
 bdk-cli wallet -w barbara -d $BARBARA_DESCRIPTOR get_balance
@@ -158,11 +157,11 @@ bdk-cli wallet -w barbara -d $BARBARA_DESCRIPTOR broadcast --psbt $FINAL_PSBT
 }
 ```
 
-We can now confirm that Alice and Barbara successfully created a [tx to sweep] Grandma's funds. 
+We can now confirm that Alice and Barbara successfully created a [tx to sweep] Grandma's funds.
 
 ## Conclusion
 
-In this post we showed how to create a multi-sig descriptor based paper wallet using [Rusty Paper Wallet], and then sweep funds from the paper wallet to a new address. If you found this interesting 
+In this post we showed how to create a multi-sig descriptor based paper wallet using [Rusty Paper Wallet], and then sweep funds from the paper wallet to a new address. If you found this interesting
 please comment below. Or if you give it a try yourself and run into any problems or would like
 to suggest improvements please comment on the [Rusty Paper Wallet] or [bdk-cli] github repos. Thanks!  
 
@@ -176,6 +175,7 @@ to suggest improvements please comment on the [Rusty Paper Wallet] or [bdk-cli] 
 [bitcoin testnet faucet]: https://bitcoinfaucet.uo1.net/
 [confirm the funds were received]: https://mempool.space/testnet/address/tb1qu6lcua9w2zkarjj5xwxh3l3qtcxh84hsra3jrvpszh69j2e54x7q3thycw
 [tx to sweep]: https://mempool.space/testnet/tx/9ecd8e6be92b7edd8bf1799f8f7090e58f813825f826bdb771b4cdb444cdeb59
+[spending policy demo post]: /blog/2021/01/spending_policy_demo/
 
 [^WIF]: Wallet Input Format, a string encoding a ECDSA private key  https://en.bitcoin.it/wiki/Wallet_import_format
 [^WIF core]: Unless the user import the WIF directly into bitcoin core
