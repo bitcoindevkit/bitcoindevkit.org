@@ -86,14 +86,14 @@ Now that Grandma's paper wallet is funded it's time to demonstrate how to use [b
 funds to a new address. Let's assume Grandma lost her original paper wallet and has asked
 her daughters to sweep them to a new single signature wallet so she can spend them.
 
-### Step 1: Alice creates and signs a PSBT  
+### Step 1: Alice creates and signs a PSBT
 
 Alice uses the private text or QR code from her paper wallet to find her private key and the
 public keys for Grandma and Barbara. With this info she creates a PSBT to sweep Grandma's funds
 to a new address (in this example we'll send them back to our [bitcoin testnet faucet]). Notice how Alice
 includes her wallet's descriptor checksum '#em3q73l5', this [guarantees] she has entered her descriptor correctly.
 
-```shell  
+```shell
 $ export SWEEP_TO_ADDR=tb1qm5tfegjevj27yvvna9elym9lnzcf0zraxgl8z2
 
 $ export ALICE_WIF=cSSKRHDmQEEutp5LD14tAcixu2ehSNPDTqNek1zMa9Pet98qxHq3
@@ -165,7 +165,7 @@ In this post we showed how to create a multi-sig descriptor based paper wallet u
 [Rusty Paper Wallet] and then sweep the funds from our example paper wallet to a new address. If you
 found this post interesting please comment below. Or give it a try yourself and if you run into any
 problems or would like to suggest improvements leave an issue in the [Rusty Paper Wallet] or
-[bdk-cli] github repos. Thanks!  
+[bdk-cli] github repos. Thanks!
 
 [paper wallet wikipedia article]: https://en.bitcoin.it/wiki/Paper_wallet
 [previous version]: https://github.com/RCasatta/rusty-paper-wallet/tree/339fa4418d94f6fdd96f3d0301cab8a0bc09e8bd
