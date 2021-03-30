@@ -2,7 +2,7 @@
 title: "Descriptor-based paper wallets"
 description: "Demonstrate how to create descriptor-based paper wallet and how to spend them with bdk"
 author: "Riccardo Casatta and Steve Myers"
-date: "2021-03-26"
+date: "2021-03-30"
 tags: ["guide", "descriptor", "paper wallets"]
 hidden: true
 draft: false
@@ -91,7 +91,7 @@ her daughters to sweep them to a new single signature wallet so she can spend th
 Alice uses the private text or QR code from her paper wallet to find her private key and the
 public keys for Grandma and Barbara. With this info she creates a PSBT to sweep Grandma's funds
 to a new address (in this example we'll send them back to our [bitcoin testnet faucet]). Notice how Alice
-includes her wallet's descriptor checksum '#em3q73l5', this guarantees she has entered her descriptor correctly.
+includes her wallet's descriptor checksum '#em3q73l5', this [guarantees] she has entered her descriptor correctly.
 
 ```shell  
 $ export SWEEP_TO_ADDR=tb1qm5tfegjevj27yvvna9elym9lnzcf0zraxgl8z2
@@ -161,10 +161,10 @@ And finally we verify that Alice and Barbara successfully created and broadcast 
 
 ## Conclusion
 
-In this post we showed how to create a multi-sig descriptor based paper wallet using 
-[Rusty Paper Wallet] and then sweep the funds from our example paper wallet to a new address. If you 
-found this post interesting please comment below. Or give it a try yourself and if you run into any 
-problems or would like to suggest improvements leave an issue in the [Rusty Paper Wallet] or 
+In this post we showed how to create a multi-sig descriptor based paper wallet using
+[Rusty Paper Wallet] and then sweep the funds from our example paper wallet to a new address. If you
+found this post interesting please comment below. Or give it a try yourself and if you run into any
+problems or would like to suggest improvements leave an issue in the [Rusty Paper Wallet] or
 [bdk-cli] github repos. Thanks!  
 
 [paper wallet wikipedia article]: https://en.bitcoin.it/wiki/Paper_wallet
@@ -181,6 +181,7 @@ problems or would like to suggest improvements leave an issue in the [Rusty Pape
 [confirm the funds were received]: https://mempool.space/testnet/address/tb1qu6lcua9w2zkarjj5xwxh3l3qtcxh84hsra3jrvpszh69j2e54x7q3thycw
 [sweep tx]: https://mempool.space/testnet/tx/9ecd8e6be92b7edd8bf1799f8f7090e58f813825f826bdb771b4cdb444cdeb59
 [spending policy demo]: /blog/2021/02/spending-policy-demo/#step-4-create-wallet-descriptors-for-each-participant
+[guarantees]: https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md#checksums
 
 [^WIF]: Wallet Input Format, a string encoding a ECDSA private key  https://en.bitcoin.it/wiki/Wallet_import_format
 [^WIF core]: Unless the user import the WIF directly into bitcoin core
