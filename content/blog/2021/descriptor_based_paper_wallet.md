@@ -12,7 +12,7 @@ In this post, we will use the [Rusty Paper Wallet] tool to create a multi-owned 
 
 ## About paper wallets
 
-Paper wallets have a lot of drawbacks, as explained in the [paper wallet Wikipedia article], as always, do your own research before deciding to use it with mainnet bitcoins. In this post we will
+Paper wallets have a lot of drawbacks, as explained in the [paper wallet Wiki article], as always, do your own research before deciding to use it with mainnet bitcoins. In this post we will
 only be using testnet coins.
 
 ## Descriptors
@@ -94,12 +94,12 @@ to a new address (in this example we'll send them back to our [bitcoin testnet f
 includes her wallet's descriptor checksum '#em3q73l5', this [guarantees] she has entered her descriptor correctly.
 
 ```shell
-$ export SWEEP_TO_ADDR=tb1qm5tfegjevj27yvvna9elym9lnzcf0zraxgl8z2
+$ SWEEP_TO_ADDR=tb1qm5tfegjevj27yvvna9elym9lnzcf0zraxgl8z2
 
-$ export ALICE_WIF=cSSKRHDmQEEutp5LD14tAcixu2ehSNPDTqNek1zMa9Pet98qxHq3
-$ export BARBARA_PUBKEY=02a3f3f2658b9812ddeabfbde2fde03f8a65369e4ed621f29fa8ba0cc519b789fb
-$ export GRANDMA_PUBKEY=03f1bd2bff8e9c61f58a8d46d18fd8f3149b1f2d76b3c423a7874a5d5811d67cee
-$ export ALICE_DESCRIPTOR="wsh(multi(2,$GRANDMA_PUBKEY,$ALICE_WIF,$BARBARA_PUBKEY))#em3q73l5"
+$ ALICE_WIF=cSSKRHDmQEEutp5LD14tAcixu2ehSNPDTqNek1zMa9Pet98qxHq3
+$ BARBARA_PUBKEY=02a3f3f2658b9812ddeabfbde2fde03f8a65369e4ed621f29fa8ba0cc519b789fb
+$ GRANDMA_PUBKEY=03f1bd2bff8e9c61f58a8d46d18fd8f3149b1f2d76b3c423a7874a5d5811d67cee
+$ ALICE_DESCRIPTOR="wsh(multi(2,$GRANDMA_PUBKEY,$ALICE_WIF,$BARBARA_PUBKEY))#em3q73l5"
 
 # confirm descriptor creates the expected deposit address
 $ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR get_new_address
@@ -117,9 +117,9 @@ $ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR get_balance
 }
 
 # create and sign PSBT
-$ export UNSIGNED_PSBT=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx --send_all --to $SWEEP_TO_ADDR:0 | jq -r ".psbt")
+$ UNSIGNED_PSBT=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR create_tx --send_all --to $SWEEP_TO_ADDR:0 | jq -r ".psbt")
 
-$ export ALICE_SIGNED_PSBT=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR sign --psbt $UNSIGNED_PSBT | jq -r ".psbt")
+$ ALICE_SIGNED_PSBT=$(bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR sign --psbt $UNSIGNED_PSBT | jq -r ".psbt")
 ```
 
 ### Step 2: Barbara signs Alice's signed PSBT and broadcasts the tx
@@ -129,10 +129,10 @@ key and the public keys for Grandma and Alice. With this info plus Alice's signe
 create a fully signed PSBT to broadcast and complete the sweep of Grandma's funds.
 
 ```shell
-$ export ALICE_PUBKEY=02e486e32f0f87136fa042cb53219ace8537ea1d036deb2f4293570b94325d11cb
-$ export BARBARA_WIF=cSfMLzSZ9NjWUTqL3sFpgWJssnu2qgmE2cm5N1jPDRRJuDcrsPEB
-$ export GRANDMA_PUBKEY=03f1bd2bff8e9c61f58a8d46d18fd8f3149b1f2d76b3c423a7874a5d5811d67cee
-$ export BARBARA_DESCRIPTOR="wsh(multi(2,$GRANDMA_PUBKEY,$ALICE_PUBKEY,$BARBARA_WIF))#nxfa5n0z"
+$ ALICE_PUBKEY=02e486e32f0f87136fa042cb53219ace8537ea1d036deb2f4293570b94325d11cb
+$ BARBARA_WIF=cSfMLzSZ9NjWUTqL3sFpgWJssnu2qgmE2cm5N1jPDRRJuDcrsPEB
+$ GRANDMA_PUBKEY=03f1bd2bff8e9c61f58a8d46d18fd8f3149b1f2d76b3c423a7874a5d5811d67cee
+$ BARBARA_DESCRIPTOR="wsh(multi(2,$GRANDMA_PUBKEY,$ALICE_PUBKEY,$BARBARA_WIF))#nxfa5n0z"
 
 # confirm descriptor creates the expected deposit address
 $ bdk-cli wallet -w barbara -d $BARBARA_DESCRIPTOR get_new_address
@@ -149,7 +149,7 @@ $ bdk-cli wallet -w barbara -d $BARBARA_DESCRIPTOR get_balance
   "satoshi": 10000
 }
 
-$ export FINAL_PSBT=$(bdk-cli wallet -w barbara -d $BARBARA_DESCRIPTOR sign --psbt $ALICE_SIGNED_PSBT | jq -r ".psbt")
+$ FINAL_PSBT=$(bdk-cli wallet -w barbara -d $BARBARA_DESCRIPTOR sign --psbt $ALICE_SIGNED_PSBT | jq -r ".psbt")
 
 $ bdk-cli wallet -w barbara -d $BARBARA_DESCRIPTOR broadcast --psbt $FINAL_PSBT
 {
@@ -167,7 +167,7 @@ found this post interesting please comment below. Or give it a try yourself and 
 problems or would like to suggest improvements leave an issue in the [Rusty Paper Wallet] or
 [bdk-cli] github repos. Thanks!
 
-[paper wallet wikipedia article]: https://en.bitcoin.it/wiki/Paper_wallet
+[paper wallet wiki article]: https://en.bitcoin.it/wiki/Paper_wallet
 [previous version]: https://github.com/RCasatta/rusty-paper-wallet/tree/339fa4418d94f6fdd96f3d0301cab8a0bc09e8bd
 [Rusty Paper Wallet]: https://github.com/RCasatta/rusty-paper-wallet
 [support mnemonic]: https://github.com/RCasatta/rusty-paper-wallet/issues/5
