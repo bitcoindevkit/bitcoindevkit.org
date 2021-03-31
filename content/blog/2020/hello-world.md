@@ -1,7 +1,8 @@
 ---
 title: "Hello World!"
 description: "Getting started using the BDK library in a very simple Rust project"
-author: "Alekos Filini"
+authors: 
+    - Alekos Filini
 date: "2020-12-18"
 tags: ["getting started", "rust"]
 hidden: true

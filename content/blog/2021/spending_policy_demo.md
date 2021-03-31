@@ -1,7 +1,9 @@
 ---
 title: "Spending Policy Demo"
 description: "Demonstrate how to use a descriptor wallet with different spending policies"
-author: "Steve Myers and Thunderbiscuit"
+authors: 
+    - Steve Myers
+    - Thunderbiscuit"
 date: "2021-02-23"
 tags: ["guide", "descriptor"]
 hidden: true

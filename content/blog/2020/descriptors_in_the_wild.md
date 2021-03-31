@@ -1,7 +1,8 @@
 ---
 title: "Descriptors in the wild"
 description: "Guide to setup a 2-of-2 multisig using Bitcoin Core and BDK"
-author: "Gabriele Domenichini"
+authors: 
+    - Gabriele Domenichini
 date: "2020-11-18"
 tags: ["guide", "descriptor"]
 hidden: true

@@ -11,8 +11,16 @@
         <h3 class="blog-post"><span class="date">{{ .Date.Format "Jan 2" }}</span> <a href="{{ .RelPermalink }}" class="permalink">{{ .Title }}</a></h3>
         {{ if isset .Params "tags" }}
 	<span class="blog-post-tags">
-            {{ if isset .Params "author" }}
-                By <a href="{{ "/blog/author/" | relLangURL }}{{ .Params.author | urlize }}">{{ .Params.author }}</a> ·
+            {{ if isset .Params "authors" }}
+                <span>By </span>
+                {{- range $index, $author := .Params.authors }}
+                  {{- with $.Site.GetPage "taxonomyTerm" (printf "authors/%s" (urlize .)) }}
+                    {{ if gt $index 0 }}
+                      <span>, </span>
+                    {{ end }}
+                    <span><a href="{{ "/authors/" | relLangURL }}{{ .Params.name | urlize }}">{{ .Params.name }}</a></span>
+                  {{ end }}
+                {{ end }}
             {{ end }}
 
             {{ $list := .Params.tags }}
