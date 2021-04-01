@@ -99,10 +99,17 @@
           {{if and (not .IsHome) (not .Params.chapter) }}
             {{ if (eq .Type "blog") }}
             <h1 class="blog-title">{{ .Title }} </h1>
-                {{ if isset .Params "author" }}
-                    <span class="blog-author">By <a href="{{ "/blog/author/" | relLangURL }}{{ .Params.author | urlize }}">{{ .Params.author }}</a></span>
-                    <hr>
+            {{ if isset .Params "authors" }}
+                <span class="blog-author">By </span>
+                {{- range $index, $author := .Params.authors }}
+                  {{- with $.Site.GetPage "taxonomyTerm" (printf "authors/%s" (urlize .)) -}}
+                    {{- if gt $index 0 -}}
+                      <span class="blog-author">, </span>
+                    {{- end -}}
+                    <span class="blog-author"><a href="{{ "/authors/" | relLangURL }}{{ .Params.name | urlize }}">{{ .Params.name }}</a></span>
+                  {{- end -}}
                 {{ end }}
+            {{ end }}
             {{ else }}
             <h1>
               {{ if or (eq .Kind "taxonomy") (eq .Kind "term") }}

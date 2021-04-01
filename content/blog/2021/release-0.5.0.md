@@ -1,7 +1,8 @@
 ---
 title: "Release v0.5.0"
 description: "Announcing the v0.5.0 release of BDK"
-author: "Alekos Filini"
+authors: 
+    - Alekos Filini
 date: "2021-03-18"
 tags: ["rust", "release"]
 hidden: true

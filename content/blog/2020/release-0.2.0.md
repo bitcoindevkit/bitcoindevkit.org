@@ -1,7 +1,8 @@
 ---
 title: "Release v0.2.0"
 description: "Announcing the v0.2.0 release of BDK"
-author: "Alekos Filini"
+authors: 
+    - Alekos Filini
 date: "2020-12-21"
 tags: ["rust", "release"]
 hidden: true

@@ -1,7 +1,9 @@
 ---
 title: "Descriptor-based paper wallets"
 description: "Demonstrate how to create descriptor-based paper wallet and how to spend them with bdk"
-author: "Riccardo Casatta and Steve Myers"
+authors: 
+    - Riccardo Casatta
+    - Steve Myers
 date: "2021-03-30"
 tags: ["guide", "descriptor", "paper wallets"]
 hidden: true
