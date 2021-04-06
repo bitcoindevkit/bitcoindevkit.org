@@ -4181,7 +4181,7 @@
         <span class="kw">let</span> <span class="ident">requirements</span> <span class="op">=</span> <span class="ident">external_requirements</span>
             .<span class="ident">clone</span>()
             .<span class="ident">merge</span>(<span class="kw-2">&amp;</span><span class="ident">internal_requirements</span>.<span class="ident">unwrap_or_default</span>())<span class="question-mark">?</span>;
-        <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;Policy requirements: {:?}&quot;</span>, <span class="ident">requirements</span>);
+        <span class="macro">debug!</span>(<span class="string">&quot;Policy requirements: {:?}&quot;</span>, <span class="ident">requirements</span>);
 
         <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">params</span>.<span class="ident">version</span> {
             <span class="prelude-val">Some</span>(<span class="ident">tx_builder</span>::<span class="ident">Version</span>(<span class="number">0</span>)) <span class="op">=</span><span class="op">&gt;</span> {
@@ -4206,7 +4206,7 @@
             <span class="comment">// Specific nLockTime required and it&#39;s compatible with the constraints</span>
             <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="kw">if</span> <span class="ident">check_nlocktime</span>(<span class="ident">x</span>, <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap</span>()) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">x</span>,
             <span class="comment">// Invalid nLockTime required</span>
-            <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Generic</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;TxBuilder requested timelock of `{}`, but at least `{}` is required to spend from this script&quot;</span>, <span class="ident">x</span>, <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap</span>())))
+            <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Generic</span>(<span class="macro">format!</span>(<span class="string">&quot;TxBuilder requested timelock of `{}`, but at least `{}` is required to spend from this script&quot;</span>, <span class="ident">x</span>, <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap</span>())))
         };
 
         <span class="kw">let</span> <span class="ident">n_sequence</span> <span class="op">=</span> <span class="kw">match</span> (<span class="ident">params</span>.<span class="ident">rbf</span>, <span class="ident">requirements</span>.<span class="ident">csv</span>) {
@@ -4230,7 +4230,7 @@
             (<span class="prelude-val">Some</span>(<span class="ident">tx_builder</span>::<span class="ident">RBFValue</span>::<span class="ident">Value</span>(<span class="ident">rbf</span>)), <span class="prelude-val">Some</span>(<span class="ident">csv</span>))
                 <span class="kw">if</span> <span class="op">!</span><span class="ident">check_nsequence_rbf</span>(<span class="ident">rbf</span>, <span class="ident">csv</span>) <span class="op">=</span><span class="op">&gt;</span>
             {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Generic</span>(<span class="macro">format</span><span class="macro">!</span>(
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Generic</span>(<span class="macro">format!</span>(
                     <span class="string">&quot;Cannot enable RBF with nSequence `{}` given a required OP_CSV of `{}`&quot;</span>,
                     <span class="ident">rbf</span>, <span class="ident">csv</span>
                 )))
@@ -4275,12 +4275,12 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">Transaction</span> {
             <span class="ident">version</span>,
             <span class="ident">lock_time</span>,
-            <span class="ident">input</span>: <span class="macro">vec</span><span class="macro">!</span>[],
-            <span class="ident">output</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">input</span>: <span class="macro">vec!</span>[],
+            <span class="ident">output</span>: <span class="macro">vec!</span>[],
         };
 
         <span class="kw">let</span> <span class="ident">recipients</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">params</span>.<span class="ident">single_recipient</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">recipient</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec</span><span class="macro">!</span>[(<span class="ident">recipient</span>, <span class="number">0</span>)],
+            <span class="prelude-val">Some</span>(<span class="ident">recipient</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec!</span>[(<span class="ident">recipient</span>, <span class="number">0</span>)],
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">params</span>.<span class="ident">recipients</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">r</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">r</span>, <span class="kw-2">*</span><span class="ident">v</span>)).<span class="ident">collect</span>(),
         };
         <span class="kw">if</span> <span class="ident">params</span>.<span class="ident">single_recipient</span>.<span class="ident">is_some</span>()
@@ -4361,7 +4361,7 @@
                 <span class="ident">previous_output</span>: <span class="ident">u</span>.<span class="ident">outpoint</span>(),
                 <span class="ident">script_sig</span>: <span class="ident">Script</span>::<span class="ident">default</span>(),
                 <span class="ident">sequence</span>: <span class="ident">n_sequence</span>,
-                <span class="ident">witness</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="ident">witness</span>: <span class="macro">vec!</span>[],
             })
             .<span class="ident">collect</span>();
 
@@ -4680,7 +4680,7 @@
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">tx</span><span class="op">|</span> <span class="ident">tx</span>.<span class="ident">height</span>.<span class="ident">unwrap_or</span>(<span class="ident">std</span>::<span class="ident">u32</span>::<span class="ident">MAX</span>));
             <span class="kw">let</span> <span class="ident">current_height</span> <span class="op">=</span> <span class="ident">assume_height</span>.<span class="ident">or</span>(<span class="self">self</span>.<span class="ident">current_height</span>);
 
-            <span class="macro">debug</span><span class="macro">!</span>(
+            <span class="macro">debug!</span>(
                 <span class="string">&quot;Input #{} - {}, using `create_height` = {:?}, `current_height` = {:?}&quot;</span>,
                 <span class="ident">n</span>, <span class="ident">input</span>.<span class="ident">previous_output</span>, <span class="ident">create_height</span>, <span class="ident">current_height</span>
             );
@@ -4726,7 +4726,7 @@
                             <span class="ident">psbt_input</span>.<span class="ident">final_script_witness</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">tmp_input</span>.<span class="ident">witness</span>);
                         }
                         <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                            <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;satisfy error {:?} for input {}&quot;</span>, <span class="ident">e</span>, <span class="ident">n</span>);
+                            <span class="macro">debug!</span>(<span class="string">&quot;satisfy error {:?} for input {}&quot;</span>, <span class="ident">e</span>, <span class="ident">n</span>);
                             <span class="ident">finished</span> <span class="op">=</span> <span class="bool-val">false</span>
                         }
                     }
@@ -4856,7 +4856,7 @@
             )<span class="question-mark">?</span>;
         }
 
-        <span class="macro">info</span><span class="macro">!</span>(
+        <span class="macro">info!</span>(
             <span class="string">&quot;Derivation of {} addresses from {} took {} ms&quot;</span>,
             <span class="ident">count</span>,
             <span class="ident">from</span>,
@@ -4910,7 +4910,7 @@
         <span class="comment">// NOTE: we are intentionally ignoring `unspendable` here. i.e manual</span>
         <span class="comment">// selection overrides unspendable.</span>
         <span class="kw">if</span> <span class="ident">manual_only</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">must_spend</span>, <span class="macro">vec</span><span class="macro">!</span>[]));
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">must_spend</span>, <span class="macro">vec!</span>[]));
         }
 
         <span class="kw">let</span> <span class="ident">satisfies_confirmed</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">must_only_use_confirmed_tx</span> {
@@ -4928,7 +4928,7 @@
                     })
                     .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>
             }
-            <span class="bool-val">false</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="bool-val">true</span>; <span class="ident">may_spend</span>.<span class="ident">len</span>()],
+            <span class="bool-val">false</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec!</span>[<span class="bool-val">true</span>; <span class="ident">may_spend</span>.<span class="ident">len</span>()],
         };
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="number">0</span>;
@@ -4982,7 +4982,7 @@
                 <span class="kw">let</span> <span class="ident">origin</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">xpub</span>.<span class="ident">origin</span> {
                     <span class="prelude-val">Some</span>(<span class="ident">origin</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">origin</span>,
                     <span class="prelude-val">None</span> <span class="kw">if</span> <span class="ident">xpub</span>.<span class="ident">xkey</span>.<span class="ident">depth</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> {
-                        (<span class="ident">xpub</span>.<span class="ident">root_fingerprint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>), <span class="macro">vec</span><span class="macro">!</span>[].<span class="ident">into</span>())
+                        (<span class="ident">xpub</span>.<span class="ident">root_fingerprint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>), <span class="macro">vec!</span>[].<span class="ident">into</span>())
                     }
                     <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">MissingKeyOrigin</span>(<span class="ident">xpub</span>.<span class="ident">xkey</span>.<span class="ident">to_string</span>())),
                 };
@@ -5031,7 +5031,7 @@
                     <span class="kw">if</span> <span class="ident">params</span>.<span class="ident">force_non_witness_utxo</span>
                         <span class="op">&amp;&amp;</span> <span class="ident">foreign_psbt_input</span>.<span class="ident">non_witness_utxo</span>.<span class="ident">is_none</span>()
                     {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Generic</span>(<span class="macro">format</span><span class="macro">!</span>(
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">Generic</span>(<span class="macro">format!</span>(
                             <span class="string">&quot;Missing non_witness_utxo on foreign utxo {}&quot;</span>,
                             <span class="ident">outpoint</span>
                         )));
@@ -5122,7 +5122,7 @@
                     .<span class="ident">borrow</span>()
                     .<span class="ident">get_path_from_script_pubkey</span>(<span class="kw-2">&amp;</span><span class="ident">out</span>.<span class="ident">script_pubkey</span>)<span class="question-mark">?</span>
                 {
-                    <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;Found descriptor {:?}/{}&quot;</span>, <span class="ident">keychain</span>, <span class="ident">child</span>);
+                    <span class="macro">debug!</span>(<span class="string">&quot;Found descriptor {:?}/{}&quot;</span>, <span class="ident">keychain</span>, <span class="ident">child</span>);
 
                     <span class="comment">// merge hd_keypaths</span>
                     <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>);
@@ -5152,7 +5152,7 @@
         <span class="ident">database</span>: <span class="ident">D</span>,
         <span class="ident">client</span>: <span class="ident">B</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">current_height</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="macro">maybe_await</span><span class="macro">!</span>(<span class="ident">client</span>.<span class="ident">get_height</span>())<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">u32</span>);
+        <span class="kw">let</span> <span class="ident">current_height</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="macro">maybe_await!</span>(<span class="ident">client</span>.<span class="ident">get_height</span>())<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">u32</span>);
         <span class="self">Self</span>::<span class="ident">_new</span>(
             <span class="ident">descriptor</span>,
             <span class="ident">change_descriptor</span>,
@@ -5170,7 +5170,7 @@
         <span class="ident">progress_update</span>: <span class="ident">P</span>,
         <span class="ident">max_address_param</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;Begin sync...&quot;</span>);
+        <span class="macro">debug!</span>(<span class="string">&quot;Begin sync...&quot;</span>);
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">run_setup</span> <span class="op">=</span> <span class="bool-val">false</span>;
 
@@ -5208,13 +5208,13 @@
         <span class="comment">// TODO: what if i generate an address first and cache some addresses?</span>
         <span class="comment">// TODO: we should sync if generating an address triggers a new batch to be stored</span>
         <span class="kw">if</span> <span class="ident">run_setup</span> {
-            <span class="macro">maybe_await</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">client</span>.<span class="ident">setup</span>(
+            <span class="macro">maybe_await!</span>(<span class="self">self</span>.<span class="ident">client</span>.<span class="ident">setup</span>(
                 <span class="prelude-val">None</span>,
                 <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>().<span class="ident">deref_mut</span>(),
                 <span class="ident">progress_update</span>,
             ))
         } <span class="kw">else</span> {
-            <span class="macro">maybe_await</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">client</span>.<span class="ident">sync</span>(
+            <span class="macro">maybe_await!</span>(<span class="self">self</span>.<span class="ident">client</span>.<span class="ident">sync</span>(
                 <span class="prelude-val">None</span>,
                 <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>().<span class="ident">deref_mut</span>(),
                 <span class="ident">progress_update</span>,
@@ -5235,7 +5235,7 @@
     <span class="doccomment">/// Broadcast a transaction to the network</span>
     <span class="attribute">#[<span class="ident">maybe_async</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tx</span>: <span class="ident">Transaction</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Txid</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="macro">maybe_await</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">client</span>.<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">tx</span>))<span class="question-mark">?</span>;
+        <span class="macro">maybe_await!</span>(<span class="self">self</span>.<span class="ident">client</span>.<span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="ident">tx</span>))<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="ident">tx</span>.<span class="ident">txid</span>())
     }
@@ -5265,22 +5265,22 @@
         )
         .<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1qj08ys4ct2hzzc2hcz6h2hgrvlmsjynaw43s835&quot;</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1qj08ys4ct2hzzc2hcz6h2hgrvlmsjynaw43s835&quot;</span>
         );
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">wallet</span>
+        <span class="macro">assert!</span>(<span class="ident">wallet</span>
             .<span class="ident">database</span>
             .<span class="ident">borrow_mut</span>()
             .<span class="ident">get_script_pubkey_from_path</span>(<span class="ident">KeychainKind</span>::<span class="ident">External</span>, <span class="number">0</span>)
             .<span class="ident">unwrap</span>()
             .<span class="ident">is_some</span>());
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">wallet</span>
+        <span class="macro">assert!</span>(<span class="ident">wallet</span>
             .<span class="ident">database</span>
             .<span class="ident">borrow_mut</span>()
             .<span class="ident">get_script_pubkey_from_path</span>(<span class="ident">KeychainKind</span>::<span class="ident">Internal</span>, <span class="number">0</span>)
@@ -5293,22 +5293,22 @@
         <span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDatabase</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet</span>::<span class="ident">new_offline</span>(<span class="string">&quot;wpkh(tpubEBr4i6yk5nf5DAaJpsi9N2pPYBeJ7fZ5Z9rmN4977iYLCGco1VyjB9tvvuvYtfZzjD5A8igzgw3HeWeeKFmanHYqksqZXYXGsw5zjnj7KM9/*)&quot;</span>, <span class="prelude-val">None</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>, <span class="ident">db</span>).<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q6yn66vajcctph75pvylgkksgpp6nq04ppwct9a&quot;</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>
         );
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">wallet</span>
+        <span class="macro">assert!</span>(<span class="ident">wallet</span>
             .<span class="ident">database</span>
             .<span class="ident">borrow_mut</span>()
             .<span class="ident">get_script_pubkey_from_path</span>(<span class="ident">KeychainKind</span>::<span class="ident">External</span>, <span class="ident">CACHE_ADDR_BATCH_SIZE</span> <span class="op">-</span> <span class="number">1</span>)
             .<span class="ident">unwrap</span>()
             .<span class="ident">is_some</span>());
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">wallet</span>
+        <span class="macro">assert!</span>(<span class="ident">wallet</span>
             .<span class="ident">database</span>
             .<span class="ident">borrow_mut</span>()
             .<span class="ident">get_script_pubkey_from_path</span>(<span class="ident">KeychainKind</span>::<span class="ident">External</span>, <span class="ident">CACHE_ADDR_BATCH_SIZE</span>)
@@ -5321,11 +5321,11 @@
         <span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDatabase</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet</span>::<span class="ident">new_offline</span>(<span class="string">&quot;wpkh(tpubEBr4i6yk5nf5DAaJpsi9N2pPYBeJ7fZ5Z9rmN4977iYLCGco1VyjB9tvvuvYtfZzjD5A8igzgw3HeWeeKFmanHYqksqZXYXGsw5zjnj7KM9/*)&quot;</span>, <span class="prelude-val">None</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>, <span class="ident">db</span>).<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q6yn66vajcctph75pvylgkksgpp6nq04ppwct9a&quot;</span>
         );
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">wallet</span>
+        <span class="macro">assert!</span>(<span class="ident">wallet</span>
             .<span class="ident">database</span>
             .<span class="ident">borrow_mut</span>()
             .<span class="ident">get_script_pubkey_from_path</span>(<span class="ident">KeychainKind</span>::<span class="ident">External</span>, <span class="ident">CACHE_ADDR_BATCH_SIZE</span> <span class="op">-</span> <span class="number">1</span>)
@@ -5336,7 +5336,7 @@
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         }
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">wallet</span>
+        <span class="macro">assert!</span>(<span class="ident">wallet</span>
             .<span class="ident">database</span>
             .<span class="ident">borrow_mut</span>()
             .<span class="ident">get_script_pubkey_from_path</span>(<span class="ident">KeychainKind</span>::<span class="ident">External</span>, <span class="ident">CACHE_ADDR_BATCH_SIZE</span> <span class="op">*</span> <span class="number">2</span> <span class="op">-</span> <span class="number">1</span>)
@@ -5370,7 +5370,7 @@
         (<span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>),
         <span class="ident">bitcoin</span>::<span class="ident">Txid</span>,
     ) {
-        <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="macro">testutils</span><span class="macro">!</span>(@<span class="ident">descriptors</span> (<span class="ident">descriptor</span>));
+        <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="macro">testutils!</span>(@<span class="ident">descriptors</span> (<span class="ident">descriptor</span>));
         <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet</span>::<span class="ident">new_offline</span>(
             <span class="kw-2">&amp;</span><span class="ident">descriptors</span>.<span class="number">0</span>,
             <span class="prelude-val">None</span>,
@@ -5381,7 +5381,7 @@
 
         <span class="kw">let</span> <span class="ident">funding_address_kix</span> <span class="op">=</span> <span class="number">0</span>;
 
-        <span class="kw">let</span> <span class="ident">tx_meta</span> <span class="op">=</span> <span class="macro">testutils</span><span class="macro">!</span> {
+        <span class="kw">let</span> <span class="ident">tx_meta</span> <span class="op">=</span> <span class="macro">testutils!</span> {
                 @<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="ident">funding_address_kix</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">50_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)
         };
 
@@ -5402,12 +5402,12 @@
             .<span class="ident">set_last_index</span>(<span class="ident">KeychainKind</span>::<span class="ident">External</span>, <span class="ident">funding_address_kix</span>)
             .<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db</span><span class="macro">!</span>(<span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(), <span class="ident">tx_meta</span>, <span class="prelude-val">Some</span>(<span class="number">100</span>));
+        <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db!</span>(<span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(), <span class="ident">tx_meta</span>, <span class="prelude-val">Some</span>(<span class="number">100</span>));
 
         (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="ident">txid</span>)
     }
 
-    <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">assert_fee_rate</span> {
+    <span class="macro">macro_rules!</span> <span class="ident">assert_fee_rate</span> {
         (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">tx</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fees</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fee_rate</span>:<span class="ident">expr</span> $( ,@<span class="ident">dust_change</span> $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dust_change</span>:<span class="ident">expr</span> )<span class="op">*</span> )<span class="op">*</span> $( ,@<span class="ident">add_signature</span> $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">add_signature</span>:<span class="ident">expr</span> )<span class="op">*</span> )<span class="op">*</span> ) <span class="op">=</span><span class="op">&gt;</span> ({
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tx</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">tx</span>.<span class="ident">clone</span>();
             $(
@@ -5429,9 +5429,9 @@
             <span class="kw">let</span> <span class="ident">fee_rate</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fee_rate</span>.<span class="ident">as_sat_vb</span>();
 
             <span class="kw">if</span> <span class="op">!</span><span class="ident">dust_change</span> {
-                <span class="macro">assert</span><span class="macro">!</span>((<span class="ident">tx_fee_rate</span> <span class="op">-</span> <span class="ident">fee_rate</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.5</span>, <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Expected fee rate of {}, the tx has {}&quot;</span>, <span class="ident">fee_rate</span>, <span class="ident">tx_fee_rate</span>));
+                <span class="macro">assert!</span>((<span class="ident">tx_fee_rate</span> <span class="op">-</span> <span class="ident">fee_rate</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.5</span>, <span class="macro">format!</span>(<span class="string">&quot;Expected fee rate of {}, the tx has {}&quot;</span>, <span class="ident">fee_rate</span>, <span class="ident">tx_fee_rate</span>));
             } <span class="kw">else</span> {
-                <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">tx_fee_rate</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">fee_rate</span>, <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Expected fee rate of at least {}, the tx has {}&quot;</span>, <span class="ident">fee_rate</span>, <span class="ident">tx_fee_rate</span>));
+                <span class="macro">assert!</span>(<span class="ident">tx_fee_rate</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">fee_rate</span>, <span class="macro">format!</span>(<span class="string">&quot;Expected fee rate of at least {}, the tx has {}&quot;</span>, <span class="ident">fee_rate</span>, <span class="ident">tx_fee_rate</span>));
             }
         });
     }
@@ -5491,7 +5491,7 @@
             .<span class="ident">version</span>(<span class="number">42</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">version</span>, <span class="number">42</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">version</span>, <span class="number">42</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5502,7 +5502,7 @@
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="number">0</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5513,7 +5513,7 @@
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="number">100_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="number">100_000</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5526,7 +5526,7 @@
             .<span class="ident">nlocktime</span>(<span class="number">630_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="number">630_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="number">630_000</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5539,7 +5539,7 @@
             .<span class="ident">nlocktime</span>(<span class="number">630_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="number">630_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="number">630_000</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5564,7 +5564,7 @@
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">6</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">6</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5578,7 +5578,7 @@
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
         <span class="comment">// When CSV is enabled it takes precedence over the rbf value (unless forced by the user).</span>
         <span class="comment">// It will be set to the OP_CSV value, in this case 6</span>
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">6</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">6</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5603,7 +5603,7 @@
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xFFFFFFFE</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xFFFFFFFE</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5628,7 +5628,7 @@
             .<span class="ident">enable_rbf_with_sequence</span>(<span class="number">0xDEADBEEF</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xDEADBEEF</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xDEADBEEF</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5639,7 +5639,7 @@
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xFFFFFFFF</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xFFFFFFFF</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5666,8 +5666,8 @@
             .<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span>,
             <span class="number">50_000</span> <span class="op">-</span> <span class="ident">details</span>.<span class="ident">fees</span>
         );
@@ -5681,7 +5681,7 @@
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_fee_rate</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">default</span>(), @<span class="ident">add_signature</span>);
+        <span class="macro">assert_fee_rate!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">default</span>(), @<span class="ident">add_signature</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5694,7 +5694,7 @@
             .<span class="ident">fee_rate</span>(<span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">5.0</span>));
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_fee_rate</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">5.0</span>), @<span class="ident">add_signature</span>);
+        <span class="macro">assert_fee_rate!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">5.0</span>), @<span class="ident">add_signature</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5708,9 +5708,9 @@
             .<span class="ident">fee_absolute</span>(<span class="number">100</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">100</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">100</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span>,
             <span class="number">50_000</span> <span class="op">-</span> <span class="ident">details</span>.<span class="ident">fees</span>
         );
@@ -5727,9 +5727,9 @@
             .<span class="ident">fee_absolute</span>(<span class="number">0</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">0</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span>,
             <span class="number">50_000</span> <span class="op">-</span> <span class="ident">details</span>.<span class="ident">fees</span>
         );
@@ -5760,9 +5760,9 @@
             .<span class="ident">ordering</span>(<span class="ident">TxOrdering</span>::<span class="ident">Untouched</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span>, <span class="number">25_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span>, <span class="number">25_000</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">1</span>].<span class="ident">value</span>,
             <span class="number">25_000</span> <span class="op">-</span> <span class="ident">details</span>.<span class="ident">fees</span>
         );
@@ -5776,9 +5776,9 @@
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">49_800</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span>, <span class="number">49_800</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">200</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span>, <span class="number">49_800</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">200</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5806,13 +5806,13 @@
             .<span class="ident">ordering</span>(<span class="kw">super</span>::<span class="ident">tx_builder</span>::<span class="ident">TxOrdering</span>::<span class="ident">BIP69Lexicographic</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">3</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span>,
             <span class="number">10_000</span> <span class="op">-</span> <span class="ident">details</span>.<span class="ident">fees</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">1</span>].<span class="ident">value</span>, <span class="number">10_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">2</span>].<span class="ident">value</span>, <span class="number">30_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">1</span>].<span class="ident">value</span>, <span class="number">10_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">2</span>].<span class="ident">value</span>, <span class="number">30_000</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5823,7 +5823,7 @@
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">30_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">sighash_type</span>, <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">sighash_type</span>, <span class="prelude-val">None</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5836,7 +5836,7 @@
             .<span class="ident">sighash</span>(<span class="ident">bitcoin</span>::<span class="ident">SigHashType</span>::<span class="ident">Single</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">sighash_type</span>,
             <span class="prelude-val">Some</span>(<span class="ident">bitcoin</span>::<span class="ident">SigHashType</span>::<span class="ident">Single</span>)
         );
@@ -5855,8 +5855,8 @@
             .<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">values</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>(),
             <span class="kw-2">&amp;</span>(
                 <span class="ident">Fingerprint</span>::<span class="ident">from_str</span>(<span class="string">&quot;d34db33f&quot;</span>).<span class="ident">unwrap</span>(),
@@ -5874,15 +5874,15 @@
         <span class="comment">// cache some addresses</span>
         <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="macro">testutils</span><span class="macro">!</span>(@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">5</span>);
+        <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="macro">testutils!</span>(@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">5</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
             .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">outputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">outputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">psbt</span>.<span class="ident">outputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">values</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>(),
             <span class="kw-2">&amp;</span>(
                 <span class="ident">Fingerprint</span>::<span class="ident">from_str</span>(<span class="string">&quot;d34db33f&quot;</span>).<span class="ident">unwrap</span>(),
@@ -5904,7 +5904,7 @@
             .<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">redeem_script</span>,
             <span class="prelude-val">Some</span>(<span class="ident">Script</span>::<span class="ident">from</span>(
                 <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">from_hex</span>(
@@ -5913,7 +5913,7 @@
                 .<span class="ident">unwrap</span>()
             ))
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_script</span>, <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_script</span>, <span class="prelude-val">None</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5929,8 +5929,8 @@
             .<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">redeem_script</span>, <span class="prelude-val">None</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">redeem_script</span>, <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_script</span>,
             <span class="prelude-val">Some</span>(<span class="ident">Script</span>::<span class="ident">from</span>(
                 <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">from_hex</span>(
@@ -5961,8 +5961,8 @@
             .<span class="ident">unwrap</span>(),
         );
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">redeem_script</span>, <span class="prelude-val">Some</span>(<span class="ident">script</span>.<span class="ident">to_v0_p2wsh</span>()));
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_script</span>, <span class="prelude-val">Some</span>(<span class="ident">script</span>));
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">redeem_script</span>, <span class="prelude-val">Some</span>(<span class="ident">script</span>.<span class="ident">to_v0_p2wsh</span>()));
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_script</span>, <span class="prelude-val">Some</span>(<span class="ident">script</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5976,8 +5976,8 @@
             .<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">non_witness_utxo</span>.<span class="ident">is_some</span>());
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_utxo</span>.<span class="ident">is_none</span>());
+        <span class="macro">assert!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">non_witness_utxo</span>.<span class="ident">is_some</span>());
+        <span class="macro">assert!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_utxo</span>.<span class="ident">is_none</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5991,8 +5991,8 @@
             .<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">non_witness_utxo</span>.<span class="ident">is_none</span>());
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_utxo</span>.<span class="ident">is_some</span>());
+        <span class="macro">assert!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">non_witness_utxo</span>.<span class="ident">is_none</span>());
+        <span class="macro">assert!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_utxo</span>.<span class="ident">is_some</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -6006,8 +6006,8 @@
             .<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">non_witness_utxo</span>.<span class="ident">is_none</span>());
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_utxo</span>.<span class="ident">is_some</span>());
+        <span class="macro">assert!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">non_witness_utxo</span>.<span class="ident">is_none</span>());
+        <span class="macro">assert!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_utxo</span>.<span class="ident">is_some</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -6022,16 +6022,16 @@
             .<span class="ident">force_non_witness_utxo</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">non_witness_utxo</span>.<span class="ident">is_some</span>());
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_utxo</span>.<span class="ident">is_some</span>());
+        <span class="macro">assert!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">non_witness_utxo</span>.<span class="ident">is_some</span>());
+        <span class="macro">assert!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_utxo</span>.<span class="ident">is_some</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_create_tx_add_utxo</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">let</span> <span class="ident">small_output_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db</span><span class="macro">!</span>(
+        <span class="kw">let</span> <span class="ident">small_output_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
-            <span class="macro">testutils</span><span class="macro">!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
+            <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
         );
 
@@ -6046,21 +6046,21 @@
             .<span class="ident">unwrap</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(),
             <span class="number">2</span>,
             <span class="string">&quot;should add an additional input since 25_000 &lt; 30_000&quot;</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="number">75_000</span>, <span class="string">&quot;total should be sum of both inputs&quot;</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="number">75_000</span>, <span class="string">&quot;total should be sum of both inputs&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">should_panic</span>(<span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;InsufficientFunds&quot;</span>)]</span>
     <span class="kw">fn</span> <span class="ident">test_create_tx_manually_selected_insufficient</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">let</span> <span class="ident">small_output_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db</span><span class="macro">!</span>(
+        <span class="kw">let</span> <span class="ident">small_output_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
-            <span class="macro">testutils</span><span class="macro">!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
+            <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
         );
 
@@ -6095,7 +6095,7 @@
         <span class="kw">let</span> <span class="ident">external_policy</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">policies</span>(<span class="ident">KeychainKind</span>::<span class="ident">External</span>).<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">root_id</span> <span class="op">=</span> <span class="ident">external_policy</span>.<span class="ident">id</span>;
         <span class="comment">// child #0 is just the key &quot;A&quot;</span>
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[(<span class="ident">root_id</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>])].<span class="ident">into_iter</span>().<span class="ident">collect</span>();
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">vec!</span>[(<span class="ident">root_id</span>, <span class="macro">vec!</span>[<span class="number">0</span>])].<span class="ident">into_iter</span>().<span class="ident">collect</span>();
 
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">Address</span>::<span class="ident">from_str</span>(<span class="string">&quot;2N1Ffz3WaNzbeLFBb51xyFMHYSEUXcbiSoX&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
@@ -6104,7 +6104,7 @@
             .<span class="ident">policy_path</span>(<span class="ident">path</span>, <span class="ident">KeychainKind</span>::<span class="ident">External</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xFFFFFFFF</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xFFFFFFFF</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -6114,7 +6114,7 @@
         <span class="kw">let</span> <span class="ident">external_policy</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">policies</span>(<span class="ident">KeychainKind</span>::<span class="ident">External</span>).<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">root_id</span> <span class="op">=</span> <span class="ident">external_policy</span>.<span class="ident">id</span>;
         <span class="comment">// child #1 is or(pk(B),older(144))</span>
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[(<span class="ident">root_id</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>])].<span class="ident">into_iter</span>().<span class="ident">collect</span>();
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">vec!</span>[(<span class="ident">root_id</span>, <span class="macro">vec!</span>[<span class="number">1</span>])].<span class="ident">into_iter</span>().<span class="ident">collect</span>();
 
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">Address</span>::<span class="ident">from_str</span>(<span class="string">&quot;2N1Ffz3WaNzbeLFBb51xyFMHYSEUXcbiSoX&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
@@ -6123,7 +6123,7 @@
             .<span class="ident">policy_path</span>(<span class="ident">path</span>, <span class="ident">KeychainKind</span>::<span class="ident">External</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">144</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">144</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -6148,8 +6148,8 @@
         <span class="comment">// This key has an explicit origin, so it will be encoded here</span>
         <span class="kw">let</span> <span class="ident">value_bytes</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">from_hex</span>(<span class="string">&quot;73756c7f30000080000000800000008002000080&quot;</span>).<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unknown</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unknown</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">psbt_key</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">value_bytes</span>));
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unknown</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unknown</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">psbt_key</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">value_bytes</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -6176,13 +6176,13 @@
             .<span class="ident">unwrap</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">details</span>.<span class="ident">sent</span> <span class="op">-</span> <span class="ident">details</span>.<span class="ident">received</span>,
             <span class="number">10_000</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">fees</span>,
             <span class="string">&quot;we should have only net spent ~10_000&quot;</span>
         );
 
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="ident">psbt</span>.<span class="ident">global</span>
                 .<span class="ident">unsigned_tx</span>
                 .<span class="ident">input</span>
@@ -6194,13 +6194,13 @@
 
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">finished</span>) <span class="op">=</span> <span class="ident">wallet1</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
 
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="op">!</span><span class="ident">finished</span>,
             <span class="string">&quot;only one of the inputs should have been signed so far&quot;</span>
         );
 
         <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">finished</span>) <span class="op">=</span> <span class="ident">wallet2</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">finished</span>, <span class="string">&quot;all the inputs should have been signed now&quot;</span>);
+        <span class="macro">assert!</span>(<span class="ident">finished</span>, <span class="string">&quot;all the inputs should have been signed now&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -6248,7 +6248,7 @@
             .<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet1</span>.<span class="ident">build_tx</span>();
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="ident">builder</span>
                 .<span class="ident">add_foreign_utxo</span>(
                     <span class="ident">utxo2</span>.<span class="ident">outpoint</span>,
@@ -6261,7 +6261,7 @@
                 .<span class="ident">is_err</span>(),
             <span class="string">&quot;should fail when outpoint doesn&#39;t match psbt_input&quot;</span>
         );
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="ident">builder</span>
                 .<span class="ident">add_foreign_utxo</span>(
                     <span class="ident">utxo2</span>.<span class="ident">outpoint</span>,
@@ -6303,7 +6303,7 @@
             <span class="ident">builder</span>
                 .<span class="ident">add_foreign_utxo</span>(<span class="ident">utxo2</span>.<span class="ident">outpoint</span>, <span class="ident">psbt_input</span>, <span class="ident">satisfaction_weight</span>)
                 .<span class="ident">unwrap</span>();
-            <span class="macro">assert</span><span class="macro">!</span>(
+            <span class="macro">assert!</span>(
                 <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">is_err</span>(),
                 <span class="string">&quot;psbt_input with witness_utxo should fail with only witness_utxo&quot;</span>
             );
@@ -6326,7 +6326,7 @@
             <span class="ident">builder</span>
                 .<span class="ident">add_foreign_utxo</span>(<span class="ident">utxo2</span>.<span class="ident">outpoint</span>, <span class="ident">psbt_input</span>, <span class="ident">satisfaction_weight</span>)
                 .<span class="ident">unwrap</span>();
-            <span class="macro">assert</span><span class="macro">!</span>(
+            <span class="macro">assert!</span>(
                 <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">is_ok</span>(),
                 <span class="string">&quot;psbt_input with non_witness_utxo should succeed with force_non_witness_utxo&quot;</span>
             );
@@ -6339,7 +6339,7 @@
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="kw">for</span> <span class="ident">utxo</span> <span class="kw">in</span> <span class="ident">wallet</span>.<span class="ident">list_unspent</span>().<span class="ident">unwrap</span>() {
             <span class="kw">let</span> <span class="ident">psbt_input</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_psbt_input</span>(<span class="ident">utxo</span>, <span class="prelude-val">None</span>, <span class="bool-val">false</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">psbt_input</span>.<span class="ident">witness_utxo</span>.<span class="ident">is_some</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">psbt_input</span>.<span class="ident">non_witness_utxo</span>.<span class="ident">is_some</span>());
+            <span class="macro">assert!</span>(<span class="ident">psbt_input</span>.<span class="ident">witness_utxo</span>.<span class="ident">is_some</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">psbt_input</span>.<span class="ident">non_witness_utxo</span>.<span class="ident">is_some</span>());
         }
     }
 
@@ -6380,8 +6380,8 @@
         <span class="comment">// its fingerprint directly and an empty path</span>
         <span class="kw">let</span> <span class="ident">value_bytes</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">from_hex</span>(<span class="string">&quot;997a323b&quot;</span>).<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unknown</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unknown</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">psbt_key</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">value_bytes</span>));
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unknown</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unknown</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">psbt_key</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">value_bytes</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -6518,16 +6518,16 @@
         <span class="ident">builder</span>.<span class="ident">fee_rate</span>(<span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">2.5</span>));
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">details</span>.<span class="ident">received</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">fees</span>,
             <span class="ident">original_details</span>.<span class="ident">received</span> <span class="op">+</span> <span class="ident">original_details</span>.<span class="ident">fees</span>
         );
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">&gt;</span> <span class="ident">original_details</span>.<span class="ident">fees</span>);
+        <span class="macro">assert!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">&gt;</span> <span class="ident">original_details</span>.<span class="ident">fees</span>);
 
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">=</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -6535,7 +6535,7 @@
                 .<span class="ident">value</span>,
             <span class="number">25_000</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">!</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -6544,7 +6544,7 @@
             <span class="ident">details</span>.<span class="ident">received</span>
         );
 
-        <span class="macro">assert_fee_rate</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">2.5</span>), @<span class="ident">add_signature</span>);
+        <span class="macro">assert_fee_rate!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">2.5</span>), @<span class="ident">add_signature</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -6578,12 +6578,12 @@
         <span class="ident">builder</span>.<span class="ident">fee_absolute</span>(<span class="number">200</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">details</span>.<span class="ident">received</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">fees</span>,
             <span class="ident">original_details</span>.<span class="ident">received</span> <span class="op">+</span> <span class="ident">original_details</span>.<span class="ident">fees</span>
         );
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="ident">details</span>.<span class="ident">fees</span> <span class="op">&gt;</span> <span class="ident">original_details</span>.<span class="ident">fees</span>,
             <span class="string">&quot;{} &gt; {}&quot;</span>,
             <span class="ident">details</span>.<span class="ident">fees</span>,
@@ -6591,8 +6591,8 @@
         );
 
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">=</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -6600,7 +6600,7 @@
                 .<span class="ident">value</span>,
             <span class="number">25_000</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">!</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -6609,7 +6609,7 @@
             <span class="ident">details</span>.<span class="ident">received</span>
         );
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">200</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">200</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -6646,14 +6646,14 @@
             .<span class="ident">unwrap</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">&gt;</span> <span class="ident">original_details</span>.<span class="ident">fees</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span>);
+        <span class="macro">assert!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">&gt;</span> <span class="ident">original_details</span>.<span class="ident">fees</span>);
 
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">details</span>.<span class="ident">sent</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">details</span>.<span class="ident">sent</span>);
 
-        <span class="macro">assert_fee_rate</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">2.5</span>), @<span class="ident">add_signature</span>);
+        <span class="macro">assert_fee_rate!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">2.5</span>), @<span class="ident">add_signature</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -6690,23 +6690,23 @@
             .<span class="ident">fee_absolute</span>(<span class="number">300</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">&gt;</span> <span class="ident">original_details</span>.<span class="ident">fees</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span>);
+        <span class="macro">assert!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">&gt;</span> <span class="ident">original_details</span>.<span class="ident">fees</span>);
 
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">details</span>.<span class="ident">sent</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">details</span>.<span class="ident">sent</span>);
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">300</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">300</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_drain_wallet</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="comment">// receive an extra tx so that our wallet has two utxos.</span>
-        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db</span><span class="macro">!</span>(
+        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
-            <span class="macro">testutils</span><span class="macro">!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
+            <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
         );
         <span class="kw">let</span> <span class="ident">outpoint</span> <span class="op">=</span> <span class="ident">OutPoint</span> {
@@ -6738,7 +6738,7 @@
             .<span class="ident">borrow_mut</span>()
             .<span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="ident">original_details</span>)
             .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">original_details</span>.<span class="ident">sent</span>, <span class="number">25_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">original_details</span>.<span class="ident">sent</span>, <span class="number">25_000</span>);
 
         <span class="comment">// for the new feerate, it should be enough to reduce the output, but since we specify</span>
         <span class="comment">// `drain_wallet` we expect to spend everything</span>
@@ -6749,7 +6749,7 @@
             .<span class="ident">unwrap</span>()
             .<span class="ident">fee_rate</span>(<span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">5.0</span>));
         <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="number">75_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="number">75_000</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -6761,9 +6761,9 @@
         <span class="comment">// told the wallet it&#39;s not allowed to add more inputs AND it can&#39;t reduce the value of the</span>
         <span class="comment">// existing output. In other words, bump_fee + manually_selected_only is always an error</span>
         <span class="comment">// unless you&#39;ve also set &quot;maintain_single_recipient&quot;.</span>
-        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db</span><span class="macro">!</span>(
+        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
-            <span class="macro">testutils</span><span class="macro">!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
+            <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
         );
         <span class="kw">let</span> <span class="ident">outpoint</span> <span class="op">=</span> <span class="ident">OutPoint</span> {
@@ -6795,7 +6795,7 @@
             .<span class="ident">borrow_mut</span>()
             .<span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="ident">original_details</span>)
             .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">original_details</span>.<span class="ident">sent</span>, <span class="number">25_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">original_details</span>.<span class="ident">sent</span>, <span class="number">25_000</span>);
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_fee_bump</span>(<span class="ident">txid</span>).<span class="ident">unwrap</span>();
         <span class="ident">builder</span>
@@ -6807,9 +6807,9 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_add_input</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">crate</span>::<span class="macro">populate_test_db</span><span class="macro">!</span>(
+        <span class="kw">crate</span>::<span class="macro">populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
-            <span class="macro">testutils</span><span class="macro">!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
+            <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
         );
 
@@ -6841,13 +6841,13 @@
         <span class="ident">builder</span>.<span class="ident">fee_rate</span>(<span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">50.0</span>));
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">+</span> <span class="number">25_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">received</span>, <span class="number">30_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">+</span> <span class="number">25_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">received</span>, <span class="number">30_000</span>);
 
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">=</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -6855,7 +6855,7 @@
                 .<span class="ident">value</span>,
             <span class="number">45_000</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">!</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -6864,15 +6864,15 @@
             <span class="ident">details</span>.<span class="ident">received</span>
         );
 
-        <span class="macro">assert_fee_rate</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">50.0</span>), @<span class="ident">add_signature</span>);
+        <span class="macro">assert_fee_rate!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">50.0</span>), @<span class="ident">add_signature</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_absolute_add_input</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">crate</span>::<span class="macro">populate_test_db</span><span class="macro">!</span>(
+        <span class="kw">crate</span>::<span class="macro">populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
-            <span class="macro">testutils</span><span class="macro">!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
+            <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
         );
 
@@ -6904,13 +6904,13 @@
         <span class="ident">builder</span>.<span class="ident">fee_absolute</span>(<span class="number">6_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">+</span> <span class="number">25_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">received</span>, <span class="number">30_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">+</span> <span class="number">25_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">received</span>, <span class="number">30_000</span>);
 
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">=</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -6918,7 +6918,7 @@
                 .<span class="ident">value</span>,
             <span class="number">45_000</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">!</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -6927,15 +6927,15 @@
             <span class="ident">details</span>.<span class="ident">received</span>
         );
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">6_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">6_000</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_no_change_add_input_and_change</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db</span><span class="macro">!</span>(
+        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
-            <span class="macro">testutils</span><span class="macro">!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
+            <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
         );
 
@@ -6978,16 +6978,16 @@
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">original_send_all_amount</span> <span class="op">=</span> <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">-</span> <span class="ident">original_details</span>.<span class="ident">fees</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">+</span> <span class="number">50_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">+</span> <span class="number">50_000</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">details</span>.<span class="ident">received</span>,
             <span class="number">75_000</span> <span class="op">-</span> <span class="ident">original_send_all_amount</span> <span class="op">-</span> <span class="ident">details</span>.<span class="ident">fees</span>
         );
 
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">=</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -6995,7 +6995,7 @@
                 .<span class="ident">value</span>,
             <span class="ident">original_send_all_amount</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">!</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -7004,15 +7004,15 @@
             <span class="number">75_000</span> <span class="op">-</span> <span class="ident">original_send_all_amount</span> <span class="op">-</span> <span class="ident">details</span>.<span class="ident">fees</span>
         );
 
-        <span class="macro">assert_fee_rate</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">50.0</span>), @<span class="ident">add_signature</span>);
+        <span class="macro">assert_fee_rate!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">50.0</span>), @<span class="ident">add_signature</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_add_input_change_dust</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">crate</span>::<span class="macro">populate_test_db</span><span class="macro">!</span>(
+        <span class="kw">crate</span>::<span class="macro">populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
-            <span class="macro">testutils</span><span class="macro">!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
+            <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
         );
 
@@ -7023,8 +7023,8 @@
             .<span class="ident">enable_rbf</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw-2">mut</span> <span class="ident">original_details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">extract_tx</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
         <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">txid</span>();
         <span class="comment">// skip saving the new utxos, we know they can&#39;t be used anyways</span>
         <span class="kw">for</span> <span class="ident">txin</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tx</span>.<span class="ident">input</span> {
@@ -7046,16 +7046,16 @@
         <span class="ident">builder</span>.<span class="ident">fee_rate</span>(<span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">140.0</span>));
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">original_details</span>.<span class="ident">received</span>, <span class="number">5_000</span> <span class="op">-</span> <span class="ident">original_details</span>.<span class="ident">fees</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">original_details</span>.<span class="ident">received</span>, <span class="number">5_000</span> <span class="op">-</span> <span class="ident">original_details</span>.<span class="ident">fees</span>);
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">+</span> <span class="number">25_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">30_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">received</span>, <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">+</span> <span class="number">25_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">30_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">received</span>, <span class="number">0</span>);
 
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">=</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -7064,15 +7064,15 @@
             <span class="number">45_000</span>
         );
 
-        <span class="macro">assert_fee_rate</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">140.0</span>), @<span class="ident">dust_change</span>, @<span class="ident">add_signature</span>);
+        <span class="macro">assert_fee_rate!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">140.0</span>), @<span class="ident">dust_change</span>, @<span class="ident">add_signature</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_force_add_input</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db</span><span class="macro">!</span>(
+        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
-            <span class="macro">testutils</span><span class="macro">!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
+            <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
         );
 
@@ -7112,13 +7112,13 @@
             .<span class="ident">fee_rate</span>(<span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">5.0</span>));
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">+</span> <span class="number">25_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">received</span>, <span class="number">30_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">+</span> <span class="number">25_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">received</span>, <span class="number">30_000</span>);
 
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">=</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -7126,7 +7126,7 @@
                 .<span class="ident">value</span>,
             <span class="number">45_000</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">!</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -7135,15 +7135,15 @@
             <span class="ident">details</span>.<span class="ident">received</span>
         );
 
-        <span class="macro">assert_fee_rate</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">5.0</span>), @<span class="ident">add_signature</span>);
+        <span class="macro">assert_fee_rate!</span>(<span class="ident">psbt</span>.<span class="ident">extract_tx</span>(), <span class="ident">details</span>.<span class="ident">fees</span>, <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">5.0</span>), @<span class="ident">add_signature</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_absolute_force_add_input</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db</span><span class="macro">!</span>(
+        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="macro">populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
-            <span class="macro">testutils</span><span class="macro">!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
+            <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
         );
 
@@ -7183,13 +7183,13 @@
             .<span class="ident">fee_absolute</span>(<span class="number">250</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">+</span> <span class="number">25_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">received</span>, <span class="number">30_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">sent</span>, <span class="ident">original_details</span>.<span class="ident">sent</span> <span class="op">+</span> <span class="number">25_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">fees</span> <span class="op">+</span> <span class="ident">details</span>.<span class="ident">received</span>, <span class="number">30_000</span>);
 
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">=</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -7197,7 +7197,7 @@
                 .<span class="ident">value</span>,
             <span class="number">45_000</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">output</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">txout</span><span class="op">|</span> <span class="ident">txout</span>.<span class="ident">script_pubkey</span> <span class="op">!</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
@@ -7206,7 +7206,7 @@
             <span class="ident">details</span>.<span class="ident">received</span>
         );
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">250</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">details</span>.<span class="ident">fees</span>, <span class="number">250</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7220,10 +7220,10 @@
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> (<span class="ident">signed_psbt</span>, <span class="ident">finalized</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
 
         <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">signed_psbt</span>.<span class="ident">extract_tx</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7237,10 +7237,10 @@
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> (<span class="ident">signed_psbt</span>, <span class="ident">finalized</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
 
         <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">signed_psbt</span>.<span class="ident">extract_tx</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7254,10 +7254,10 @@
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> (<span class="ident">signed_psbt</span>, <span class="ident">finalized</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
 
         <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">signed_psbt</span>.<span class="ident">extract_tx</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7271,10 +7271,10 @@
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> (<span class="ident">signed_psbt</span>, <span class="ident">finalized</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
 
         <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">signed_psbt</span>.<span class="ident">extract_tx</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7289,10 +7289,10 @@
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> (<span class="ident">signed_psbt</span>, <span class="ident">finalized</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
 
         <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">signed_psbt</span>.<span class="ident">extract_tx</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7306,13 +7306,13 @@
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">clear</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">len</span>(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">len</span>(), <span class="number">0</span>);
 
         <span class="kw">let</span> (<span class="ident">signed_psbt</span>, <span class="ident">finalized</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
 
         <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">signed_psbt</span>.<span class="ident">extract_tx</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7326,7 +7326,7 @@
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="comment">// p2sh-p2wsh transaction should contain both witness and redeem scripts</span>
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">psbt</span>
+        <span class="macro">assert!</span>(<span class="ident">psbt</span>
             .<span class="ident">outputs</span>
             .<span class="ident">iter</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">output</span><span class="op">|</span> <span class="ident">output</span>.<span class="ident">redeem_script</span>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <span class="ident">output</span>.<span class="ident">witness_script</span>.<span class="ident">is_some</span>()));
@@ -7358,11 +7358,11 @@
         <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">push</span>(<span class="ident">dud_input</span>);
         <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">push</span>(<span class="ident">bitcoin</span>::<span class="ident">TxIn</span>::<span class="ident">default</span>());
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">is_final</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="op">!</span><span class="ident">is_final</span>,
             <span class="string">&quot;shouldn&#39;t be final since we can&#39;t sign one of the inputs&quot;</span>
         );
-        <span class="macro">assert</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(
             <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">final_script_witness</span>.<span class="ident">is_some</span>(),
             <span class="string">&quot;should finalized input it signed&quot;</span>
         )
@@ -7374,11 +7374,11 @@
         <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet</span>::<span class="ident">new_offline</span>(<span class="string">&quot;wpkh(tpubEBr4i6yk5nf5DAaJpsi9N2pPYBeJ7fZ5Z9rmN4977iYLCGco1VyjB9tvvuvYtfZzjD5A8igzgw3HeWeeKFmanHYqksqZXYXGsw5zjnj7KM9/*)&quot;</span>, 
                                          <span class="prelude-val">None</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>, <span class="ident">db</span>).<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">LastUnused</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q6yn66vajcctph75pvylgkksgpp6nq04ppwct9a&quot;</span>
         );
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">LastUnused</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q6yn66vajcctph75pvylgkksgpp6nq04ppwct9a&quot;</span>
         );
@@ -7387,7 +7387,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_next_unused_address</span>() {
         <span class="kw">let</span> <span class="ident">descriptor</span> <span class="op">=</span> <span class="string">&quot;wpkh(tpubEBr4i6yk5nf5DAaJpsi9N2pPYBeJ7fZ5Z9rmN4977iYLCGco1VyjB9tvvuvYtfZzjD5A8igzgw3HeWeeKFmanHYqksqZXYXGsw5zjnj7KM9/*)&quot;</span>;
-        <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="macro">testutils</span><span class="macro">!</span>(@<span class="ident">descriptors</span> (<span class="ident">descriptor</span>));
+        <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="macro">testutils!</span>(@<span class="ident">descriptors</span> (<span class="ident">descriptor</span>));
         <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet</span>::<span class="ident">new_offline</span>(
             <span class="kw-2">&amp;</span><span class="ident">descriptors</span>.<span class="number">0</span>,
             <span class="prelude-val">None</span>,
@@ -7396,19 +7396,19 @@
         )
         .<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">LastUnused</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q6yn66vajcctph75pvylgkksgpp6nq04ppwct9a&quot;</span>
         );
 
         <span class="comment">// use the above address</span>
-        <span class="kw">crate</span>::<span class="macro">populate_test_db</span><span class="macro">!</span>(
+        <span class="kw">crate</span>::<span class="macro">populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
-            <span class="macro">testutils</span><span class="macro">!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
+            <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
         );
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">LastUnused</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>
         );
@@ -7420,28 +7420,28 @@
         <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet</span>::<span class="ident">new_offline</span>(<span class="string">&quot;wpkh(tpubEBr4i6yk5nf5DAaJpsi9N2pPYBeJ7fZ5Z9rmN4977iYLCGco1VyjB9tvvuvYtfZzjD5A8igzgw3HeWeeKFmanHYqksqZXYXGsw5zjnj7KM9/*)&quot;</span>,
                                          <span class="prelude-val">None</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>, <span class="ident">db</span>).<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">Peek</span>(<span class="number">1</span>)).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>
         );
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">Peek</span>(<span class="number">0</span>)).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q6yn66vajcctph75pvylgkksgpp6nq04ppwct9a&quot;</span>
         );
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">Peek</span>(<span class="number">2</span>)).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1qzntf2mqex4ehwkjlfdyy3ewdlk08qkvkvrz7x2&quot;</span>
         );
 
         <span class="comment">// current new address is not affected</span>
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q6yn66vajcctph75pvylgkksgpp6nq04ppwct9a&quot;</span>
         );
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>
         );
@@ -7453,17 +7453,17 @@
         <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet</span>::<span class="ident">new_offline</span>(<span class="string">&quot;wpkh(tpubEBr4i6yk5nf5DAaJpsi9N2pPYBeJ7fZ5Z9rmN4977iYLCGco1VyjB9tvvuvYtfZzjD5A8igzgw3HeWeeKFmanHYqksqZXYXGsw5zjnj7KM9/1)&quot;</span>,
                                          <span class="prelude-val">None</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>, <span class="ident">db</span>).<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">Peek</span>(<span class="number">1</span>)).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>
         );
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">Peek</span>(<span class="number">0</span>)).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>
         );
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">Peek</span>(<span class="number">2</span>)).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>
         );
@@ -7476,31 +7476,31 @@
                                          <span class="prelude-val">None</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>, <span class="ident">db</span>).<span class="ident">unwrap</span>();
 
         <span class="comment">// new index 0</span>
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q6yn66vajcctph75pvylgkksgpp6nq04ppwct9a&quot;</span>
         );
 
         <span class="comment">// new index 1</span>
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>
         );
 
         <span class="comment">// new index 2</span>
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1qzntf2mqex4ehwkjlfdyy3ewdlk08qkvkvrz7x2&quot;</span>
         );
 
         <span class="comment">//  reset index 1 again</span>
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">Reset</span>(<span class="number">1</span>)).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>
         );
 
         <span class="comment">// new index 2 again</span>
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert_eq!</span>(
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>().<span class="ident">to_string</span>(),
             <span class="string">&quot;tb1qzntf2mqex4ehwkjlfdyy3ewdlk08qkvkvrz7x2&quot;</span>
         );

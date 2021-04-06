@@ -1002,6 +1002,44 @@
 <span id="999"> 999</span>
 <span id="1000">1000</span>
 <span id="1001">1001</span>
+<span id="1002">1002</span>
+<span id="1003">1003</span>
+<span id="1004">1004</span>
+<span id="1005">1005</span>
+<span id="1006">1006</span>
+<span id="1007">1007</span>
+<span id="1008">1008</span>
+<span id="1009">1009</span>
+<span id="1010">1010</span>
+<span id="1011">1011</span>
+<span id="1012">1012</span>
+<span id="1013">1013</span>
+<span id="1014">1014</span>
+<span id="1015">1015</span>
+<span id="1016">1016</span>
+<span id="1017">1017</span>
+<span id="1018">1018</span>
+<span id="1019">1019</span>
+<span id="1020">1020</span>
+<span id="1021">1021</span>
+<span id="1022">1022</span>
+<span id="1023">1023</span>
+<span id="1024">1024</span>
+<span id="1025">1025</span>
+<span id="1026">1026</span>
+<span id="1027">1027</span>
+<span id="1028">1028</span>
+<span id="1029">1029</span>
+<span id="1030">1030</span>
+<span id="1031">1031</span>
+<span id="1032">1032</span>
+<span id="1033">1033</span>
+<span id="1034">1034</span>
+<span id="1035">1035</span>
+<span id="1036">1036</span>
+<span id="1037">1037</span>
+<span id="1038">1038</span>
+<span id="1039">1039</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -1096,6 +1134,7 @@
 <span class="kw">use</span> <span class="ident">rand</span>::<span class="ident">thread_rng</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">use</span> <span class="ident">rand</span>::{<span class="ident">rngs</span>::<span class="ident">StdRng</span>, <span class="ident">SeedableRng</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryInto</span>;
 
 <span class="doccomment">/// Default coin selection algorithm used by [`TxBuilder`](super::tx_builder::TxBuilder) if not</span>
 <span class="doccomment">/// overridden</span>
@@ -1184,7 +1223,7 @@
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">CoinSelectionResult</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">calc_fee_bytes</span> <span class="op">=</span> <span class="op">|</span><span class="ident">wu</span><span class="op">|</span> (<span class="ident">wu</span> <span class="kw">as</span> <span class="ident">f32</span>) <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>() <span class="op">/</span> <span class="number">4.0</span>;
 
-        <span class="ident">log</span>::<span class="macro">debug</span><span class="macro">!</span>(
+        <span class="ident">log</span>::<span class="macro">debug!</span>(
             <span class="string">&quot;amount_needed = `{}`, fee_amount = `{}`, fee_rate = `{:?}`&quot;</span>,
             <span class="ident">amount_needed</span>,
             <span class="ident">fee_amount</span>,
@@ -1213,7 +1252,7 @@
                             <span class="ident">calc_fee_bytes</span>(<span class="ident">TXIN_BASE_WEIGHT</span> <span class="op">+</span> <span class="ident">weighted_utxo</span>.<span class="ident">satisfaction_weight</span>);
                         <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">selected_amount</span> <span class="op">+</span><span class="op">=</span> <span class="ident">weighted_utxo</span>.<span class="ident">utxo</span>.<span class="ident">txout</span>().<span class="ident">value</span>;
 
-                        <span class="ident">log</span>::<span class="macro">debug</span><span class="macro">!</span>(
+                        <span class="ident">log</span>::<span class="macro">debug!</span>(
                             <span class="string">&quot;Selected {}, updated fee_amount = `{}`&quot;</span>,
                             <span class="ident">weighted_utxo</span>.<span class="ident">utxo</span>.<span class="ident">outpoint</span>(),
                             <span class="ident">fee_amount</span>
@@ -1308,31 +1347,38 @@
             .<span class="ident">collect</span>();
 
         <span class="comment">// Mapping every (UTXO, usize) to an output group.</span>
-        <span class="comment">// Filtering UTXOs with an effective_value &lt; 0, as the fee paid for</span>
-        <span class="comment">// adding them is more than their value</span>
         <span class="kw">let</span> <span class="ident">optional_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutputGroup</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">optional_utxos</span>
             .<span class="ident">into_iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>, <span class="ident">fee_rate</span>))
-            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="ident">effective_value</span> <span class="op">&gt;</span> <span class="number">0</span>)
             .<span class="ident">collect</span>();
 
         <span class="kw">let</span> <span class="ident">curr_value</span> <span class="op">=</span> <span class="ident">required_utxos</span>
             .<span class="ident">iter</span>()
-            .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>);
+            .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span>);
 
         <span class="kw">let</span> <span class="ident">curr_available_value</span> <span class="op">=</span> <span class="ident">optional_utxos</span>
             .<span class="ident">iter</span>()
-            .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>);
+            .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span>);
 
         <span class="kw">let</span> <span class="ident">actual_target</span> <span class="op">=</span> <span class="ident">fee_amount</span>.<span class="ident">ceil</span>() <span class="kw">as</span> <span class="ident">u64</span> <span class="op">+</span> <span class="ident">amount_needed</span>;
         <span class="kw">let</span> <span class="ident">cost_of_change</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">size_of_change</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>();
 
-        <span class="kw">if</span> <span class="ident">curr_available_value</span> <span class="op">+</span> <span class="ident">curr_value</span> <span class="op">&lt;</span> <span class="ident">actual_target</span> {
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> (<span class="ident">curr_available_value</span> <span class="op">+</span> <span class="ident">curr_value</span>)
+            .<span class="ident">try_into</span>()
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
+                <span class="ident">Error</span>::<span class="ident">Generic</span>(<span class="string">&quot;Sum of UTXO spendable values does not fit into u64&quot;</span>.<span class="ident">to_string</span>())
+            })<span class="question-mark">?</span>;
+
+        <span class="kw">if</span> <span class="ident">expected</span> <span class="op">&lt;</span> <span class="ident">actual_target</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">InsufficientFunds</span> {
                 <span class="ident">needed</span>: <span class="ident">actual_target</span>,
-                <span class="ident">available</span>: <span class="ident">curr_available_value</span> <span class="op">+</span> <span class="ident">curr_value</span>,
+                <span class="ident">available</span>: <span class="ident">expected</span>,
             });
         }
+
+        <span class="kw">let</span> <span class="ident">actual_target</span> <span class="op">=</span> <span class="ident">actual_target</span>
+            .<span class="ident">try_into</span>()
+            .<span class="ident">expect</span>(<span class="string">&quot;Bitcoin amount to fit into i64&quot;</span>);
 
         <span class="prelude-val">Ok</span>(<span class="self">self</span>
             .<span class="ident">bnb</span>(
@@ -1364,9 +1410,9 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">required_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutputGroup</span><span class="op">&gt;</span>,
         <span class="kw-2">mut</span> <span class="ident">optional_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutputGroup</span><span class="op">&gt;</span>,
-        <span class="kw-2">mut</span> <span class="ident">curr_value</span>: <span class="ident">u64</span>,
-        <span class="kw-2">mut</span> <span class="ident">curr_available_value</span>: <span class="ident">u64</span>,
-        <span class="ident">actual_target</span>: <span class="ident">u64</span>,
+        <span class="kw-2">mut</span> <span class="ident">curr_value</span>: <span class="ident">i64</span>,
+        <span class="kw-2">mut</span> <span class="ident">curr_available_value</span>: <span class="ident">i64</span>,
+        <span class="ident">actual_target</span>: <span class="ident">i64</span>,
         <span class="ident">fee_amount</span>: <span class="ident">f32</span>,
         <span class="ident">cost_of_change</span>: <span class="ident">f32</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">CoinSelectionResult</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
@@ -1392,7 +1438,7 @@
             <span class="comment">// or the selected value is out of range.</span>
             <span class="comment">// Go back and try other branch</span>
             <span class="kw">if</span> <span class="ident">curr_value</span> <span class="op">+</span> <span class="ident">curr_available_value</span> <span class="op">&lt;</span> <span class="ident">actual_target</span>
-                <span class="op">|</span><span class="op">|</span> <span class="ident">curr_value</span> <span class="op">&gt;</span> <span class="ident">actual_target</span> <span class="op">+</span> <span class="ident">cost_of_change</span> <span class="kw">as</span> <span class="ident">u64</span>
+                <span class="op">|</span><span class="op">|</span> <span class="ident">curr_value</span> <span class="op">&gt;</span> <span class="ident">actual_target</span> <span class="op">+</span> <span class="ident">cost_of_change</span> <span class="kw">as</span> <span class="ident">i64</span>
             {
                 <span class="ident">backtrack</span> <span class="op">=</span> <span class="bool-val">true</span>;
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">curr_value</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">actual_target</span> {
@@ -1418,8 +1464,7 @@
                 <span class="comment">// Walk backwards to find the last included UTXO that still needs to have its omission branch traversed.</span>
                 <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="bool-val">false</span>) <span class="op">=</span> <span class="ident">current_selection</span>.<span class="ident">last</span>() {
                     <span class="ident">current_selection</span>.<span class="ident">pop</span>();
-                    <span class="ident">curr_available_value</span> <span class="op">+</span><span class="op">=</span>
-                        <span class="ident">optional_utxos</span>[<span class="ident">current_selection</span>.<span class="ident">len</span>()].<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>;
+                    <span class="ident">curr_available_value</span> <span class="op">+</span><span class="op">=</span> <span class="ident">optional_utxos</span>[<span class="ident">current_selection</span>.<span class="ident">len</span>()].<span class="ident">effective_value</span>;
                 }
 
                 <span class="kw">if</span> <span class="ident">current_selection</span>.<span class="ident">last_mut</span>().<span class="ident">is_none</span>() {
@@ -1437,17 +1482,17 @@
                 }
 
                 <span class="kw">let</span> <span class="ident">utxo</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">optional_utxos</span>[<span class="ident">current_selection</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>];
-                <span class="ident">curr_value</span> <span class="op">-</span><span class="op">=</span> <span class="ident">utxo</span>.<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>;
+                <span class="ident">curr_value</span> <span class="op">-</span><span class="op">=</span> <span class="ident">utxo</span>.<span class="ident">effective_value</span>;
             } <span class="kw">else</span> {
                 <span class="comment">// Moving forwards, continuing down this branch</span>
                 <span class="kw">let</span> <span class="ident">utxo</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">optional_utxos</span>[<span class="ident">current_selection</span>.<span class="ident">len</span>()];
 
                 <span class="comment">// Remove this utxo from the curr_available_value utxo amount</span>
-                <span class="ident">curr_available_value</span> <span class="op">-</span><span class="op">=</span> <span class="ident">utxo</span>.<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>;
+                <span class="ident">curr_available_value</span> <span class="op">-</span><span class="op">=</span> <span class="ident">utxo</span>.<span class="ident">effective_value</span>;
 
                 <span class="comment">// Inclusion branch first (Largest First Exploration)</span>
                 <span class="ident">current_selection</span>.<span class="ident">push</span>(<span class="bool-val">true</span>);
-                <span class="ident">curr_value</span> <span class="op">+</span><span class="op">=</span> <span class="ident">utxo</span>.<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>;
+                <span class="ident">curr_value</span> <span class="op">+</span><span class="op">=</span> <span class="ident">utxo</span>.<span class="ident">effective_value</span>;
             }
         }
 
@@ -1474,8 +1519,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">required_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutputGroup</span><span class="op">&gt;</span>,
         <span class="kw-2">mut</span> <span class="ident">optional_utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">OutputGroup</span><span class="op">&gt;</span>,
-        <span class="ident">curr_value</span>: <span class="ident">u64</span>,
-        <span class="ident">actual_target</span>: <span class="ident">u64</span>,
+        <span class="ident">curr_value</span>: <span class="ident">i64</span>,
+        <span class="ident">actual_target</span>: <span class="ident">i64</span>,
         <span class="ident">fee_amount</span>: <span class="ident">f32</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CoinSelectionResult</span> {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">test</span>))]</span>
@@ -1493,7 +1538,7 @@
                 <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">curr_value</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">actual_target</span> {
                     <span class="prelude-val">None</span>
                 } <span class="kw">else</span> {
-                    <span class="kw-2">*</span><span class="ident">curr_value</span> <span class="op">+</span><span class="op">=</span> <span class="ident">utxo</span>.<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>;
+                    <span class="kw-2">*</span><span class="ident">curr_value</span> <span class="op">+</span><span class="op">=</span> <span class="ident">utxo</span>.<span class="ident">effective_value</span>;
                     <span class="prelude-val">Some</span>(<span class="ident">utxo</span>)
                 }
             })
@@ -1537,13 +1582,15 @@
 
     <span class="kw">const</span> <span class="ident">P2WPKH_WITNESS_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">73</span> <span class="op">+</span> <span class="number">33</span> <span class="op">+</span> <span class="number">2</span>;
 
+    <span class="kw">const</span> <span class="ident">FEE_AMOUNT</span>: <span class="ident">f32</span> <span class="op">=</span> <span class="number">50.0</span>;
+
     <span class="kw">fn</span> <span class="ident">get_test_utxos</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span> {
-        <span class="macro">vec</span><span class="macro">!</span>[
+        <span class="macro">vec!</span>[
             <span class="ident">WeightedUtxo</span> {
                 <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
                 <span class="ident">utxo</span>: <span class="ident">Utxo</span>::<span class="ident">Local</span>(<span class="ident">LocalUtxo</span> {
                     <span class="ident">outpoint</span>: <span class="ident">OutPoint</span>::<span class="ident">from_str</span>(
-                        <span class="string">&quot;ebd9813ecebc57ff8f30797de7c205e3c7498ca950ea4341ee51a685ff2fa30a:0&quot;</span>,
+                        <span class="string">&quot;0000000000000000000000000000000000000000000000000000000000000000:0&quot;</span>,
                     )
                     .<span class="ident">unwrap</span>(),
                     <span class="ident">txout</span>: <span class="ident">TxOut</span> {
@@ -1557,7 +1604,21 @@
                 <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
                 <span class="ident">utxo</span>: <span class="ident">Utxo</span>::<span class="ident">Local</span>(<span class="ident">LocalUtxo</span> {
                     <span class="ident">outpoint</span>: <span class="ident">OutPoint</span>::<span class="ident">from_str</span>(
-                        <span class="string">&quot;65d92ddff6b6dc72c89624a6491997714b90f6004f928d875bc0fd53f264fa85:0&quot;</span>,
+                        <span class="string">&quot;0000000000000000000000000000000000000000000000000000000000000001:0&quot;</span>,
+                    )
+                    .<span class="ident">unwrap</span>(),
+                    <span class="ident">txout</span>: <span class="ident">TxOut</span> {
+                        <span class="ident">value</span>: <span class="ident">FEE_AMOUNT</span> <span class="kw">as</span> <span class="ident">u64</span> <span class="op">-</span> <span class="number">40</span>,
+                        <span class="ident">script_pubkey</span>: <span class="ident">Script</span>::<span class="ident">new</span>(),
+                    },
+                    <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>::<span class="ident">External</span>,
+                }),
+            },
+            <span class="ident">WeightedUtxo</span> {
+                <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
+                <span class="ident">utxo</span>: <span class="ident">Utxo</span>::<span class="ident">Local</span>(<span class="ident">LocalUtxo</span> {
+                    <span class="ident">outpoint</span>: <span class="ident">OutPoint</span>::<span class="ident">from_str</span>(
+                        <span class="string">&quot;0000000000000000000000000000000000000000000000000000000000000002:0&quot;</span>,
                     )
                     .<span class="ident">unwrap</span>(),
                     <span class="ident">txout</span>: <span class="ident">TxOut</span> {
@@ -1606,7 +1667,7 @@
                 <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>::<span class="ident">External</span>,
             }),
         };
-        <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">utxo</span>; <span class="ident">utxos_number</span>]
+        <span class="macro">vec!</span>[<span class="ident">utxo</span>; <span class="ident">utxos_number</span>]
     }
 
     <span class="kw">fn</span> <span class="ident">sum_random_utxos</span>(<span class="kw-2">mut</span> <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">StdRng</span>, <span class="ident">utxos</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
@@ -1627,16 +1688,16 @@
             .<span class="ident">coin_select</span>(
                 <span class="kw-2">&amp;</span><span class="ident">database</span>,
                 <span class="ident">utxos</span>,
-                <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="macro">vec!</span>[],
                 <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">1.0</span>),
                 <span class="number">250_000</span>,
                 <span class="number">50.0</span>,
             )
             .<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">186.0</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_010</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">254.0</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1648,16 +1709,16 @@
             .<span class="ident">coin_select</span>(
                 <span class="kw-2">&amp;</span><span class="ident">database</span>,
                 <span class="ident">utxos</span>,
-                <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="macro">vec!</span>[],
                 <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">1.0</span>),
                 <span class="number">20_000</span>,
                 <span class="number">50.0</span>,
             )
             .<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">186.0</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_010</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">254.0</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1668,7 +1729,7 @@
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">LargestFirstCoinSelection</span>::<span class="ident">default</span>()
             .<span class="ident">coin_select</span>(
                 <span class="kw-2">&amp;</span><span class="ident">database</span>,
-                <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="macro">vec!</span>[],
                 <span class="ident">utxos</span>,
                 <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">1.0</span>),
                 <span class="number">20_000</span>,
@@ -1676,9 +1737,9 @@
             )
             .<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">200_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">118.0</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">200_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">118.0</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1690,7 +1751,7 @@
         <span class="ident">LargestFirstCoinSelection</span>::<span class="ident">default</span>()
             .<span class="ident">coin_select</span>(
                 <span class="kw-2">&amp;</span><span class="ident">database</span>,
-                <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="macro">vec!</span>[],
                 <span class="ident">utxos</span>,
                 <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">1.0</span>),
                 <span class="number">500_000</span>,
@@ -1708,7 +1769,7 @@
         <span class="ident">LargestFirstCoinSelection</span>::<span class="ident">default</span>()
             .<span class="ident">coin_select</span>(
                 <span class="kw-2">&amp;</span><span class="ident">database</span>,
-                <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="macro">vec!</span>[],
                 <span class="ident">utxos</span>,
                 <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">1000.0</span>),
                 <span class="number">250_000</span>,
@@ -1728,7 +1789,7 @@
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">BranchAndBoundCoinSelection</span>::<span class="ident">default</span>()
             .<span class="ident">coin_select</span>(
                 <span class="kw-2">&amp;</span><span class="ident">database</span>,
-                <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="macro">vec!</span>[],
                 <span class="ident">utxos</span>,
                 <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">1.0</span>),
                 <span class="number">250_000</span>,
@@ -1736,9 +1797,9 @@
             )
             .<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">3</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">254.0</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">254.0</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1753,13 +1814,34 @@
                 <span class="ident">utxos</span>,
                 <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">1.0</span>),
                 <span class="number">20_000</span>,
-                <span class="number">50.0</span>,
+                <span class="ident">FEE_AMOUNT</span>,
             )
             .<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_000</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">186.0</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_010</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">254.0</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_bnb_coin_selection_optional_are_enough</span>() {
+        <span class="kw">let</span> <span class="ident">utxos</span> <span class="op">=</span> <span class="ident">get_test_utxos</span>();
+        <span class="kw">let</span> <span class="ident">database</span> <span class="op">=</span> <span class="ident">MemoryDatabase</span>::<span class="ident">default</span>();
+
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">BranchAndBoundCoinSelection</span>::<span class="ident">default</span>()
+            .<span class="ident">coin_select</span>(
+                <span class="kw-2">&amp;</span><span class="ident">database</span>,
+                <span class="macro">vec!</span>[],
+                <span class="ident">utxos</span>,
+                <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">1.0</span>),
+                <span class="number">299756</span>,
+                <span class="ident">FEE_AMOUNT</span>,
+            )
+            .<span class="ident">unwrap</span>();
+
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300010</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">254.0</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1771,7 +1853,7 @@
         <span class="ident">BranchAndBoundCoinSelection</span>::<span class="ident">default</span>()
             .<span class="ident">coin_select</span>(
                 <span class="kw-2">&amp;</span><span class="ident">database</span>,
-                <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="macro">vec!</span>[],
                 <span class="ident">utxos</span>,
                 <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">1.0</span>),
                 <span class="number">500_000</span>,
@@ -1789,7 +1871,7 @@
         <span class="ident">BranchAndBoundCoinSelection</span>::<span class="ident">default</span>()
             .<span class="ident">coin_select</span>(
                 <span class="kw-2">&amp;</span><span class="ident">database</span>,
-                <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="macro">vec!</span>[],
                 <span class="ident">utxos</span>,
                 <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">1000.0</span>),
                 <span class="number">250_000</span>,
@@ -1806,7 +1888,7 @@
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">BranchAndBoundCoinSelection</span>::<span class="ident">new</span>(<span class="number">0</span>)
             .<span class="ident">coin_select</span>(
                 <span class="kw-2">&amp;</span><span class="ident">database</span>,
-                <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="macro">vec!</span>[],
                 <span class="ident">utxos</span>,
                 <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">1.0</span>),
                 <span class="number">99932</span>, <span class="comment">// first utxo&#39;s effective value</span>
@@ -1814,11 +1896,11 @@
             )
             .<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">100_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">100_000</span>);
         <span class="kw">let</span> <span class="ident">input_size</span> <span class="op">=</span> (<span class="ident">TXIN_BASE_WEIGHT</span> <span class="kw">as</span> <span class="ident">f32</span>) <span class="op">/</span> <span class="number">4.0</span> <span class="op">+</span> <span class="ident">P2WPKH_WITNESS_SIZE</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> <span class="number">4.0</span>;
         <span class="kw">let</span> <span class="ident">epsilon</span> <span class="op">=</span> <span class="number">0.5</span>;
-        <span class="macro">assert</span><span class="macro">!</span>((<span class="number">1.0</span> <span class="op">-</span> (<span class="ident">result</span>.<span class="ident">fee_amount</span> <span class="op">/</span> <span class="ident">input_size</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">epsilon</span>);
+        <span class="macro">assert!</span>((<span class="number">1.0</span> <span class="op">-</span> (<span class="ident">result</span>.<span class="ident">fee_amount</span> <span class="op">/</span> <span class="ident">input_size</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">epsilon</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1833,14 +1915,14 @@
             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">BranchAndBoundCoinSelection</span>::<span class="ident">new</span>(<span class="number">0</span>)
                 .<span class="ident">coin_select</span>(
                     <span class="kw-2">&amp;</span><span class="ident">database</span>,
-                    <span class="macro">vec</span><span class="macro">!</span>[],
+                    <span class="macro">vec!</span>[],
                     <span class="ident">optional_utxos</span>,
                     <span class="ident">FeeRate</span>::<span class="ident">from_sat_per_vb</span>(<span class="number">0.0</span>),
                     <span class="ident">target_amount</span>,
                     <span class="number">0.0</span>,
                 )
                 .<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="ident">target_amount</span>);
+            <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="ident">target_amount</span>);
         }
     }
 
@@ -1853,15 +1935,13 @@
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>, <span class="ident">fee_rate</span>))
             .<span class="ident">collect</span>();
 
-        <span class="kw">let</span> <span class="ident">curr_available_value</span> <span class="op">=</span> <span class="ident">utxos</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>);
+        <span class="kw">let</span> <span class="ident">curr_available_value</span> <span class="op">=</span> <span class="ident">utxos</span>.<span class="ident">iter</span>().<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span>);
 
         <span class="kw">let</span> <span class="ident">size_of_change</span> <span class="op">=</span> <span class="number">31</span>;
         <span class="kw">let</span> <span class="ident">cost_of_change</span> <span class="op">=</span> <span class="ident">size_of_change</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>();
         <span class="ident">BranchAndBoundCoinSelection</span>::<span class="ident">new</span>(<span class="ident">size_of_change</span>)
             .<span class="ident">bnb</span>(
-                <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="macro">vec!</span>[],
                 <span class="ident">utxos</span>,
                 <span class="number">0</span>,
                 <span class="ident">curr_available_value</span>,
@@ -1881,16 +1961,14 @@
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">OutputGroup</span>::<span class="ident">new</span>(<span class="ident">u</span>, <span class="ident">fee_rate</span>))
             .<span class="ident">collect</span>();
 
-        <span class="kw">let</span> <span class="ident">curr_available_value</span> <span class="op">=</span> <span class="ident">utxos</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>);
+        <span class="kw">let</span> <span class="ident">curr_available_value</span> <span class="op">=</span> <span class="ident">utxos</span>.<span class="ident">iter</span>().<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span>);
 
         <span class="kw">let</span> <span class="ident">size_of_change</span> <span class="op">=</span> <span class="number">31</span>;
         <span class="kw">let</span> <span class="ident">cost_of_change</span> <span class="op">=</span> <span class="ident">size_of_change</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>();
 
         <span class="ident">BranchAndBoundCoinSelection</span>::<span class="ident">new</span>(<span class="ident">size_of_change</span>)
             .<span class="ident">bnb</span>(
-                <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="macro">vec!</span>[],
                 <span class="ident">utxos</span>,
                 <span class="number">0</span>,
                 <span class="ident">curr_available_value</span>,
@@ -1916,17 +1994,15 @@
 
         <span class="kw">let</span> <span class="ident">curr_value</span> <span class="op">=</span> <span class="number">0</span>;
 
-        <span class="kw">let</span> <span class="ident">curr_available_value</span> <span class="op">=</span> <span class="ident">utxos</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>);
+        <span class="kw">let</span> <span class="ident">curr_available_value</span> <span class="op">=</span> <span class="ident">utxos</span>.<span class="ident">iter</span>().<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span>);
 
         <span class="comment">// 2*(value of 1 utxo)  - 2*(1 utxo fees with 1.0sat/vbyte fee rate) -</span>
         <span class="comment">// cost_of_change + 5.</span>
-        <span class="kw">let</span> <span class="ident">target_amount</span> <span class="op">=</span> <span class="number">2</span> <span class="op">*</span> <span class="number">50_000</span> <span class="op">-</span> <span class="number">2</span> <span class="op">*</span> <span class="number">67</span> <span class="op">-</span> <span class="ident">cost_of_change</span>.<span class="ident">ceil</span>() <span class="kw">as</span> <span class="ident">u64</span> <span class="op">+</span> <span class="number">5</span>;
+        <span class="kw">let</span> <span class="ident">target_amount</span> <span class="op">=</span> <span class="number">2</span> <span class="op">*</span> <span class="number">50_000</span> <span class="op">-</span> <span class="number">2</span> <span class="op">*</span> <span class="number">67</span> <span class="op">-</span> <span class="ident">cost_of_change</span>.<span class="ident">ceil</span>() <span class="kw">as</span> <span class="ident">i64</span> <span class="op">+</span> <span class="number">5</span>;
 
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">BranchAndBoundCoinSelection</span>::<span class="ident">new</span>(<span class="ident">size_of_change</span>)
             .<span class="ident">bnb</span>(
-                <span class="macro">vec</span><span class="macro">!</span>[],
+                <span class="macro">vec!</span>[],
                 <span class="ident">utxos</span>,
                 <span class="ident">curr_value</span>,
                 <span class="ident">curr_available_value</span>,
@@ -1935,8 +2011,8 @@
                 <span class="ident">cost_of_change</span>,
             )
             .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">186.0</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">100_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">186.0</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">100_000</span>);
     }
 
     <span class="comment">// TODO: bnb() function should be optimized, and this test should be done with more utxos</span>
@@ -1956,14 +2032,14 @@
 
             <span class="kw">let</span> <span class="ident">curr_available_value</span> <span class="op">=</span> <span class="ident">optional_utxos</span>
                 .<span class="ident">iter</span>()
-                .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>);
+                .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span>);
 
-            <span class="kw">let</span> <span class="ident">target_amount</span> <span class="op">=</span> <span class="ident">optional_utxos</span>[<span class="number">3</span>].<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>
-                <span class="op">+</span> <span class="ident">optional_utxos</span>[<span class="number">23</span>].<span class="ident">effective_value</span> <span class="kw">as</span> <span class="ident">u64</span>;
+            <span class="kw">let</span> <span class="ident">target_amount</span> <span class="op">=</span>
+                <span class="ident">optional_utxos</span>[<span class="number">3</span>].<span class="ident">effective_value</span> <span class="op">+</span> <span class="ident">optional_utxos</span>[<span class="number">23</span>].<span class="ident">effective_value</span>;
 
             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">BranchAndBoundCoinSelection</span>::<span class="ident">new</span>(<span class="number">0</span>)
                 .<span class="ident">bnb</span>(
-                    <span class="macro">vec</span><span class="macro">!</span>[],
+                    <span class="macro">vec!</span>[],
                     <span class="ident">optional_utxos</span>,
                     <span class="ident">curr_value</span>,
                     <span class="ident">curr_available_value</span>,
@@ -1972,7 +2048,7 @@
                     <span class="number">0.0</span>,
                 )
                 .<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="ident">target_amount</span>);
+            <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="ident">target_amount</span> <span class="kw">as</span> <span class="ident">u64</span>);
         }
     }
 
@@ -1990,15 +2066,15 @@
             .<span class="ident">collect</span>();
 
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">BranchAndBoundCoinSelection</span>::<span class="ident">default</span>().<span class="ident">single_random_draw</span>(
-            <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="macro">vec!</span>[],
             <span class="ident">utxos</span>,
             <span class="number">0</span>,
-            <span class="ident">target_amount</span>,
+            <span class="ident">target_amount</span> <span class="kw">as</span> <span class="ident">i64</span>,
             <span class="number">50.0</span>,
         );
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>() <span class="op">&gt;</span> <span class="ident">target_amount</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
+        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>() <span class="op">&gt;</span> <span class="ident">target_amount</span>);
+        <span class="macro">assert_eq!</span>(
             <span class="ident">result</span>.<span class="ident">fee_amount</span>,
             <span class="number">50.0</span> <span class="op">+</span> <span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="number">68.0</span>
         );
