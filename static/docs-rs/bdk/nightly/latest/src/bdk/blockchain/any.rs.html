@@ -297,7 +297,7 @@
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_from</span> {
+<span class="macro">macro_rules!</span> <span class="ident">impl_from</span> {
     ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">from</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">to</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>, $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">cfg</span>:<span class="ident">tt</span> )<span class="op">*</span> ) <span class="op">=</span><span class="op">&gt;</span> {
         $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">cfg</span> )<span class="op">*</span>
         <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">from</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">to</span> {
@@ -308,7 +308,7 @@
     };
 }
 
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_inner_method</span> {
+<span class="macro">macro_rules!</span> <span class="ident">impl_inner_method</span> {
     ( <span class="macro-nonterminal">$</span><span class="self">self</span>:<span class="macro-nonterminal">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span> $(, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">args</span>:<span class="ident">expr</span>)<span class="op">*</span> ) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="macro-nonterminal">$</span><span class="self">self</span> {
             <span class="attribute">#[<span class="macro-nonterminal">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)]</span>
@@ -344,7 +344,7 @@
 <span class="attribute">#[<span class="ident">maybe_async</span>]</span>
 <span class="kw">impl</span> <span class="ident">Blockchain</span> <span class="kw">for</span> <span class="ident">AnyBlockchain</span> {
     <span class="kw">fn</span> <span class="ident">get_capabilities</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">Capability</span><span class="op">&gt;</span> {
-        <span class="macro">maybe_await</span><span class="macro">!</span>(<span class="macro">impl_inner_method</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">get_capabilities</span>))
+        <span class="macro">maybe_await!</span>(<span class="macro">impl_inner_method!</span>(<span class="self">self</span>, <span class="ident">get_capabilities</span>))
     }
 
     <span class="kw">fn</span> <span class="ident">setup</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">P</span>: <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Progress</span><span class="op">&gt;</span>(
@@ -353,7 +353,7 @@
         <span class="ident">database</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">D</span>,
         <span class="ident">progress_update</span>: <span class="ident">P</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="macro">maybe_await</span><span class="macro">!</span>(<span class="macro">impl_inner_method</span><span class="macro">!</span>(
+        <span class="macro">maybe_await!</span>(<span class="macro">impl_inner_method!</span>(
             <span class="self">self</span>,
             <span class="ident">setup</span>,
             <span class="ident">stop_gap</span>,
@@ -367,7 +367,7 @@
         <span class="ident">database</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">D</span>,
         <span class="ident">progress_update</span>: <span class="ident">P</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="macro">maybe_await</span><span class="macro">!</span>(<span class="macro">impl_inner_method</span><span class="macro">!</span>(
+        <span class="macro">maybe_await!</span>(<span class="macro">impl_inner_method!</span>(
             <span class="self">self</span>,
             <span class="ident">sync</span>,
             <span class="ident">stop_gap</span>,
@@ -377,23 +377,23 @@
     }
 
     <span class="kw">fn</span> <span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="macro">maybe_await</span><span class="macro">!</span>(<span class="macro">impl_inner_method</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">get_tx</span>, <span class="ident">txid</span>))
+        <span class="macro">maybe_await!</span>(<span class="macro">impl_inner_method!</span>(<span class="self">self</span>, <span class="ident">get_tx</span>, <span class="ident">txid</span>))
     }
     <span class="kw">fn</span> <span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tx</span>: <span class="kw-2">&amp;</span><span class="ident">Transaction</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="macro">maybe_await</span><span class="macro">!</span>(<span class="macro">impl_inner_method</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">broadcast</span>, <span class="ident">tx</span>))
+        <span class="macro">maybe_await!</span>(<span class="macro">impl_inner_method!</span>(<span class="self">self</span>, <span class="ident">broadcast</span>, <span class="ident">tx</span>))
     }
 
     <span class="kw">fn</span> <span class="ident">get_height</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="macro">maybe_await</span><span class="macro">!</span>(<span class="macro">impl_inner_method</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">get_height</span>))
+        <span class="macro">maybe_await!</span>(<span class="macro">impl_inner_method!</span>(<span class="self">self</span>, <span class="ident">get_height</span>))
     }
     <span class="kw">fn</span> <span class="ident">estimate_fee</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">target</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">FeeRate</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="macro">maybe_await</span><span class="macro">!</span>(<span class="macro">impl_inner_method</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">estimate_fee</span>, <span class="ident">target</span>))
+        <span class="macro">maybe_await!</span>(<span class="macro">impl_inner_method!</span>(<span class="self">self</span>, <span class="ident">estimate_fee</span>, <span class="ident">target</span>))
     }
 }
 
-<span class="macro">impl_from</span><span class="macro">!</span>(<span class="ident">electrum</span>::<span class="ident">ElectrumBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">Electrum</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)]</span>);
-<span class="macro">impl_from</span><span class="macro">!</span>(<span class="ident">esplora</span>::<span class="ident">EsploraBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">Esplora</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;esplora&quot;</span>)]</span>);
-<span class="macro">impl_from</span><span class="macro">!</span>(<span class="ident">compact_filters</span>::<span class="ident">CompactFiltersBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">CompactFilters</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;compact_filters&quot;</span>)]</span>);
+<span class="macro">impl_from!</span>(<span class="ident">electrum</span>::<span class="ident">ElectrumBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">Electrum</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)]</span>);
+<span class="macro">impl_from!</span>(<span class="ident">esplora</span>::<span class="ident">EsploraBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">Esplora</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;esplora&quot;</span>)]</span>);
+<span class="macro">impl_from!</span>(<span class="ident">compact_filters</span>::<span class="ident">CompactFiltersBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">CompactFilters</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;compact_filters&quot;</span>)]</span>);
 
 <span class="doccomment">/// Type that can contain any of the blockchain configurations defined by the library</span>
 <span class="doccomment">///</span>
@@ -437,9 +437,9 @@
     }
 }
 
-<span class="macro">impl_from</span><span class="macro">!</span>(<span class="ident">electrum</span>::<span class="ident">ElectrumBlockchainConfig</span>, <span class="ident">AnyBlockchainConfig</span>, <span class="ident">Electrum</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)]</span>);
-<span class="macro">impl_from</span><span class="macro">!</span>(<span class="ident">esplora</span>::<span class="ident">EsploraBlockchainConfig</span>, <span class="ident">AnyBlockchainConfig</span>, <span class="ident">Esplora</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;esplora&quot;</span>)]</span>);
-<span class="macro">impl_from</span><span class="macro">!</span>(<span class="ident">compact_filters</span>::<span class="ident">CompactFiltersBlockchainConfig</span>, <span class="ident">AnyBlockchainConfig</span>, <span class="ident">CompactFilters</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;compact_filters&quot;</span>)]</span>);
+<span class="macro">impl_from!</span>(<span class="ident">electrum</span>::<span class="ident">ElectrumBlockchainConfig</span>, <span class="ident">AnyBlockchainConfig</span>, <span class="ident">Electrum</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)]</span>);
+<span class="macro">impl_from!</span>(<span class="ident">esplora</span>::<span class="ident">EsploraBlockchainConfig</span>, <span class="ident">AnyBlockchainConfig</span>, <span class="ident">Esplora</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;esplora&quot;</span>)]</span>);
+<span class="macro">impl_from!</span>(<span class="ident">compact_filters</span>::<span class="ident">CompactFiltersBlockchainConfig</span>, <span class="ident">AnyBlockchainConfig</span>, <span class="ident">CompactFilters</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;compact_filters&quot;</span>)]</span>);
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="bdk" data-search-js="../../../search-index.js"></div>
     <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script></body></html>
