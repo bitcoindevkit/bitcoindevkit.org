@@ -325,22 +325,22 @@
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">BURIED_CONFIRMATIONS</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">100</span>;
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CFSync</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CfSync</span> {
     <span class="ident">headers_store</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">Full</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">cf_store</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">CFStore</span><span class="op">&gt;</span>,
+    <span class="ident">cf_store</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">CfStore</span><span class="op">&gt;</span>,
     <span class="ident">skip_blocks</span>: <span class="ident">usize</span>,
     <span class="ident">bundles</span>: <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">VecDeque</span><span class="op">&lt;</span>(<span class="ident">BundleStatus</span>, <span class="ident">FilterHeader</span>, <span class="ident">usize</span>)<span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">CFSync</span> {
+<span class="kw">impl</span> <span class="ident">CfSync</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
         <span class="ident">headers_store</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">Full</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="ident">skip_blocks</span>: <span class="ident">usize</span>,
         <span class="ident">filter_type</span>: <span class="ident">u8</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">cf_store</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">CFStore</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">headers_store</span>, <span class="ident">filter_type</span>)<span class="question-mark">?</span>);
+        <span class="kw">let</span> <span class="ident">cf_store</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">CfStore</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">headers_store</span>, <span class="ident">filter_type</span>)<span class="question-mark">?</span>);
 
-        <span class="prelude-val">Ok</span>(<span class="ident">CFSync</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">CfSync</span> {
             <span class="ident">headers_store</span>,
             <span class="ident">cf_store</span>,
             <span class="ident">skip_blocks</span>,
@@ -451,7 +451,7 @@
                     <span class="ident">checkpoint</span>,
                     <span class="ident">headers_resp</span>.<span class="ident">filter_hashes</span>,
                 )<span class="question-mark">?</span> {
-                    <span class="ident">BundleStatus</span>::<span class="ident">CFHeaders</span> { <span class="ident">cf_headers</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">cf_headers</span>,
+                    <span class="ident">BundleStatus</span>::<span class="ident">CfHeaders</span> { <span class="ident">cf_headers</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">cf_headers</span>,
                     <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CompactFiltersError</span>::<span class="ident">InvalidResponse</span>),
                 };
 
@@ -471,7 +471,7 @@
                     .<span class="ident">cf_store</span>
                     .<span class="ident">advance_to_cf_filters</span>(<span class="ident">index</span>, <span class="ident">checkpoint</span>, <span class="ident">cf_headers</span>, <span class="ident">filters</span>)<span class="question-mark">?</span>;
             }
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">BundleStatus</span>::<span class="ident">CFHeaders</span> { <span class="ident">cf_headers</span> } <span class="op">=</span> <span class="ident">status</span> {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">BundleStatus</span>::<span class="ident">CfHeaders</span> { <span class="ident">cf_headers</span> } <span class="op">=</span> <span class="ident">status</span> {
                 <span class="ident">log</span>::<span class="macro">trace!</span>(<span class="string">&quot;status: CFHeaders&quot;</span>);
 
                 <span class="ident">peer</span>.<span class="ident">get_cf_filters</span>(

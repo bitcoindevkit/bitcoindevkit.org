@@ -242,7 +242,7 @@
     <span class="doccomment">/// the desired outputs plus fee, if there is not such combination this error is thrown</span>
     <span class="ident">BnBNoExactMatch</span>,
     <span class="doccomment">/// Happens when trying to spend an UTXO that is not in the internal database</span>
-    <span class="ident">UnknownUTXO</span>,
+    <span class="ident">UnknownUtxo</span>,
     <span class="doccomment">/// Thrown when a tx is not found in the internal database</span>
     <span class="ident">TransactionNotFound</span>,
     <span class="doccomment">/// Happens when trying to bump a transaction that is already confirmed</span>
@@ -292,15 +292,15 @@
     <span class="doccomment">/// Miniscript error</span>
     <span class="ident">Miniscript</span>(<span class="ident">miniscript</span>::<span class="ident">Error</span>),
     <span class="doccomment">/// BIP32 error</span>
-    <span class="ident">BIP32</span>(<span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">Error</span>),
+    <span class="ident">Bip32</span>(<span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">Error</span>),
     <span class="doccomment">/// An ECDSA error</span>
     <span class="ident">Secp256k1</span>(<span class="ident">bitcoin</span>::<span class="ident">secp256k1</span>::<span class="ident">Error</span>),
     <span class="doccomment">/// Error serializing or deserializing JSON data</span>
-    <span class="ident">JSON</span>(<span class="ident">serde_json</span>::<span class="ident">Error</span>),
+    <span class="ident">Json</span>(<span class="ident">serde_json</span>::<span class="ident">Error</span>),
     <span class="doccomment">/// Hex decoding error</span>
     <span class="ident">Hex</span>(<span class="ident">bitcoin</span>::<span class="ident">hashes</span>::<span class="ident">hex</span>::<span class="ident">Error</span>),
     <span class="doccomment">/// Partially signed bitcoin transaction error</span>
-    <span class="ident">PSBT</span>(<span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">psbt</span>::<span class="ident">Error</span>),
+    <span class="ident">Psbt</span>(<span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">psbt</span>::<span class="ident">Error</span>),
 
     <span class="comment">//KeyMismatch(bitcoin::secp256k1::PublicKey, bitcoin::secp256k1::PublicKey),</span>
     <span class="comment">//MissingInputUTXO(usize),</span>
@@ -353,7 +353,7 @@
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">key_error</span>: <span class="kw">crate</span>::<span class="ident">keys</span>::<span class="ident">KeyError</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
         <span class="kw">match</span> <span class="ident">key_error</span> {
             <span class="kw">crate</span>::<span class="ident">keys</span>::<span class="ident">KeyError</span>::<span class="ident">Miniscript</span>(<span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Error</span>::<span class="ident">Miniscript</span>(<span class="ident">inner</span>),
-            <span class="kw">crate</span>::<span class="ident">keys</span>::<span class="ident">KeyError</span>::<span class="ident">BIP32</span>(<span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Error</span>::<span class="ident">BIP32</span>(<span class="ident">inner</span>),
+            <span class="kw">crate</span>::<span class="ident">keys</span>::<span class="ident">KeyError</span>::<span class="ident">Bip32</span>(<span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Error</span>::<span class="ident">Bip32</span>(<span class="ident">inner</span>),
             <span class="kw">crate</span>::<span class="ident">keys</span>::<span class="ident">KeyError</span>::<span class="ident">InvalidChecksum</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Error</span>::<span class="ident">ChecksumMismatch</span>,
             <span class="ident">e</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Error</span>::<span class="ident">Key</span>(<span class="ident">e</span>),
         }
@@ -362,11 +362,11 @@
 
 <span class="macro">impl_error!</span>(<span class="ident">bitcoin</span>::<span class="ident">consensus</span>::<span class="ident">encode</span>::<span class="ident">Error</span>, <span class="ident">Encode</span>);
 <span class="macro">impl_error!</span>(<span class="ident">miniscript</span>::<span class="ident">Error</span>, <span class="ident">Miniscript</span>);
-<span class="macro">impl_error!</span>(<span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">Error</span>, <span class="ident">BIP32</span>);
+<span class="macro">impl_error!</span>(<span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::<span class="ident">Error</span>, <span class="ident">Bip32</span>);
 <span class="macro">impl_error!</span>(<span class="ident">bitcoin</span>::<span class="ident">secp256k1</span>::<span class="ident">Error</span>, <span class="ident">Secp256k1</span>);
-<span class="macro">impl_error!</span>(<span class="ident">serde_json</span>::<span class="ident">Error</span>, <span class="ident">JSON</span>);
+<span class="macro">impl_error!</span>(<span class="ident">serde_json</span>::<span class="ident">Error</span>, <span class="ident">Json</span>);
 <span class="macro">impl_error!</span>(<span class="ident">bitcoin</span>::<span class="ident">hashes</span>::<span class="ident">hex</span>::<span class="ident">Error</span>, <span class="ident">Hex</span>);
-<span class="macro">impl_error!</span>(<span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">psbt</span>::<span class="ident">Error</span>, <span class="ident">PSBT</span>);
+<span class="macro">impl_error!</span>(<span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">psbt</span>::<span class="ident">Error</span>, <span class="ident">Psbt</span>);
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)]</span>
 <span class="macro">impl_error!</span>(<span class="ident">electrum_client</span>::<span class="ident">Error</span>, <span class="ident">Electrum</span>);

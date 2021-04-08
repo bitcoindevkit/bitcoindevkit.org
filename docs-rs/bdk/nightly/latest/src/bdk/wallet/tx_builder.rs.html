@@ -999,7 +999,7 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">sighash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SigHashType</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">ordering</span>: <span class="ident">TxOrdering</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">locktime</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">rbf</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RBFValue</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">rbf</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RbfValue</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">version</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Version</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">change_policy</span>: <span class="ident">ChangeSpendPolicy</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">force_non_witness_utxo</span>: <span class="ident">bool</span>,
@@ -1134,7 +1134,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_utxos</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">outpoints</span>: <span class="kw-2">&amp;</span>[<span class="ident">OutPoint</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">utxos</span> <span class="op">=</span> <span class="ident">outpoints</span>
             .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">outpoint</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">wallet</span>.<span class="ident">get_utxo</span>(<span class="kw-2">*</span><span class="ident">outpoint</span>)<span class="question-mark">?</span>.<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="ident">UnknownUTXO</span>))
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">outpoint</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">wallet</span>.<span class="ident">get_utxo</span>(<span class="kw-2">*</span><span class="ident">outpoint</span>)<span class="question-mark">?</span>.<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="ident">UnknownUtxo</span>))
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
         <span class="kw">for</span> <span class="ident">utxo</span> <span class="kw">in</span> <span class="ident">utxos</span> {
@@ -1419,7 +1419,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This will use the default nSequence value of `0xFFFFFFFD`.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_rbf</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">rbf</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">RBFValue</span>::<span class="ident">Default</span>);
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">rbf</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">RbfValue</span>::<span class="ident">Default</span>);
         <span class="self">self</span>
     }
 
@@ -1431,7 +1431,7 @@
     <span class="doccomment">/// If the `nsequence` is higher than `0xFFFFFFFD` an error will be thrown, since it would not</span>
     <span class="doccomment">/// be a valid nSequence to signal RBF.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_rbf_with_sequence</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">nsequence</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">rbf</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">RBFValue</span>::<span class="ident">Value</span>(<span class="ident">nsequence</span>));
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">rbf</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">RbfValue</span>::<span class="ident">Value</span>(<span class="ident">nsequence</span>));
         <span class="self">self</span>
     }
 }
@@ -1468,7 +1468,7 @@
     <span class="doccomment">/// Unchanged</span>
     <span class="ident">Untouched</span>,
     <span class="doccomment">/// BIP69 / Lexicographic</span>
-    <span class="ident">BIP69Lexicographic</span>,
+    <span class="ident">Bip69Lexicographic</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">TxOrdering</span> {
@@ -1494,7 +1494,7 @@
 
                 <span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">shuffle</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
             }
-            <span class="ident">TxOrdering</span>::<span class="ident">BIP69Lexicographic</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">TxOrdering</span>::<span class="ident">Bip69Lexicographic</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">sort_unstable_by_key</span>(<span class="op">|</span><span class="ident">txin</span><span class="op">|</span> {
                     (<span class="ident">txin</span>.<span class="ident">previous_output</span>.<span class="ident">txid</span>, <span class="ident">txin</span>.<span class="ident">previous_output</span>.<span class="ident">vout</span>)
                 });
@@ -1521,16 +1521,16 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Has a default value of `0xFFFFFFFD`</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Ord</span>, <span class="ident">PartialOrd</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Hash</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">RBFValue</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">RbfValue</span> {
     <span class="ident">Default</span>,
     <span class="ident">Value</span>(<span class="ident">u32</span>),
 }
 
-<span class="kw">impl</span> <span class="ident">RBFValue</span> {
+<span class="kw">impl</span> <span class="ident">RbfValue</span> {
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get_value</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">RBFValue</span>::<span class="ident">Default</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0xFFFFFFFD</span>,
-            <span class="ident">RBFValue</span>::<span class="ident">Value</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">v</span>,
+            <span class="ident">RbfValue</span>::<span class="ident">Default</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0xFFFFFFFD</span>,
+            <span class="ident">RbfValue</span>::<span class="ident">Value</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">v</span>,
         }
     }
 }
@@ -1615,7 +1615,7 @@
         <span class="kw">let</span> <span class="ident">original_tx</span> <span class="op">=</span> <span class="macro">ordering_test_tx!</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">original_tx</span>;
 
-        <span class="ident">TxOrdering</span>::<span class="ident">BIP69Lexicographic</span>.<span class="ident">sort_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tx</span>);
+        <span class="ident">TxOrdering</span>::<span class="ident">Bip69Lexicographic</span>.<span class="ident">sort_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tx</span>);
 
         <span class="macro">assert_eq!</span>(
             <span class="ident">tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">previous_output</span>,

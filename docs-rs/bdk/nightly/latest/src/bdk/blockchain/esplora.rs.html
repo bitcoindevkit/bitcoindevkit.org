@@ -459,7 +459,7 @@
 <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">hashes</span>::{<span class="ident">sha256</span>, <span class="ident">Hash</span>};
 <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">BlockHash</span>, <span class="ident">BlockHeader</span>, <span class="ident">Script</span>, <span class="ident">Transaction</span>, <span class="ident">Txid</span>};
 
-<span class="kw">use</span> <span class="self">self</span>::<span class="ident">utils</span>::{<span class="ident">ELSGetHistoryRes</span>, <span class="ident">ElectrumLikeSync</span>};
+<span class="kw">use</span> <span class="self">self</span>::<span class="ident">utils</span>::{<span class="ident">ElectrumLikeSync</span>, <span class="ident">ElsGetHistoryRes</span>};
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">database</span>::<span class="ident">BatchDatabase</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
@@ -630,7 +630,7 @@
     <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">_script_get_history</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ELSGetHistoryRes</span><span class="op">&gt;</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ElsGetHistoryRes</span><span class="op">&gt;</span>, <span class="ident">EsploraError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">scripthash</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">script_to_scripthash</span>(<span class="ident">script</span>);
 
@@ -647,7 +647,7 @@
                 .<span class="ident">json</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">EsploraGetHistory</span><span class="op">&gt;</span><span class="op">&gt;</span>()
                 .<span class="kw">await</span><span class="question-mark">?</span>
                 .<span class="ident">into_iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">ELSGetHistoryRes</span> {
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">ElsGetHistoryRes</span> {
                     <span class="ident">tx_hash</span>: <span class="ident">x</span>.<span class="ident">txid</span>,
                     <span class="ident">height</span>: <span class="ident">x</span>.<span class="ident">status</span>.<span class="ident">block_height</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>) <span class="kw">as</span> <span class="ident">i32</span>,
                 }),
@@ -681,7 +681,7 @@
 
             <span class="macro">debug!</span>(<span class="string">&quot;... adding {} confirmed transactions&quot;</span>, <span class="ident">len</span>);
 
-            <span class="ident">result</span>.<span class="ident">extend</span>(<span class="ident">response</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">ELSGetHistoryRes</span> {
+            <span class="ident">result</span>.<span class="ident">extend</span>(<span class="ident">response</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">ElsGetHistoryRes</span> {
                 <span class="ident">tx_hash</span>: <span class="ident">x</span>.<span class="ident">txid</span>,
                 <span class="ident">height</span>: <span class="ident">x</span>.<span class="ident">status</span>.<span class="ident">block_height</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>) <span class="kw">as</span> <span class="ident">i32</span>,
             }));
@@ -711,7 +711,7 @@
     <span class="kw">fn</span> <span class="ident">els_batch_script_get_history</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span>, <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">Script</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">scripts</span>: <span class="ident">I</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ELSGetHistoryRes</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ElsGetHistoryRes</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">future</span> <span class="op">=</span> <span class="kw">async</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">results</span> <span class="op">=</span> <span class="macro">vec!</span>[];
             <span class="kw">for</span> <span class="ident">chunk</span> <span class="kw">in</span> <span class="ident">ChunksIterator</span>::<span class="ident">new</span>(<span class="ident">scripts</span>.<span class="ident">into_iter</span>(), <span class="self">self</span>.<span class="ident">concurrency</span> <span class="kw">as</span> <span class="ident">usize</span>) {
@@ -719,7 +719,7 @@
                 <span class="kw">for</span> <span class="ident">script</span> <span class="kw">in</span> <span class="ident">chunk</span> {
                     <span class="ident">futs</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">_script_get_history</span>(<span class="kw-2">&amp;</span><span class="ident">script</span>));
                 }
-                <span class="kw">let</span> <span class="ident">partial_results</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ELSGetHistoryRes</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">futs</span>.<span class="ident">try_collect</span>().<span class="kw">await</span><span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">partial_results</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ElsGetHistoryRes</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">futs</span>.<span class="ident">try_collect</span>().<span class="kw">await</span><span class="question-mark">?</span>;
                 <span class="ident">results</span>.<span class="ident">extend</span>(<span class="ident">partial_results</span>);
             }
             <span class="prelude-val">Ok</span>(<span class="ident">stream</span>::<span class="ident">iter</span>(<span class="ident">results</span>).<span class="ident">collect</span>().<span class="kw">await</span>)
