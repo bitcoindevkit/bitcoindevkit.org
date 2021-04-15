@@ -2318,7 +2318,7 @@
                     .<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">extract_policy</span>(<span class="ident">signers</span>, <span class="ident">secp</span>))
                     .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>
                     .<span class="ident">into_iter</span>()
-                    .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>)
+                    .<span class="ident">flatten</span>()
                     .<span class="ident">collect</span>();
 
                 <span class="kw">if</span> <span class="ident">mapped</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">nodes</span>.<span class="ident">len</span>() {
@@ -2471,8 +2471,8 @@
 
         <span class="macro">assert</span><span class="macro">!</span>(
             <span class="macro">matches</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="ident">policy</span>.<span class="ident">item</span>, <span class="ident">Multisig</span> { <span class="ident">keys</span>, <span class="ident">threshold</span> } <span class="kw">if</span> <span class="ident">threshold</span> <span class="op">=</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="number">2usize</span>
-            <span class="op">&amp;&amp;</span> <span class="kw-2">&amp;</span><span class="ident">keys</span>[<span class="number">0</span>].<span class="ident">fingerprint</span>.<span class="ident">unwrap</span>() <span class="op">=</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">fingerprint0</span>
-            <span class="op">&amp;&amp;</span> <span class="kw-2">&amp;</span><span class="ident">keys</span>[<span class="number">1</span>].<span class="ident">fingerprint</span>.<span class="ident">unwrap</span>() <span class="op">=</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">fingerprint1</span>)
+            <span class="op">&amp;&amp;</span> <span class="ident">keys</span>[<span class="number">0</span>].<span class="ident">fingerprint</span>.<span class="ident">unwrap</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">fingerprint0</span>
+            <span class="op">&amp;&amp;</span> <span class="ident">keys</span>[<span class="number">1</span>].<span class="ident">fingerprint</span>.<span class="ident">unwrap</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">fingerprint1</span>)
         );
         <span class="comment">// TODO should this be &quot;Satisfaction::None&quot; since we have no prv keys?</span>
         <span class="comment">// TODO should items and conditions not be empty?</span>
@@ -2502,8 +2502,8 @@
             .<span class="ident">unwrap</span>();
         <span class="macro">assert</span><span class="macro">!</span>(
             <span class="macro">matches</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="ident">policy</span>.<span class="ident">item</span>, <span class="ident">Multisig</span> { <span class="ident">keys</span>, <span class="ident">threshold</span> } <span class="kw">if</span> <span class="ident">threshold</span> <span class="op">=</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="number">2usize</span>
-            <span class="op">&amp;&amp;</span> <span class="kw-2">&amp;</span><span class="ident">keys</span>[<span class="number">0</span>].<span class="ident">fingerprint</span>.<span class="ident">unwrap</span>() <span class="op">=</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">fingerprint0</span>
-            <span class="op">&amp;&amp;</span> <span class="kw-2">&amp;</span><span class="ident">keys</span>[<span class="number">1</span>].<span class="ident">fingerprint</span>.<span class="ident">unwrap</span>() <span class="op">=</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">fingerprint1</span>)
+            <span class="op">&amp;&amp;</span> <span class="ident">keys</span>[<span class="number">0</span>].<span class="ident">fingerprint</span>.<span class="ident">unwrap</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">fingerprint0</span>
+            <span class="op">&amp;&amp;</span> <span class="ident">keys</span>[<span class="number">1</span>].<span class="ident">fingerprint</span>.<span class="ident">unwrap</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">fingerprint1</span>)
         );
 
         <span class="macro">assert</span><span class="macro">!</span>(
@@ -2877,7 +2877,7 @@
             )
         );
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">policy_clone</span> <span class="op">=</span> <span class="ident">original_policy</span>.<span class="ident">clone</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">policy_clone</span> <span class="op">=</span> <span class="ident">original_policy</span>;
         <span class="kw">let</span> <span class="ident">psbt</span>: <span class="ident">PSBT</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64</span>::<span class="ident">decode</span>(<span class="ident">ALICE_BOB_SIGNED_PSBT</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
         <span class="ident">policy_clone</span>
             .<span class="ident">fill_satisfactions</span>(<span class="kw-2">&amp;</span><span class="ident">psbt</span>, <span class="kw-2">&amp;</span><span class="ident">wallet_desc</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>)
