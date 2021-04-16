@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/wallet/signer.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>signer.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../bdk/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../bdk/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
                 <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -773,47 +773,47 @@
 <span class="doccomment">//! # Ok::&lt;_, bdk::Error&gt;(())</span>
 <span class="doccomment">//! ```</span>
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">BTreeMap</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">Bound</span>::<span class="ident">Included</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Arc</span>;
+<span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
+<span class="kw">use</span> <span class="ident">std::collections::BTreeMap</span>;
+<span class="kw">use</span> <span class="ident">std::fmt</span>;
+<span class="kw">use</span> <span class="ident">std::ops::Bound::Included</span>;
+<span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
 
-<span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">blockdata</span>::<span class="ident">opcodes</span>;
-<span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">blockdata</span>::<span class="ident">script</span>::<span class="ident">Builder</span> <span class="kw">as</span> <span class="ident">ScriptBuilder</span>;
-<span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">hashes</span>::{<span class="ident">hash160</span>, <span class="ident">Hash</span>};
-<span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">secp256k1</span>::{<span class="ident">Message</span>, <span class="ident">Secp256k1</span>};
-<span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>::{<span class="ident">ChildNumber</span>, <span class="ident">DerivationPath</span>, <span class="ident">ExtendedPrivKey</span>, <span class="ident">Fingerprint</span>};
-<span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::{<span class="ident">bip143</span>, <span class="ident">psbt</span>};
+<span class="kw">use</span> <span class="ident">bitcoin::blockdata::opcodes</span>;
+<span class="kw">use</span> <span class="ident">bitcoin::blockdata::script::Builder</span> <span class="kw">as</span> <span class="ident">ScriptBuilder</span>;
+<span class="kw">use</span> <span class="ident">bitcoin::hashes</span>::{<span class="ident">hash160</span>, <span class="ident">Hash</span>};
+<span class="kw">use</span> <span class="ident">bitcoin::secp256k1</span>::{<span class="ident">Message</span>, <span class="ident">Secp256k1</span>};
+<span class="kw">use</span> <span class="ident">bitcoin::util::bip32</span>::{<span class="ident">ChildNumber</span>, <span class="ident">DerivationPath</span>, <span class="ident">ExtendedPrivKey</span>, <span class="ident">Fingerprint</span>};
+<span class="kw">use</span> <span class="ident">bitcoin::util</span>::{<span class="ident">bip143</span>, <span class="ident">psbt</span>};
 <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">PrivateKey</span>, <span class="ident">Script</span>, <span class="ident">SigHash</span>, <span class="ident">SigHashType</span>};
 
-<span class="kw">use</span> <span class="ident">miniscript</span>::<span class="ident">descriptor</span>::{<span class="ident">DescriptorSecretKey</span>, <span class="ident">DescriptorSinglePriv</span>, <span class="ident">DescriptorXKey</span>, <span class="ident">KeyMap</span>};
+<span class="kw">use</span> <span class="ident">miniscript::descriptor</span>::{<span class="ident">DescriptorSecretKey</span>, <span class="ident">DescriptorSinglePriv</span>, <span class="ident">DescriptorXKey</span>, <span class="ident">KeyMap</span>};
 <span class="kw">use</span> <span class="ident">miniscript</span>::{<span class="ident">Legacy</span>, <span class="ident">MiniscriptKey</span>, <span class="ident">Segwitv0</span>};
 
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">utils</span>::<span class="ident">SecpCtx</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">descriptor</span>::<span class="ident">XKeyUtils</span>;
+<span class="kw">use</span> <span class="kw">super</span><span class="ident">::utils::SecpCtx</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::descriptor::XKeyUtils</span>;
 
 <span class="doccomment">/// Identifier of a signer in the `SignersContainers`. Used as a key to find the right signer among</span>
 <span class="doccomment">/// multiple of them</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Ord</span>, <span class="ident">PartialOrd</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">SignerId</span> {
     <span class="doccomment">/// Bitcoin HASH160 (RIPEMD160 after SHA256) hash of an ECDSA public key</span>
-    <span class="ident">PkHash</span>(<span class="ident">hash160</span>::<span class="ident">Hash</span>),
+    <span class="ident">PkHash</span>(<span class="ident">hash160::Hash</span>),
     <span class="doccomment">/// The fingerprint of a BIP32 extended key</span>
     <span class="ident">Fingerprint</span>(<span class="ident">Fingerprint</span>),
     <span class="doccomment">/// Dummy identifier</span>
     <span class="ident">Dummy</span>(<span class="ident">u64</span>),
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">hash160</span>::<span class="ident">Hash</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SignerId</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">hash</span>: <span class="ident">hash160</span>::<span class="ident">Hash</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SignerId</span> {
-        <span class="ident">SignerId</span>::<span class="ident">PkHash</span>(<span class="ident">hash</span>)
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">hash160::Hash</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SignerId</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">hash</span>: <span class="ident">hash160::Hash</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SignerId</span> {
+        <span class="ident">SignerId::PkHash</span>(<span class="ident">hash</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Fingerprint</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SignerId</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">fing</span>: <span class="ident">Fingerprint</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SignerId</span> {
-        <span class="ident">SignerId</span>::<span class="ident">Fingerprint</span>(<span class="ident">fing</span>)
+        <span class="ident">SignerId::Fingerprint</span>(<span class="ident">fing</span>)
     }
 }
 
@@ -840,19 +840,19 @@
     <span class="ident">MissingHdKeypath</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">SignerError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>)
+<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">SignerError</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">for</span> <span class="ident">SignerError</span> {}
+<span class="kw">impl</span> <span class="ident">std::error::Error</span> <span class="kw">for</span> <span class="ident">SignerError</span> {}
 
 <span class="doccomment">/// Trait for signers</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This trait can be implemented to provide customized signers to the wallet. For an example see</span>
 <span class="doccomment">/// [`this module`](crate::wallet::signer)&#39;s documentation.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Signer</span>: <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Signer</span>: <span class="ident">fmt::Debug</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> {
     <span class="doccomment">/// Sign a PSBT</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The `input_index` argument is only provided if the wallet doesn&#39;t declare to sign the whole</span>
@@ -860,7 +860,7 @@
     <span class="doccomment">/// can be ignored.</span>
     <span class="kw">fn</span> <span class="ident">sign</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>::<span class="ident">PartiallySignedTransaction</span>,
+        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span>;
@@ -888,13 +888,13 @@
 <span class="kw">impl</span> <span class="ident">Signer</span> <span class="kw">for</span> <span class="ident">DescriptorXKey</span><span class="op">&lt;</span><span class="ident">ExtendedPrivKey</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">sign</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>::<span class="ident">PartiallySignedTransaction</span>,
+        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">input_index</span> <span class="op">=</span> <span class="ident">input_index</span>.<span class="ident">unwrap</span>();
         <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError</span>::<span class="ident">InputIndexOutOfRange</span>);
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError::InputIndexOutOfRange</span>);
         }
 
         <span class="kw">let</span> (<span class="ident">public_key</span>, <span class="ident">full_path</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>]
@@ -915,7 +915,7 @@
 
         <span class="kw">let</span> <span class="ident">derived_key</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">origin</span>.<span class="ident">clone</span>() {
             <span class="prelude-val">Some</span>((<span class="ident">_fingerprint</span>, <span class="ident">origin_path</span>)) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">deriv_path</span> <span class="op">=</span> <span class="ident">DerivationPath</span>::<span class="ident">from</span>(
+                <span class="kw">let</span> <span class="ident">deriv_path</span> <span class="op">=</span> <span class="ident">DerivationPath::from</span>(
                     <span class="kw-2">&amp;</span><span class="ident">full_path</span>.<span class="ident">into_iter</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ChildNumber</span><span class="op">&gt;</span><span class="op">&gt;</span>()
                         [<span class="ident">origin_path</span>.<span class="ident">len</span>()..],
                 );
@@ -925,7 +925,7 @@
         };
 
         <span class="kw">if</span> <span class="kw-2">&amp;</span><span class="ident">derived_key</span>.<span class="ident">private_key</span>.<span class="ident">public_key</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">public_key</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">SignerError</span>::<span class="ident">InvalidKey</span>)
+            <span class="prelude-val">Err</span>(<span class="ident">SignerError::InvalidKey</span>)
         } <span class="kw">else</span> {
             <span class="ident">derived_key</span>.<span class="ident">private_key</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">Some</span>(<span class="ident">input_index</span>), <span class="ident">secp</span>)
         }
@@ -936,24 +936,24 @@
     }
 
     <span class="kw">fn</span> <span class="ident">id</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SignerId</span> {
-        <span class="ident">SignerId</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">root_fingerprint</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>))
+        <span class="ident">SignerId::from</span>(<span class="self">self</span>.<span class="ident">root_fingerprint</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>))
     }
 
     <span class="kw">fn</span> <span class="ident">descriptor_secret_key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DescriptorSecretKey</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">DescriptorSecretKey</span>::<span class="ident">XPrv</span>(<span class="self">self</span>.<span class="ident">clone</span>()))
+        <span class="prelude-val">Some</span>(<span class="ident">DescriptorSecretKey::XPrv</span>(<span class="self">self</span>.<span class="ident">clone</span>()))
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Signer</span> <span class="kw">for</span> <span class="ident">PrivateKey</span> {
     <span class="kw">fn</span> <span class="ident">sign</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>::<span class="ident">PartiallySignedTransaction</span>,
+        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">input_index</span> <span class="op">=</span> <span class="ident">input_index</span>.<span class="ident">unwrap</span>();
         <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError</span>::<span class="ident">InputIndexOutOfRange</span>);
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError::InputIndexOutOfRange</span>);
         }
 
         <span class="kw">let</span> <span class="ident">pubkey</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">public_key</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>);
@@ -966,16 +966,16 @@
         <span class="comment">// these? The original idea was to declare sign() as sign&lt;Ctx: ScriptContex&gt;() and use Ctx,</span>
         <span class="comment">// but that violates the rules for trait-objects, so we can&#39;t do it.</span>
         <span class="kw">let</span> (<span class="ident">hash</span>, <span class="ident">sighash</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>].<span class="ident">witness_utxo</span> {
-            <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Segwitv0</span>::<span class="ident">sighash</span>(<span class="ident">psbt</span>, <span class="ident">input_index</span>)<span class="question-mark">?</span>,
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Legacy</span>::<span class="ident">sighash</span>(<span class="ident">psbt</span>, <span class="ident">input_index</span>)<span class="question-mark">?</span>,
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Segwitv0::sighash</span>(<span class="ident">psbt</span>, <span class="ident">input_index</span>)<span class="question-mark">?</span>,
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Legacy::sighash</span>(<span class="ident">psbt</span>, <span class="ident">input_index</span>)<span class="question-mark">?</span>,
         };
 
         <span class="kw">let</span> <span class="ident">signature</span> <span class="op">=</span> <span class="ident">secp</span>.<span class="ident">sign</span>(
-            <span class="kw-2">&amp;</span><span class="ident">Message</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">hash</span>.<span class="ident">into_inner</span>()[..]).<span class="ident">unwrap</span>(),
+            <span class="kw-2">&amp;</span><span class="ident">Message::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">hash</span>.<span class="ident">into_inner</span>()[..]).<span class="ident">unwrap</span>(),
             <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">key</span>,
         );
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">final_signature</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="number">75</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">final_signature</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="number">75</span>);
         <span class="ident">final_signature</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">signature</span>.<span class="ident">serialize_der</span>());
         <span class="ident">final_signature</span>.<span class="ident">push</span>(<span class="ident">sighash</span>.<span class="ident">as_u32</span>() <span class="kw">as</span> <span class="ident">u8</span>);
 
@@ -991,11 +991,11 @@
     }
 
     <span class="kw">fn</span> <span class="ident">id</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SignerId</span> {
-        <span class="ident">SignerId</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">public_key</span>(<span class="ident">secp</span>).<span class="ident">to_pubkeyhash</span>())
+        <span class="ident">SignerId::from</span>(<span class="self">self</span>.<span class="ident">public_key</span>(<span class="ident">secp</span>).<span class="ident">to_pubkeyhash</span>())
     }
 
     <span class="kw">fn</span> <span class="ident">descriptor_secret_key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DescriptorSecretKey</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">DescriptorSecretKey</span>::<span class="ident">SinglePriv</span>(<span class="ident">DescriptorSinglePriv</span> {
+        <span class="prelude-val">Some</span>(<span class="ident">DescriptorSecretKey::SinglePriv</span>(<span class="ident">DescriptorSinglePriv</span> {
             <span class="ident">key</span>: <span class="kw-2">*</span><span class="self">self</span>,
             <span class="ident">origin</span>: <span class="prelude-val">None</span>,
         }))
@@ -1010,7 +1010,7 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialOrd</span>, <span class="ident">PartialEq</span>, <span class="ident">Ord</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SignerOrdering</span>(<span class="kw">pub</span> <span class="ident">usize</span>);
 
-<span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">default</span>::<span class="ident">Default</span> <span class="kw">for</span> <span class="ident">SignerOrdering</span> {
+<span class="kw">impl</span> <span class="ident">std::default::Default</span> <span class="kw">for</span> <span class="ident">SignerOrdering</span> {
     <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">SignerOrdering</span>(<span class="number">100</span>)
     }
@@ -1048,20 +1048,20 @@
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">KeyMap</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SignersContainer</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">keymap</span>: <span class="ident">KeyMap</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SignersContainer</span> {
-        <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1</span>::<span class="ident">new</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">container</span> <span class="op">=</span> <span class="ident">SignersContainer</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">container</span> <span class="op">=</span> <span class="ident">SignersContainer::new</span>();
 
         <span class="kw">for</span> (<span class="kw">_</span>, <span class="ident">secret</span>) <span class="kw">in</span> <span class="ident">keymap</span> {
             <span class="kw">match</span> <span class="ident">secret</span> {
-                <span class="ident">DescriptorSecretKey</span>::<span class="ident">SinglePriv</span>(<span class="ident">private_key</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">container</span>.<span class="ident">add_external</span>(
-                    <span class="ident">SignerId</span>::<span class="ident">from</span>(<span class="ident">private_key</span>.<span class="ident">key</span>.<span class="ident">public_key</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>).<span class="ident">to_pubkeyhash</span>()),
-                    <span class="ident">SignerOrdering</span>::<span class="ident">default</span>(),
-                    <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">private_key</span>.<span class="ident">key</span>),
+                <span class="ident">DescriptorSecretKey::SinglePriv</span>(<span class="ident">private_key</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">container</span>.<span class="ident">add_external</span>(
+                    <span class="ident">SignerId::from</span>(<span class="ident">private_key</span>.<span class="ident">key</span>.<span class="ident">public_key</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>).<span class="ident">to_pubkeyhash</span>()),
+                    <span class="ident">SignerOrdering::default</span>(),
+                    <span class="ident">Arc::new</span>(<span class="ident">private_key</span>.<span class="ident">key</span>),
                 ),
-                <span class="ident">DescriptorSecretKey</span>::<span class="ident">XPrv</span>(<span class="ident">xprv</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">container</span>.<span class="ident">add_external</span>(
-                    <span class="ident">SignerId</span>::<span class="ident">from</span>(<span class="ident">xprv</span>.<span class="ident">root_fingerprint</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>)),
-                    <span class="ident">SignerOrdering</span>::<span class="ident">default</span>(),
-                    <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">xprv</span>),
+                <span class="ident">DescriptorSecretKey::XPrv</span>(<span class="ident">xprv</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">container</span>.<span class="ident">add_external</span>(
+                    <span class="ident">SignerId::from</span>(<span class="ident">xprv</span>.<span class="ident">root_fingerprint</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>)),
+                    <span class="ident">SignerOrdering::default</span>(),
+                    <span class="ident">Arc::new</span>(<span class="ident">xprv</span>),
                 ),
             };
         }
@@ -1073,7 +1073,7 @@
 <span class="kw">impl</span> <span class="ident">SignersContainer</span> {
     <span class="doccomment">/// Default constructor</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">SignersContainer</span>(<span class="ident">Default</span>::<span class="ident">default</span>())
+        <span class="ident">SignersContainer</span>(<span class="ident">Default::default</span>())
     }
 
     <span class="doccomment">/// Adds an external signer to the container for the specified id. Optionally returns the</span>
@@ -1110,7 +1110,7 @@
         <span class="self">self</span>.<span class="number">0</span>
             .<span class="ident">range</span>((
                 <span class="ident">Included</span>(<span class="kw-2">&amp;</span>(<span class="ident">id</span>.<span class="ident">clone</span>(), <span class="ident">SignerOrdering</span>(<span class="number">0</span>)).<span class="ident">into</span>()),
-                <span class="ident">Included</span>(<span class="kw-2">&amp;</span>(<span class="ident">id</span>.<span class="ident">clone</span>(), <span class="ident">SignerOrdering</span>(<span class="ident">usize</span>::<span class="ident">MAX</span>)).<span class="ident">into</span>()),
+                <span class="ident">Included</span>(<span class="kw-2">&amp;</span>(<span class="ident">id</span>.<span class="ident">clone</span>(), <span class="ident">SignerOrdering</span>(<span class="ident">usize::MAX</span>)).<span class="ident">into</span>()),
             ))
             .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">k</span>.<span class="ident">id</span> <span class="op">=</span><span class="op">=</span> <span class="ident">id</span>)
             .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">v</span>)<span class="op">|</span> <span class="ident">v</span>)
@@ -1120,35 +1120,35 @@
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">ComputeSighash</span> {
     <span class="kw">fn</span> <span class="ident">sighash</span>(
-        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">psbt</span>::<span class="ident">PartiallySignedTransaction</span>,
+        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="ident">usize</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">SigHash</span>, <span class="ident">SigHashType</span>), <span class="ident">SignerError</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">ComputeSighash</span> <span class="kw">for</span> <span class="ident">Legacy</span> {
     <span class="kw">fn</span> <span class="ident">sighash</span>(
-        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">psbt</span>::<span class="ident">PartiallySignedTransaction</span>,
+        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="ident">usize</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">SigHash</span>, <span class="ident">SigHashType</span>), <span class="ident">SignerError</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError</span>::<span class="ident">InputIndexOutOfRange</span>);
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError::InputIndexOutOfRange</span>);
         }
 
         <span class="kw">let</span> <span class="ident">psbt_input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>];
         <span class="kw">let</span> <span class="ident">tx_input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="ident">input_index</span>];
 
-        <span class="kw">let</span> <span class="ident">sighash</span> <span class="op">=</span> <span class="ident">psbt_input</span>.<span class="ident">sighash_type</span>.<span class="ident">unwrap_or</span>(<span class="ident">SigHashType</span>::<span class="ident">All</span>);
+        <span class="kw">let</span> <span class="ident">sighash</span> <span class="op">=</span> <span class="ident">psbt_input</span>.<span class="ident">sighash_type</span>.<span class="ident">unwrap_or</span>(<span class="ident">SigHashType::All</span>);
         <span class="kw">let</span> <span class="ident">script</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">psbt_input</span>.<span class="ident">redeem_script</span> {
             <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">redeem_script</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">redeem_script</span>.<span class="ident">clone</span>(),
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">non_witness_utxo</span> <span class="op">=</span> <span class="ident">psbt_input</span>
                     .<span class="ident">non_witness_utxo</span>
                     .<span class="ident">as_ref</span>()
-                    .<span class="ident">ok_or</span>(<span class="ident">SignerError</span>::<span class="ident">MissingNonWitnessUtxo</span>)<span class="question-mark">?</span>;
+                    .<span class="ident">ok_or</span>(<span class="ident">SignerError::MissingNonWitnessUtxo</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">prev_out</span> <span class="op">=</span> <span class="ident">non_witness_utxo</span>
                     .<span class="ident">output</span>
                     .<span class="ident">get</span>(<span class="ident">tx_input</span>.<span class="ident">previous_output</span>.<span class="ident">vout</span> <span class="kw">as</span> <span class="ident">usize</span>)
-                    .<span class="ident">ok_or</span>(<span class="ident">SignerError</span>::<span class="ident">InvalidNonWitnessUtxo</span>)<span class="question-mark">?</span>;
+                    .<span class="ident">ok_or</span>(<span class="ident">SignerError::InvalidNonWitnessUtxo</span>)<span class="question-mark">?</span>;
 
                 <span class="ident">prev_out</span>.<span class="ident">script_pubkey</span>.<span class="ident">clone</span>()
             }
@@ -1164,32 +1164,32 @@
 }
 
 <span class="kw">fn</span> <span class="ident">p2wpkh_script_code</span>(<span class="ident">script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Script</span> {
-    <span class="ident">ScriptBuilder</span>::<span class="ident">new</span>()
-        .<span class="ident">push_opcode</span>(<span class="ident">opcodes</span>::<span class="ident">all</span>::<span class="ident">OP_DUP</span>)
-        .<span class="ident">push_opcode</span>(<span class="ident">opcodes</span>::<span class="ident">all</span>::<span class="ident">OP_HASH160</span>)
+    <span class="ident">ScriptBuilder::new</span>()
+        .<span class="ident">push_opcode</span>(<span class="ident">opcodes::all::OP_DUP</span>)
+        .<span class="ident">push_opcode</span>(<span class="ident">opcodes::all::OP_HASH160</span>)
         .<span class="ident">push_slice</span>(<span class="kw-2">&amp;</span><span class="ident">script</span>[<span class="number">2</span>..])
-        .<span class="ident">push_opcode</span>(<span class="ident">opcodes</span>::<span class="ident">all</span>::<span class="ident">OP_EQUALVERIFY</span>)
-        .<span class="ident">push_opcode</span>(<span class="ident">opcodes</span>::<span class="ident">all</span>::<span class="ident">OP_CHECKSIG</span>)
+        .<span class="ident">push_opcode</span>(<span class="ident">opcodes::all::OP_EQUALVERIFY</span>)
+        .<span class="ident">push_opcode</span>(<span class="ident">opcodes::all::OP_CHECKSIG</span>)
         .<span class="ident">into_script</span>()
 }
 
 <span class="kw">impl</span> <span class="ident">ComputeSighash</span> <span class="kw">for</span> <span class="ident">Segwitv0</span> {
     <span class="kw">fn</span> <span class="ident">sighash</span>(
-        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">psbt</span>::<span class="ident">PartiallySignedTransaction</span>,
+        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="ident">usize</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">SigHash</span>, <span class="ident">SigHashType</span>), <span class="ident">SignerError</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError</span>::<span class="ident">InputIndexOutOfRange</span>);
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError::InputIndexOutOfRange</span>);
         }
 
         <span class="kw">let</span> <span class="ident">psbt_input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>];
 
-        <span class="kw">let</span> <span class="ident">sighash</span> <span class="op">=</span> <span class="ident">psbt_input</span>.<span class="ident">sighash_type</span>.<span class="ident">unwrap_or</span>(<span class="ident">SigHashType</span>::<span class="ident">All</span>);
+        <span class="kw">let</span> <span class="ident">sighash</span> <span class="op">=</span> <span class="ident">psbt_input</span>.<span class="ident">sighash_type</span>.<span class="ident">unwrap_or</span>(<span class="ident">SigHashType::All</span>);
 
         <span class="kw">let</span> <span class="ident">witness_utxo</span> <span class="op">=</span> <span class="ident">psbt_input</span>
             .<span class="ident">witness_utxo</span>
             .<span class="ident">as_ref</span>()
-            .<span class="ident">ok_or</span>(<span class="ident">SignerError</span>::<span class="ident">MissingNonWitnessUtxo</span>)<span class="question-mark">?</span>;
+            .<span class="ident">ok_or</span>(<span class="ident">SignerError::MissingNonWitnessUtxo</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">witness_utxo</span>.<span class="ident">value</span>;
 
         <span class="kw">let</span> <span class="ident">script</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">psbt_input</span>.<span class="ident">witness_script</span> {
@@ -1200,18 +1200,18 @@
                 } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">psbt_input</span>
                     .<span class="ident">redeem_script</span>
                     .<span class="ident">as_ref</span>()
-                    .<span class="ident">map</span>(<span class="ident">Script</span>::<span class="ident">is_v0_p2wpkh</span>)
+                    .<span class="ident">map</span>(<span class="ident">Script::is_v0_p2wpkh</span>)
                     .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
                 {
                     <span class="ident">p2wpkh_script_code</span>(<span class="kw-2">&amp;</span><span class="ident">psbt_input</span>.<span class="ident">redeem_script</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>())
                 } <span class="kw">else</span> {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError</span>::<span class="ident">MissingWitnessScript</span>);
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError::MissingWitnessScript</span>);
                 }
             }
         };
 
         <span class="prelude-val">Ok</span>((
-            <span class="ident">bip143</span>::<span class="ident">SigHashCache</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>).<span class="ident">signature_hash</span>(
+            <span class="ident">bip143::SigHashCache::new</span>(<span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>).<span class="ident">signature_hash</span>(
                 <span class="ident">input_index</span>,
                 <span class="kw-2">&amp;</span><span class="ident">script</span>,
                 <span class="ident">value</span>,
@@ -1247,18 +1247,18 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">signers_container_tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">descriptor</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">descriptor</span>::<span class="ident">IntoWalletDescriptor</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">keys</span>::{<span class="ident">DescriptorKey</span>, <span class="ident">IntoDescriptorKey</span>};
-    <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">secp256k1</span>::{<span class="ident">All</span>, <span class="ident">Secp256k1</span>};
-    <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">bip32</span>;
-    <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">util</span>::<span class="ident">psbt</span>::<span class="ident">PartiallySignedTransaction</span>;
-    <span class="kw">use</span> <span class="ident">bitcoin</span>::<span class="ident">Network</span>;
-    <span class="kw">use</span> <span class="ident">miniscript</span>::<span class="ident">ScriptContext</span>;
-    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span>;
+    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::descriptor</span>;
+    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::descriptor::IntoWalletDescriptor</span>;
+    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::keys</span>::{<span class="ident">DescriptorKey</span>, <span class="ident">IntoDescriptorKey</span>};
+    <span class="kw">use</span> <span class="ident">bitcoin::secp256k1</span>::{<span class="ident">All</span>, <span class="ident">Secp256k1</span>};
+    <span class="kw">use</span> <span class="ident">bitcoin::util::bip32</span>;
+    <span class="kw">use</span> <span class="ident">bitcoin::util::psbt::PartiallySignedTransaction</span>;
+    <span class="kw">use</span> <span class="ident">bitcoin::Network</span>;
+    <span class="kw">use</span> <span class="ident">miniscript::ScriptContext</span>;
+    <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
 
     <span class="kw">fn</span> <span class="ident">is_equal</span>(<span class="ident">this</span>: <span class="kw-2">&amp;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Signer</span><span class="op">&gt;</span>, <span class="ident">that</span>: <span class="kw-2">&amp;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">DummySigner</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1::new</span>();
         <span class="ident">this</span>.<span class="ident">id</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">that</span>.<span class="ident">id</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>)
     }
 
@@ -1267,70 +1267,70 @@
     <span class="comment">// This happens usually when a set of signers is created from a descriptor with private keys.</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">signers_with_same_ordering</span>() {
-        <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1::new</span>();
 
         <span class="kw">let</span> (<span class="ident">prvkey1</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">setup_keys</span>(<span class="ident">TPRV0_STR</span>);
         <span class="kw">let</span> (<span class="ident">prvkey2</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">setup_keys</span>(<span class="ident">TPRV1_STR</span>);
-        <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="macro">descriptor</span><span class="macro">!</span>(<span class="ident">sh</span>(<span class="ident">multi</span>(<span class="number">2</span>, <span class="ident">prvkey1</span>, <span class="ident">prvkey2</span>))).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="macro">descriptor!</span>(<span class="ident">sh</span>(<span class="ident">multi</span>(<span class="number">2</span>, <span class="ident">prvkey1</span>, <span class="ident">prvkey2</span>))).<span class="ident">unwrap</span>();
         <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">keymap</span>) <span class="op">=</span> <span class="ident">desc</span>
-            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network</span>::<span class="ident">Testnet</span>)
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network::Testnet</span>)
             .<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">signers</span> <span class="op">=</span> <span class="ident">SignersContainer</span>::<span class="ident">from</span>(<span class="ident">keymap</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">signers</span>.<span class="ident">ids</span>().<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">signers</span> <span class="op">=</span> <span class="ident">SignersContainer::from</span>(<span class="ident">keymap</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">signers</span>.<span class="ident">ids</span>().<span class="ident">len</span>(), <span class="number">2</span>);
 
         <span class="kw">let</span> <span class="ident">signers</span> <span class="op">=</span> <span class="ident">signers</span>.<span class="ident">signers</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">signers</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">signers</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">signers_sorted_by_ordering</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">signers</span> <span class="op">=</span> <span class="ident">SignersContainer</span>::<span class="ident">new</span>();
-        <span class="kw">let</span> <span class="ident">signer1</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">1</span> });
-        <span class="kw">let</span> <span class="ident">signer2</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">2</span> });
-        <span class="kw">let</span> <span class="ident">signer3</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">3</span> });
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">signers</span> <span class="op">=</span> <span class="ident">SignersContainer::new</span>();
+        <span class="kw">let</span> <span class="ident">signer1</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">1</span> });
+        <span class="kw">let</span> <span class="ident">signer2</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">2</span> });
+        <span class="kw">let</span> <span class="ident">signer3</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">3</span> });
 
         <span class="comment">// Mixed order insertions verifies we are not inserting at head or tail.</span>
-        <span class="ident">signers</span>.<span class="ident">add_external</span>(<span class="ident">SignerId</span>::<span class="ident">Dummy</span>(<span class="number">2</span>), <span class="ident">SignerOrdering</span>(<span class="number">2</span>), <span class="ident">signer2</span>.<span class="ident">clone</span>());
-        <span class="ident">signers</span>.<span class="ident">add_external</span>(<span class="ident">SignerId</span>::<span class="ident">Dummy</span>(<span class="number">1</span>), <span class="ident">SignerOrdering</span>(<span class="number">1</span>), <span class="ident">signer1</span>.<span class="ident">clone</span>());
-        <span class="ident">signers</span>.<span class="ident">add_external</span>(<span class="ident">SignerId</span>::<span class="ident">Dummy</span>(<span class="number">3</span>), <span class="ident">SignerOrdering</span>(<span class="number">3</span>), <span class="ident">signer3</span>.<span class="ident">clone</span>());
+        <span class="ident">signers</span>.<span class="ident">add_external</span>(<span class="ident">SignerId::Dummy</span>(<span class="number">2</span>), <span class="ident">SignerOrdering</span>(<span class="number">2</span>), <span class="ident">signer2</span>.<span class="ident">clone</span>());
+        <span class="ident">signers</span>.<span class="ident">add_external</span>(<span class="ident">SignerId::Dummy</span>(<span class="number">1</span>), <span class="ident">SignerOrdering</span>(<span class="number">1</span>), <span class="ident">signer1</span>.<span class="ident">clone</span>());
+        <span class="ident">signers</span>.<span class="ident">add_external</span>(<span class="ident">SignerId::Dummy</span>(<span class="number">3</span>), <span class="ident">SignerOrdering</span>(<span class="number">3</span>), <span class="ident">signer3</span>.<span class="ident">clone</span>());
 
         <span class="comment">// Check that signers are sorted from lowest to highest ordering</span>
         <span class="kw">let</span> <span class="ident">signers</span> <span class="op">=</span> <span class="ident">signers</span>.<span class="ident">signers</span>();
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">is_equal</span>(<span class="ident">signers</span>[<span class="number">0</span>], <span class="kw-2">&amp;</span><span class="ident">signer1</span>));
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">is_equal</span>(<span class="ident">signers</span>[<span class="number">1</span>], <span class="kw-2">&amp;</span><span class="ident">signer2</span>));
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">is_equal</span>(<span class="ident">signers</span>[<span class="number">2</span>], <span class="kw-2">&amp;</span><span class="ident">signer3</span>));
+        <span class="macro">assert!</span>(<span class="ident">is_equal</span>(<span class="ident">signers</span>[<span class="number">0</span>], <span class="kw-2">&amp;</span><span class="ident">signer1</span>));
+        <span class="macro">assert!</span>(<span class="ident">is_equal</span>(<span class="ident">signers</span>[<span class="number">1</span>], <span class="kw-2">&amp;</span><span class="ident">signer2</span>));
+        <span class="macro">assert!</span>(<span class="ident">is_equal</span>(<span class="ident">signers</span>[<span class="number">2</span>], <span class="kw-2">&amp;</span><span class="ident">signer3</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">find_signer_by_id</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">signers</span> <span class="op">=</span> <span class="ident">SignersContainer</span>::<span class="ident">new</span>();
-        <span class="kw">let</span> <span class="ident">signer1</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">1</span> });
-        <span class="kw">let</span> <span class="ident">signer2</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">2</span> });
-        <span class="kw">let</span> <span class="ident">signer3</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">3</span> });
-        <span class="kw">let</span> <span class="ident">signer4</span> <span class="op">=</span> <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">3</span> }); <span class="comment">// Same ID as `signer3` but will use lower ordering.</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">signers</span> <span class="op">=</span> <span class="ident">SignersContainer::new</span>();
+        <span class="kw">let</span> <span class="ident">signer1</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">1</span> });
+        <span class="kw">let</span> <span class="ident">signer2</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">2</span> });
+        <span class="kw">let</span> <span class="ident">signer3</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">3</span> });
+        <span class="kw">let</span> <span class="ident">signer4</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">DummySigner</span> { <span class="ident">number</span>: <span class="number">3</span> }); <span class="comment">// Same ID as `signer3` but will use lower ordering.</span>
 
-        <span class="kw">let</span> <span class="ident">id1</span> <span class="op">=</span> <span class="ident">SignerId</span>::<span class="ident">Dummy</span>(<span class="number">1</span>);
-        <span class="kw">let</span> <span class="ident">id2</span> <span class="op">=</span> <span class="ident">SignerId</span>::<span class="ident">Dummy</span>(<span class="number">2</span>);
-        <span class="kw">let</span> <span class="ident">id3</span> <span class="op">=</span> <span class="ident">SignerId</span>::<span class="ident">Dummy</span>(<span class="number">3</span>);
-        <span class="kw">let</span> <span class="ident">id_nonexistent</span> <span class="op">=</span> <span class="ident">SignerId</span>::<span class="ident">Dummy</span>(<span class="number">999</span>);
+        <span class="kw">let</span> <span class="ident">id1</span> <span class="op">=</span> <span class="ident">SignerId::Dummy</span>(<span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">id2</span> <span class="op">=</span> <span class="ident">SignerId::Dummy</span>(<span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">id3</span> <span class="op">=</span> <span class="ident">SignerId::Dummy</span>(<span class="number">3</span>);
+        <span class="kw">let</span> <span class="ident">id_nonexistent</span> <span class="op">=</span> <span class="ident">SignerId::Dummy</span>(<span class="number">999</span>);
 
         <span class="ident">signers</span>.<span class="ident">add_external</span>(<span class="ident">id1</span>.<span class="ident">clone</span>(), <span class="ident">SignerOrdering</span>(<span class="number">1</span>), <span class="ident">signer1</span>.<span class="ident">clone</span>());
         <span class="ident">signers</span>.<span class="ident">add_external</span>(<span class="ident">id2</span>.<span class="ident">clone</span>(), <span class="ident">SignerOrdering</span>(<span class="number">2</span>), <span class="ident">signer2</span>.<span class="ident">clone</span>());
         <span class="ident">signers</span>.<span class="ident">add_external</span>(<span class="ident">id3</span>.<span class="ident">clone</span>(), <span class="ident">SignerOrdering</span>(<span class="number">3</span>), <span class="ident">signer3</span>.<span class="ident">clone</span>());
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(<span class="ident">signers</span>.<span class="ident">find</span>(<span class="ident">id1</span>), <span class="prelude-val">Some</span>(<span class="ident">signer</span>) <span class="kw">if</span> <span class="ident">is_equal</span>(<span class="ident">signer</span>, <span class="kw-2">&amp;</span><span class="ident">signer1</span>)));
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(<span class="ident">signers</span>.<span class="ident">find</span>(<span class="ident">id2</span>), <span class="prelude-val">Some</span>(<span class="ident">signer</span>) <span class="kw">if</span> <span class="ident">is_equal</span>(<span class="ident">signer</span>, <span class="kw-2">&amp;</span><span class="ident">signer2</span>)));
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(<span class="ident">signers</span>.<span class="ident">find</span>(<span class="ident">id3</span>.<span class="ident">clone</span>()), <span class="prelude-val">Some</span>(<span class="ident">signer</span>) <span class="kw">if</span> <span class="ident">is_equal</span>(<span class="ident">signer</span>, <span class="kw-2">&amp;</span><span class="ident">signer3</span>)));
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">signers</span>.<span class="ident">find</span>(<span class="ident">id1</span>), <span class="prelude-val">Some</span>(<span class="ident">signer</span>) <span class="kw">if</span> <span class="ident">is_equal</span>(<span class="ident">signer</span>, <span class="kw-2">&amp;</span><span class="ident">signer1</span>)));
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">signers</span>.<span class="ident">find</span>(<span class="ident">id2</span>), <span class="prelude-val">Some</span>(<span class="ident">signer</span>) <span class="kw">if</span> <span class="ident">is_equal</span>(<span class="ident">signer</span>, <span class="kw-2">&amp;</span><span class="ident">signer2</span>)));
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">signers</span>.<span class="ident">find</span>(<span class="ident">id3</span>.<span class="ident">clone</span>()), <span class="prelude-val">Some</span>(<span class="ident">signer</span>) <span class="kw">if</span> <span class="ident">is_equal</span>(<span class="ident">signer</span>, <span class="kw-2">&amp;</span><span class="ident">signer3</span>)));
 
         <span class="comment">// The `signer4` has the same ID as `signer3` but lower ordering.</span>
         <span class="comment">// It should be found by `id3` instead of `signer3`.</span>
         <span class="ident">signers</span>.<span class="ident">add_external</span>(<span class="ident">id3</span>.<span class="ident">clone</span>(), <span class="ident">SignerOrdering</span>(<span class="number">2</span>), <span class="ident">signer4</span>.<span class="ident">clone</span>());
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(<span class="ident">signers</span>.<span class="ident">find</span>(<span class="ident">id3</span>), <span class="prelude-val">Some</span>(<span class="ident">signer</span>) <span class="kw">if</span> <span class="ident">is_equal</span>(<span class="ident">signer</span>, <span class="kw-2">&amp;</span><span class="ident">signer4</span>)));
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">signers</span>.<span class="ident">find</span>(<span class="ident">id3</span>), <span class="prelude-val">Some</span>(<span class="ident">signer</span>) <span class="kw">if</span> <span class="ident">is_equal</span>(<span class="ident">signer</span>, <span class="kw-2">&amp;</span><span class="ident">signer4</span>)));
 
         <span class="comment">// Can&#39;t find anything with ID that doesn&#39;t exist</span>
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="macro">matches</span><span class="macro">!</span>(<span class="ident">signers</span>.<span class="ident">find</span>(<span class="ident">id_nonexistent</span>), <span class="prelude-val">None</span>));
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">signers</span>.<span class="ident">find</span>(<span class="ident">id_nonexistent</span>), <span class="prelude-val">None</span>));
     }
 
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
@@ -1349,7 +1349,7 @@
         }
 
         <span class="kw">fn</span> <span class="ident">id</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SignerId</span> {
-            <span class="ident">SignerId</span>::<span class="ident">Dummy</span>(<span class="self">self</span>.<span class="ident">number</span>)
+            <span class="ident">SignerId::Dummy</span>(<span class="self">self</span>.<span class="ident">number</span>)
         }
 
         <span class="kw">fn</span> <span class="ident">sign_whole_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
@@ -1365,10 +1365,10 @@
     <span class="kw">fn</span> <span class="ident">setup_keys</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">ScriptContext</span><span class="op">&gt;</span>(
         <span class="ident">tprv</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>, <span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>, <span class="ident">Fingerprint</span>) {
-        <span class="kw">let</span> <span class="ident">secp</span>: <span class="ident">Secp256k1</span><span class="op">&lt;</span><span class="ident">All</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Secp256k1</span>::<span class="ident">new</span>();
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">DerivationPath</span>::<span class="ident">from_str</span>(<span class="ident">PATH</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">tprv</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">ExtendedPrivKey</span>::<span class="ident">from_str</span>(<span class="ident">tprv</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">tpub</span> <span class="op">=</span> <span class="ident">bip32</span>::<span class="ident">ExtendedPubKey</span>::<span class="ident">from_private</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="kw-2">&amp;</span><span class="ident">tprv</span>);
+        <span class="kw">let</span> <span class="ident">secp</span>: <span class="ident">Secp256k1</span><span class="op">&lt;</span><span class="ident">All</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Secp256k1::new</span>();
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">bip32::DerivationPath::from_str</span>(<span class="ident">PATH</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">tprv</span> <span class="op">=</span> <span class="ident">bip32::ExtendedPrivKey::from_str</span>(<span class="ident">tprv</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">tpub</span> <span class="op">=</span> <span class="ident">bip32::ExtendedPubKey::from_private</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="kw-2">&amp;</span><span class="ident">tprv</span>);
         <span class="kw">let</span> <span class="ident">fingerprint</span> <span class="op">=</span> <span class="ident">tprv</span>.<span class="ident">fingerprint</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>);
         <span class="kw">let</span> <span class="ident">prvkey</span> <span class="op">=</span> (<span class="ident">tprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">pubkey</span> <span class="op">=</span> (<span class="ident">tpub</span>, <span class="ident">path</span>).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
