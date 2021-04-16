@@ -79,8 +79,8 @@ A special thanks to the new contributor for this release:
 [changelog]: https://github.com/bitcoindevkit/bdk/blob/2bddd9baedc3744cd7647176c2f31405ee7bb54a/CHANGELOG.md#v060---v051
 [gh_diff]: https://github.com/bitcoindevkit/bdk/compare/v0.5.1...v0.6.0
 
-[`AddressIndex`]: https://bitcoindevkit.org/docs-rs/bdk/nightly/latest/bdk/wallet/enum.AddressIndex.html
-[`get_psbt_input()`]: https://bitcoindevkit.org/docs-rs/bdk/nightly/latest/bdk/wallet/struct.Wallet.html#method.get_psbt_input
+[`AddressIndex`]: https://docs.rs/bdk/0.6.0/bdk/wallet/enum.AddressIndex.html
+[`get_psbt_input()`]: https://docs.rs/bdk/0.6.0/bdk/wallet/struct.Wallet.html#method.get_psbt_input
 [`v0.6.0`]: https://crates.io/crates/bdk/0.6.0
 
 [@da-kami]: https://github.com/da-kami
