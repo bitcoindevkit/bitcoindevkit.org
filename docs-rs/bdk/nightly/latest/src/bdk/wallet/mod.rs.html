@@ -3753,6 +3753,11 @@
 <span id="3750">3750</span>
 <span id="3751">3751</span>
 <span id="3752">3752</span>
+<span id="3753">3753</span>
+<span id="3754">3754</span>
+<span id="3755">3755</span>
+<span id="3756">3756</span>
+<span id="3757">3757</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -3809,6 +3814,7 @@
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::blockchain</span>::{<span class="ident">Blockchain</span>, <span class="ident">Progress</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::descriptor::derived::AsDerived</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::descriptor::policy::BuildSatisfaction</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::descriptor</span>::{
     <span class="ident">get_checksum</span>, <span class="ident">into_wallet_descriptor_checked</span>, <span class="ident">DerivedDescriptor</span>, <span class="ident">DerivedDescriptorMeta</span>,
     <span class="ident">DescriptorMeta</span>, <span class="ident">DescriptorScripts</span>, <span class="ident">ExtendedDescriptor</span>, <span class="ident">ExtractPolicy</span>, <span class="ident">IntoWalletDescriptor</span>,
@@ -4128,14 +4134,14 @@
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">PSBT</span>, <span class="ident">TransactionDetails</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">external_policy</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">descriptor</span>
-            .<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">signers</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)<span class="question-mark">?</span>
+            .<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">signers</span>, <span class="ident">BuildSatisfaction::None</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)<span class="question-mark">?</span>
             .<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">internal_policy</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">change_descriptor</span>
             .<span class="ident">as_ref</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">desc</span><span class="op">|</span> {
                 <span class="prelude-val">Ok</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span>(
-                    <span class="ident">desc</span>.<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">change_signers</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)<span class="question-mark">?</span>
+                    <span class="ident">desc</span>.<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">change_signers</span>, <span class="ident">BuildSatisfaction::None</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)<span class="question-mark">?</span>
                         .<span class="ident">unwrap</span>(),
                 )
             })
@@ -4632,13 +4638,17 @@
     <span class="doccomment">/// Return the spending policies for the wallet&#39;s descriptor</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">policies</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Policy</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> (<span class="ident">keychain</span>, <span class="self">self</span>.<span class="ident">change_descriptor</span>.<span class="ident">as_ref</span>()) {
-            (<span class="ident">KeychainKind::External</span>, <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">descriptor</span>.<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">signers</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)<span class="question-mark">?</span>)
-            }
+            (<span class="ident">KeychainKind::External</span>, <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">descriptor</span>.<span class="ident">extract_policy</span>(
+                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">signers</span>,
+                <span class="ident">BuildSatisfaction::None</span>,
+                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>,
+            )<span class="question-mark">?</span>),
             (<span class="ident">KeychainKind::Internal</span>, <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-            (<span class="ident">KeychainKind::Internal</span>, <span class="prelude-val">Some</span>(<span class="ident">desc</span>)) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">desc</span>.<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">change_signers</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)<span class="question-mark">?</span>)
-            }
+            (<span class="ident">KeychainKind::Internal</span>, <span class="prelude-val">Some</span>(<span class="ident">desc</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">desc</span>.<span class="ident">extract_policy</span>(
+                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">change_signers</span>,
+                <span class="ident">BuildSatisfaction::None</span>,
+                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>,
+            )<span class="question-mark">?</span>),
         }
     }
 
