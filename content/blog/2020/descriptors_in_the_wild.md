@@ -120,7 +120,6 @@ export core_xprv=$(echo $core_key | jq -r '.xprv')
 # Derived Extended Public key
 
 export core_xpub_84=$(bdk-cli key derive --path m/84h/0h/0h --xprv $core_xprv | jq -r '.xpub' | rev | cut -c 3- | rev)
-export core_fingerprint=$(echo $core_key | jq -r '.fingerprint')
 
 # Now I build the xpubs (one for receiving and one for the change) 
 # together with informations about the derivation path to be communicated 
@@ -144,7 +143,6 @@ export BDK_xprv=$(echo $BDK_key | jq -r '.xprv')
 # Derived Extended Pubblic key
 
 export BDK_xpub_84=$(bdk-cli key derive --path m/84h/0h/0h --xprv $BDK_xprv | jq -r '.xpub' | rev | cut -c 3- | rev)
-export BDK_fingerprint=$(echo $BDK_key | jq -r '.fingerprint')
 
 # Now I build the derived xpubs to be communicated (to Alice).
 
