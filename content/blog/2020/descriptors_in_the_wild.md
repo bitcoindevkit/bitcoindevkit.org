@@ -24,13 +24,13 @@ that the two parties had to agree:
 involved parties.
 
 [Output Descriptors] are a way to express which kind scriptPubKey and 
-addresses to produce with a key or a serie of keys.
+addresses to produce with a key or a series of keys.
 
-[PSBT] is instead the standard protocol used to create transaction and to enrich 
+[PSBT] is instead the standard protocol used to create a transaction and to enrich 
 it with the necessary signatures and other components, to make it valid and complete.
 
 Together they provide a common ground to create and use a multi signature 
-infrastructure in a eterogeneous environment and this is what I have put 
+infrastructure in an eterogeneous environment, and this is what I have put 
 to test.
 
 ## The use case
@@ -42,10 +42,10 @@ transaction.
 ## The role of Descriptors
 
 If Alice and Bob cannot agree on the software to use, to monitor the same financial 
-situation, the two software must control and produce exactly the same series
+situation, the two softwares must control and produce exactly the same series
 of multisignature addresses. 
 
-To make two different software produce the same addresses in a deterministic way 
+To make two different softwares produce the same addresses in a deterministic way 
 we must ensure that they:
 * produce the same pair of public keys
 * combine them in the same order
@@ -60,17 +60,17 @@ the script
 of address the group of keys will produce.
 
 **By sharing the same Descriptor, every compliant wallet will derive 
-deterministically the same serie of multisig addresses**.
+deterministically the same series of multisig addresses**.
 
-Immagine Alice using Bitcoin Core (from now on ["Core"][Bitcoin Core]) as a 
+Imagine Alice using Bitcoin Core (from now on ["Core"][Bitcoin Core]) as a 
 Wallet and Bob using a "Last generation" wallet, Bitcoin Development Kit 
 (from now on ["BDK"][BDK]), which uses descriptors and miniscript natively.
 
-Each of these two software wallet should be able to:
+Each of these two software wallets should be able to:
 
 * Create a new address which is seen as belonging to the multi signature 
-wallet in both software
-* Express the consent of each party by partially sign the transaction in a way 
+wallet in both softwares
+* Express the consent of each party by partially signing the transaction in a way 
 the other wallet can understand and complete it with its own signature.
 
 The infrastructure of multiple Extended keys combined toghether to produce 
@@ -98,9 +98,7 @@ wallets.
 
 We need:
 * [Bitcoin Dev Kit][BDK]
-* [Bitcoin Core] (at the present moment it is necessary to build one of the last 
-commits on the main branch)
-* [Pycoin ku utility][pycoin]
+* [Bitcoin Core] (v0.21.0 or later)
 
 ### 1. Creating the seeds and the derived Extended Public keys 
 
@@ -113,23 +111,23 @@ For Bitcoin Core (Alice):
 
 ```
 # new Extended wallet data
-export core_key=$(ku -n XTN -j create)
+export core_key=$(bdk-cli key generate)
 
 # New Extended Master Private
 
-export core_xprv=$(echo $core_key|jq -r '.wallet_key')
+export core_xprv=$(echo $core_key | jq -r '.xprv')
 
-# Derived Extended Pubblic key
+# Derived Extended Public key
 
-export core_xpub_84=$(ku -j -s 84H/0H/0H $core_xprv |jq -r '.public_version')
-export core_fingerprint=$(echo $core_key|jq -r '.fingerprint')
+export core_xpub_84=$(bdk-cli key derive --path m/84h/0h/0h --xprv $core_xprv | jq -r '.xpub' | rev | cut -c 3- | rev)
+export core_fingerprint=$(echo $core_key | jq -r '.fingerprint')
 
 # Now I build the xpubs (one for receiving and one for the change) 
 # together with informations about the derivation path to be communicated 
 # to BDK wallet's owner (Bob).
 
-export core_xpub_84_for_rec_desc="[$core_fingerprint/84'/0'/0']$core_xpub_84/0/*"
-export core_xpub_84_for_chg_desc="[$core_fingerprint/84'/0'/0']$core_xpub_84/1/*"
+export core_xpub_84_for_rec_desc="$core_xpub_84/0/*"
+export core_xpub_84_for_chg_desc="$core_xpub_84/1/*"
 ```
 
 For BDK (Bob) we do the same:
@@ -137,21 +135,21 @@ For BDK (Bob) we do the same:
 ```
 # new Extended wallet data
 
-export BDK_key=$(ku -n XTN -j create)
+export BDK_key=$(bdk-cli key generate)
 
 # New Extended Master Private
 
-export BDK_xprv=$(echo $BDK_key|jq -r '.wallet_key')
+export BDK_xprv=$(echo $BDK_key | jq -r '.xprv')
 
 # Derived Extended Pubblic key
 
-export BDK_xpub_84=$(ku -j -s 84H/0H/0H $BDK_xprv |jq -r '.public_version')
-export BDK_fingerprint=$(echo $BDK_key|jq -r '.fingerprint')
+export BDK_xpub_84=$(bdk-cli key derive --path m/84h/0h/0h --xprv $BDK_xprv | jq -r '.xpub' | rev | cut -c 3- | rev)
+export BDK_fingerprint=$(echo $BDK_key | jq -r '.fingerprint')
 
 # Now I build the derived xpubs to be communicated (to Alice).
 
-export BDK_xpub_84_for_rec_desc="[$BDK_fingerprint/84'/0'/0']$BDK_xpub_84/0/*"
-export BDK_xpub_84_for_chg_desc="[$BDK_fingerprint/84'/0'/0']$BDK_xpub_84/1/*"
+export BDK_xpub_84_for_rec_desc="$BDK_xpub_84/0/*"
+export BDK_xpub_84_for_chg_desc="$BDK_xpub_84/1/*"
 ```
 
 ### 2. Creation of the multi signature descriptor for each wallet 
@@ -165,7 +163,7 @@ multi signature setup
 *The different nature of the two keys (one is private and one is public) is 
 due to the fact that each wallet, to be able to partially sign the transaction, 
 **must manage the private key of the wallet's owner*** AND have the other 
-party's public key. Otherwise if we put both public key, we would obtain 
+party's public key. Otherwise, if we put both public keys, we would obtain 
 a watch-only wallet unable to sign the transactions. If we 
 had both extended private keys inside the descriptor, we would allow each party 
 to finalize the transactions autonomously.
@@ -195,7 +193,7 @@ the use of [Output Descriptors in Bitcoin Core][Output Descriptors].
 We add the necessary checksum using the specific `bitcoin-cli` call.
 
 ```
-export core_rec_desc_chksum=$core_rec_desc#$(bitcoin-cli -testnet getdescriptorinfo $core_rec_desc|jq -r '.checksum')
+export core_rec_desc_chksum=$core_rec_desc#$(bitcoin-cli -testnet getdescriptorinfo $core_rec_desc | jq -r '.checksum')
 ```
 
 We repeat the same to build the descriptor to receive the change.
@@ -224,15 +222,15 @@ derived from BDK will always come first. In alternative, we could have chosen to
 produce the descriptor, [chosing a `soretedmulti` multisignature setup][sortedmulti]*.
 
 ```
-export BDK_rec_desc_chksum=$BDK_rec_desc#$(bitcoin-cli -testnet getdescriptorinfo $BDK_rec_desc|jq -r '.checksum')
+export BDK_rec_desc_chksum=$BDK_rec_desc#$(bitcoin-cli -testnet getdescriptorinfo $BDK_rec_desc | jq -r '.checksum')
 export BDK_chg_desc="wsh(multi(2,$BDK_xprv/84'/0'/0'/1/*,$core_xpub_84_for_chg_desc))"
-export BDK_chg_desc_chksum=$BDK_chg_desc#$(bitcoin-cli -testnet getdescriptorinfo $BDK_chg_desc|jq -r '.checksum')
+export BDK_chg_desc_chksum=$BDK_chg_desc#$(bitcoin-cli -testnet getdescriptorinfo $BDK_chg_desc | jq -r '.checksum')
 ```
 
 To take a look at the variables we have produced so far:
 ```
-env |grep 'core_'
-env |grep 'BDK_'
+env  | grep 'core_'
+env  | grep 'BDK_'
 ```
 
 Now we will use the multisig descriptor wallet to receive testnet coins with 
@@ -303,9 +301,9 @@ the use. Take note of that because we will use it in the next step.
 ### 4. we return part of the satoshis received back to the faucet
 
 ```
-export psbt=$(bitcoin-cli -testnet -rpcwallet=multisig2of2withBDK walletcreatefundedpsbt "[]" "[{\"tb1qrcesfj9f2d7x40xs6ztnlrcgxhh6vsw8658hjdhdy6qgkf6nfrds9rp79a\":0.000012}]"|jq -r '.psbt')
+export psbt=$(bitcoin-cli -testnet -rpcwallet=multisig2of2withBDK walletcreatefundedpsbt "[]" "[{\"tb1qrcesfj9f2d7x40xs6ztnlrcgxhh6vsw8658hjdhdy6qgkf6nfrds9rp79a\":0.000012}]" | jq -r '.psbt')
 
-export psbt=$(bitcoin-cli -testnet -rpcwallet=multisig2of2withBDK walletprocesspsbt $psbt|jq -r '.psbt')
+export psbt=$(bitcoin-cli -testnet -rpcwallet=multisig2of2withBDK walletprocesspsbt $psbt | jq -r '.psbt')
 {
   "psbt": "cHNidP8BAIkCAAAAATj90EC+NAuXj7y6SseZJucoJM6sGnUcVm9koTveZECTAAAAAAD+////AmACAAAAAAAAIgAg98ol9j4AalD71E0mV5QV0uM6/vCT+pi2twxr/zrvLROwBAAAAAAAACIAIB4zBMipU3xqvNDQlz+PCDXvpkHH1Q95Nu0mgIsnU0jbAAAAAAABAIkCAAAAAQS+ObgGG6UwtvaO3KYph2E3/ws7Q83RbmR3rxC0fKYSAQAAAAD+////AtAHAAAAAAAAIgAg6GXadcNj7k4yKUbnVlTLiedXQFXYdCBoNygop/PISNDAHQAAAAAAACIAIBQpiDTgPIMt0ld8cmuYqlY+EIPjvrmMqZruDhs61hQNAAAAAAEBK9AHAAAAAAAAIgAg6GXadcNj7k4yKUbnVlTLiedXQFXYdCBoNygop/PISNAiAgNt0j7Ae0iA7qlLolruNqLWkPA96J0qgMLK1M7WOGMAfUcwRAIgS6x0i1J1HRzllIPf4WlFY+Dl8kCCLK81TL2djZxTFXMCICJVBKkKNxu1w1mRVor6iFTSVXiJjmWwBXVeJLISvBwAAQEFR1IhArn3tec7n7318rnWqf0dIIwtLtfxo6Zt0HV70UvZYaWvIQNt0j7Ae0iA7qlLolruNqLWkPA96J0qgMLK1M7WOGMAfVKuIgYCufe15zufvfXyudap/R0gjC0u1/Gjpm3QdXvRS9lhpa8YNEw2cFQAAIAAAACAAAAAgAAAAAAAAAAAIgYDbdI+wHtIgO6pS6Ja7jai1pDwPeidKoDCytTO1jhjAH0YO/laXFQAAIAAAACAAAAAgAAAAAAAAAAAAAEBR1IhAqccvA3rL13D1K4GeWjcahDsO3P8oaVNBttk4MlCKXIcIQLHKhjmPuCQjyS77ZfaMN2tdgNKcf/+57VXGZhz/UWTl1KuIgICpxy8DesvXcPUrgZ5aNxqEOw7c/yhpU0G22TgyUIpchwYNEw2cFQAAIAAAACAAAAAgAEAAAADAAAAIgICxyoY5j7gkI8ku+2X2jDdrXYDSnH//ue1VxmYc/1Fk5cYO/laXFQAAIAAAACAAAAAgAEAAAADAAAAAAA=",
   "complete": false 
