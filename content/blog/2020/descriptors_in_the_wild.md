@@ -30,7 +30,7 @@ addresses to produce with a key or a series of keys.
 it with the necessary signatures and other components, to make it valid and complete.
 
 Together they provide a common ground to create and use a multi signature 
-infrastructure in an eterogeneous environment, and this is what I have put 
+infrastructure in a heterogeneous environment, and this is what I have put 
 to test.
 
 ## The use case
@@ -42,10 +42,10 @@ transaction.
 ## The role of Descriptors
 
 If Alice and Bob cannot agree on the software to use, to monitor the same financial 
-situation, the two softwares must control and produce exactly the same series
+situation, the two software must control and produce exactly the same series
 of multisignature addresses. 
 
-To make two different softwares produce the same addresses in a deterministic way 
+To make two different software produce the same addresses in a deterministic way 
 we must ensure that they:
 * produce the same pair of public keys
 * combine them in the same order
@@ -69,7 +69,7 @@ Wallet and Bob using a "Last generation" wallet, Bitcoin Development Kit
 Each of these two software wallets should be able to:
 
 * Create a new address which is seen as belonging to the multi signature 
-wallet in both softwares
+wallet in both software
 * Express the consent of each party by partially signing the transaction in a way 
 the other wallet can understand and complete it with its own signature.
 
@@ -117,16 +117,12 @@ export core_key=$(bdk-cli key generate)
 
 export core_xprv=$(echo $core_key | jq -r '.xprv')
 
-# Derived Extended Public key
-
-export core_xpub_84=$(bdk-cli key derive --path m/84h/0h/0h --xprv $core_xprv | jq -r '.xpub' | rev | cut -c 3- | rev)
-
-# Now I build the xpubs (one for receiving and one for the change) 
+# Now I derive the xpubs (one for receiving and one for the change) 
 # together with informations about the derivation path to be communicated 
 # to BDK wallet's owner (Bob).
 
-export core_xpub_84_for_rec_desc="$core_xpub_84/0/*"
-export core_xpub_84_for_chg_desc="$core_xpub_84/1/*"
+export core_xpub_84_for_rec_desc=$(bdk-cli key derive --path m/84h/0h/0h/0 --xprv $core_xprv | jq -r '.xpub')
+export core_xpub_84_for_chg_desc=$(bdk-cli key derive --path m/84h/0h/0h/1 --xprv $core_xprv | jq -r '.xpub')
 ```
 
 For BDK (Bob) we do the same:
@@ -146,8 +142,8 @@ export BDK_xpub_84=$(bdk-cli key derive --path m/84h/0h/0h --xprv $BDK_xprv | jq
 
 # Now I build the derived xpubs to be communicated (to Alice).
 
-export BDK_xpub_84_for_rec_desc="$BDK_xpub_84/0/*"
-export BDK_xpub_84_for_chg_desc="$BDK_xpub_84/1/*"
+export BDK_xpub_84_for_rec_desc=$(bdk-cli key derive --path m/84h/0h/0h/1 --xprv $BDK_xprv | jq -r '.xpub')
+export BDK_xpub_84_for_chg_desc=$(bdk-cli key derive --path m/84h/0h/0h/1 --xprv $BDK_xprv | jq -r '.xpub')
 ```
 
 ### 2. Creation of the multi signature descriptor for each wallet 
