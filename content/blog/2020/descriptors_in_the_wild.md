@@ -138,7 +138,7 @@ export BDK_xprv=$(echo $BDK_key | jq -r '.xprv')
 
 # Now I build the derived xpubs to be communicated (to Alice).
 
-export BDK_xpub_84_for_rec_desc=$(bdk-cli key derive --path m/84h/0h/0h/1 --xprv $BDK_xprv | jq -r '.xpub')
+export BDK_xpub_84_for_rec_desc=$(bdk-cli key derive --path m/84h/0h/0h/0 --xprv $BDK_xprv | jq -r '.xpub')
 export BDK_xpub_84_for_chg_desc=$(bdk-cli key derive --path m/84h/0h/0h/1 --xprv $BDK_xprv | jq -r '.xpub')
 ```
 
