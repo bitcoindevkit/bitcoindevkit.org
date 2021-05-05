@@ -4460,24 +4460,24 @@
     <span class="doccomment">/// # let descriptor = &quot;wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)&quot;;</span>
     <span class="doccomment">/// # let wallet = doctest_wallet!();</span>
     <span class="doccomment">/// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();</span>
-    <span class="doccomment">/// let (psbt, _) = {</span>
+    <span class="doccomment">/// let (mut psbt, _) = {</span>
     <span class="doccomment">///     let mut builder = wallet.build_tx();</span>
     <span class="doccomment">///     builder</span>
     <span class="doccomment">///         .add_recipient(to_address.script_pubkey(), 50_000)</span>
     <span class="doccomment">///         .enable_rbf();</span>
     <span class="doccomment">///     builder.finish()?</span>
     <span class="doccomment">/// };</span>
-    <span class="doccomment">/// let (psbt, _) = wallet.sign(psbt, None)?;</span>
+    <span class="doccomment">/// let _ = wallet.sign(&amp;mut psbt, None)?;</span>
     <span class="doccomment">/// let tx = psbt.extract_tx();</span>
     <span class="doccomment">/// // broadcast tx but it&#39;s taking too long to confirm so we want to bump the fee</span>
-    <span class="doccomment">/// let (psbt, _) =  {</span>
+    <span class="doccomment">/// let (mut psbt, _) =  {</span>
     <span class="doccomment">///     let mut builder = wallet.build_fee_bump(tx.txid())?;</span>
     <span class="doccomment">///     builder</span>
     <span class="doccomment">///         .fee_rate(FeeRate::from_sat_per_vb(5.0));</span>
     <span class="doccomment">///     builder.finish()?</span>
     <span class="doccomment">/// };</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// let (psbt, _) = wallet.sign(psbt, None)?;</span>
+    <span class="doccomment">/// let _ = wallet.sign(&amp;mut psbt, None)?;</span>
     <span class="doccomment">/// let fee_bumped_tx = psbt.extract_tx();</span>
     <span class="doccomment">/// // broadcast fee_bumped_tx to replace original</span>
     <span class="doccomment">/// # Ok::&lt;(), bdk::Error&gt;(())</span>
@@ -4604,17 +4604,17 @@
     <span class="doccomment">/// # let descriptor = &quot;wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)&quot;;</span>
     <span class="doccomment">/// # let wallet = doctest_wallet!();</span>
     <span class="doccomment">/// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();</span>
-    <span class="doccomment">/// let (psbt, _) = {</span>
+    <span class="doccomment">/// let (mut psbt, _) = {</span>
     <span class="doccomment">///     let mut builder = wallet.build_tx();</span>
     <span class="doccomment">///     builder.add_recipient(to_address.script_pubkey(), 50_000);</span>
     <span class="doccomment">///     builder.finish()?</span>
     <span class="doccomment">/// };</span>
-    <span class="doccomment">/// let (signed_psbt, finalized) = wallet.sign(psbt, None)?;</span>
+    <span class="doccomment">/// let  finalized = wallet.sign(&amp;mut psbt, None)?;</span>
     <span class="doccomment">/// assert!(finalized, &quot;we should have signed all the inputs&quot;);</span>
     <span class="doccomment">/// # Ok::&lt;(), bdk::Error&gt;(())</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">psbt</span>: <span class="ident">PSBT</span>, <span class="ident">assume_height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">PSBT</span>, <span class="ident">bool</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PSBT</span>, <span class="ident">assume_height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="comment">// this helps us doing our job later</span>
-        <span class="self">self</span>.<span class="ident">add_input_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.<span class="ident">add_input_hd_keypaths</span>(<span class="ident">psbt</span>)<span class="question-mark">?</span>;
 
         <span class="kw">for</span> <span class="ident">signer</span> <span class="kw">in</span> <span class="self">self</span>
             .<span class="ident">signers</span>
@@ -4623,10 +4623,10 @@
             .<span class="ident">chain</span>(<span class="self">self</span>.<span class="ident">change_signers</span>.<span class="ident">signers</span>().<span class="ident">iter</span>())
         {
             <span class="kw">if</span> <span class="ident">signer</span>.<span class="ident">sign_whole_tx</span>() {
-                <span class="ident">signer</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)<span class="question-mark">?</span>;
+                <span class="ident">signer</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)<span class="question-mark">?</span>;
             } <span class="kw">else</span> {
                 <span class="kw">for</span> <span class="ident">index</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() {
-                    <span class="ident">signer</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="prelude-val">Some</span>(<span class="ident">index</span>), <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)<span class="question-mark">?</span>;
+                    <span class="ident">signer</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">Some</span>(<span class="ident">index</span>), <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)<span class="question-mark">?</span>;
                 }
             }
         }
@@ -4670,9 +4670,9 @@
     <span class="doccomment">/// Try to finalize a PSBT</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">finalize_psbt</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="kw-2">mut</span> <span class="ident">psbt</span>: <span class="ident">PSBT</span>,
+        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PSBT</span>,
         <span class="ident">assume_height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">PSBT</span>, <span class="ident">bool</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">finished</span> <span class="op">=</span> <span class="bool-val">true</span>;
 
@@ -4745,7 +4745,7 @@
             }
         }
 
-        <span class="prelude-val">Ok</span>((<span class="ident">psbt</span>, <span class="ident">finished</span>))
+        <span class="prelude-val">Ok</span>(<span class="ident">finished</span>)
     }
 
     <span class="doccomment">/// Return the secp256k1 context used for all signing operations</span>
@@ -6184,7 +6184,7 @@
             .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">60_000</span>)
             .<span class="ident">add_foreign_utxo</span>(<span class="ident">utxo</span>.<span class="ident">outpoint</span>, <span class="ident">psbt_input</span>, <span class="ident">foreign_utxo_satisfaction</span>)
             .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq!</span>(
             <span class="ident">details</span>.<span class="ident">sent</span> <span class="op">-</span> <span class="ident">details</span>.<span class="ident">received</span>,
@@ -6201,14 +6201,14 @@
             <span class="string">&quot;foreign_utxo should be in there&quot;</span>
         );
 
-        <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">finished</span>) <span class="op">=</span> <span class="ident">wallet1</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">finished</span> <span class="op">=</span> <span class="ident">wallet1</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
 
         <span class="macro">assert!</span>(
             <span class="op">!</span><span class="ident">finished</span>,
             <span class="string">&quot;only one of the inputs should have been signed so far&quot;</span>
         );
 
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">finished</span>) <span class="op">=</span> <span class="ident">wallet2</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">finished</span> <span class="op">=</span> <span class="ident">wallet2</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert!</span>(<span class="ident">finished</span>, <span class="string">&quot;all the inputs should have been signed now&quot;</span>);
     }
 
@@ -7227,12 +7227,12 @@
         <span class="ident">builder</span>
             .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">drain_wallet</span>();
-        <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> (<span class="ident">signed_psbt</span>, <span class="ident">finalized</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
 
-        <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">signed_psbt</span>.<span class="ident">extract_tx</span>();
+        <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">extract_tx</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
@@ -7244,12 +7244,12 @@
         <span class="ident">builder</span>
             .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">drain_wallet</span>();
-        <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> (<span class="ident">signed_psbt</span>, <span class="ident">finalized</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
 
-        <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">signed_psbt</span>.<span class="ident">extract_tx</span>();
+        <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">extract_tx</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
@@ -7261,12 +7261,12 @@
         <span class="ident">builder</span>
             .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">drain_wallet</span>();
-        <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> (<span class="ident">signed_psbt</span>, <span class="ident">finalized</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
 
-        <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">signed_psbt</span>.<span class="ident">extract_tx</span>();
+        <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">extract_tx</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
@@ -7278,12 +7278,12 @@
         <span class="ident">builder</span>
             .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">drain_wallet</span>();
-        <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> (<span class="ident">signed_psbt</span>, <span class="ident">finalized</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
 
-        <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">signed_psbt</span>.<span class="ident">extract_tx</span>();
+        <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">extract_tx</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
@@ -7296,12 +7296,12 @@
         <span class="ident">builder</span>
             .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">drain_wallet</span>();
-        <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> (<span class="ident">signed_psbt</span>, <span class="ident">finalized</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
 
-        <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">signed_psbt</span>.<span class="ident">extract_tx</span>();
+        <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">extract_tx</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
@@ -7318,10 +7318,10 @@
         <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">clear</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">len</span>(), <span class="number">0</span>);
 
-        <span class="kw">let</span> (<span class="ident">signed_psbt</span>, <span class="ident">finalized</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">finalized</span>, <span class="bool-val">true</span>);
 
-        <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">signed_psbt</span>.<span class="ident">extract_tx</span>();
+        <span class="kw">let</span> <span class="ident">extracted</span> <span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">extract_tx</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">extracted</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">witness</span>.<span class="ident">len</span>(), <span class="number">2</span>);
     }
 
@@ -7367,7 +7367,7 @@
 
         <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">push</span>(<span class="ident">dud_input</span>);
         <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">push</span>(<span class="ident">bitcoin::TxIn::default</span>());
-        <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">is_final</span>) <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">is_final</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert!</span>(
             <span class="op">!</span><span class="ident">is_final</span>,
             <span class="string">&quot;shouldn&#39;t be final since we can&#39;t sign one of the inputs&quot;</span>
