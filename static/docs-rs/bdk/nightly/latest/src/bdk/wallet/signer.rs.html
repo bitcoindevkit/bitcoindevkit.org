@@ -742,6 +742,18 @@
 <span id="739">739</span>
 <span id="740">740</span>
 <span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
+<span id="747">747</span>
+<span id="748">748</span>
+<span id="749">749</span>
+<span id="750">750</span>
+<span id="751">751</span>
+<span id="752">752</span>
+<span id="753">753</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -951,6 +963,12 @@
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError::InputIndexOutOfRange</span>);
         }
 
+        <span class="kw">if</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>].<span class="ident">final_script_sig</span>.<span class="ident">is_some</span>()
+            <span class="op">|</span><span class="op">|</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>].<span class="ident">final_script_witness</span>.<span class="ident">is_some</span>()
+        {
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+        }
+
         <span class="kw">let</span> (<span class="ident">public_key</span>, <span class="ident">full_path</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>]
             .<span class="ident">bip32_derivation</span>
             .<span class="ident">iter</span>()
@@ -1006,8 +1024,14 @@
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">input_index</span> <span class="op">=</span> <span class="ident">input_index</span>.<span class="ident">unwrap</span>();
-        <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() {
+        <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">len</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError::InputIndexOutOfRange</span>);
+        }
+
+        <span class="kw">if</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>].<span class="ident">final_script_sig</span>.<span class="ident">is_some</span>()
+            <span class="op">|</span><span class="op">|</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>].<span class="ident">final_script_witness</span>.<span class="ident">is_some</span>()
+        {
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
         }
 
         <span class="kw">let</span> <span class="ident">pubkey</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">public_key</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>);
@@ -1221,7 +1245,7 @@
         <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="ident">usize</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">SigHash</span>, <span class="ident">SigHashType</span>), <span class="ident">SignerError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() {
+        <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">len</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError::InputIndexOutOfRange</span>);
         }
 
@@ -1269,7 +1293,7 @@
         <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="ident">usize</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">SigHash</span>, <span class="ident">SigHashType</span>), <span class="ident">SignerError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() {
+        <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">len</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError::InputIndexOutOfRange</span>);
         }
 
