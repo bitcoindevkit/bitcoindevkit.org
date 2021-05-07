@@ -1674,7 +1674,7 @@
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::checksum::get_checksum</span>;
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::error::Error</span>;
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::XKeyUtils</span>;
-<span class="kw">use</span> <span class="ident">bitcoin::util::psbt::PartiallySignedTransaction</span> <span class="kw">as</span> <span class="ident">PSBT</span>;
+<span class="kw">use</span> <span class="ident">bitcoin::util::psbt::PartiallySignedTransaction</span> <span class="kw">as</span> <span class="ident">Psbt</span>;
 <span class="kw">use</span> <span class="ident">miniscript::psbt::PsbtInputSatisfier</span>;
 
 <span class="doccomment">/// Raw public key or extended key fingerprint</span>
@@ -2373,7 +2373,7 @@
     <span class="ident">policy</span>
 }
 
-<span class="kw">fn</span> <span class="ident">signature_in_psbt</span>(<span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">PSBT</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+<span class="kw">fn</span> <span class="ident">signature_in_psbt</span>(<span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">Psbt</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="comment">//TODO check signature validity</span>
     <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">iter</span>().<span class="ident">all</span>(<span class="op">|</span><span class="ident">input</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">key</span> {
         <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="ident">key</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">input</span>.<span class="ident">partial_sigs</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>.<span class="ident">key</span>),
@@ -2536,7 +2536,7 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">psbt_inputs_sat</span>(<span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">PSBT</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">PsbtInputSatisfier</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">psbt_inputs_sat</span>(<span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">Psbt</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">PsbtInputSatisfier</span><span class="op">&gt;</span> {
     (<span class="number">0</span>..<span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>()).<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">PsbtInputSatisfier::new</span>(<span class="ident">psbt</span>, <span class="ident">i</span>))
 }
 
@@ -2546,11 +2546,11 @@
     <span class="doccomment">/// Don&#39;t generate `satisfaction` field</span>
     <span class="prelude-val">None</span>,
     <span class="doccomment">/// Analyze the given PSBT to check for existing signatures</span>
-    <span class="ident">Psbt</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PSBT</span>),
+    <span class="ident">Psbt</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Psbt</span>),
     <span class="doccomment">/// Like `Psbt` variant and also check for expired timelocks</span>
     <span class="ident">PsbtTimelocks</span> {
         <span class="doccomment">/// Given PSBT</span>
-        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PSBT</span>,
+        <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Psbt</span>,
         <span class="doccomment">/// Current blockchain height</span>
         <span class="ident">current_height</span>: <span class="ident">u32</span>,
         <span class="doccomment">/// The highest confirmation height between the inputs</span>
@@ -2559,7 +2559,7 @@
     },
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">BuildSatisfaction</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">psbt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PSBT</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">psbt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Psbt</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">BuildSatisfaction::None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
             <span class="ident">BuildSatisfaction::Psbt</span>(<span class="ident">psbt</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">psbt</span>),
@@ -3088,7 +3088,7 @@
 
         <span class="kw">let</span> <span class="ident">signers_container</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">SignersContainer::from</span>(<span class="ident">keymap</span>));
 
-        <span class="kw">let</span> <span class="ident">psbt</span>: <span class="ident">PSBT</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">ALICE_SIGNED_PSBT</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">psbt</span>: <span class="ident">Psbt</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">ALICE_SIGNED_PSBT</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">policy_alice_psbt</span> <span class="op">=</span> <span class="ident">wallet_desc</span>
             .<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="ident">signers_container</span>, <span class="ident">BuildSatisfaction::Psbt</span>(<span class="kw-2">&amp;</span><span class="ident">psbt</span>), <span class="kw-2">&amp;</span><span class="ident">secp</span>)
@@ -3103,7 +3103,7 @@
             )
         );
 
-        <span class="kw">let</span> <span class="ident">psbt</span>: <span class="ident">PSBT</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">BOB_SIGNED_PSBT</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">psbt</span>: <span class="ident">Psbt</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">BOB_SIGNED_PSBT</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">policy_bob_psbt</span> <span class="op">=</span> <span class="ident">wallet_desc</span>
             .<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="ident">signers_container</span>, <span class="ident">BuildSatisfaction::Psbt</span>(<span class="kw-2">&amp;</span><span class="ident">psbt</span>), <span class="kw-2">&amp;</span><span class="ident">secp</span>)
             .<span class="ident">unwrap</span>()
@@ -3117,7 +3117,7 @@
             )
         );
 
-        <span class="kw">let</span> <span class="ident">psbt</span>: <span class="ident">PSBT</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">ALICE_BOB_SIGNED_PSBT</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">psbt</span>: <span class="ident">Psbt</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">ALICE_BOB_SIGNED_PSBT</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">policy_alice_bob_psbt</span> <span class="op">=</span> <span class="ident">wallet_desc</span>
             .<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="ident">signers_container</span>, <span class="ident">BuildSatisfaction::Psbt</span>(<span class="kw-2">&amp;</span><span class="ident">psbt</span>), <span class="kw-2">&amp;</span><span class="ident">secp</span>)
             .<span class="ident">unwrap</span>()
@@ -3158,7 +3158,7 @@
             <span class="ident">addr</span>.<span class="ident">to_string</span>()
         );
 
-        <span class="kw">let</span> <span class="ident">psbt</span>: <span class="ident">PSBT</span> <span class="op">=</span>
+        <span class="kw">let</span> <span class="ident">psbt</span>: <span class="ident">Psbt</span> <span class="op">=</span>
             <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">PSBT_POLICY_CONSIDER_TIMELOCK_EXPIRED</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">build_sat</span> <span class="op">=</span> <span class="ident">BuildSatisfaction::PsbtTimelocks</span> {
@@ -3197,7 +3197,7 @@
         );
         <span class="comment">//println!(&quot;{}&quot;, serde_json::to_string(&amp;policy_expired).unwrap());</span>
 
-        <span class="kw">let</span> <span class="ident">psbt_signed</span>: <span class="ident">PSBT</span> <span class="op">=</span>
+        <span class="kw">let</span> <span class="ident">psbt_signed</span>: <span class="ident">Psbt</span> <span class="op">=</span>
             <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">PSBT_POLICY_CONSIDER_TIMELOCK_EXPIRED_SIGNED</span>).<span class="ident">unwrap</span>())
                 .<span class="ident">unwrap</span>();
 
