@@ -134,14 +134,14 @@
 <span class="comment">// You may not use this file except in accordance with one or both of these</span>
 <span class="comment">// licenses.</span>
 
-<span class="kw">use</span> <span class="ident">bitcoin::util::psbt::PartiallySignedTransaction</span> <span class="kw">as</span> <span class="ident">PSBT</span>;
+<span class="kw">use</span> <span class="ident">bitcoin::util::psbt::PartiallySignedTransaction</span> <span class="kw">as</span> <span class="ident">Psbt</span>;
 <span class="kw">use</span> <span class="ident">bitcoin::TxOut</span>;
 
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">PsbtUtils</span> {
     <span class="kw">fn</span> <span class="ident">get_utxo_for</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">input_index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TxOut</span><span class="op">&gt;</span>;
 }
 
-<span class="kw">impl</span> <span class="ident">PsbtUtils</span> <span class="kw">for</span> <span class="ident">PSBT</span> {
+<span class="kw">impl</span> <span class="ident">PsbtUtils</span> <span class="kw">for</span> <span class="ident">Psbt</span> {
     <span class="kw">fn</span> <span class="ident">get_utxo_for</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">input_index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TxOut</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>;
 
@@ -167,7 +167,7 @@
 <span class="kw">mod</span> <span class="ident">test</span> {
     <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::bitcoin::consensus::deserialize</span>;
     <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::bitcoin::TxIn</span>;
-    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::psbt::PSBT</span>;
+    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::psbt::Psbt</span>;
     <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::wallet::test</span>::{<span class="ident">get_funded_wallet</span>, <span class="ident">get_test_wpkh</span>};
     <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::wallet::AddressIndex</span>;
     <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::SignOptions</span>;
@@ -178,7 +178,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">should_panic</span>(<span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;InputIndexOutOfRange&quot;</span>)]</span>
     <span class="kw">fn</span> <span class="ident">test_psbt_malformed_psbt_input_legacy</span>() {
-        <span class="kw">let</span> <span class="ident">psbt_bip</span>: <span class="ident">PSBT</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">PSBT_STR</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">psbt_bip</span>: <span class="ident">Psbt</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">PSBT_STR</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="kw">let</span> <span class="ident">send_to</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">AddressIndex::New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
@@ -195,7 +195,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">should_panic</span>(<span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;InputIndexOutOfRange&quot;</span>)]</span>
     <span class="kw">fn</span> <span class="ident">test_psbt_malformed_psbt_input_segwit</span>() {
-        <span class="kw">let</span> <span class="ident">psbt_bip</span>: <span class="ident">PSBT</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">PSBT_STR</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">psbt_bip</span>: <span class="ident">Psbt</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">PSBT_STR</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="kw">let</span> <span class="ident">send_to</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">AddressIndex::New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
@@ -227,7 +227,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_psbt_sign_with_finalized</span>() {
-        <span class="kw">let</span> <span class="ident">psbt_bip</span>: <span class="ident">PSBT</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">PSBT_STR</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">psbt_bip</span>: <span class="ident">Psbt</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">base64::decode</span>(<span class="ident">PSBT_STR</span>).<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>();
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="kw">let</span> <span class="ident">send_to</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">AddressIndex::New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
