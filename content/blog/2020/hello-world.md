@@ -28,7 +28,7 @@ The main goal of the library is to be a solid foundation for Bitcoin wallets of 
 These goals have a direct impact on the design of the internal components of the library, and as a consequence on the APIs that are exposed to the final user, which might in some cases feel counter-intuitive at first.
 Throughout the article, I will try to focus on those points and try to explain them as best as I can.
 
-## The `Wallet` Structure
+## The `Wallet` Structure 
 
 The [`Wallet`][wallet] structure is in many ways the heart of the library: it represents an instance of a wallet and exposes some APIs to perform all the typical operations one might want to do with a Bitcoin wallet,
 such as generating a new address, listing the transactions received, creating a transaction, etc.
