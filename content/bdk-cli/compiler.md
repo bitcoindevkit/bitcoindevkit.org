@@ -42,7 +42,7 @@ placeholders too. As described in the previous sections of this guide, the keys 
 Let's take this policy for example:
 
 ```bash
-miniscriptc --parsed_policy and(pk(cSQPHDBwXGjVzWRqAHm6zfvQhaTuj1f2bFH58h55ghbjtFwvmeXR),or(50@pk(02e96fe52ef0e22d2f131dd425ce1893073a3c6ad20e8cac36726393dfb4856a4c),older(1000)))) sh-wsh
+miniscriptc --parsed_policy "and(pk(cSQPHDBwXGjVzWRqAHm6zfvQhaTuj1f2bFH58h55ghbjtFwvmeXR),or(50@pk(02e96fe52ef0e22d2f131dd425ce1893073a3c6ad20e8cac36726393dfb4856a4c),older(1000)))" sh-wsh
 ```
 
 The compiler should print something like:
