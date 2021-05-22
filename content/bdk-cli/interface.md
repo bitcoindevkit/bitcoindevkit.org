@@ -26,15 +26,101 @@ command. You only have to do this once when you open a new shell, after that you
 ```bash
 export RUST_LOG="bdk=debug"
 ```
-
 ## Options
+
+```text
+OPTIONS:
+    -n, --network <NETWORK>                            Sets the network [default: testnet]
+
+```
+
+These are the global options that can be set. They are pretty much like the flags, but they also take a value. 
+
+The `--network` flag can be used to change the network. Right now only `testnet` and `regtest` are supported since the code is very much not production-ready yet.
+
+
+## Subcommands
+
+## key
+
+A few tools to quickly generate, restore and derive HD keys.
+
+| Command | Description |
+| ------- | ----------- |
+| [generate](#generate)         | Generates new random seed mnemonic phrase and corresponding master extended key |
+| [restore](#restore)         | Restore a master extended key from seed backup mnemonic words |
+| [derive](#derive)      | Derive a child key pair from a master extended key and a derivation path string (eg. "m/84'/1'/0'/0"
+                or "m/84h/1h/0h/0") |
+
+
+### generate
+
+```text
+OPTIONS:
+    -p, --password <PASSWORD>     Seed password
+    -e, --entropy <WORD_COUNT>    Entropy level based on number of random seed mnemonic words [default: 24]  [possible
+                                  values: 12, 24]
+```
+
+Creates a BIP32 HD wallet seed and output BIP39 mnemonic words. Outputs an xprv that can be used with `key derive`.
+
+
+### restore 
+
+```text
+
+OPTIONS:
+    -m, --mnemonic <MNEMONIC>    Seed mnemonic words, must be quoted (eg. "word1 word2 ...")
+    -p, --password <PASSWORD>    Seed password
+
+```
+
+Recovers a BIP32 HD wallet seed from BIP39 mnemonic words. Same output as generate.
+
+
+### derive 
+
+```text
+
+OPTIONS:
+    -p, --path <PATH>    Path to use to derive extended public key from extended private key
+    -x, --xprv <XPRV>    Extended private key to derive from
+
+
+```
+
+Derive child keys from a master extended private key. 
+
+## wallet
+
+These are the main "functions" of the wallet. Most of them are pretty self explanatory, but we'll go over them quickly anyways. You can get more details about every single command by running `bdk-cli wallet`.
+
+| Command | Description |
+| ------- | ----------- |
+| [broadcast](#broadcast)         | Broadcasts a transaction to the network. Takes either a raw transaction or a PSBT to extract |
+| [bump_fee](#bump_fee)         | Bumps the fees of an RBF transaction |
+| [combine_psbt](#combine_psbt)      | Combines multiple PSBTs into one |
+| [create_tx](#create_tx)         | Creates a new unsigned tranasaction |
+| [extract_psbt](#extract_psbt)      | Extracts a raw transaction from a PSBT |
+| [finalize_psbt](#finalize_psbt)     | Finalizes a psbt |
+| [get_balance](#get_balance)       | Returns the current wallet balance |
+| [get_new_address](#get_new_address)   | Generates a new external address |
+| [list_transactions](#list_transactions)      | Lists all the incoming and outgoing transactions of the wallet 
+| [list_unspent](#list_unspent)      | Lists the available spendable UTXOs |
+| [policies](#policies)          | Returns the available spending policies for the descriptor |
+| [public_descriptor](#public_descriptor) | Returns the public version of the wallet's descriptor(s) |
+| [repl](#repl)              | Opens an interactive shell |
+| [sign](#sign)              | Signs and tries to finalize a PSBT |
+| [sync](#sync)              | Syncs with the chosen Electrum server |
+
+
+### Options
 
 ```text
 OPTIONS:
     -c, --change_descriptor <CHANGE_DESCRIPTOR>        Sets the descriptor to use for internal addresses
     -d, --descriptor <DESCRIPTOR>                      Sets the descriptor to use for the external addresses
         --esplora_concurrency <ESPLORA_CONCURRENCY>    Concurrency of requests made to the esplora server [default: 4]
-    -e, --esplora <ESPLORA_URL>                        Use the esplora server if given as parameter
     -n, --network <NETWORK>                            Sets the network [default: testnet]
     -p, --proxy <PROXY_SERVER:PORT>                    Sets the SOCKS5 proxy for the Electrum client
     -s, --server <SERVER:PORT>
@@ -66,27 +152,6 @@ URLs. **Keep in mind that only plaintext server are supported over a proxy.**
 The `--wallet` flag can be used to select which wallet to use, if you have more than one of them. If you get a `ChecksumMismatch` error when you make some changes to your descriptor, it's because it does not
 match anymore the one you've used to initialize the cache. One solution could be to switch to a new wallet name, or delete the cache directory at `~/.bdk-bitcoin` and start from scratch.
 
-## Subcommands
-
-| Command | Description |
-| ------- | ----------- |
-| [broadcast](#broadcast)         | Broadcasts a transaction to the network. Takes either a raw transaction or a PSBT to extract |
-| [bump_fee](#bump_fee)         | Bumps the fees of an RBF transaction |
-| [combine_psbt](#combine_psbt)      | Combines multiple PSBTs into one |
-| [create_tx](#create_tx)         | Creates a new unsigned tranasaction |
-| [extract_psbt](#extract_psbt)      | Extracts a raw transaction from a PSBT |
-| [finalize_psbt](#finalize_psbt)     | Finalizes a psbt |
-| [get_balance](#get_balance)       | Returns the current wallet balance |
-| [get_new_address](#get_new_address)   | Generates a new external address |
-| [list_transactions](#list_transactions)      | Lists all the incoming and outgoing transactions of the wallet |
-| [list_unspent](#list_unspent)      | Lists the available spendable UTXOs |
-| [policies](#policies)          | Returns the available spending policies for the descriptor |
-| [public_descriptor](#public_descriptor) | Returns the public version of the wallet's descriptor(s) |
-| [repl](#repl)              | Opens an interactive shell |
-| [sign](#sign)              | Signs and tries to finalize a PSBT |
-| [sync](#sync)              | Syncs with the chosen Electrum server |
-
-These are the main "functions" of the wallet. Most of them are pretty self explanatory, but we'll go over them quickly anyways. You can get more details about every single command by running `bdk-cli <subcommand> --help`.
 
 ### broadcast
 
@@ -506,10 +571,6 @@ the descriptor (type = `PARTIALCOMPLETE`) and the three options are `[0, 1] ⇒ 
 
 This subcommand has no extra flags and returns the "public" version of the wallet's descriptor(s). It can be used to bootstrap a watch-only instance for the wallet.
 
-### `repl`
-
-This subcommand has no extra flags and launches an interactive shell session.
-
 ### `sign`
 
 ```text
@@ -529,3 +590,8 @@ is particularly useful for offline wallets.
 ### `sync`
 
 This subcommand has no extra flags. It connects to the chosen Electrum server and synchronizes the list of transactions received and available UTXOs.
+
+
+## `repl`
+
+This subcommand has no extra flags and launches an interactive shell session.
