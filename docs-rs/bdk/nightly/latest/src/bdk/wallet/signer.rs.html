@@ -754,6 +754,19 @@
 <span id="751">751</span>
 <span id="752">752</span>
 <span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -904,6 +917,12 @@
     <span class="ident">MissingWitnessScript</span>,
     <span class="doccomment">/// The fingerprint and derivation path are missing from the psbt input</span>
     <span class="ident">MissingHdKeypath</span>,
+    <span class="doccomment">/// The psbt contains a non-`SIGHASH_ALL` sighash in one of its input and the user hasn&#39;t</span>
+    <span class="doccomment">/// explicitly allowed them</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// To enable signing transactions with non-standard sighashes set</span>
+    <span class="doccomment">/// [`SignOptions::allow_all_sighashes`] to `true`.</span>
+    <span class="ident">NonStandardSighash</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">SignerError</span> {
@@ -1222,6 +1241,12 @@
     <span class="doccomment">/// timelock height has already been reached. This option allows overriding the &quot;current height&quot; to let the</span>
     <span class="doccomment">/// wallet use timelocks in the future to spend a coin.</span>
     <span class="kw">pub</span> <span class="ident">assume_height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+
+    <span class="doccomment">/// Whether the signer should use the `sighash_type` set in the PSBT when signing, no matter</span>
+    <span class="doccomment">/// what its value is</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Defaults to `false` which will only allow signing using `SIGHASH_ALL`.</span>
+    <span class="kw">pub</span> <span class="ident">allow_all_sighashes</span>: <span class="ident">bool</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">SignOptions</span> {
@@ -1229,6 +1254,7 @@
         <span class="ident">SignOptions</span> {
             <span class="ident">trust_witness_utxo</span>: <span class="bool-val">false</span>,
             <span class="ident">assume_height</span>: <span class="prelude-val">None</span>,
+            <span class="ident">allow_all_sighashes</span>: <span class="bool-val">false</span>,
         }
     }
 }
