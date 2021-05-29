@@ -34,7 +34,7 @@ Once Cargo is installed, you can proceed to install the interactive `bdk-cli` to
 the GitHub repository, by running:
 
 ```bash
-cargo install --git https://github.com/bitcoindevkit/bdk-cli --features=esplora,compiler,electrum,repl
+cargo install --git https://github.com/bitcoindevkit/bdk-cli --features="compiler"
 # most commonly used features
 ```
 
@@ -67,5 +67,5 @@ SUBCOMMANDS:
 An example command to sync a testnet wallet looks like this:
 
 ```bash
-bdk-cli wallet -w bdk0rigins --descriptor "wpkh(tprv8ZgxMBicQKsPexGYyaFwnAsCXCjmz2FaTm6LtesyyihjbQE3gRMfXqQBXKM43DvC1UgRVv1qom1qFxNMSqVAs88qx9PhgFnfGVUdiiDf6j4/0/*)" --server ssl://electrum.blockstream.info:60002 sync 
+bdk-cli wallet -w example --descriptor "wpkh(tprv8ZgxMBicQKsPexGYyaFwnAsCXCjmz2FaTm6LtesyyihjbQE3gRMfXqQBXKM43DvC1UgRVv1qom1qFxNMSqVAs88qx9PhgFnfGVUdiiDf6j4/0/*)" --server ssl://electrum.blockstream.info:60002 sync 
 ```
