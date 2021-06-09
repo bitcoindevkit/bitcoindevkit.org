@@ -1,7 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../bdk/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button>
-                <a id="settings-menu" href="../../settings.html" title="settings"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../bdk/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -271,6 +270,10 @@
 <span id="268">268</span>
 <span id="269">269</span>
 <span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -288,9 +291,6 @@
 <span class="comment">// only enables the `doc_cfg` feature when</span>
 <span class="comment">// the `docsrs` configuration attribute is defined</span>
 <span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">feature</span>(<span class="ident">doc_cfg</span>))]</span>
-<span class="comment">// only enables the nightly `external_doc` feature when</span>
-<span class="comment">// `test-md-docs` is enabled</span>
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-md-docs&quot;</span>, <span class="ident">feature</span>(<span class="ident">external_doc</span>))]</span>
 
 <span class="doccomment">//! A modern, lightweight, descriptor-based wallet library written in Rust.</span>
 <span class="doccomment">//!</span>
@@ -319,34 +319,37 @@
 <span class="doccomment">//! ```toml</span>
 <span class="doccomment">//! bdk = &quot;0.7.0&quot;</span>
 <span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Sync the balance of a descriptor</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### Example</span>
-<span class="doccomment">//! ```ignore</span>
-<span class="doccomment">//! use bdk::Wallet;</span>
-<span class="doccomment">//! use bdk::database::MemoryDatabase;</span>
-<span class="doccomment">//! use bdk::blockchain::{noop_progress, ElectrumBlockchain};</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! use bdk::electrum_client::Client;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! fn main() -&gt; Result&lt;(), bdk::Error&gt; {</span>
-<span class="doccomment">//!     let client = Client::new(&quot;ssl://electrum.blockstream.info:60002&quot;)?;</span>
-<span class="doccomment">//!     let wallet = Wallet::new(</span>
-<span class="doccomment">//!         &quot;wpkh([c258d2e4/84h/1h/0h]tpubDDYkZojQFQjht8Tm4jsS3iuEmKjTiEGjG6KnuFNKKJb5A6ZUCUZKdvLdSDWofKi4ToRCwb9poe1XdqfUnP4jaJjCB2Zwv11ZLgSbnZSNecE/0/*)&quot;,</span>
-<span class="doccomment">//!         Some(&quot;wpkh([c258d2e4/84h/1h/0h]tpubDDYkZojQFQjht8Tm4jsS3iuEmKjTiEGjG6KnuFNKKJb5A6ZUCUZKdvLdSDWofKi4ToRCwb9poe1XdqfUnP4jaJjCB2Zwv11ZLgSbnZSNecE/1/*)&quot;),</span>
-<span class="doccomment">//!         bitcoin::Network::Testnet,</span>
-<span class="doccomment">//!         MemoryDatabase::default(),</span>
-<span class="doccomment">//!         ElectrumBlockchain::from(client)</span>
-<span class="doccomment">//!     )?;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     wallet.sync(noop_progress(), None)?;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     println!(&quot;Descriptor balance: {} SAT&quot;, wallet.get_balance()?);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     Ok(())</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
+<span class="attribute">#![<span class="ident">cfg_attr</span>(
+    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>,
+    <span class="ident">doc</span> <span class="op">=</span> <span class="string">r##&quot;
+## Sync the balance of a descriptor
+
+### Example
+```no_run
+use bdk::Wallet;
+use bdk::database::MemoryDatabase;
+use bdk::blockchain::{noop_progress, ElectrumBlockchain};
+use bdk::electrum_client::Client;
+
+fn main() -&gt; Result&lt;(), bdk::Error&gt; {
+    let client = Client::new(&quot;ssl://electrum.blockstream.info:60002&quot;)?;
+    let wallet = Wallet::new(
+        &quot;wpkh([c258d2e4/84h/1h/0h]tpubDDYkZojQFQjht8Tm4jsS3iuEmKjTiEGjG6KnuFNKKJb5A6ZUCUZKdvLdSDWofKi4ToRCwb9poe1XdqfUnP4jaJjCB2Zwv11ZLgSbnZSNecE/0/*)&quot;,
+        Some(&quot;wpkh([c258d2e4/84h/1h/0h]tpubDDYkZojQFQjht8Tm4jsS3iuEmKjTiEGjG6KnuFNKKJb5A6ZUCUZKdvLdSDWofKi4ToRCwb9poe1XdqfUnP4jaJjCB2Zwv11ZLgSbnZSNecE/1/*)&quot;),
+        bitcoin::Network::Testnet,
+        MemoryDatabase::default(),
+        ElectrumBlockchain::from(client)
+    )?;
+
+    wallet.sync(noop_progress(), None)?;
+
+    println!(&quot;Descriptor balance: {} SAT&quot;, wallet.get_balance()?);
+
+    Ok(())
+}
+```
+&quot;##</span>
+)]</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Generate a few addresses</span>
 <span class="doccomment">//!</span>
@@ -371,60 +374,64 @@
 <span class="doccomment">//!     Ok(())</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Create a transaction</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### Example</span>
-<span class="doccomment">//! ```ignore</span>
-<span class="doccomment">//! use base64::decode;</span>
-<span class="doccomment">//! use bdk::{FeeRate, Wallet};</span>
-<span class="doccomment">//! use bdk::database::MemoryDatabase;</span>
-<span class="doccomment">//! use bdk::blockchain::{noop_progress, ElectrumBlockchain};</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! use bdk::electrum_client::Client;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! use bitcoin::consensus::serialize;</span>
-<span class="doccomment">//! use bdk::wallet::AddressIndex::New;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! fn main() -&gt; Result&lt;(), bdk::Error&gt; {</span>
-<span class="doccomment">//!     let client = Client::new(&quot;ssl://electrum.blockstream.info:60002&quot;)?;</span>
-<span class="doccomment">//!     let wallet = Wallet::new(</span>
-<span class="doccomment">//!         &quot;wpkh([c258d2e4/84h/1h/0h]tpubDDYkZojQFQjht8Tm4jsS3iuEmKjTiEGjG6KnuFNKKJb5A6ZUCUZKdvLdSDWofKi4ToRCwb9poe1XdqfUnP4jaJjCB2Zwv11ZLgSbnZSNecE/0/*)&quot;,</span>
-<span class="doccomment">//!         Some(&quot;wpkh([c258d2e4/84h/1h/0h]tpubDDYkZojQFQjht8Tm4jsS3iuEmKjTiEGjG6KnuFNKKJb5A6ZUCUZKdvLdSDWofKi4ToRCwb9poe1XdqfUnP4jaJjCB2Zwv11ZLgSbnZSNecE/1/*)&quot;),</span>
-<span class="doccomment">//!         bitcoin::Network::Testnet,</span>
-<span class="doccomment">//!         MemoryDatabase::default(),</span>
-<span class="doccomment">//!         ElectrumBlockchain::from(client)</span>
-<span class="doccomment">//!     )?;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     wallet.sync(noop_progress(), None)?;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let send_to = wallet.get_address(New)?;</span>
-<span class="doccomment">//!     let (psbt, details) = {</span>
-<span class="doccomment">//!         let mut builder =  wallet.build_tx();</span>
-<span class="doccomment">//!         builder</span>
-<span class="doccomment">//!             .add_recipient(send_to.script_pubkey(), 50_000)</span>
-<span class="doccomment">//!             .enable_rbf()</span>
-<span class="doccomment">//!             .do_not_spend_change()</span>
-<span class="doccomment">//!             .fee_rate(FeeRate::from_sat_per_vb(5.0))</span>
-<span class="doccomment">//!         builder.finish()?</span>
-<span class="doccomment">//!     };</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     println!(&quot;Transaction details: {:#?}&quot;, details);</span>
-<span class="doccomment">//!     println!(&quot;Unsigned PSBT: {}&quot;, base64::encode(&amp;serialize(&amp;psbt)));</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     Ok(())</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
+<span class="attribute">#![<span class="ident">cfg_attr</span>(
+    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>,
+    <span class="ident">doc</span> <span class="op">=</span> <span class="string">r##&quot;
+## Create a transaction
+
+### Example
+```no_run
+use base64::decode;
+
+use bdk::{FeeRate, Wallet};
+use bdk::database::MemoryDatabase;
+use bdk::blockchain::{noop_progress, ElectrumBlockchain};
+use bdk::electrum_client::Client;
+
+use bitcoin::consensus::serialize;
+use bdk::wallet::AddressIndex::New;
+
+fn main() -&gt; Result&lt;(), bdk::Error&gt; {
+    let client = Client::new(&quot;ssl://electrum.blockstream.info:60002&quot;)?;
+    let wallet = Wallet::new(
+        &quot;wpkh([c258d2e4/84h/1h/0h]tpubDDYkZojQFQjht8Tm4jsS3iuEmKjTiEGjG6KnuFNKKJb5A6ZUCUZKdvLdSDWofKi4ToRCwb9poe1XdqfUnP4jaJjCB2Zwv11ZLgSbnZSNecE/0/*)&quot;,
+        Some(&quot;wpkh([c258d2e4/84h/1h/0h]tpubDDYkZojQFQjht8Tm4jsS3iuEmKjTiEGjG6KnuFNKKJb5A6ZUCUZKdvLdSDWofKi4ToRCwb9poe1XdqfUnP4jaJjCB2Zwv11ZLgSbnZSNecE/1/*)&quot;),
+        bitcoin::Network::Testnet,
+        MemoryDatabase::default(),
+        ElectrumBlockchain::from(client)
+    )?;
+
+    wallet.sync(noop_progress(), None)?;
+
+    let send_to = wallet.get_address(New)?;
+    let (psbt, details) = {
+        let mut builder =  wallet.build_tx();
+        builder
+            .add_recipient(send_to.script_pubkey(), 50_000)
+            .enable_rbf()
+            .do_not_spend_change()
+            .fee_rate(FeeRate::from_sat_per_vb(5.0));
+        builder.finish()?
+    };
+
+    println!(&quot;Transaction details: {:#?}&quot;, details);
+    println!(&quot;Unsigned PSBT: {}&quot;, base64::encode(&amp;serialize(&amp;psbt)));
+
+    Ok(())
+}
+```
+&quot;##</span>
+)]</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Sign a transaction</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ### Example</span>
-<span class="doccomment">//! ```ignore</span>
+<span class="doccomment">//! ```no_run</span>
 <span class="doccomment">//! use base64::decode;</span>
-<span class="doccomment">//! use bdk::{Wallet};</span>
-<span class="doccomment">//! use bdk::database::MemoryDatabase;</span>
-<span class="doccomment">//!</span>
 <span class="doccomment">//! use bitcoin::consensus::deserialize;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! use bdk::{Wallet, SignOptions};</span>
+<span class="doccomment">//! use bdk::database::MemoryDatabase;</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! fn main() -&gt; Result&lt;(), bdk::Error&gt; {</span>
 <span class="doccomment">//!     let wallet = Wallet::new_offline(</span>
@@ -437,7 +444,7 @@
 <span class="doccomment">//!     let psbt = &quot;...&quot;;</span>
 <span class="doccomment">//!     let mut psbt = deserialize(&amp;base64::decode(psbt).unwrap())?;</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//!     let finalized = wallet.sign(&amp;mut psbt, None)?;</span>
+<span class="doccomment">//!     let finalized = wallet.sign(&amp;mut psbt, SignOptions::default())?;</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!     Ok(())</span>
 <span class="doccomment">//! }</span>
