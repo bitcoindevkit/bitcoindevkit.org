@@ -3969,6 +3969,10 @@
 <span id="3967">3967</span>
 <span id="3968">3968</span>
 <span id="3969">3969</span>
+<span id="3970">3970</span>
+<span id="3971">3971</span>
+<span id="3972">3972</span>
+<span id="3973">3973</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -5461,12 +5465,14 @@
             <span class="bool-val">false</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
             <span class="bool-val">true</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">max_address_param</span>.<span class="ident">unwrap_or</span>(<span class="ident">CACHE_ADDR_BATCH_SIZE</span>),
         };
+        <span class="macro">debug!</span>(<span class="string">&quot;max_address {}&quot;</span>, <span class="ident">max_address</span>);
         <span class="kw">if</span> <span class="self">self</span>
             .<span class="ident">database</span>
             .<span class="ident">borrow</span>()
             .<span class="ident">get_script_pubkey_from_path</span>(<span class="ident">KeychainKind::External</span>, <span class="ident">max_address</span>.<span class="ident">saturating_sub</span>(<span class="number">1</span>))<span class="question-mark">?</span>
             .<span class="ident">is_none</span>()
         {
+            <span class="macro">debug!</span>(<span class="string">&quot;caching external addresses&quot;</span>);
             <span class="ident">run_setup</span> <span class="op">=</span> <span class="bool-val">true</span>;
             <span class="self">self</span>.<span class="ident">cache_addresses</span>(<span class="ident">KeychainKind::External</span>, <span class="number">0</span>, <span class="ident">max_address</span>)<span class="question-mark">?</span>;
         }
@@ -5483,11 +5489,13 @@
                 .<span class="ident">get_script_pubkey_from_path</span>(<span class="ident">KeychainKind::Internal</span>, <span class="ident">max_address</span>.<span class="ident">saturating_sub</span>(<span class="number">1</span>))<span class="question-mark">?</span>
                 .<span class="ident">is_none</span>()
             {
+                <span class="macro">debug!</span>(<span class="string">&quot;caching internal addresses&quot;</span>);
                 <span class="ident">run_setup</span> <span class="op">=</span> <span class="bool-val">true</span>;
                 <span class="self">self</span>.<span class="ident">cache_addresses</span>(<span class="ident">KeychainKind::Internal</span>, <span class="number">0</span>, <span class="ident">max_address</span>)<span class="question-mark">?</span>;
             }
         }
 
+        <span class="macro">debug!</span>(<span class="string">&quot;run_setup: {}&quot;</span>, <span class="ident">run_setup</span>);
         <span class="comment">// TODO: what if i generate an address first and cache some addresses?</span>
         <span class="comment">// TODO: we should sync if generating an address triggers a new batch to be stored</span>
         <span class="kw">if</span> <span class="ident">run_setup</span> {
