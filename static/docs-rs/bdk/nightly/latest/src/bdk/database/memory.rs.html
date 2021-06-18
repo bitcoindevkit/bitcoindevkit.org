@@ -1060,18 +1060,18 @@
         };
 
         <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">txid</span>();
-        <span class="kw">let</span> <span class="ident">height</span> <span class="op">=</span> <span class="ident">tx_meta</span>
-            .<span class="ident">min_confirmations</span>
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">conf</span><span class="op">|</span> <span class="ident">current_height</span>.<span class="ident">unwrap</span>().<span class="ident">checked_sub</span>(<span class="ident">conf</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">unwrap</span>());
+        <span class="kw">let</span> <span class="ident">confirmation_time</span> <span class="op">=</span> <span class="ident">tx_meta</span>.<span class="ident">min_confirmations</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">conf</span><span class="op">|</span> <span class="ident">ConfirmationTime</span> {
+            <span class="ident">height</span>: <span class="ident">current_height</span>.<span class="ident">unwrap</span>().<span class="ident">checked_sub</span>(<span class="ident">conf</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">timestamp</span>: <span class="number">0</span>,
+        });
 
         <span class="kw">let</span> <span class="ident">tx_details</span> <span class="op">=</span> <span class="ident">TransactionDetails</span> {
             <span class="ident">transaction</span>: <span class="prelude-val">Some</span>(<span class="ident">tx</span>.<span class="ident">clone</span>()),
             <span class="ident">txid</span>,
-            <span class="ident">timestamp</span>: <span class="number">0</span>,
-            <span class="ident">height</span>,
+            <span class="ident">fee</span>: <span class="prelude-val">Some</span>(<span class="number">0</span>),
             <span class="ident">received</span>: <span class="number">0</span>,
             <span class="ident">sent</span>: <span class="number">0</span>,
-            <span class="ident">fees</span>: <span class="number">0</span>,
+            <span class="ident">confirmation_time</span>,
         };
 
         <span class="ident">db</span>.<span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="ident">tx_details</span>).<span class="ident">unwrap</span>();

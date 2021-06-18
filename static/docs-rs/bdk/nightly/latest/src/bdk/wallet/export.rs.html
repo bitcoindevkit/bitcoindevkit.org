@@ -346,6 +346,10 @@
 <span id="344">344</span>
 <span id="345">345</span>
 <span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -477,7 +481,7 @@
             <span class="prelude-val">Ok</span>(<span class="ident">txs</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">heights</span> <span class="op">=</span> <span class="ident">txs</span>
                     .<span class="ident">into_iter</span>()
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">tx</span><span class="op">|</span> <span class="ident">tx</span>.<span class="ident">height</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>))
+                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">tx</span><span class="op">|</span> <span class="ident">tx</span>.<span class="ident">confirmation_time</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">height</span>).<span class="ident">unwrap_or</span>(<span class="number">0</span>))
                     .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
                 <span class="ident">heights</span>.<span class="ident">sort_unstable</span>();
 
@@ -561,6 +565,7 @@
     <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::database</span>::{<span class="ident">memory::MemoryDatabase</span>, <span class="ident">BatchOperations</span>};
     <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::types::TransactionDetails</span>;
     <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::wallet::Wallet</span>;
+    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::ConfirmationTime</span>;
 
     <span class="kw">fn</span> <span class="ident">get_test_db</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">MemoryDatabase</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDatabase::new</span>();
@@ -570,11 +575,14 @@
                 <span class="string">&quot;4ddff1fa33af17f377f62b72357b43107c19110a8009b36fb832af505efed98a&quot;</span>,
             )
             .<span class="ident">unwrap</span>(),
-            <span class="ident">timestamp</span>: <span class="number">12345678</span>,
+
             <span class="ident">received</span>: <span class="number">100_000</span>,
             <span class="ident">sent</span>: <span class="number">0</span>,
-            <span class="ident">fees</span>: <span class="number">500</span>,
-            <span class="ident">height</span>: <span class="prelude-val">Some</span>(<span class="number">5000</span>),
+            <span class="ident">fee</span>: <span class="prelude-val">Some</span>(<span class="number">500</span>),
+            <span class="ident">confirmation_time</span>: <span class="prelude-val">Some</span>(<span class="ident">ConfirmationTime</span> {
+                <span class="ident">timestamp</span>: <span class="number">12345678</span>,
+                <span class="ident">height</span>: <span class="number">5000</span>,
+            }),
         })
         .<span class="ident">unwrap</span>();
 
