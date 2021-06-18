@@ -384,6 +384,10 @@
 <span id="382">382</span>
 <span id="383">383</span>
 <span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -408,7 +412,7 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::error::Error</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::types</span>::{<span class="ident">KeychainKind</span>, <span class="ident">LocalUtxo</span>, <span class="ident">TransactionDetails</span>};
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::types</span>::{<span class="ident">ConfirmationTime</span>, <span class="ident">KeychainKind</span>, <span class="ident">LocalUtxo</span>, <span class="ident">TransactionDetails</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::wallet::time::Instant</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::wallet::utils::ChunksIterator</span>;
 
@@ -534,13 +538,14 @@
         <span class="comment">// save any tx details not in db but in history_txs_id or with different height/timestamp</span>
         <span class="kw">for</span> <span class="ident">txid</span> <span class="kw">in</span> <span class="ident">history_txs_id</span>.<span class="ident">iter</span>() {
             <span class="kw">let</span> <span class="ident">height</span> <span class="op">=</span> <span class="ident">txid_height</span>.<span class="ident">get</span>(<span class="ident">txid</span>).<span class="ident">cloned</span>().<span class="ident">flatten</span>();
-            <span class="kw">let</span> <span class="ident">timestamp</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">new_timestamps</span>.<span class="ident">get</span>(<span class="ident">txid</span>).<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="number">0u64</span>);
+            <span class="kw">let</span> <span class="ident">timestamp</span> <span class="op">=</span> <span class="ident">new_timestamps</span>.<span class="ident">get</span>(<span class="ident">txid</span>).<span class="ident">cloned</span>();
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">tx_details</span>) <span class="op">=</span> <span class="ident">txs_details_in_db</span>.<span class="ident">get</span>(<span class="ident">txid</span>) {
-                <span class="comment">// check if height matches, otherwise updates it</span>
-                <span class="kw">if</span> <span class="ident">tx_details</span>.<span class="ident">height</span> <span class="op">!</span><span class="op">=</span> <span class="ident">height</span> {
+                <span class="comment">// check if tx height matches, otherwise updates it. timestamp is not in the if clause</span>
+                <span class="comment">// because we are not asking headers for confirmed tx we know about</span>
+                <span class="kw">if</span> <span class="ident">tx_details</span>.<span class="ident">confirmation_time</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">height</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">height</span> {
+                    <span class="kw">let</span> <span class="ident">confirmation_time</span> <span class="op">=</span> <span class="ident">ConfirmationTime::new</span>(<span class="ident">height</span>, <span class="ident">timestamp</span>);
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_tx_details</span> <span class="op">=</span> <span class="ident">tx_details</span>.<span class="ident">clone</span>();
-                    <span class="ident">new_tx_details</span>.<span class="ident">height</span> <span class="op">=</span> <span class="ident">height</span>;
-                    <span class="ident">new_tx_details</span>.<span class="ident">timestamp</span> <span class="op">=</span> <span class="ident">timestamp</span>;
+                    <span class="ident">new_tx_details</span>.<span class="ident">confirmation_time</span> <span class="op">=</span> <span class="ident">confirmation_time</span>;
                     <span class="ident">batch</span>.<span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="ident">new_tx_details</span>)<span class="question-mark">?</span>;
                 }
             } <span class="kw">else</span> {
@@ -625,9 +630,13 @@
         <span class="ident">chunk_size</span>: <span class="ident">usize</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Txid</span>, <span class="ident">u64</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">txid_timestamp</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
+        <span class="kw">let</span> <span class="ident">txid_in_db_with_conf</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">txs_details_in_db</span>
+            .<span class="ident">values</span>()
+            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">details</span><span class="op">|</span> <span class="ident">details</span>.<span class="ident">confirmation_time</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">details</span>.<span class="ident">txid</span>))
+            .<span class="ident">collect</span>();
         <span class="kw">let</span> <span class="ident">needed_txid_height</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Txid</span>, <span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">txid_height</span>
             .<span class="ident">iter</span>()
-            .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">t</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">txs_details_in_db</span>.<span class="ident">get</span>(<span class="kw-2">*</span><span class="ident">t</span>).<span class="ident">is_none</span>())
+            .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">t</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="op">!</span><span class="ident">txid_in_db_with_conf</span>.<span class="ident">contains</span>(<span class="kw-2">*</span><span class="ident">t</span>))
             .<span class="ident">filter_map</span>(<span class="op">|</span>(<span class="ident">t</span>, <span class="ident">o</span>)<span class="op">|</span> <span class="ident">o</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">h</span><span class="op">|</span> (<span class="ident">t</span>, <span class="ident">h</span>)))
             .<span class="ident">collect</span>();
         <span class="kw">let</span> <span class="ident">needed_heights</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">needed_txid_height</span>.<span class="ident">values</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>();
@@ -679,7 +688,7 @@
 <span class="kw">fn</span> <span class="ident">save_transaction_details_and_utxos</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">BatchDatabase</span><span class="op">&gt;</span>(
     <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>,
     <span class="ident">db</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">D</span>,
-    <span class="ident">timestamp</span>: <span class="ident">u64</span>,
+    <span class="ident">timestamp</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
     <span class="ident">height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
     <span class="ident">updates</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">BatchOperations</span>,
     <span class="ident">utxo_deps</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">OutPoint</span>, <span class="ident">OutPoint</span><span class="op">&gt;</span>,
@@ -742,9 +751,8 @@
         <span class="ident">transaction</span>: <span class="prelude-val">Some</span>(<span class="ident">tx</span>),
         <span class="ident">received</span>: <span class="ident">incoming</span>,
         <span class="ident">sent</span>: <span class="ident">outgoing</span>,
-        <span class="ident">height</span>,
-        <span class="ident">timestamp</span>,
-        <span class="ident">fees</span>: <span class="ident">inputs_sum</span>.<span class="ident">saturating_sub</span>(<span class="ident">outputs_sum</span>), <span class="comment">/* if the tx is a coinbase, fees would be negative */</span>
+        <span class="ident">confirmation_time</span>: <span class="ident">ConfirmationTime::new</span>(<span class="ident">height</span>, <span class="ident">timestamp</span>),
+        <span class="ident">fee</span>: <span class="prelude-val">Some</span>(<span class="ident">inputs_sum</span>.<span class="ident">saturating_sub</span>(<span class="ident">outputs_sum</span>)), <span class="comment">/* if the tx is a coinbase, fees would be negative */</span>
     };
     <span class="ident">updates</span>.<span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="ident">tx_details</span>)<span class="question-mark">?</span>;
 

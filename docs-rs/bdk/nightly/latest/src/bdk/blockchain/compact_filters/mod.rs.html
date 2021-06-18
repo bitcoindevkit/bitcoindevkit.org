@@ -568,7 +568,6 @@
 <span id="566">566</span>
 <span id="567">567</span>
 <span id="568">568</span>
-<span id="569">569</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -643,7 +642,7 @@
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::error::Error</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::types</span>::{<span class="ident">KeychainKind</span>, <span class="ident">LocalUtxo</span>, <span class="ident">TransactionDetails</span>};
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::FeeRate</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">ConfirmationTime</span>, <span class="ident">FeeRate</span>};
 
 <span class="kw">use</span> <span class="ident">peer</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">store</span>::<span class="kw-2">*</span>;
@@ -718,7 +717,7 @@
         <span class="ident">database</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">D</span>,
         <span class="ident">tx</span>: <span class="kw-2">&amp;</span><span class="ident">Transaction</span>,
         <span class="ident">height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-        <span class="ident">timestamp</span>: <span class="ident">u64</span>,
+        <span class="ident">timestamp</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
         <span class="ident">internal_max_deriv</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
         <span class="ident">external_max_deriv</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
@@ -778,9 +777,8 @@
                 <span class="ident">transaction</span>: <span class="prelude-val">Some</span>(<span class="ident">tx</span>.<span class="ident">clone</span>()),
                 <span class="ident">received</span>: <span class="ident">incoming</span>,
                 <span class="ident">sent</span>: <span class="ident">outgoing</span>,
-                <span class="ident">height</span>,
-                <span class="ident">timestamp</span>,
-                <span class="ident">fees</span>: <span class="ident">inputs_sum</span>.<span class="ident">saturating_sub</span>(<span class="ident">outputs_sum</span>),
+                <span class="ident">confirmation_time</span>: <span class="ident">ConfirmationTime::new</span>(<span class="ident">height</span>, <span class="ident">timestamp</span>),
+                <span class="ident">fee</span>: <span class="prelude-val">Some</span>(<span class="ident">inputs_sum</span>.<span class="ident">saturating_sub</span>(<span class="ident">outputs_sum</span>)),
             };
 
             <span class="macro">info!</span>(<span class="string">&quot;Saving tx {}&quot;</span>, <span class="ident">tx</span>.<span class="ident">txid</span>);
@@ -936,8 +934,8 @@
         );
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">updates</span> <span class="op">=</span> <span class="ident">database</span>.<span class="ident">begin_batch</span>();
         <span class="kw">for</span> <span class="ident">details</span> <span class="kw">in</span> <span class="ident">database</span>.<span class="ident">iter_txs</span>(<span class="bool-val">false</span>)<span class="question-mark">?</span> {
-            <span class="kw">match</span> <span class="ident">details</span>.<span class="ident">height</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">height</span>) <span class="kw">if</span> (<span class="ident">height</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">&lt;</span> <span class="ident">last_synced_block</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">continue</span>,
+            <span class="kw">match</span> <span class="ident">details</span>.<span class="ident">confirmation_time</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="kw">if</span> (<span class="ident">c</span>.<span class="ident">height</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">&lt;</span> <span class="ident">last_synced_block</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">continue</span>,
                 <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">updates</span>.<span class="ident">del_tx</span>(<span class="kw-2">&amp;</span><span class="ident">details</span>.<span class="ident">txid</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>,
             };
         }
@@ -959,7 +957,7 @@
                     <span class="ident">database</span>,
                     <span class="ident">tx</span>,
                     <span class="prelude-val">Some</span>(<span class="ident">height</span> <span class="kw">as</span> <span class="ident">u32</span>),
-                    <span class="number">0</span>,
+                    <span class="prelude-val">None</span>,
                     <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">internal_max_deriv</span>,
                     <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">external_max_deriv</span>,
                 )<span class="question-mark">?</span>;
@@ -970,7 +968,7 @@
                 <span class="ident">database</span>,
                 <span class="ident">tx</span>,
                 <span class="prelude-val">None</span>,
-                <span class="number">0</span>,
+                <span class="prelude-val">None</span>,
                 <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">internal_max_deriv</span>,
                 <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">external_max_deriv</span>,
             )<span class="question-mark">?</span>;
