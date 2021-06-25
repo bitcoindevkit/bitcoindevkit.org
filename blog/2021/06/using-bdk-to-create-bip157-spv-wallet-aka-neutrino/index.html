@@ -1,0 +1,1131 @@
+
+
+<!DOCTYPE html>
+<html lang="en" class="js csstransforms3d">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="Hugo 0.79.0" />
+    <meta name="description" content="Tutorial showing usage of compact filters (BIP157) using bdk-cli command line tools">
+<meta name="author" content="Alekos Filini - @afilini">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+<link rel="manifest" href="/icons/site.webmanifest">
+<link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+    <title>Using BDK to create BIP157 SPV wallet (aka Neutrino) :: Bitcoin Dev Kit</title>
+
+    
+    <link href="/css/nucleus.css?1624658417" rel="stylesheet">
+    <link href="/css/fontawesome-all.min.css?1624658417" rel="stylesheet">
+    <link href="/css/hybrid.css?1624658417" rel="stylesheet">
+    <link href="/css/featherlight.min.css?1624658417" rel="stylesheet">
+    <link href="/css/perfect-scrollbar.min.css?1624658417" rel="stylesheet">
+    <link href="/css/auto-complete.css?1624658417" rel="stylesheet">
+    <link href="/css/atom-one-dark-reasonable.css?1624658417" rel="stylesheet">
+    <link href="/css/theme.css?1624658417" rel="stylesheet">
+    <link href="/css/hugo-theme.css?1624658417" rel="stylesheet">
+    
+    <link href="/css/theme-blue.css?1624658417" rel="stylesheet">
+    
+    <link href="/css/style.css?1624658417" rel="stylesheet"><link href="/css/jsonview.css?1624658417" rel="stylesheet"><link href="/css/blog.css?1624658417" rel="stylesheet">
+
+    <meta property="og:title" content="Using BDK to create BIP157 SPV wallet (aka Neutrino)" />
+<meta property="og:description" content="Tutorial showing usage of compact filters (BIP157) using bdk-cli command line tools" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://bitcoindevkit.org/blog/2021/06/using-bdk-to-create-bip157-spv-wallet-aka-neutrino/" />
+<meta property="og:image" content="https://bitcoindevkit.org/images/logo-wide.jpg"/>
+<meta property="article:published_time" content="2021-06-20T00:00:00+00:00" />
+<meta property="article:modified_time" content="2021-06-20T00:00:00+00:00" />
+
+    <meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://bitcoindevkit.org/images/logo-wide.jpg"/>
+
+<meta name="twitter:title" content="Using BDK to create BIP157 SPV wallet (aka Neutrino)"/>
+<meta name="twitter:description" content="Tutorial showing usage of compact filters (BIP157) using bdk-cli command line tools"/>
+
+
+    <script src="/js/jquery-3.3.1.min.js?1624658417"></script>
+
+    <style>
+      :root #header + #content > #left > #rlblock_left{
+          display:none !important;
+      }
+      
+        :not(pre) > code + span.copy-to-clipboard {
+            display: none;
+        }
+      
+    </style>
+    
+  </head>
+  <body class="" data-url="/blog/2021/06/using-bdk-to-create-bip157-spv-wallet-aka-neutrino/">
+    
+
+
+<nav id="sidebar" class="">
+
+
+
+  <div id="header-wrapper">
+    <div id="header">
+      <a id="logo" href="/">
+    <img src="/images/logo.svg" alt="Bitcoin Dev Kit logo"/>
+</a>
+
+    </div>
+    
+        <div class="searchbox">
+    <label for="search-by"><i class="fas fa-search"></i></label>
+    <input data-search-input id="search-by" type="search" placeholder="Search...">
+    <span data-search-clear=""><i class="fas fa-times"></i></span>
+</div>
+
+<script type="text/javascript" src="/js/lunr.min.js?1624658417"></script>
+<script type="text/javascript" src="/js/auto-complete.js?1624658417"></script>
+<script type="text/javascript">
+    
+        var baseurl = "https:\/\/bitcoindevkit.org\/";
+    
+</script>
+<script type="text/javascript" src="/js/search.js?1624658417"></script>
+
+    
+  </div>
+  
+    <section id="homelinks">
+      <ul>
+        <li>
+            <a class="padding" href='/'><i class='fas fa-home'></i> Home</a>
+        </li>
+      </ul>
+    </section>
+  
+
+    <div class="highlightable">
+    <ul class="topics">
+
+        
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/blog/" title="Blog" class="dd-item
+        parent
+        
+        
+        ">
+      <a href="/blog/">
+          <i class="fas fa-newspaper"></i> Blog
+          
+      </a>
+      
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/bdk-cli/" title="BDK CLI" class="dd-item
+        
+        
+        
+        ">
+      <a href="/bdk-cli/">
+          <i class="fas fa-terminal"></i> BDK CLI
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/bdk-cli/installation/" title="Installation" class="dd-item ">
+        <a href="/bdk-cli/installation/">
+        <b>1. </b>Installation
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/bdk-cli/concept/" title="Concept" class="dd-item ">
+        <a href="/bdk-cli/concept/">
+        <b>2. </b>Concept
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/bdk-cli/interface/" title="Interface" class="dd-item ">
+        <a href="/bdk-cli/interface/">
+        <b>3. </b>Interface
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/bdk-cli/regtest/" title="Regtest" class="dd-item ">
+        <a href="/bdk-cli/regtest/">
+        <b>4. </b>Regtest
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/bdk-cli/compiler/" title="Compiler" class="dd-item ">
+        <a href="/bdk-cli/compiler/">
+        <b>5. </b>Compiler
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/bdk-cli/playground/" title="Playground" class="dd-item ">
+        <a href="/bdk-cli/playground/">
+        <b>6. </b>Playground
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/descriptors/" title="Descriptors" class="dd-item
+        
+        
+        
+        ">
+      <a href="/descriptors/">
+          <i class="fas fa-code"></i> Descriptors
+          
+      </a>
+      
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/supporters/" title="Supporters" class="dd-item
+        
+        
+        
+        ">
+      <a href="/supporters/">
+          <i class="fas fa-heart"></i> Supporters
+          
+      </a>
+      
+      
+    </li>
+  
+ 
+
+          
+        
+    </ul>
+
+    
+    
+      <section id="shortcuts">
+        <h3>More</h3>
+        <ul>
+          
+              <li>
+                  <a class="padding" href="https://docs.rs/bdk"><i class='fas fa-book-open'></i> Stable Docs</a>
+              </li>
+          
+              <li>
+                  <a class="padding" href="https://bitcoindevkit.org/docs-rs/bdk/nightly/latest/bdk"><i class='fas fa-tools'></i> Nightly Docs</a>
+              </li>
+          
+              <li>
+                  <a class="padding" href="https://bitcoindevkit.org/bdk-cli/playground"><i class='fas fa-magic'></i> Playground</a>
+              </li>
+          
+              <li>
+                  <a class="padding" href="https://twitter.com/intent/follow?screen_name=bitcoindevkit"><i style='font-size: 20px' class='fab fa-twitter-square'></i> Follow on Twitter</a>
+              </li>
+          
+              <li>
+                  <a class="padding" href="https://discord.gg/dstn4dQ"><i style='font-size: 20px' class='fab fa-discord'></i> Chat on Discord</a>
+              </li>
+          
+        </ul>
+      </section>
+    
+
+    
+    <section id="footer">
+      <script type="text/javascript" src="/js/github-buttons.js"></script>
+
+<center>
+    
+    <a class="github-button" href="https://github.com/bitcoindevkit/bdk/subscription" data-icon="octicon-eye" data-show-count="true" aria-label="Watch bitcoindevkit/bdk on GitHub">Watch</a>
+    <a class="github-button" href="https://github.com/bitcoindevkit/bdk" data-icon="octicon-star" data-show-count="true" aria-label="Star bitcoindevkit/bdk on GitHub">Star</a>
+    <a class="github-button" href="https://github.com/bitcoindevkit/bdk/fork" data-icon="octicon-repo-forked" data-show-count="true" aria-label="Fork bitcoindevkit/bdk on GitHub">Fork</a>
+</center>
+
+<center>Built with <a href="https://gohugo.io/">Hugo</a></center>
+
+    </section>
+  </div>
+</nav>
+
+
+
+
+        <section id="body">
+        <div id="overlay"></div>
+        <div class="padding highlightable">
+              
+              <div>
+                <div id="top-bar">
+                
+                  
+                  
+                  
+                  <div id="top-github-link">
+                    <a class="github-link" title='Edit this page' href="https://github.com/bitcoindevkit/bitcoindevkit.org/edit/master/content/blog/2021/compact_filters_demo.md" target="blank">
+                      <i class="fas fa-code-branch"></i>
+                      <span id="top-github-link-text">Edit this page</span>
+                    </a>
+                  </div>
+                  
+                
+                
+                <div id="breadcrumbs" itemscope="" itemtype="http://data-vocabulary.org/Breadcrumb">
+                    <span id="sidebar-toggle-span">
+                        <a href="#" id="sidebar-toggle" data-sidebar-toggle="">
+                          <i class="fas fa-bars"></i>
+                        </a>
+                    </span>
+                  
+                  <span id="toc-menu"><i class="fas fa-list-alt"></i></span>
+                  
+                  <span class="links">
+                 
+                 
+                   Using BDK to create BIP157 SPV wallet (aka Neutrino)
+                 
+                  </span>
+                </div>
+                
+                    <div class="progress">
+    <div class="wrapper">
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+    <li><a href="#tutorial-scope">Tutorial Scope</a></li>
+    <li><a href="#prerequisites">Prerequisites</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+    <li><a href="#tutorial">Tutorial</a>
+      <ul>
+        <li><a href="#bitcoin-core-wallet-generation">Bitcoin Core Wallet Generation</a></li>
+        <li><a href="#bdk-wallet-generation">BDK Wallet Generation</a></li>
+        <li><a href="#recieve-coins">Recieve Coins</a></li>
+        <li><a href="#creating-a-transaction">Creating a transaction.</a></li>
+        <li><a href="#sign-and-broadcast-the-transaction">Sign and Broadcast the transaction</a></li>
+        <li><a href="#confirming-the-transaction">Confirming the Transaction</a></li>
+        <li><a href="#shutdown-docker">Shutdown Docker</a></li>
+      </ul>
+    </li>
+    <li><a href="#end-words">End Words</a></li>
+  </ul>
+</nav>
+    </div>
+</div>
+
+                
+              </div>
+            </div>
+            
+        <div id="head-tags">
+        
+
+
+<div class="tags">
+
+  <a class="tag-link" href="/blog/tags/tutorial">tutorial</a>
+
+  <a class="tag-link" href="/blog/tags/bdk">BDK</a>
+
+  <a class="tag-link" href="/blog/tags/bdk-cli">bdk-cli</a>
+
+  <a class="tag-link" href="/blog/tags/compact_filters">compact_filters</a>
+
+  <a class="tag-link" href="/blog/tags/bip157">BIP157</a>
+
+  <a class="tag-link" href="/blog/tags/neutrino">Neutrino</a>
+
+</div>
+
+
+        </div>
+        
+        <div id="body-inner">
+          
+            
+            <h1 class="blog-title">Using BDK to create BIP157 SPV wallet (aka Neutrino) </h1>
+            
+                <span class="blog-author">By </span><span class="blog-author"><a href="/authors/rajarshi-maitra">Rajarshi Maitra</a></span>
+            
+            
+          
+
+        
+
+
+<h2 id="introduction">Introduction</h2>
+<h4 id="compact-filters">Compact Filters:</h4>
+<p>Compact filters are the latest specification of Bitcoin SPV node implementation as per <a href="https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki">BIP157</a> and <a href="https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki">BIP158</a>. Such light clients were envisioned by Satoshi himself in  his original white paper, but due to lack of robust privacy and trust guarantees using conventional <a href="https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki">bloomfilters</a>, these type of nodes never got popular.</p>
+<p>Enters <a href="https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki">BIP157</a>, which described a new type of filters for Bitcoin Blockchain data, known as <code>compact_filters</code>. The <a href="https://github.com/lightninglabs/neutrino">Neutrino</a> project pioneered the use of compact filter based light client nodes for using with Lightning Network wallets. Using compact filters, a light-node can talk to one or more full nodes, and fetch relevant information from the blockchain, with much more robust privacy and security guarantees than previously possible. Compact filter based nodes are best suitable to be used with mobile wallets, to create more trustless mobile applications on Bitcoin. Any wallet application that needs to have an &ldquo;eye on the blockchain&rdquo; has an use for such light clients.</p>
+<p><code>BIP157</code> type filters allows to create tiny sized SPV nodes, that can fetch blockchain data and can identify inconsistency, so it can actively defend itself, while also preserving its privacy. Such nodes are most useful for Lightning Network mobile applications.</p>
+<p>Example of such <code>compact_filters</code> wallets in wild is <a href="https://github.com/breez/breezmobile">Breeze</a> Lightning mobile wallet.</p>
+<p>Bitcoin core supports serving <code>BIP157</code> type filters from <code>v0.21.0</code>.</p>
+<h4 id="bdk-and-compact-filters">BDK and Compact filters</h4>
+<p>BDK is a bitcoin wallet development library that can be used to create bitcoin wallets with custom <code>Database</code> and <code>Blockchain</code> backends. BDK is a <a href="https://bitcoindevkit.org/descriptors/">descriptor</a> based wallet, i.e. the wallet keychain is described by a set of descriptors.</p>
+<p>Using BDK one can instantiate wallets of various kinds as per requirement. BDK abstracts away all the heavy lifting works, and allow wallet devs to concentrate on logic that they care about, i.e. writing wallet codes. For more detailed documentation on BDK capabilities check these <a href="https://bitcoindevkit.org/blog/2020/12/hello-world/">blog</a>, <a href="https://bitcoindevkit.org/blog/2020/11/descriptors-in-the-wild/">bog</a> and <a href="https://docs.rs/bdk/">docs</a>.</p>
+<p>The main three components of abstraction in BDK are</p>
+<ul>
+<li><code>Database</code></li>
+<li><code>Descriptors</code></li>
+<li><code>Blockchain</code></li>
+</ul>
+<p>BDK comes with default implementations of all them that developers can start with out of the box. Developers can also create there own custom implementations and plug it into BDK (thanks to rust magic of <code>Traits</code>).</p>
+<p>BDK also supports <a href="https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki">BIP158</a> communication protocol, which allows creation of <code>BIP157</code> type compact filter SPV nodes. This capability is extended to wallet with BDK&rsquo;s <code>Blockchain</code> data structure. The <a href="https://docs.rs/bdk/0.8.0/bdk/blockchain/trait.Blockchain.html">API</a> for <code>compact_filters</code> backend is similar to any other kind of backends, so wallet devs don&rsquo;t need to worry about all the details. Its ok if the dev haven&rsquo;t even heard of <code>BIP157</code>, BDK takes care of that in background.</p>
+<p>This capability can be unlocked by compiling BDK with the <code>compact_filters</code> feature. Once enabled, BDK will be able to create wallets with the <code>compact_filters</code> type <code>Blockchain</code> backend. (The default backend is electrum server)</p>
+<h4 id="bdk-cli">bdk-cli</h4>
+<p><code>bdk-cli</code> is a lightweight <a href="https://codewith.mu/en/tutorials/1.0/repl">REPL</a> wrapper over the BDK library to facilitate quick and easy demonstration of BDK capabilities in command-line. Wallet devs can use this tool to quickly try out different possibilities with BDK.</p>
+<p>In this tutorial, We will use <code>bdk-cli</code> to demonstrate some basic wallet functionalities using <code>compact_filters</code> backend.</p>
+<h2 id="tutorial-scope">Tutorial Scope</h2>
+<p>Basic wallet workflow we will cover:</p>
+<ul>
+<li>create and sync a wallet,</li>
+<li>receive a transaction,</li>
+<li>create a transaction,</li>
+<li>sign and broadcast the transaction,</li>
+<li>fetch updated balance,</li>
+</ul>
+<p>The BDK wallet will have a <code>BIP157</code> SPV backend (aka <code>compact_filters</code> backend) that will connect with a Bitcoin core node serving filter data.</p>
+<p>It will publish and extract transaction data through that node.</p>
+<p>We will have a Bitcoin Core wallet and a BDK wallet, sending and receiving transactions between each other, in regtest.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Following things are required to start with the tutorial.</p>
+<ol>
+<li>A Bitcoin Core regtest node listening at <code>localhost:18444</code> signalling for compact filter support.</li>
+<li><code>bdk-cli</code> compiled with <code>compact_filter</code> features.</li>
+</ol>
+<p>If you already have these two setup and working, you can skip this and jump to the <a href="#tutorial">Tutorial</a> section.</p>
+<h4 id="install-and-run-bitcoind">Install and run <code>bitcoind</code></h4>
+<p>You can definitely do it with your own <code>bitcoind</code> installation. <code>BIP157</code> support has been included in Bitcoin Core <code>v0.21.0</code>. So anything above that will work.</p>
+<p>You also need to ensure proper configuration settings for signalling <code>compact_filters</code> support.</p>
+<p>For ease of testing, the BDK project hosts docker images that can be used to spawn Bitcoin Core with all the relevant configurations.</p>
+<ul>
+<li>
+<p>spawn a regtest node using <a href="https://github.com/bitcoindevkit/bitcoin-regtest-box">bitcoin-regtest-box</a> docker file.</p>
+<p>Start the regtest box docker container.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ docker run --detach --rm -p 127.0.0.1:18443-18444:18443-18444/tcp --name bdk-box bitcoindevkit/bitcoind
+</code></pre></div><p>This will spin up a docker container running <code>bicoind</code> and listening to port <code>18444</code> and <code>18333</code>. You can keep this terminal alive to see communication events with BDK and the node.</p>
+</li>
+<li>
+<p>Check node is reachable</p>
+<p>In another terminal try connecting to the node with <code>bitcoin-cli</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ docker exec -it bdk-box /root/bitcoin-cli -regtest getnetworkinfo
+<span style="color:#f92672">{</span>
+  <span style="color:#e6db74">&#34;version&#34;</span>: 210000,
+  <span style="color:#e6db74">&#34;subversion&#34;</span>: <span style="color:#e6db74">&#34;/Satoshi:0.21.1/&#34;</span>,
+  <span style="color:#e6db74">&#34;protocolversion&#34;</span>: 70016,
+  <span style="color:#e6db74">&#34;localservices&#34;</span>: <span style="color:#e6db74">&#34;0000000000000449&#34;</span>,
+  <span style="color:#e6db74">&#34;localservicesnames&#34;</span>: <span style="color:#f92672">[</span>
+    <span style="color:#e6db74">&#34;NETWORK&#34;</span>,
+    <span style="color:#e6db74">&#34;WITNESS&#34;</span>,
+    <span style="color:#e6db74">&#34;COMPACT_FILTERS&#34;</span>,
+    <span style="color:#e6db74">&#34;NETWORK_LIMITED&#34;</span>
+    ...
+  <span style="color:#f92672">]</span>,
+<span style="color:#f92672">}</span>
+
+</code></pre></div><p>In the output, the <code>version</code> should show <code>210000</code>. <code>localservicesnames</code> should contain <code>&quot;COMPACT_FILTERS&quot;</code>. If you see this, then Bitcoin Core is correctly configured.</p>
+</li>
+</ul>
+<h4 id="install-and-run-bdk-cli">Install and run bdk-cli</h4>
+<ul>
+<li>
+<p>Install <code>bdk-cli</code> with <code>compact_filters</code> feature</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ cargo install --git https://github.com/bitcoindevkit/bdk-cli.git bdk-cli --features compact_filters
+</code></pre></div></li>
+<li>
+<p>Check installation</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ bdk-cli --help
+...
+USAGE:
+    bdk-cli <span style="color:#f92672">[</span>OPTIONS<span style="color:#f92672">]</span> &lt;SUBCOMMAND&gt;
+FLAGS:
+    -h, --help Prints help information
+    -V, --version Prints version information
+OPTIONS:
+    -n, --network &lt;NETWORK&gt; Sets the network <span style="color:#f92672">[</span>default: testnet<span style="color:#f92672">]</span>
+
+SUBCOMMANDS:
+    help      Prints this message or the help of the given subcommand<span style="color:#f92672">(</span>s<span style="color:#f92672">)</span>
+    key       Key management sub-commands
+    repl      Enter REPL command loop mode
+    wallet    Wallet options and sub-commands
+</code></pre></div></li>
+</ul>
+<p>Once these are setup correctly, you can start with the tutorial next.</p>
+<h2 id="tutorial">Tutorial</h2>
+<p>[Note: For brevity <code>bdk-cli</code> results are stored in command line variables using <code>jq</code> tool. It is recommended to check the full results to see different information returned by <code>bdk-cli</code> commands.]</p>
+<h3 id="bitcoin-core-wallet-generation">Bitcoin Core Wallet Generation</h3>
+<p>This is standard procedure with <code>bitcoin-cli</code>.</p>
+<ul>
+<li>
+<p>Create a wallet and generate 101 blocks.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ docker exec -it bdk-box /root/bitcoin-cli -regtest createwallet test
+<span style="color:#f92672">{</span>
+  <span style="color:#e6db74">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;test&#34;</span>,
+  <span style="color:#e6db74">&#34;warning&#34;</span>: <span style="color:#e6db74">&#34;&#34;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ docker exec -it bdk-box /root/bitcoin-cli -regtest getnewaddress
+bcrt1qatd7yq0jukwusuaufltlejmeydpvnpv43r5gc2
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ docker exec -it bdk-box /root/bitcoin-cli -regtest generatetoaddress <span style="color:#ae81ff">101</span> bcrt1qatd7yq0jukwusuaufltlejmeydpvnpv43r5gc2
+<span style="color:#f92672">[</span>
+<span style="color:#e6db74">&#34;3813ed6eb716f4743b9657d918799acf743add985a8ded28d8aa3629dd4496b6&#34;</span>,
+<span style="color:#e6db74">&#34;70da855913bdf791b6e458c611cebdef79b7a9840eb103ce58c71c1c7e3c49bc&#34;</span>,
+<span style="color:#e6db74">&#34;682ca732ef72719cd6f82c5047c7690fb1cd2df2543d035ac4ea99e974b8d172&#34;</span>,
+<span style="color:#e6db74">&#34;78799e4771017d4f46aa3c240054e2d61f54cea07ec44cb18ae712761e0aaa1e&#34;</span>,
+...
+<span style="color:#f92672">]</span>
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ docker exec -it bdk-box /root/bitcoin-cli -regtest getbalance
+50.00000000
+</code></pre></div><p>Now the core wallet has generated new blocks and is funded with test bitcoin.</p>
+</li>
+</ul>
+<h3 id="bdk-wallet-generation">BDK Wallet Generation</h3>
+<p>BDK is a descriptor based wallet library. So in order to use it we will need some descriptors to work with.</p>
+<p>BDK wallet will ask for two descriptors as input, corresponding to <code>receive</code> and <code>change</code> addresses. Its recommended to have these two descriptors separate as BDK will handle them separately and ensure <code>change</code> addresses are never used for receiving funds.</p>
+<p>Or developers can decide to use a single descriptor too, in that case BDK will use that descriptor for deriving both <code>receive</code> and <code>change</code> addresses.</p>
+<p>We will use <code>bdk-cli</code> itself to generate such descriptors.</p>
+<ul>
+<li>
+<h4 id="generate-a-privatekey">Generate a privatekey</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ BDK_xprv<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>bdk-cli key generate | jq -r <span style="color:#e6db74">&#39;.xprv&#39;</span><span style="color:#66d9ef">)</span>
+$ echo $BDK_xprv 
+tprv8ZgxMBicQKsPefY7tdq7EKny81n9tfSvUYfSHAZByXdjPAZVysvaB6sFd2YavqfqMBgbHaXUG5oWM6sYvdJn6vnUizzQKTYAJ36bQsfPv4N
+</code></pre></div><p><code>bdk-cli key generate</code> will generate a fresh master key with <code>mnemonic</code> and <code>xprv</code>. We have extracted the value of extended private key and stored it in <code>BDK_xprv</code> variable.</p>
+<p>The returned <code>mnemonic</code> can be used to restore back the wallet if wallet data directory is lost.</p>
+</li>
+<li>
+<h4 id="generate-descriptors">Generate Descriptors</h4>
+<p><code>bdk-cli key derive</code> can derive an <code>xpub</code>s given a <code>master key</code> and <code>derivation_path</code>.</p>
+<p>We will use the following paths for our <code>receive</code> and <code>change</code> descriptors</p>
+<ul>
+<li><code>receive</code> path: <code>m/84h/1h/0h/0</code></li>
+<li><code>change</code> path: <code>m/84h/1h/0h/1</code>,</li>
+</ul>
+<p>We can then simply wrap them in a <code>&quot;wpkh()&quot;</code> to create our descriptors string and store them.</p>
+<p>When asked for a new address, BDK will derive one from the <code>receive</code> descriptor.</p>
+<p>And while constructing transaction, BDK will use the <code>change</code> descriptor to derive change address.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ BDK_recv_desc<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;wpkh(</span><span style="color:#66d9ef">$(</span>bdk-cli key derive --path m/84h/1h/0h/0 --xprv $BDK_xprv | jq -r <span style="color:#e6db74">&#39;.xprv&#39;</span><span style="color:#66d9ef">)</span><span style="color:#e6db74">)&#34;</span>
+$ echo $BDK_recv_desc
+wpkh<span style="color:#f92672">([</span>ff09c7c9/84<span style="color:#e6db74">&#39;/1&#39;</span>/0<span style="color:#960050;background-color:#1e0010">&#39;</span>/0<span style="color:#f92672">]</span>tprv8hkdEGgwLLnqsdfkJFidpTj5d6z5qFdP6Qwzsviea3HrS9C2mXXaDivPKCCgcaWvnGNX9eciLUQs91PWYXJqrChfnAagViCgG6L5phaNyWr/*<span style="color:#f92672">)</span> 
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ BDK_chng_desc<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;wpkh(</span><span style="color:#66d9ef">$(</span>bdk-cli key derive --path m/84h/1h/0h/1 --xprv $BDK_xprv | jq -r <span style="color:#e6db74">&#39;.xprv&#39;</span><span style="color:#66d9ef">)</span><span style="color:#e6db74">)&#34;</span>
+$ echo $BDK_chng_desc 
+wpkh<span style="color:#f92672">([</span>ff09c7c9/84<span style="color:#e6db74">&#39;/1&#39;</span>/0<span style="color:#960050;background-color:#1e0010">&#39;</span>/1<span style="color:#f92672">]</span>tprv8hkdEGgwLLnqtbYkGG7fSy7v43RF2SQGGjNuZtmBzEHh7H8xgpXBETQAbVPqi8rkvLNFKLYY4rDzXA4fn5Ha1yuazZqhQPe3uNKmFS7648s/*<span style="color:#f92672">)</span>
+</code></pre></div><p>Note: <code>BDK_xprv</code> has been used as the <code>master key</code>, this will allow BDK to have signing capabilities.
+We could have used an <code>xpub</code> master key here instead, that would create an <code>watch-only</code> wallet.</p>
+</li>
+<li>
+<h4 id="create-and-sync-a-wallet">Create and Sync a wallet</h4>
+<p>We will now instruct BDK to create a new wallet with following instructions</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ bdk-cli --network regtest wallet --node <span style="color:#e6db74">&#34;127.0.0.1:18444&#34;</span> --wallet bdk-test -d $BDK_recv_desc -c $BDK_chng_desc sync
+<span style="color:#f92672">{}</span>
+</code></pre></div><ul>
+<li>name (<code>--wallet</code>) <code>bdk-test</code>,</li>
+<li><code>receive</code> descriptor (<code>-d</code>) as <code>$BDK_recv_desc</code> and change descriptor (<code>-c</code>) as <code>$BDK_chng_desc</code>,</li>
+<li>connected to a full node (<code>--node</code>) listening at <code>127.0.0.1:18444</code>,</li>
+<li>and finally create and sync the wallet with the <code>sync</code> command.</li>
+</ul>
+<p>If you are using a <code>regtest</code> node, also add <code>--network regtest</code>, the default is <code>testnet</code>.</p>
+<p><code>bdk-cli</code> makes multiple parallel connections that can be configured with the <code>--conn-count</code> parameter (default is 4). This makes syncing parallel and fast. Use <code>bdk-cli --help</code> to see all other options.</p>
+<p>Getting an empty return means wallet creation succeeded.</p>
+<p>BDK has created a wallet named <code>bdk-test</code> in its data directory. Which is by default stored at <code>~/.bdk-bitcoin/compact_filters</code> folder.</p>
+<p>Looking into that folder different files and directories maintained by BDK can be seen.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ ls .bdk-bitcoin/compact_filters/
+000004.log  CURRENT   LOCK  MANIFEST-000003  OPTIONS-000010
+bdk-test    IDENTITY  LOG   OPTIONS-000008
+</code></pre></div></li>
+</ul>
+<h3 id="recieve-coins">Recieve Coins</h3>
+<p>We will use the <code>core</code> wallet to send 5 BTC to our<code>bdk-test</code> wallet.</p>
+<ul>
+<li>
+<p>Fetch a new address using <code>bdk-cli</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ bdk-cli --network regtest wallet --node <span style="color:#e6db74">&#34;127.0.0.1:18444&#34;</span> --wallet bdk-test -d $BDK_recv_desc -c $BDK_chng_desc get_new_address
+<span style="color:#f92672">{</span>
+  <span style="color:#e6db74">&#34;address&#34;</span>: <span style="color:#e6db74">&#34;bcrt1qx2479wywulf50pqx5uy64zhxq9f3tuvlh8u0s9&#34;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div></li>
+<li>
+<p>Transfer funds to the previous address and generate a block, using <code>bitcoin-cli</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ docker exec -it bdk-box /root/bitcoin-cli -regtest sendtoaddress bcrt1qx2479wywulf50pqx5uy64zhxq9f3tuvlh8u0s9 <span style="color:#ae81ff">5</span>
+
+
+$ docker exec -it bdk-box /root/bitcoin-cli -regtest generatetoaddress <span style="color:#ae81ff">1</span> bcrt1qw3ht9xtc9pgyvmqay0ap9fw8mxd27az8el0uz3
+</code></pre></div><p><code>core</code> has sent 5 BTC to our <code>bdk-test</code> wallet. Which is confirmed in a new block.</p>
+<p><code>bdk-test</code> can see that now by syncing again.</p>
+<p>(Note: BDK required explicit <code>sync()</code> calls to give wallet developers flexibility on when to sync).</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ bdk-cli --network regtest wallet --node <span style="color:#e6db74">&#34;127.0.0.1:18444&#34;</span> --wallet bdk-test -d $BDK_recv_desc -c $BDK_chng_desc sync
+<span style="color:#f92672">{}</span>
+
+$ bdk-cli --network regtest wallet --node <span style="color:#e6db74">&#34;127.0.0.1:18444&#34;</span> --wallet bdk-test -d $BDK_recv_desc -c $BDK_chng_desc get_balance
+<span style="color:#f92672">{</span>
+  <span style="color:#e6db74">&#34;satoshi&#34;</span>: <span style="color:#ae81ff">500000000</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>We can see <code>500000000</code> sats balance in our <code>bdk-test</code> wallet.</p>
+<p>BDK has fetched blockchain details concerning its wallet descriptors, from the core node, using compact filters.</p>
+</li>
+</ul>
+<h3 id="creating-a-transaction">Creating a transaction.</h3>
+<p>Now we want to create a transaction sending coins from <code>bdk-test</code> wallet to the <code>core</code> wallet.</p>
+<ul>
+<li>
+<p>fetch a new <code>core</code> address</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ core_addrs<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>docker exec -it bdk-box /root/bitcoin-cli -regtest getnewaddress | tr -d <span style="color:#e6db74">&#39;\r&#39;</span><span style="color:#66d9ef">)</span>
+</code></pre></div></li>
+<li>
+<p>Create a raw transaction using <code>bdk-cli</code> to the above address. This will generate a <code>psbt</code> which we will sign.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ psbt<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>bdk-cli --network regtest wallet --node <span style="color:#e6db74">&#34;127.0.0.1:18444&#34;</span> --wallet bdk-test -d $BDK_recv_desc -c $BDK_chng_desc create_tx --to $core_addrs:200000000 | jq -r <span style="color:#e6db74">&#39;.psbt&#39;</span><span style="color:#66d9ef">)</span>
+</code></pre></div><p>(Recommended to check all the other information returned by <code>bdk-cli create_tx</code>)</p>
+</li>
+</ul>
+<h3 id="sign-and-broadcast-the-transaction">Sign and Broadcast the transaction</h3>
+<p>Asking BDK to sign a transaction is as straight forward as it can get. BDK already holds the <code>xprv</code> deatils to sign a transaction. It returns a finalised <code>signed_psbt</code> which we will next broadcast to the network.</p>
+<ul>
+<li>
+<p>Sign the transaction</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ signed_psbt<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>bdk-cli --network regtest wallet --node <span style="color:#e6db74">&#34;127.0.0.1:18444&#34;</span> --wallet bdk-test -d $BDK_recv_desc -c $BDK_chng_desc sign --psbt $psbt | jq -r <span style="color:#e6db74">&#39;.psbt&#39;</span><span style="color:#66d9ef">)</span>
+</code></pre></div></li>
+<li>
+<p>Broadcast the transaction</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ bdk-cli --network regtest wallet --node <span style="color:#e6db74">&#34;127.0.0.1:18444&#34;</span> --wallet bdk-test -d $BDK_recv_desc -c $BDK_chng_desc broadcast --psbt $signed_psbt 
+<span style="color:#f92672">{</span>
+  <span style="color:#e6db74">&#34;txid&#34;</span>: <span style="color:#e6db74">&#34;c343f5b25372e285308eba912d1fe8fade9f64afde6d95306e248e52e0852252&#34;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>This makes BDK broadcast the transaction via the connected core node, and it returns the corresponding Txid.</p>
+</li>
+</ul>
+<h3 id="confirming-the-transaction">Confirming the Transaction</h3>
+<p>The transaction has been received by the <code>core</code> node and waiting in its mempool for inclusion in block.
+We can see the transaction via its <code>txid</code> received in previous step.</p>
+<ul>
+<li>
+<p>Check transaction in mempool</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ docker exec -it bdk-box /root/bitcoin-cli -regtest gettransaction c343f5b25372e285308eba912d1fe8fade9f64afde6d95306e2248e52e0852252
+<span style="color:#f92672">{</span>
+  <span style="color:#e6db74">&#34;amount&#34;</span>: 2.00000000,
+  <span style="color:#e6db74">&#34;confirmations&#34;</span>: 0,
+  <span style="color:#e6db74">&#34;trusted&#34;</span>: false,
+  <span style="color:#e6db74">&#34;txid&#34;</span>: <span style="color:#e6db74">&#34;c343f5b25372e285308eba912d1fe8fade9f64afde6d95306e248e52e0852252&#34;</span>,
+  <span style="color:#e6db74">&#34;walletconflicts&#34;</span>: <span style="color:#f92672">[</span>
+  <span style="color:#f92672">]</span>,
+  <span style="color:#e6db74">&#34;time&#34;</span>: 1621697202,
+  <span style="color:#e6db74">&#34;timereceived&#34;</span>: 1621697202,
+  <span style="color:#e6db74">&#34;bip125-replaceable&#34;</span>: <span style="color:#e6db74">&#34;no&#34;</span>,
+  <span style="color:#e6db74">&#34;details&#34;</span>: <span style="color:#f92672">[</span>
+    <span style="color:#f92672">{</span>
+      <span style="color:#e6db74">&#34;address&#34;</span>: <span style="color:#e6db74">&#34;bcrt1q3h4hs6mve5dcl7da3d4acmlp20hh8c3t4mldwe&#34;</span>,
+      <span style="color:#e6db74">&#34;category&#34;</span>: <span style="color:#e6db74">&#34;receive&#34;</span>,
+      <span style="color:#e6db74">&#34;amount&#34;</span>: 2.00000000,
+      <span style="color:#e6db74">&#34;label&#34;</span>: <span style="color:#e6db74">&#34;&#34;</span>,
+      <span style="color:#e6db74">&#34;vout&#34;</span>: <span style="color:#ae81ff">1</span>
+    <span style="color:#f92672">}</span>
+  <span style="color:#f92672">]</span>,
+  <span style="color:#e6db74">&#34;hex&#34;</span>: <span style="color:#e6db74">&#34;01000000000101d84e8cb7477f9fe6f265b56d5416ff47da9a70be18f65ec50731b8257c67f2bd0100000000ffffffff0273a2e11100000000160014874270187001febc4cebd8cb083cf2c783e8f1ac00c2eb0b000000001600148deb786b6ccd1b8ff9bd8b6bdc6fe153ef73e22b0247304402201037d9ef5b80392296311c8899b1f12a0987778d694a442a88bafa6fbd7a7c9a022011293176255897444d9c71b0b9cd13b2aedb749b142577566c90a63d61025e2c01210202427d16b29c1c8546255363a74326ee9ab3196770bb3fccc7b679d52f9c1ccf00000000&#34;</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>This means, core has recieved the transaction in its mempool and waiting for confirmation.</p>
+</li>
+<li>
+<p>Generate 1 block to confirm the transaction</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ docker exec -it bdk-box /root/bitcoin-cli -regtest generatetoaddress <span style="color:#ae81ff">1</span> bcrt1qatd7yq0jukwusuaufltlejmeydpvnpv43r5gc2
+<span style="color:#f92672">[</span>
+  <span style="color:#e6db74">&#34;55436ff0169bbb3e70ab10cb7cdd45ab86204d5d7864a109142d91120d023197&#34;</span>
+<span style="color:#f92672">]</span>
+</code></pre></div></li>
+<li>
+<p>Sync the <code>bdk-test</code> wallet and ask for available balance.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">  $ bdk-cli --network regtest wallet --node <span style="color:#e6db74">&#34;127.0.0.1:18444&#34;</span> --wallet bdk-test -d $BDK_recv_desc -c $BDK_chng_desc sync
+  <span style="color:#f92672">{}</span>
+	
+  $ bdk-cli --network regtest wallet --node <span style="color:#e6db74">&#34;127.0.0.1:18444&#34;</span> --wallet bdk-test -d $BDK_recv_desc -c $BDK_chng_desc get_balance
+  <span style="color:#f92672">{</span>
+      <span style="color:#e6db74">&#34;satoshi&#34;</span>: <span style="color:#ae81ff">299999859</span>
+  <span style="color:#f92672">}</span>
+</code></pre></div><p>If you see the balance updated, voila!</p>
+<p>What happened here is:</p>
+<ul>
+<li>core created a new block containing the transaction.</li>
+<li><code>bdk-cli</code> fetched the corresponding filter data.</li>
+<li>It noticed it got a concerning transaction.</li>
+<li>It asked for the details of that transaction from the core node.</li>
+<li>It updated its wallet details with this new information.</li>
+<li>The update is reflected in the wallet balance.</li>
+</ul>
+</li>
+</ul>
+<h3 id="shutdown-docker">Shutdown Docker</h3>
+<p>You may now shutdown the regtest docker container.</p>
+<p>Note: This will also clean up any data in the bitcoin core, including the wallet.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ docker kill bdk-box
+</code></pre></div><h2 id="end-words">End Words</h2>
+<p>In this tutorial we went through the process of receiving, creating, signing and broadcasting transaction using the BDK wallet with <code>compact_filters</code> feature. This demonstrates how BDK capabilities can be used to create SPV light wallets with integrated <code>BIP157</code> type <code>compact_filters</code> node.</p>
+
+
+<footer class="footline">
+	
+</footer>
+
+        
+        </div>
+        
+
+<script src="https://utteranc.es/client.js"
+        repo="bitcoindevkit/blog-comments"
+        issue-term="pathname"
+        label="blog-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+
+
+
+      </div>
+
+    <div id="navigation">
+        
+        
+
+        
+            
+            
+                
+                    
+                    
+                
+                
+
+                    
+                    
+                        
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+                        
+            
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                        
+                        
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+
+        
+
+
+	 
+	 
+    </div>
+
+    </section>
+
+    <div style="left: -1000px; overflow: scroll; position: absolute; top: -1000px; border: none; box-sizing: content-box; height: 200px; margin: 0px; padding: 0px; width: 200px;">
+      <div style="border: none; box-sizing: content-box; height: 200px; margin: 0px; padding: 0px; width: 200px;"></div>
+    </div>
+    <script src="/js/clipboard.min.js?1624658417"></script>
+    <script src="/js/perfect-scrollbar.min.js?1624658417"></script>
+    <script src="/js/perfect-scrollbar.jquery.min.js?1624658417"></script>
+    <script src="/js/jquery.sticky.js?1624658417"></script>
+    <script src="/js/featherlight.min.js?1624658417"></script>
+    <script src="/js/highlight.pack.js?1624658417"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script src="/js/modernizr.custom-3.6.0.js?1624658417"></script>
+    <script src="/js/learn.js?1624658417"></script>
+    <script src="/js/hugo-learn.js?1624658417"></script>
+    
+        
+            <script src="/mermaid/mermaid.js?1624658417"></script>
+        
+        <script>
+            mermaid.initialize({ startOnLoad: true });
+        </script>
+    
+    <script type="text/javascript" src="/js/jsonview.js" charset="utf-8"></script>
+<script type="text/javascript" src="/js/main.js" charset="utf-8"></script>
+
+  </body>
+</html>
+
