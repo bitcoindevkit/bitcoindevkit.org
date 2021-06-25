@@ -1,10 +1,10 @@
 ---
-title: "Using BDK as a Neutrino wallet"
+title: "Using BDK to create BIP157 SPV wallet (aka Neutrino)"
 description: "Tutorial showing usage of compact filters (BIP157) using bdk-cli command line tools"
 authors:
     - Rajarshi Maitra
 date: "2021-06-20"
-tags: ["guide", "bdk-cli", "compact_filters"]
+tags: ["tutorial", "BDK", "bdk-cli", "compact_filters", "BIP157", "Neutrino"]
 hidden: true
 draft: false
 ---
@@ -12,13 +12,15 @@ draft: false
 ## Introduction
 
 #### Compact Filters:
-Compact filters are the latest specification of Bitcoin SPV node implementation as per [BIP157](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki) and [BIP158](https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki). The [Neutrino](https://github.com/lightninglabs/neutrino) project pioneered the use of compact filter based light client nodes for using with Lightning Network wallets. Such light clients were envisioned by Satoshi himself in  his original white paper, but due to lack of robust privacy and trust guarantees using conventional [bloomfilters](https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki), these type of nodes never got popular.  
+Compact filters are the latest specification of Bitcoin SPV node implementation as per [BIP157](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki) and [BIP158](https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki). Such light clients were envisioned by Satoshi himself in  his original white paper, but due to lack of robust privacy and trust guarantees using conventional [bloomfilters](https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki), these type of nodes never got popular.  
 
-Enters [BIP157](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki), which described a new type of filters for Bitcoin Blockchain data, known as `compact_filters`. Using compact filters, a light-node can talk to one or more full nodes, and fetch relevant information on the blockchain. With much more robust privacy and security guarantees than previously possible. Compact filter based nodes are best suitable to be used with mobile wallets, to create more trustless mobile applications on Bitcoin. Any wallet application that needs to have an "eye on the blockchain" has an use for such light clients. 
+Enters [BIP157](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki), which described a new type of filters for Bitcoin Blockchain data, known as `compact_filters`. The [Neutrino](https://github.com/lightninglabs/neutrino) project pioneered the use of compact filter based light client nodes for using with Lightning Network wallets. Using compact filters, a light-node can talk to one or more full nodes, and fetch relevant information from the blockchain, with much more robust privacy and security guarantees than previously possible. Compact filter based nodes are best suitable to be used with mobile wallets, to create more trustless mobile applications on Bitcoin. Any wallet application that needs to have an "eye on the blockchain" has an use for such light clients.
 
-Example of such neutrino wallets in wild is [Breeze](https://github.com/breez/breezmobile) Lightning mobile wallet.
+`BIP157` type filters allows to create tiny sized SPV nodes, that can fetch blockchain data and can identify inconsistency, so it can actively defend itself, while also preserving its privacy. Such nodes are most useful for Lightning Network mobile applications.    
 
-Bitcoin core supports `BIP157` from `v0.21.0`.  
+Example of such `compact_filters` wallets in wild is [Breeze](https://github.com/breez/breezmobile) Lightning mobile wallet.
+
+Bitcoin core supports serving `BIP157` type filters from `v0.21.0`.  
 
 #### BDK and Compact filters
 BDK is a bitcoin wallet development library that can be used to create bitcoin wallets with custom `Database` and `Blockchain` backends. BDK is a [descriptor](https://bitcoindevkit.org/descriptors/) based wallet, i.e. the wallet keychain is described by a set of descriptors. 
@@ -30,17 +32,19 @@ The main three components of abstraction in BDK are
   - `Descriptors`
   - `Blockchain`
 
-BDK comes with default implementations of all them that developers can start with. Developers can also create there own custom implementations and plug it into BDK (thanks to rust magic of `Traits`).
+BDK comes with default implementations of all them that developers can start with out of the box. Developers can also create there own custom implementations and plug it into BDK (thanks to rust magic of `Traits`).
 
-BDK implements the BIP158 communication protocol, that wallet devs can use to create their own Neutrino node that can request and receive filter data from one or many full nodes. This capability can be unlocked by using BDK with the `compact_filters` feature. Once enabled, BDK will be able to create wallets with the `compact_filters` type `Blockchain` backend. (The default `Blockchain` is a electrum server) 
+BDK also supports [BIP158](https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki) communication protocol, which allows creation of `BIP157` type compact filter SPV nodes. This capability is extended to wallet with BDK's `Blockchain` data structure. The [API](https://docs.rs/bdk/0.8.0/bdk/blockchain/trait.Blockchain.html) for `compact_filters` backend is similar to any other kind of backends, so wallet devs don't need to worry about all the details. Its ok if the dev haven't even heard of `BIP157`, BDK takes care of that in background. 
+
+This capability can be unlocked by compiling BDK with the `compact_filters` feature. Once enabled, BDK will be able to create wallets with the `compact_filters` type `Blockchain` backend. (The default backend is electrum server) 
 
 #### bdk-cli
 `bdk-cli` is a lightweight [REPL](https://codewith.mu/en/tutorials/1.0/repl) wrapper over the BDK library to facilitate quick and easy demonstration of BDK capabilities in command-line. Wallet devs can use this tool to quickly try out different possibilities with BDK.
 
-In this tutorial, We will use `bdk-cli` to demonstrate some basic BDK functionalities as a Neutrino wallet.
+In this tutorial, We will use `bdk-cli` to demonstrate some basic wallet functionalities using `compact_filters` backend.
 
 ## Tutorial Scope
-To demonstrate basic wallet functionalities, with Neutrino backend using `bdk-cli`
+Basic wallet workflow we will cover: 
 
   - create and sync a wallet,
   - receive a transaction,
@@ -48,7 +52,11 @@ To demonstrate basic wallet functionalities, with Neutrino backend using `bdk-cl
   - sign and broadcast the transaction,
   - fetch updated balance,
 
-Here we will have a Bitcoin Core wallet and a BDK wallet, sending and receiving transactions between each other. The BDK wallet will sync itself using compact filters from the Core node. 
+The BDK wallet will have a `BIP157` SPV backend (aka `compact_filters` backend) that will connect with a Bitcoin core node serving filter data.
+
+It will publish and extract transaction data through that node.
+
+We will have a Bitcoin Core wallet and a BDK wallet, sending and receiving transactions between each other, in regtest.
 
 ## Prerequisites
 Following things are required to start with the tutorial.
@@ -56,7 +64,7 @@ Following things are required to start with the tutorial.
 1. A Bitcoin Core regtest node listening at `localhost:18444` signalling for compact filter support. 
 2. `bdk-cli` compiled with `compact_filter` features.
 
-If you already have these two setup and working, you can skip this and jump to the [Tutorial](#Tutorial) section.
+If you already have these two setup and working, you can skip this and jump to the [Tutorial](#tutorial) section.
 
 #### Install and run `bitcoind` 
 You can definitely do it with your own `bitcoind` installation. `BIP157` support has been included in Bitcoin Core `v0.21.0`. So anything above that will work.
@@ -67,18 +75,13 @@ For ease of testing, the BDK project hosts docker images that can be used to spa
 
 - spawn a regtest node using [bitcoin-regtest-box](https://github.com/bitcoindevkit/bitcoin-regtest-box) docker file. 
   
-  This should start logging the `debug.log` in the terminal. You can keep this terminal alive to see communication events with BDK and the node.
+  Start the regtest box docker container.
 
   ```shell
   $ docker run --detach --rm -p 127.0.0.1:18443-18444:18443-18444/tcp --name bdk-box bitcoindevkit/bitcoind
   ```
-  This will spin up a docker container running `bicoind` and listening to port `18444` and `18333`.
+  This will spin up a docker container running `bicoind` and listening to port `18444` and `18333`. You can keep this terminal alive to see communication events with BDK and the node.
 
-  ```shell
-  $ sudo netstat -nptl | grep 'docker'
-    tcp    0   0   127.0.0.1:18443     0.0.0.0:*      LISTEN  140708/docker-proxy
-    tcp    0   0   127.0.0.1:18444     0.0.0.0:*      LISTEN  140695/docker-proxy
-  ```
 - Check node is reachable
 
   In another terminal try connecting to the node with `bitcoin-cli`
@@ -99,7 +102,7 @@ For ease of testing, the BDK project hosts docker images that can be used to spa
   }
 
   ```
-  The `version` byte should be `210000`. `localservicesnames` should contain `"COMPACT_FILTERS"`. If you see this, then Bitcoin Core is correctly configured.
+  In the output, the `version` should show `210000`. `localservicesnames` should contain `"COMPACT_FILTERS"`. If you see this, then Bitcoin Core is correctly configured.
 
 #### Install and run bdk-cli
 - Install `bdk-cli` with `compact_filters` feature
@@ -163,7 +166,7 @@ This is standard procedure with `bitcoin-cli`.
   $ docker exec -it bdk-box /root/bitcoin-cli -regtest getbalance
   50.00000000
   ```
-- Now the core wallet has generated new blocks and is funded with test bitcoin so we can sync our bdk wallet and use it to make transactions.
+  Now the core wallet has generated new blocks and is funded with test bitcoin.
 
 
 ### BDK Wallet Generation
@@ -173,30 +176,31 @@ BDK wallet will ask for two descriptors as input, corresponding to `receive` and
 
 Or developers can decide to use a single descriptor too, in that case BDK will use that descriptor for deriving both `receive` and `change` addresses.
 
-We will use BDK itself to generate such descriptors.
+We will use `bdk-cli` itself to generate such descriptors.
 
-- #### Generate a privatekey
-	`bdk-cli key generate` will generate a fresh master key with `mnemonic` and `xprv`. We have extracted the value of extended private key and stored it in `BDK_xprv` variable.
-
-  The returned `mnemonic` can be used to restore back the wallet if wallet data directory is lost.  
+- #### Generate a privatekey 
   ```shell
   $ BDK_xprv=$(bdk-cli key generate | jq -r '.xprv')
   $ echo $BDK_xprv 
   tprv8ZgxMBicQKsPefY7tdq7EKny81n9tfSvUYfSHAZByXdjPAZVysvaB6sFd2YavqfqMBgbHaXUG5oWM6sYvdJn6vnUizzQKTYAJ36bQsfPv4N
   ```
-  
+  `bdk-cli key generate` will generate a fresh master key with `mnemonic` and `xprv`. We have extracted the value of extended private key and stored it in `BDK_xprv` variable.
+
+  The returned `mnemonic` can be used to restore back the wallet if wallet data directory is lost. 
 
 - #### Generate Descriptors
-	BDK can derive `xpub`s given a `xprv` and `derivation_path`.
+	`bdk-cli key derive` can derive an `xpub`s given a `master key` and `derivation_path`.
 
   We will use the following paths for our `receive` and `change` descriptors 
 
 	- `receive` path: `m/84h/1h/0h/0` 
 	- `change` path: `m/84h/1h/0h/1`, 
 	
-	We can then simply wrap them in a `"wpkh(desc)"` string and store them, which BDK will take as its descriptors input. 
+	We can then simply wrap them in a `"wpkh()"` to create our descriptors string and store them. 
 
-  When asking for a new address BDK will derive one from the `receive` descriptor, and while constructing transaction, BDK will use the `change` descriptor to derive change address.
+  When asked for a new address, BDK will derive one from the `receive` descriptor. 
+  
+  And while constructing transaction, BDK will use the `change` descriptor to derive change address.
 
 	```shell
   $ BDK_recv_desc="wpkh($(bdk-cli key derive --path m/84h/1h/0h/0 --xprv $BDK_xprv | jq -r '.xprv'))"
@@ -208,35 +212,35 @@ We will use BDK itself to generate such descriptors.
   $ echo $BDK_chng_desc 
   wpkh([ff09c7c9/84'/1'/0'/1]tprv8hkdEGgwLLnqtbYkGG7fSy7v43RF2SQGGjNuZtmBzEHh7H8xgpXBETQAbVPqi8rkvLNFKLYY4rDzXA4fn5Ha1yuazZqhQPe3uNKmFS7648s/*)
   ```
-  Note that `xprv` has been used as the descriptor pubkey, as BDK needs signing capability. We could have used `xpub` instead, but that would make it an `watch-only` wallet.
+  Note: `BDK_xprv` has been used as the `master key`, this will allow BDK to have signing capabilities. 
+  We could have used an `xpub` master key here instead, that would create an `watch-only` wallet.
 
 - #### Create and Sync a wallet
-	We will now instruct BDK to create a new wallet with following instructions 
-    - with name (`--wallet`) `bdk-test`, 
-    - with `receive` descriptor (`-d`) as `$BDK_recv_desc` and change descriptor (`-c`) as `$BDK_chng_desc`,
-    - connected to a full node (`--node`) listening at `127.0.0.1:18444`,
-    - and finally sync and create the wallet.
-
-  If you are using a `regtest` node, also add `--network regtest`, the default is `testnet`.
-
-  `bdk-cli` can connect to multiple nodes and has a `--conn-count` parameter, which sets number of connections to be made to each nodes (default 4). This makes syncing parallel and fast. For this demo, we will use only a single node. 
+  We will now instruct BDK to create a new wallet with following instructions 
 
 	```shell
   $ bdk-cli --network regtest wallet --node "127.0.0.1:18444" --wallet bdk-test -d $BDK_recv_desc -c $BDK_chng_desc sync
   {}
   ```
+    - name (`--wallet`) `bdk-test`, 
+    - `receive` descriptor (`-d`) as `$BDK_recv_desc` and change descriptor (`-c`) as `$BDK_chng_desc`,
+    - connected to a full node (`--node`) listening at `127.0.0.1:18444`,
+    - and finally create and sync the wallet with the `sync` command.
+
+  If you are using a `regtest` node, also add `--network regtest`, the default is `testnet`.
+
+  `bdk-cli` makes multiple parallel connections that can be configured with the `--conn-count` parameter (default is 4). This makes syncing parallel and fast. Use `bdk-cli --help` to see all other options. 
 
   Getting an empty return means wallet creation succeeded.
 
-  BDK has created a wallet named `bdk-test` in its data directory. Which is by default stored at `~/.bdk-bitcoin/compact_filters` folder, for wallets with `compact_filters` feature.
+  BDK has created a wallet named `bdk-test` in its data directory. Which is by default stored at `~/.bdk-bitcoin/compact_filters` folder.
 
-  Looking into the folder we can see different files and directories maintained by BDK.
+  Looking into that folder different files and directories maintained by BDK can be seen.
   ```shell
   $ ls .bdk-bitcoin/compact_filters/
   000004.log  CURRENT   LOCK  MANIFEST-000003  OPTIONS-000010
   bdk-test    IDENTITY  LOG   OPTIONS-000008
   ```
-  These are the block filter data and the `bdk-test` wallet folder.
 ### Recieve Coins
 
 We will use the `core` wallet to send 5 BTC to our`bdk-test` wallet.
@@ -259,9 +263,9 @@ We will use the `core` wallet to send 5 BTC to our`bdk-test` wallet.
 
   `core` has sent 5 BTC to our `bdk-test` wallet. Which is confirmed in a new block. 
   
-  `bdk-test` can see that now by syncing with `core`. 
+  `bdk-test` can see that now by syncing again. 
 
-  (Note: BDK uses manual syncing to give wallet developers flexibility on when to sync. So `bdk-cli` also needs to sync manually).
+  (Note: BDK required explicit `sync()` calls to give wallet developers flexibility on when to sync).
   ```shell
   $ bdk-cli --network regtest wallet --node "127.0.0.1:18444" --wallet bdk-test -d $BDK_recv_desc -c $BDK_chng_desc sync
   {}
@@ -284,11 +288,11 @@ We will use the `core` wallet to send 5 BTC to our`bdk-test` wallet.
   $ core_addrs=$(docker exec -it bdk-box /root/bitcoin-cli -regtest getnewaddress | tr -d '\r')
   ```
 
-- Create a raw transaction using `bdk-test` to the above address. This will generate a `psbt` which we will sign.
+- Create a raw transaction using `bdk-cli` to the above address. This will generate a `psbt` which we will sign.
   ```shell
   $ psbt=$(bdk-cli --network regtest wallet --node "127.0.0.1:18444" --wallet bdk-test -d $BDK_recv_desc -c $BDK_chng_desc create_tx --to $core_addrs:200000000 | jq -r '.psbt')
   ```
-  (Also check other information returned by `bdk-cli create_tx`)  
+  (Recommended to check all the other information returned by `bdk-cli create_tx`)  
 
 ### Sign and Broadcast the transaction
 Asking BDK to sign a transaction is as straight forward as it can get. BDK already holds the `xprv` deatils to sign a transaction. It returns a finalised `signed_psbt` which we will next broadcast to the network.
@@ -357,13 +361,21 @@ Asking BDK to sign a transaction is as straight forward as it can get. BDK alrea
 	}
   ```
 
-	Voila! We have the updated balance.
+	If you see the balance updated, voila!
+
+  What happened here is:  
+  - core created a new block containing the transaction.
+  - `bdk-cli` fetched the corresponding filter data.
+  - It noticed it got a concerning transaction.
+  - It asked for the details of that transaction from the core node.
+  - It updated its wallet details with this new information.
+  - The update is reflected in the wallet balance.  
 
 ### Shutdown Docker ###
 
 You may now shutdown the regtest docker container. 
 
-Note: This will also clean up any created data in bitcoin core wallet.
+Note: This will also clean up any data in the bitcoin core, including the wallet. 
 
 ```shell
 $ docker kill bdk-box
@@ -371,4 +383,4 @@ $ docker kill bdk-box
 
 ## End Words
 
-In this tutorial we went through the process of receiving, creating, signing and broadcasting transaction using the BDK wallet with `compact_filters`. This demonstrates how BDK capabilities can be used to create Neutrino wallet implementations.
+In this tutorial we went through the process of receiving, creating, signing and broadcasting transaction using the BDK wallet with `compact_filters` feature. This demonstrates how BDK capabilities can be used to create SPV light wallets with integrated `BIP157` type `compact_filters` node.
