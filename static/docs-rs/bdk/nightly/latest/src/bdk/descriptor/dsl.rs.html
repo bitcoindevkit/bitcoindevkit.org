@@ -1040,6 +1040,25 @@
 <span id="1040">1040</span>
 <span id="1041">1041</span>
 <span id="1042">1042</span>
+<span id="1043">1043</span>
+<span id="1044">1044</span>
+<span id="1045">1045</span>
+<span id="1046">1046</span>
+<span id="1047">1047</span>
+<span id="1048">1048</span>
+<span id="1049">1049</span>
+<span id="1050">1050</span>
+<span id="1051">1051</span>
+<span id="1052">1052</span>
+<span id="1053">1053</span>
+<span id="1054">1054</span>
+<span id="1055">1055</span>
+<span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
+<span id="1060">1060</span>
+<span id="1061">1061</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -1218,7 +1237,7 @@
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules!</span> <span class="ident">impl_node_opcode_three</span> {
-    ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">terminal_variant</span>:<span class="ident">ident</span>, $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">inner</span>:<span class="ident">tt</span> )<span class="op">*</span> ) <span class="op">=</span><span class="op">&gt;</span> {
+    ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">terminal_variant</span>:<span class="ident">ident</span>, $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">inner</span>:<span class="ident">tt</span> )<span class="op">*</span> ) <span class="op">=</span><span class="op">&gt;</span> ({
         <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::descriptor::CheckMiniscript</span>;
 
         <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro">::fragment_internal!</span>( @<span class="macro-nonterminal">t</span> $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">inner</span> )<span class="op">*</span> );
@@ -1244,7 +1263,7 @@
 
                 <span class="prelude-val">Ok</span>((<span class="ident">minisc</span>, <span class="ident">a_keymap</span>, <span class="ident">networks</span>))
             })
-    };
+    });
 }
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
@@ -1830,6 +1849,25 @@
             <span class="bool-val">true</span>,
             <span class="bool-val">true</span>,
             <span class="kw-2">&amp;</span>[<span class="string">&quot;2NCidRJysy7apkmE6JF5mLLaJFkrN3Ub9iy&quot;</span>],
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_fixed_threeop_descriptors</span>() {
+        <span class="kw">let</span> <span class="ident">redeem_key</span> <span class="op">=</span> <span class="ident">bitcoin::PublicKey::from_str</span>(
+            <span class="string">&quot;03a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd&quot;</span>,
+        )
+        .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">move_key</span> <span class="op">=</span> <span class="ident">bitcoin::PublicKey::from_str</span>(
+            <span class="string">&quot;032e58afe51f9ed8ad3cc7897f634d881fdbe49a81564629ded8156bebd2ffd1af&quot;</span>,
+        )
+        .<span class="ident">unwrap</span>();
+
+        <span class="ident">check</span>(
+            <span class="macro">descriptor!</span>(<span class="ident">sh</span>(<span class="ident">wsh</span>(<span class="ident">and_or</span>(<span class="ident">pk</span>(<span class="ident">redeem_key</span>), <span class="ident">older</span>(<span class="number">1000</span>), <span class="ident">pk</span>(<span class="ident">move_key</span>))))),
+            <span class="bool-val">true</span>,
+            <span class="bool-val">true</span>,
+            <span class="kw-2">&amp;</span>[<span class="string">&quot;2MypGwr5eQWAWWJtiJgUEToVxc4zuokjQRe&quot;</span>],
         );
     }
 
