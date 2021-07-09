@@ -3999,6 +3999,18 @@
 <span id="3999">3999</span>
 <span id="4000">4000</span>
 <span id="4001">4001</span>
+<span id="4002">4002</span>
+<span id="4003">4003</span>
+<span id="4004">4004</span>
+<span id="4005">4005</span>
+<span id="4006">4006</span>
+<span id="4007">4007</span>
+<span id="4008">4008</span>
+<span id="4009">4009</span>
+<span id="4010">4010</span>
+<span id="4011">4011</span>
+<span id="4012">4012</span>
+<span id="4013">4013</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -4782,7 +4794,7 @@
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::IrreplaceableTransaction</span>);
         }
 
-        <span class="kw">let</span> <span class="ident">vbytes</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">get_weight</span>() <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> <span class="number">4.0</span>;
+        <span class="kw">let</span> <span class="ident">vbytes</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">get_weight</span>().<span class="ident">vbytes</span>();
         <span class="kw">let</span> <span class="ident">feerate</span> <span class="op">=</span> <span class="ident">details</span>.<span class="ident">fee</span>.<span class="ident">ok_or</span>(<span class="ident">Error::FeeRateUnavailable</span>)<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> <span class="ident">vbytes</span>;
 
         <span class="comment">// remove the inputs from the tx and process them</span>
@@ -5580,6 +5592,18 @@
     }
 }
 
+<span class="doccomment">/// Trait implemented by types that can be used to measure weight units.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Vbytes</span> {
+    <span class="doccomment">/// Convert weight units to virtual bytes.</span>
+    <span class="kw">fn</span> <span class="ident">vbytes</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f32</span>;
+}
+
+<span class="kw">impl</span> <span class="ident">Vbytes</span> <span class="kw">for</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">vbytes</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f32</span> {
+        <span class="self">self</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> <span class="number">4.0</span>
+    }
+}
+
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod</span> <span class="ident">test</span> {
     <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
@@ -5766,7 +5790,7 @@
                 <span class="ident">dust_change</span> <span class="op">=</span> <span class="bool-val">true</span>;
             )<span class="op">*</span>
 
-            <span class="kw">let</span> <span class="ident">tx_fee_rate</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fees</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> (<span class="ident">tx</span>.<span class="ident">get_weight</span>() <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> <span class="number">4.0</span>);
+            <span class="kw">let</span> <span class="ident">tx_fee_rate</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fees</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> (<span class="ident">tx</span>.<span class="ident">get_weight</span>().<span class="ident">vbytes</span>());
             <span class="kw">let</span> <span class="ident">fee_rate</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fee_rate</span>.<span class="ident">as_sat_vb</span>();
 
             <span class="kw">if</span> <span class="op">!</span><span class="ident">dust_change</span> {

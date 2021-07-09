@@ -1043,6 +1043,7 @@
 <span id="1043">1043</span>
 <span id="1044">1044</span>
 <span id="1045">1045</span>
+<span id="1046">1046</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -1136,6 +1137,7 @@
 <span class="doccomment">//! ```</span>
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::types::FeeRate</span>;
+<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::wallet::Vbytes</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">database::Database</span>, <span class="ident">WeightedUtxo</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">error::Error</span>, <span class="ident">Utxo</span>};
 
@@ -1303,8 +1305,8 @@
 
 <span class="kw">impl</span> <span class="ident">OutputGroup</span> {
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">weighted_utxo</span>: <span class="ident">WeightedUtxo</span>, <span class="ident">fee_rate</span>: <span class="ident">FeeRate</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">fee</span> <span class="op">=</span> (<span class="ident">TXIN_BASE_WEIGHT</span> <span class="op">+</span> <span class="ident">weighted_utxo</span>.<span class="ident">satisfaction_weight</span>) <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> <span class="number">4.0</span>
-            <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>();
+        <span class="kw">let</span> <span class="ident">fee</span> <span class="op">=</span>
+            (<span class="ident">TXIN_BASE_WEIGHT</span> <span class="op">+</span> <span class="ident">weighted_utxo</span>.<span class="ident">satisfaction_weight</span>).<span class="ident">vbytes</span>() <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>();
         <span class="kw">let</span> <span class="ident">effective_value</span> <span class="op">=</span> <span class="ident">weighted_utxo</span>.<span class="ident">utxo</span>.<span class="ident">txout</span>().<span class="ident">value</span> <span class="kw">as</span> <span class="ident">i64</span> <span class="op">-</span> <span class="ident">fee</span>.<span class="ident">ceil</span>() <span class="kw">as</span> <span class="ident">i64</span>;
         <span class="ident">OutputGroup</span> {
             <span class="ident">weighted_utxo</span>,
@@ -1908,7 +1910,7 @@
 
         <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">100_000</span>);
-        <span class="kw">let</span> <span class="ident">input_size</span> <span class="op">=</span> (<span class="ident">TXIN_BASE_WEIGHT</span> <span class="kw">as</span> <span class="ident">f32</span>) <span class="op">/</span> <span class="number">4.0</span> <span class="op">+</span> <span class="ident">P2WPKH_WITNESS_SIZE</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> <span class="number">4.0</span>;
+        <span class="kw">let</span> <span class="ident">input_size</span> <span class="op">=</span> (<span class="ident">TXIN_BASE_WEIGHT</span> <span class="op">+</span> <span class="ident">P2WPKH_WITNESS_SIZE</span>).<span class="ident">vbytes</span>();
         <span class="kw">let</span> <span class="ident">epsilon</span> <span class="op">=</span> <span class="number">0.5</span>;
         <span class="macro">assert!</span>((<span class="number">1.0</span> <span class="op">-</span> (<span class="ident">result</span>.<span class="ident">fee_amount</span> <span class="op">/</span> <span class="ident">input_size</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">epsilon</span>);
     }
