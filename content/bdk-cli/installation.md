@@ -41,8 +41,6 @@ cargo install --git https://github.com/bitcoindevkit/bdk-cli
 
 This command may take a while to finish, since it will fetch and compile all the dependencies and the `bdk` library itself.  
 
-This command may take a while to finish, since it will fetch and compile all the dependencies and the `bdk` library itself.  
-
 Once it's done, you can check if everything went fine by running `bdk-cli --help` which should print something like this:
 
 ```text
