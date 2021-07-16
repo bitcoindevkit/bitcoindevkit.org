@@ -3982,35 +3982,6 @@
 <span id="3982">3982</span>
 <span id="3983">3983</span>
 <span id="3984">3984</span>
-<span id="3985">3985</span>
-<span id="3986">3986</span>
-<span id="3987">3987</span>
-<span id="3988">3988</span>
-<span id="3989">3989</span>
-<span id="3990">3990</span>
-<span id="3991">3991</span>
-<span id="3992">3992</span>
-<span id="3993">3993</span>
-<span id="3994">3994</span>
-<span id="3995">3995</span>
-<span id="3996">3996</span>
-<span id="3997">3997</span>
-<span id="3998">3998</span>
-<span id="3999">3999</span>
-<span id="4000">4000</span>
-<span id="4001">4001</span>
-<span id="4002">4002</span>
-<span id="4003">4003</span>
-<span id="4004">4004</span>
-<span id="4005">4005</span>
-<span id="4006">4006</span>
-<span id="4007">4007</span>
-<span id="4008">4008</span>
-<span id="4009">4009</span>
-<span id="4010">4010</span>
-<span id="4011">4011</span>
-<span id="4012">4012</span>
-<span id="4013">4013</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -4579,21 +4550,6 @@
             <span class="ident">output</span>: <span class="macro">vec!</span>[],
         };
 
-        <span class="kw">let</span> <span class="ident">recipients</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">params</span>.<span class="ident">single_recipient</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">recipient</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">vec!</span>[(<span class="ident">recipient</span>, <span class="number">0</span>)],
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">params</span>.<span class="ident">recipients</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">r</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">r</span>, <span class="kw-2">*</span><span class="ident">v</span>)).<span class="ident">collect</span>(),
-        };
-        <span class="kw">if</span> <span class="ident">params</span>.<span class="ident">single_recipient</span>.<span class="ident">is_some</span>()
-            <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">params</span>.<span class="ident">manually_selected_only</span>
-            <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">params</span>.<span class="ident">drain_wallet</span>
-            <span class="op">&amp;&amp;</span> <span class="ident">params</span>.<span class="ident">bumping_fee</span>.<span class="ident">is_none</span>()
-        {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::SingleRecipientNoInputs</span>);
-        }
-        <span class="kw">if</span> <span class="ident">recipients</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::NoRecipients</span>);
-        }
-
         <span class="kw">if</span> <span class="ident">params</span>.<span class="ident">manually_selected_only</span> <span class="op">&amp;&amp;</span> <span class="ident">params</span>.<span class="ident">utxos</span>.<span class="ident">is_empty</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::NoUtxosSelected</span>);
         }
@@ -4605,12 +4561,12 @@
         <span class="kw">let</span> <span class="ident">calc_fee_bytes</span> <span class="op">=</span> <span class="op">|</span><span class="ident">wu</span><span class="op">|</span> (<span class="ident">wu</span> <span class="kw">as</span> <span class="ident">f32</span>) <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>() <span class="op">/</span> <span class="number">4.0</span>;
         <span class="ident">fee_amount</span> <span class="op">+</span><span class="op">=</span> <span class="ident">calc_fee_bytes</span>(<span class="ident">tx</span>.<span class="ident">get_weight</span>());
 
-        <span class="kw">for</span> (<span class="ident">index</span>, (<span class="ident">script_pubkey</span>, <span class="ident">satoshi</span>)) <span class="kw">in</span> <span class="ident">recipients</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">params</span>.<span class="ident">single_recipient</span> {
-                <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
-                <span class="prelude-val">None</span> <span class="kw">if</span> <span class="ident">satoshi</span>.<span class="ident">is_dust</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::OutputBelowDustLimit</span>(<span class="ident">index</span>)),
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">satoshi</span>,
-            };
+        <span class="kw">let</span> <span class="ident">recipients</span> <span class="op">=</span> <span class="ident">params</span>.<span class="ident">recipients</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">r</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">r</span>, <span class="kw-2">*</span><span class="ident">v</span>));
+
+        <span class="kw">for</span> (<span class="ident">index</span>, (<span class="ident">script_pubkey</span>, <span class="ident">value</span>)) <span class="kw">in</span> <span class="ident">recipients</span>.<span class="ident">enumerate</span>() {
+            <span class="kw">if</span> <span class="ident">value</span>.<span class="ident">is_dust</span>() {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::OutputBelowDustLimit</span>(<span class="ident">index</span>));
+            }
 
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_mine</span>(<span class="ident">script_pubkey</span>)<span class="question-mark">?</span> {
                 <span class="ident">received</span> <span class="op">+</span><span class="op">=</span> <span class="ident">value</span>;
@@ -4665,52 +4621,45 @@
             })
             .<span class="ident">collect</span>();
 
-        <span class="comment">// prepare the change output</span>
-        <span class="kw">let</span> <span class="ident">change_output</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">params</span>.<span class="ident">single_recipient</span> {
-            <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">change_script</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_change_address</span>()<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">change_output</span> <span class="op">=</span> <span class="ident">TxOut</span> {
-                    <span class="ident">script_pubkey</span>: <span class="ident">change_script</span>,
-                    <span class="ident">value</span>: <span class="number">0</span>,
-                };
+        <span class="comment">// prepare the drain output</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">drain_output</span> <span class="op">=</span> {
+            <span class="kw">let</span> <span class="ident">script_pubkey</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">params</span>.<span class="ident">drain_to</span> {
+                <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">drain_recipient</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">drain_recipient</span>.<span class="ident">clone</span>(),
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">get_change_address</span>()<span class="question-mark">?</span>,
+            };
 
-                <span class="comment">// take the change into account for fees</span>
-                <span class="ident">fee_amount</span> <span class="op">+</span><span class="op">=</span> <span class="ident">calc_fee_bytes</span>(<span class="ident">serialize</span>(<span class="kw-2">&amp;</span><span class="ident">change_output</span>).<span class="ident">len</span>() <span class="op">*</span> <span class="number">4</span>);
-                <span class="prelude-val">Some</span>(<span class="ident">change_output</span>)
+            <span class="ident">TxOut</span> {
+                <span class="ident">script_pubkey</span>,
+                <span class="ident">value</span>: <span class="number">0</span>,
             }
         };
+
+        <span class="ident">fee_amount</span> <span class="op">+</span><span class="op">=</span> <span class="ident">calc_fee_bytes</span>(<span class="ident">serialize</span>(<span class="kw-2">&amp;</span><span class="ident">drain_output</span>).<span class="ident">len</span>() <span class="op">*</span> <span class="number">4</span>);
+
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fee_amount</span> <span class="op">=</span> <span class="ident">fee_amount</span>.<span class="ident">ceil</span>() <span class="kw">as</span> <span class="ident">u64</span>;
-        <span class="kw">let</span> <span class="ident">change_val</span> <span class="op">=</span> (<span class="ident">coin_selection</span>.<span class="ident">selected_amount</span>() <span class="op">-</span> <span class="ident">outgoing</span>).<span class="ident">saturating_sub</span>(<span class="ident">fee_amount</span>);
+        <span class="kw">let</span> <span class="ident">drain_val</span> <span class="op">=</span> (<span class="ident">coin_selection</span>.<span class="ident">selected_amount</span>() <span class="op">-</span> <span class="ident">outgoing</span>).<span class="ident">saturating_sub</span>(<span class="ident">fee_amount</span>);
 
-        <span class="kw">match</span> <span class="ident">change_output</span> {
-            <span class="prelude-val">None</span> <span class="kw">if</span> <span class="ident">change_val</span>.<span class="ident">is_dust</span>() <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="comment">// single recipient, but the only output would be below dust limit</span>
-                <span class="comment">// TODO: or OutputBelowDustLimit?</span>
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InsufficientFunds</span> {
-                    <span class="ident">needed</span>: <span class="ident">DUST_LIMIT_SATOSHI</span>,
-                    <span class="ident">available</span>: <span class="ident">change_val</span>,
-                });
-            }
-            <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="kw">if</span> <span class="ident">change_val</span>.<span class="ident">is_dust</span>() <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="comment">// skip the change output because it&#39;s dust -- just include it in the fee.</span>
-                <span class="ident">fee_amount</span> <span class="op">+</span><span class="op">=</span> <span class="ident">change_val</span>;
-            }
-            <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">change_output</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">change_output</span>.<span class="ident">value</span> <span class="op">=</span> <span class="ident">change_val</span>;
-                <span class="ident">received</span> <span class="op">+</span><span class="op">=</span> <span class="ident">change_val</span>;
-
-                <span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">push</span>(<span class="ident">change_output</span>);
-            }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="comment">// there&#39;s only one output, send everything to it</span>
-                <span class="ident">tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span> <span class="op">=</span> <span class="ident">change_val</span>;
-
-                <span class="comment">// the single recipient is our address</span>
-                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_mine</span>(<span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">script_pubkey</span>)<span class="question-mark">?</span> {
-                    <span class="ident">received</span> <span class="op">=</span> <span class="ident">change_val</span>;
+        <span class="kw">if</span> <span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">is_empty</span>() {
+            <span class="kw">if</span> <span class="ident">params</span>.<span class="ident">drain_to</span>.<span class="ident">is_some</span>() {
+                <span class="kw">if</span> <span class="ident">drain_val</span>.<span class="ident">is_dust</span>() {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InsufficientFunds</span> {
+                        <span class="ident">needed</span>: <span class="ident">DUST_LIMIT_SATOSHI</span>,
+                        <span class="ident">available</span>: <span class="ident">drain_val</span>,
+                    });
                 }
+            } <span class="kw">else</span> {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::NoRecipients</span>);
             }
+        }
+
+        <span class="kw">if</span> <span class="ident">drain_val</span>.<span class="ident">is_dust</span>() {
+            <span class="ident">fee_amount</span> <span class="op">+</span><span class="op">=</span> <span class="ident">drain_val</span>;
+        } <span class="kw">else</span> {
+            <span class="ident">drain_output</span>.<span class="ident">value</span> <span class="op">=</span> <span class="ident">drain_val</span>;
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_mine</span>(<span class="kw-2">&amp;</span><span class="ident">drain_output</span>.<span class="ident">script_pubkey</span>)<span class="question-mark">?</span> {
+                <span class="ident">received</span> <span class="op">+</span><span class="op">=</span> <span class="ident">drain_val</span>;
+            }
+            <span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">push</span>(<span class="ident">drain_output</span>);
         }
 
         <span class="comment">// sort input/outputs according to the chosen algorithm</span>
@@ -4738,10 +4687,6 @@
     <span class="doccomment">/// Returns an error if the transaction is already confirmed or doesn&#39;t explicitly signal</span>
     <span class="doccomment">/// *repalce by fee* (RBF). If the transaction can be fee bumped then it returns a [`TxBuilder`]</span>
     <span class="doccomment">/// pre-populated with the inputs and outputs of the original transaction.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE**: if the original transaction was made with [`TxBuilder::set_single_recipient`],</span>
-    <span class="doccomment">/// the [`TxBuilder::maintain_single_recipient`] flag should be enabled to correctly reduce the</span>
-    <span class="doccomment">/// only output&#39;s value in order to increase the fees.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// ## Example</span>
     <span class="doccomment">///</span>
@@ -6022,13 +5967,11 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_create_tx_single_recipient_drain_wallet</span>() {
+    <span class="kw">fn</span> <span class="ident">test_create_tx_drain_wallet_and_drain_to</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">1</span>);
@@ -6036,6 +5979,33 @@
             <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>[<span class="number">0</span>].<span class="ident">value</span>,
             <span class="number">50_000</span> <span class="op">-</span> <span class="ident">details</span>.<span class="ident">fee</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>)
         );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_create_tx_drain_wallet_and_drain_to_and_with_recipient</span>() {
+        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
+        <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">Address::from_str</span>(<span class="string">&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">drain_addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
+        <span class="ident">builder</span>
+            .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">20_000</span>)
+            .<span class="ident">drain_to</span>(<span class="ident">drain_addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_wallet</span>();
+        <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
+        <span class="macro">dbg!</span>(<span class="kw-2">&amp;</span><span class="ident">psbt</span>);
+        <span class="kw">let</span> <span class="ident">outputs</span> <span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>;
+
+        <span class="macro">assert_eq!</span>(<span class="ident">outputs</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">main_output</span> <span class="op">=</span> <span class="ident">outputs</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">find</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">script_pubkey</span> <span class="op">=</span><span class="op">=</span> <span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">drain_output</span> <span class="op">=</span> <span class="ident">outputs</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">find</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">script_pubkey</span> <span class="op">=</span><span class="op">=</span> <span class="ident">drain_addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">main_output</span>.<span class="ident">value</span>, <span class="number">20_000</span>,);
+        <span class="macro">assert_eq!</span>(<span class="ident">drain_output</span>.<span class="ident">value</span>, <span class="number">30_000</span> <span class="op">-</span> <span class="ident">details</span>.<span class="ident">fee</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -6068,7 +6038,7 @@
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">drain_wallet</span>()
             .<span class="ident">fee_absolute</span>(<span class="number">100</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
@@ -6087,7 +6057,7 @@
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">drain_wallet</span>()
             .<span class="ident">fee_absolute</span>(<span class="number">0</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
@@ -6107,7 +6077,7 @@
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">drain_wallet</span>()
             .<span class="ident">fee_absolute</span>(<span class="number">60_000</span>);
         <span class="kw">let</span> (<span class="ident">_psbt</span>, <span class="ident">_details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
@@ -6148,13 +6118,13 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">should_panic</span>(<span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;InsufficientFunds&quot;</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">test_create_tx_single_recipient_dust_amount</span>() {
+    <span class="kw">fn</span> <span class="ident">test_create_tx_drain_to_dust_amount</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="comment">// very high fee rate, so that the only output would be below dust</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">drain_wallet</span>()
             .<span class="ident">fee_rate</span>(<span class="ident">FeeRate::from_sat_per_vb</span>(<span class="number">453.0</span>));
         <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
@@ -6215,9 +6185,7 @@
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="string">&quot;wpkh([d34db33f/44&#39;/0&#39;/0&#39;]tpubDEnoLuPdBep9bzw5LoGYpsxUQYheRQ9gcgrJhJEcdKFB9cWQRyYmkCyRoTqeD4tJYiVVgt6A3rN6rWn9RYhR9sBsGxji29LYWHuKKbdb1ev/0/*)&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">len</span>(), <span class="number">1</span>);
@@ -6241,9 +6209,7 @@
 
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="macro">testutils!</span>(@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">5</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">outputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">len</span>(), <span class="number">1</span>);
@@ -6264,9 +6230,7 @@
             <span class="ident">get_funded_wallet</span>(<span class="string">&quot;sh(pk(cVpPVruEDdmutPzisEsYvtST1usBR3ntr8pXSyt6D2YYqXRyPcFW))&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq!</span>(
@@ -6289,9 +6253,7 @@
             <span class="ident">get_funded_wallet</span>(<span class="string">&quot;wsh(pk(cVpPVruEDdmutPzisEsYvtST1usBR3ntr8pXSyt6D2YYqXRyPcFW))&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">redeem_script</span>, <span class="prelude-val">None</span>);
@@ -6314,9 +6276,7 @@
             <span class="ident">get_funded_wallet</span>(<span class="string">&quot;sh(wsh(pk(cVpPVruEDdmutPzisEsYvtST1usBR3ntr8pXSyt6D2YYqXRyPcFW)))&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">script</span> <span class="op">=</span> <span class="ident">Script::from</span>(
@@ -6336,9 +6296,7 @@
             <span class="ident">get_funded_wallet</span>(<span class="string">&quot;sh(pk(cVpPVruEDdmutPzisEsYvtST1usBR3ntr8pXSyt6D2YYqXRyPcFW))&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="macro">assert!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">non_witness_utxo</span>.<span class="ident">is_some</span>());
@@ -6352,7 +6310,7 @@
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">only_witness_utxo</span>()
             .<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
@@ -6367,9 +6325,7 @@
             <span class="ident">get_funded_wallet</span>(<span class="string">&quot;sh(wpkh(cVpPVruEDdmutPzisEsYvtST1usBR3ntr8pXSyt6D2YYqXRyPcFW))&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="macro">assert!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_utxo</span>.<span class="ident">is_some</span>());
@@ -6381,9 +6337,7 @@
             <span class="ident">get_funded_wallet</span>(<span class="string">&quot;wsh(pk(cVpPVruEDdmutPzisEsYvtST1usBR3ntr8pXSyt6D2YYqXRyPcFW))&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="macro">assert!</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">non_witness_utxo</span>.<span class="ident">is_some</span>());
@@ -7017,7 +6971,7 @@
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">Address::from_str</span>(<span class="string">&quot;2N1Ffz3WaNzbeLFBb51xyFMHYSEUXcbiSoX&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">drain_wallet</span>()
             .<span class="ident">enable_rbf</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw-2">mut</span> <span class="ident">original_details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
@@ -7041,7 +6995,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_fee_bump</span>(<span class="ident">txid</span>).<span class="ident">unwrap</span>();
         <span class="ident">builder</span>
             .<span class="ident">fee_rate</span>(<span class="ident">FeeRate::from_sat_per_vb</span>(<span class="number">2.5</span>))
-            .<span class="ident">maintain_single_recipient</span>()
+            .<span class="ident">allow_shrinking</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">unwrap</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
@@ -7061,7 +7015,7 @@
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">Address::from_str</span>(<span class="string">&quot;2N1Ffz3WaNzbeLFBb51xyFMHYSEUXcbiSoX&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">drain_wallet</span>()
             .<span class="ident">enable_rbf</span>();
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw-2">mut</span> <span class="ident">original_details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
@@ -7084,7 +7038,7 @@
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_fee_bump</span>(<span class="ident">txid</span>).<span class="ident">unwrap</span>();
         <span class="ident">builder</span>
-            .<span class="ident">maintain_single_recipient</span>()
+            .<span class="ident">allow_shrinking</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">unwrap</span>()
             .<span class="ident">fee_absolute</span>(<span class="number">300</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
@@ -7115,7 +7069,7 @@
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">Address::from_str</span>(<span class="string">&quot;2N1Ffz3WaNzbeLFBb51xyFMHYSEUXcbiSoX&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">add_utxo</span>(<span class="ident">outpoint</span>)
             .<span class="ident">unwrap</span>()
             .<span class="ident">manually_selected_only</span>()
@@ -7144,7 +7098,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_fee_bump</span>(<span class="ident">txid</span>).<span class="ident">unwrap</span>();
         <span class="ident">builder</span>
             .<span class="ident">drain_wallet</span>()
-            .<span class="ident">maintain_single_recipient</span>()
+            .<span class="ident">allow_shrinking</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">unwrap</span>()
             .<span class="ident">fee_rate</span>(<span class="ident">FeeRate::from_sat_per_vb</span>(<span class="number">5.0</span>));
         <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
@@ -7159,7 +7113,7 @@
         <span class="comment">// them, and make sure that `bump_fee` doesn&#39;t try to add more. This fails because we&#39;ve</span>
         <span class="comment">// told the wallet it&#39;s not allowed to add more inputs AND it can&#39;t reduce the value of the</span>
         <span class="comment">// existing output. In other words, bump_fee + manually_selected_only is always an error</span>
-        <span class="comment">// unless you&#39;ve also set &quot;maintain_single_recipient&quot;.</span>
+        <span class="comment">// unless you&#39;ve also set &quot;allow_shrinking&quot; OR there is a change output.</span>
         <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
             <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
@@ -7172,7 +7126,7 @@
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">Address::from_str</span>(<span class="string">&quot;2N1Ffz3WaNzbeLFBb51xyFMHYSEUXcbiSoX&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">add_utxo</span>(<span class="ident">outpoint</span>)
             .<span class="ident">unwrap</span>()
             .<span class="ident">manually_selected_only</span>()
@@ -7338,11 +7292,11 @@
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
         );
 
-        <span class="comment">// initially make a tx without change by using `set_single_recipient`</span>
+        <span class="comment">// initially make a tx without change by using `drain_to`</span>
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">Address::from_str</span>(<span class="string">&quot;2N1Ffz3WaNzbeLFBb51xyFMHYSEUXcbiSoX&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">add_utxo</span>(<span class="ident">OutPoint</span> {
                 <span class="ident">txid</span>: <span class="ident">incoming_txid</span>,
                 <span class="ident">vout</span>: <span class="number">0</span>,
@@ -7370,7 +7324,7 @@
             .<span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="ident">original_details</span>)
             .<span class="ident">unwrap</span>();
 
-        <span class="comment">// now bump the fees without using `maintain_single_recipient`. the wallet should add an</span>
+        <span class="comment">// now bump the fees without using `allow_shrinking`. the wallet should add an</span>
         <span class="comment">// extra input and a change output, and leave the original output untouched</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_fee_bump</span>(<span class="ident">txid</span>).<span class="ident">unwrap</span>();
         <span class="ident">builder</span>.<span class="ident">fee_rate</span>(<span class="ident">FeeRate::from_sat_per_vb</span>(<span class="number">50.0</span>));
@@ -7616,9 +7570,7 @@
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="string">&quot;wpkh(tprv8ZgxMBicQKsPd3EupYiPRhaMooHKUHJxNsTfYuScep13go8QFfHdtkG9nRkFGb7busX4isf6X9dURGCoKgitaApQ6MupRhZMcELAxTBRJgS/*)&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="ident">Default::default</span>()).<span class="ident">unwrap</span>();
@@ -7633,9 +7585,7 @@
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="string">&quot;wpkh([d34db33f/84h/1h/0h]tprv8ZgxMBicQKsPd3EupYiPRhaMooHKUHJxNsTfYuScep13go8QFfHdtkG9nRkFGb7busX4isf6X9dURGCoKgitaApQ6MupRhZMcELAxTBRJgS/*)&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="ident">Default::default</span>()).<span class="ident">unwrap</span>();
@@ -7650,9 +7600,7 @@
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="string">&quot;wpkh(tprv8ZgxMBicQKsPd3EupYiPRhaMooHKUHJxNsTfYuScep13go8QFfHdtkG9nRkFGb7busX4isf6X9dURGCoKgitaApQ6MupRhZMcELAxTBRJgS/44&#39;/0&#39;/0&#39;/0/*)&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="ident">Default::default</span>()).<span class="ident">unwrap</span>();
@@ -7667,9 +7615,7 @@
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="string">&quot;sh(wpkh(tprv8ZgxMBicQKsPd3EupYiPRhaMooHKUHJxNsTfYuScep13go8QFfHdtkG9nRkFGb7busX4isf6X9dURGCoKgitaApQ6MupRhZMcELAxTBRJgS/*))&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="ident">Default::default</span>()).<span class="ident">unwrap</span>();
@@ -7685,9 +7631,7 @@
             <span class="ident">get_funded_wallet</span>(<span class="string">&quot;wpkh(cVpPVruEDdmutPzisEsYvtST1usBR3ntr8pXSyt6D2YYqXRyPcFW)&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="ident">Default::default</span>()).<span class="ident">unwrap</span>();
@@ -7702,9 +7646,7 @@
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="string">&quot;wpkh(tprv8ZgxMBicQKsPd3EupYiPRhaMooHKUHJxNsTfYuScep13go8QFfHdtkG9nRkFGb7busX4isf6X9dURGCoKgitaApQ6MupRhZMcELAxTBRJgS/*)&quot;</span>);
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
-        <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
-            .<span class="ident">drain_wallet</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">bip32_derivation</span>.<span class="ident">clear</span>();
@@ -7786,7 +7728,7 @@
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">set_single_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
             .<span class="ident">sighash</span>(<span class="ident">sighash</span>)
             .<span class="ident">drain_wallet</span>();
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
