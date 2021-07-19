@@ -232,18 +232,6 @@
 <span id="232">232</span>
 <span id="233">233</span>
 <span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -286,7 +274,7 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! # #[cfg(feature = &quot;esplora&quot;)]</span>
 <span class="doccomment">//! # {</span>
-<span class="doccomment">//! let esplora_blockchain = EsploraBlockchain::new(&quot;...&quot;, None);</span>
+<span class="doccomment">//! let esplora_blockchain = EsploraBlockchain::new(&quot;...&quot;, None, 20);</span>
 <span class="doccomment">//! let wallet_esplora: Wallet&lt;AnyBlockchain, _&gt; = Wallet::new(</span>
 <span class="doccomment">//!     &quot;...&quot;,</span>
 <span class="doccomment">//!     None,</span>
@@ -373,31 +361,17 @@
 
     <span class="kw">fn</span> <span class="ident">setup</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">P</span>: <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Progress</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">stop_gap</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
         <span class="ident">database</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">D</span>,
         <span class="ident">progress_update</span>: <span class="ident">P</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="macro">maybe_await!</span>(<span class="macro">impl_inner_method!</span>(
-            <span class="self">self</span>,
-            <span class="ident">setup</span>,
-            <span class="ident">stop_gap</span>,
-            <span class="ident">database</span>,
-            <span class="ident">progress_update</span>
-        ))
+        <span class="macro">maybe_await!</span>(<span class="macro">impl_inner_method!</span>(<span class="self">self</span>, <span class="ident">setup</span>, <span class="ident">database</span>, <span class="ident">progress_update</span>))
     }
     <span class="kw">fn</span> <span class="ident">sync</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">P</span>: <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Progress</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">stop_gap</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
         <span class="ident">database</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">D</span>,
         <span class="ident">progress_update</span>: <span class="ident">P</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="macro">maybe_await!</span>(<span class="macro">impl_inner_method!</span>(
-            <span class="self">self</span>,
-            <span class="ident">sync</span>,
-            <span class="ident">stop_gap</span>,
-            <span class="ident">database</span>,
-            <span class="ident">progress_update</span>
-        ))
+        <span class="macro">maybe_await!</span>(<span class="macro">impl_inner_method!</span>(<span class="self">self</span>, <span class="ident">sync</span>, <span class="ident">database</span>, <span class="ident">progress_update</span>))
     }
 
     <span class="kw">fn</span> <span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
@@ -435,7 +409,8 @@
 <span class="doccomment">///     r#&quot;{</span>
 <span class="doccomment">///    &quot;type&quot; : &quot;electrum&quot;,</span>
 <span class="doccomment">///    &quot;url&quot; : &quot;ssl://electrum.blockstream.info:50002&quot;,</span>
-<span class="doccomment">///    &quot;retry&quot;: 2</span>
+<span class="doccomment">///    &quot;retry&quot;: 2,</span>
+<span class="doccomment">///    &quot;stop_gap&quot;: 20</span>
 <span class="doccomment">/// }&quot;#,</span>
 <span class="doccomment">/// )</span>
 <span class="doccomment">/// .unwrap();</span>
@@ -445,7 +420,8 @@
 <span class="doccomment">///         url: &quot;ssl://electrum.blockstream.info:50002&quot;.into(),</span>
 <span class="doccomment">///         retry: 2,</span>
 <span class="doccomment">///         socks5: None,</span>
-<span class="doccomment">///         timeout: None</span>
+<span class="doccomment">///         timeout: None,</span>
+<span class="doccomment">///         stop_gap: 20,</span>
 <span class="doccomment">///     })</span>
 <span class="doccomment">/// );</span>
 <span class="doccomment">/// # }</span>
