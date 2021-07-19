@@ -422,6 +422,15 @@
 <span id="422">422</span>
 <span id="423">423</span>
 <span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -443,33 +452,31 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```no_run</span>
 <span class="doccomment">//! # use bdk::blockchain::esplora::EsploraBlockchain;</span>
-<span class="doccomment">//! let blockchain = EsploraBlockchain::new(&quot;https://blockstream.info/testnet/api&quot;, None);</span>
+<span class="doccomment">//! let blockchain = EsploraBlockchain::new(&quot;https://blockstream.info/testnet/api&quot;, None, 20);</span>
 <span class="doccomment">//! # Ok::&lt;(), bdk::Error&gt;(())</span>
 <span class="doccomment">//! ```</span>
 
 <span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">HashMap</span>, <span class="ident">HashSet</span>};
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
 
-<span class="kw">use</span> <span class="ident">futures::stream</span>::{<span class="self">self</span>, <span class="ident">FuturesOrdered</span>, <span class="ident">StreamExt</span>, <span class="ident">TryStreamExt</span>};
-
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
-<span class="kw">use</span> <span class="ident">log</span>::{<span class="ident">debug</span>, <span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">trace</span>};
-
-<span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
-
-<span class="kw">use</span> <span class="ident">reqwest</span>::{<span class="ident">Client</span>, <span class="ident">StatusCode</span>};
-
 <span class="kw">use</span> <span class="ident">bitcoin::consensus</span>::{<span class="self">self</span>, <span class="ident">deserialize</span>, <span class="ident">serialize</span>};
 <span class="kw">use</span> <span class="ident">bitcoin::hashes::hex</span>::{<span class="ident">FromHex</span>, <span class="ident">ToHex</span>};
 <span class="kw">use</span> <span class="ident">bitcoin::hashes</span>::{<span class="ident">sha256</span>, <span class="ident">Hash</span>};
 <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">BlockHash</span>, <span class="ident">BlockHeader</span>, <span class="ident">Script</span>, <span class="ident">Transaction</span>, <span class="ident">Txid</span>};
+<span class="kw">use</span> <span class="ident">futures::stream</span>::{<span class="self">self</span>, <span class="ident">FuturesOrdered</span>, <span class="ident">StreamExt</span>, <span class="ident">TryStreamExt</span>};
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
+<span class="kw">use</span> <span class="ident">log</span>::{<span class="ident">debug</span>, <span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">trace</span>};
+<span class="kw">use</span> <span class="ident">reqwest</span>::{<span class="ident">Client</span>, <span class="ident">StatusCode</span>};
+<span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
 
-<span class="kw">use</span> <span class="self">self</span><span class="ident">::utils</span>::{<span class="ident">ElectrumLikeSync</span>, <span class="ident">ElsGetHistoryRes</span>};
-<span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::database::BatchDatabase</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::error::Error</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::wallet::utils::ChunksIterator</span>;
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::FeeRate</span>;
+
+<span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+
+<span class="kw">use</span> <span class="self">self</span><span class="ident">::utils</span>::{<span class="ident">ElectrumLikeSync</span>, <span class="ident">ElsGetHistoryRes</span>};
 
 <span class="kw">const</span> <span class="ident">DEFAULT_CONCURRENT_REQUESTS</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">4</span>;
 
@@ -487,22 +494,31 @@
 <span class="doccomment">/// ## Example</span>
 <span class="doccomment">/// See the [`blockchain::esplora`](crate::blockchain::esplora) module for a usage example.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EsploraBlockchain</span>(<span class="ident">UrlClient</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EsploraBlockchain</span> {
+    <span class="ident">url_client</span>: <span class="ident">UrlClient</span>,
+    <span class="ident">stop_gap</span>: <span class="ident">usize</span>,
+}
 
 <span class="kw">impl</span> <span class="ident">std::convert::From</span><span class="op">&lt;</span><span class="ident">UrlClient</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">EsploraBlockchain</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">url_client</span>: <span class="ident">UrlClient</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">EsploraBlockchain</span>(<span class="ident">url_client</span>)
+        <span class="ident">EsploraBlockchain</span> {
+            <span class="ident">url_client</span>,
+            <span class="ident">stop_gap</span>: <span class="number">20</span>,
+        }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">EsploraBlockchain</span> {
     <span class="doccomment">/// Create a new instance of the client from a base URL</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">base_url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">concurrency</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">EsploraBlockchain</span>(<span class="ident">UrlClient</span> {
-            <span class="ident">url</span>: <span class="ident">base_url</span>.<span class="ident">to_string</span>(),
-            <span class="ident">client</span>: <span class="ident">Client::new</span>(),
-            <span class="ident">concurrency</span>: <span class="ident">concurrency</span>.<span class="ident">unwrap_or</span>(<span class="ident">DEFAULT_CONCURRENT_REQUESTS</span>),
-        })
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">base_url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">concurrency</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">stop_gap</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">EsploraBlockchain</span> {
+            <span class="ident">url_client</span>: <span class="ident">UrlClient</span> {
+                <span class="ident">url</span>: <span class="ident">base_url</span>.<span class="ident">to_string</span>(),
+                <span class="ident">client</span>: <span class="ident">Client::new</span>(),
+                <span class="ident">concurrency</span>: <span class="ident">concurrency</span>.<span class="ident">unwrap_or</span>(<span class="ident">DEFAULT_CONCURRENT_REQUESTS</span>),
+            },
+            <span class="ident">stop_gap</span>,
+        }
     }
 }
 
@@ -520,29 +536,28 @@
 
     <span class="kw">fn</span> <span class="ident">setup</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">P</span>: <span class="ident">Progress</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">stop_gap</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
         <span class="ident">database</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">D</span>,
         <span class="ident">progress_update</span>: <span class="ident">P</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="macro">maybe_await!</span>(<span class="self">self</span>
-            .<span class="number">0</span>
-            .<span class="ident">electrum_like_setup</span>(<span class="ident">stop_gap</span>, <span class="ident">database</span>, <span class="ident">progress_update</span>))
+            .<span class="ident">url_client</span>
+            .<span class="ident">electrum_like_setup</span>(<span class="self">self</span>.<span class="ident">stop_gap</span>, <span class="ident">database</span>, <span class="ident">progress_update</span>))
     }
 
     <span class="kw">fn</span> <span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="macro">await_or_block!</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">_get_tx</span>(<span class="ident">txid</span>))<span class="question-mark">?</span>)
+        <span class="prelude-val">Ok</span>(<span class="macro">await_or_block!</span>(<span class="self">self</span>.<span class="ident">url_client</span>.<span class="ident">_get_tx</span>(<span class="ident">txid</span>))<span class="question-mark">?</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tx</span>: <span class="kw-2">&amp;</span><span class="ident">Transaction</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="macro">await_or_block!</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">_broadcast</span>(<span class="ident">tx</span>))<span class="question-mark">?</span>)
+        <span class="prelude-val">Ok</span>(<span class="macro">await_or_block!</span>(<span class="self">self</span>.<span class="ident">url_client</span>.<span class="ident">_broadcast</span>(<span class="ident">tx</span>))<span class="question-mark">?</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">get_height</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="macro">await_or_block!</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">_get_height</span>())<span class="question-mark">?</span>)
+        <span class="prelude-val">Ok</span>(<span class="macro">await_or_block!</span>(<span class="self">self</span>.<span class="ident">url_client</span>.<span class="ident">_get_height</span>())<span class="question-mark">?</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">estimate_fee</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">target</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">FeeRate</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">estimates</span> <span class="op">=</span> <span class="macro">await_or_block!</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">_get_fee_estimates</span>())<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">estimates</span> <span class="op">=</span> <span class="macro">await_or_block!</span>(<span class="self">self</span>.<span class="ident">url_client</span>.<span class="ident">_get_fee_estimates</span>())<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">fee_val</span> <span class="op">=</span> <span class="ident">estimates</span>
             .<span class="ident">into_iter</span>()
@@ -794,6 +809,8 @@
     <span class="kw">pub</span> <span class="ident">base_url</span>: <span class="ident">String</span>,
     <span class="doccomment">/// Number of parallel requests sent to the esplora service (default: 4)</span>
     <span class="kw">pub</span> <span class="ident">concurrency</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Stop searching addresses for transactions after finding an unused gap of this length</span>
+    <span class="kw">pub</span> <span class="ident">stop_gap</span>: <span class="ident">usize</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">ConfigurableBlockchain</span> <span class="kw">for</span> <span class="ident">EsploraBlockchain</span> {
@@ -803,6 +820,7 @@
         <span class="prelude-val">Ok</span>(<span class="ident">EsploraBlockchain::new</span>(
             <span class="ident">config</span>.<span class="ident">base_url</span>.<span class="ident">as_str</span>(),
             <span class="ident">config</span>.<span class="ident">concurrency</span>,
+            <span class="ident">config</span>.<span class="ident">stop_gap</span>,
         ))
     }
 }
@@ -844,7 +862,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-esplora&quot;</span>)]</span>
 <span class="kw">crate</span><span class="macro">::bdk_blockchain_tests!</span> {
     <span class="kw">fn</span> <span class="ident">test_instance</span>(<span class="ident">test_client</span>: <span class="kw-2">&amp;</span><span class="ident">TestClient</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">EsploraBlockchain</span> {
-        <span class="ident">EsploraBlockchain::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;http://{}&quot;</span>,<span class="ident">test_client</span>.<span class="ident">electrsd</span>.<span class="ident">esplora_url</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()), <span class="prelude-val">None</span>)
+        <span class="ident">EsploraBlockchain::new</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;http://{}&quot;</span>,<span class="ident">test_client</span>.<span class="ident">electrsd</span>.<span class="ident">esplora_url</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()), <span class="prelude-val">None</span>, <span class="number">20</span>)
     }
 }
 </pre></div>
