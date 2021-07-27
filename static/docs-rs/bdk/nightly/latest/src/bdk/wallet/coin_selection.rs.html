@@ -1037,6 +1037,26 @@
 <span id="1037">1037</span>
 <span id="1038">1038</span>
 <span id="1039">1039</span>
+<span id="1040">1040</span>
+<span id="1041">1041</span>
+<span id="1042">1042</span>
+<span id="1043">1043</span>
+<span id="1044">1044</span>
+<span id="1045">1045</span>
+<span id="1046">1046</span>
+<span id="1047">1047</span>
+<span id="1048">1048</span>
+<span id="1049">1049</span>
+<span id="1050">1050</span>
+<span id="1051">1051</span>
+<span id="1052">1052</span>
+<span id="1053">1053</span>
+<span id="1054">1054</span>
+<span id="1055">1055</span>
+<span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -1380,6 +1400,14 @@
             .<span class="ident">try_into</span>()
             .<span class="ident">expect</span>(<span class="string">&quot;Bitcoin amount to fit into i64&quot;</span>);
 
+        <span class="kw">if</span> <span class="ident">curr_value</span> <span class="op">&gt;</span> <span class="ident">actual_target</span> {
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">BranchAndBoundCoinSelection::calculate_cs_result</span>(
+                <span class="macro">vec!</span>[],
+                <span class="ident">required_utxos</span>,
+                <span class="ident">fee_amount</span>,
+            ));
+        }
+
         <span class="prelude-val">Ok</span>(<span class="self">self</span>
             .<span class="ident">bnb</span>(
                 <span class="ident">required_utxos</span>.<span class="ident">clone</span>(),
@@ -1585,50 +1613,31 @@
 
     <span class="kw">const</span> <span class="ident">FEE_AMOUNT</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">50</span>;
 
+    <span class="kw">fn</span> <span class="ident">utxo</span>(<span class="ident">value</span>: <span class="ident">u64</span>, <span class="ident">index</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">WeightedUtxo</span> {
+        <span class="macro">assert!</span>(<span class="ident">index</span> <span class="op">&lt;</span> <span class="number">10</span>);
+        <span class="kw">let</span> <span class="ident">outpoint</span> <span class="op">=</span> <span class="ident">OutPoint::from_str</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+            <span class="string">&quot;000000000000000000000000000000000000000000000000000000000000000{}:0&quot;</span>,
+            <span class="ident">index</span>
+        ))
+        .<span class="ident">unwrap</span>();
+        <span class="ident">WeightedUtxo</span> {
+            <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
+            <span class="ident">utxo</span>: <span class="ident">Utxo::Local</span>(<span class="ident">LocalUtxo</span> {
+                <span class="ident">outpoint</span>,
+                <span class="ident">txout</span>: <span class="ident">TxOut</span> {
+                    <span class="ident">value</span>,
+                    <span class="ident">script_pubkey</span>: <span class="ident">Script::new</span>(),
+                },
+                <span class="ident">keychain</span>: <span class="ident">KeychainKind::External</span>,
+            }),
+        }
+    }
+
     <span class="kw">fn</span> <span class="ident">get_test_utxos</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span> {
         <span class="macro">vec!</span>[
-            <span class="ident">WeightedUtxo</span> {
-                <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
-                <span class="ident">utxo</span>: <span class="ident">Utxo::Local</span>(<span class="ident">LocalUtxo</span> {
-                    <span class="ident">outpoint</span>: <span class="ident">OutPoint::from_str</span>(
-                        <span class="string">&quot;0000000000000000000000000000000000000000000000000000000000000000:0&quot;</span>,
-                    )
-                    .<span class="ident">unwrap</span>(),
-                    <span class="ident">txout</span>: <span class="ident">TxOut</span> {
-                        <span class="ident">value</span>: <span class="number">100_000</span>,
-                        <span class="ident">script_pubkey</span>: <span class="ident">Script::new</span>(),
-                    },
-                    <span class="ident">keychain</span>: <span class="ident">KeychainKind::External</span>,
-                }),
-            },
-            <span class="ident">WeightedUtxo</span> {
-                <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
-                <span class="ident">utxo</span>: <span class="ident">Utxo::Local</span>(<span class="ident">LocalUtxo</span> {
-                    <span class="ident">outpoint</span>: <span class="ident">OutPoint::from_str</span>(
-                        <span class="string">&quot;0000000000000000000000000000000000000000000000000000000000000001:0&quot;</span>,
-                    )
-                    .<span class="ident">unwrap</span>(),
-                    <span class="ident">txout</span>: <span class="ident">TxOut</span> {
-                        <span class="ident">value</span>: <span class="ident">FEE_AMOUNT</span> <span class="kw">as</span> <span class="ident">u64</span> <span class="op">-</span> <span class="number">40</span>,
-                        <span class="ident">script_pubkey</span>: <span class="ident">Script::new</span>(),
-                    },
-                    <span class="ident">keychain</span>: <span class="ident">KeychainKind::External</span>,
-                }),
-            },
-            <span class="ident">WeightedUtxo</span> {
-                <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
-                <span class="ident">utxo</span>: <span class="ident">Utxo::Local</span>(<span class="ident">LocalUtxo</span> {
-                    <span class="ident">outpoint</span>: <span class="ident">OutPoint::from_str</span>(
-                        <span class="string">&quot;0000000000000000000000000000000000000000000000000000000000000002:0&quot;</span>,
-                    )
-                    .<span class="ident">unwrap</span>(),
-                    <span class="ident">txout</span>: <span class="ident">TxOut</span> {
-                        <span class="ident">value</span>: <span class="number">200_000</span>,
-                        <span class="ident">script_pubkey</span>: <span class="ident">Script::new</span>(),
-                    },
-                    <span class="ident">keychain</span>: <span class="ident">KeychainKind::Internal</span>,
-                }),
-            },
+            <span class="ident">utxo</span>(<span class="number">100_000</span>, <span class="number">0</span>),
+            <span class="ident">utxo</span>(<span class="ident">FEE_AMOUNT</span> <span class="kw">as</span> <span class="ident">u64</span> <span class="op">-</span> <span class="number">40</span>, <span class="number">1</span>),
+            <span class="ident">utxo</span>(<span class="number">200_000</span>, <span class="number">2</span>),
         ]
     }
 
@@ -1843,6 +1852,37 @@
         <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">3</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300010</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">fee_amount</span>, <span class="number">254</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_bnb_coin_selection_required_not_enough</span>() {
+        <span class="kw">let</span> <span class="ident">utxos</span> <span class="op">=</span> <span class="ident">get_test_utxos</span>();
+        <span class="kw">let</span> <span class="ident">database</span> <span class="op">=</span> <span class="ident">MemoryDatabase::default</span>();
+
+        <span class="kw">let</span> <span class="ident">required</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">utxos</span>[<span class="number">0</span>].<span class="ident">clone</span>()];
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">optional</span> <span class="op">=</span> <span class="ident">utxos</span>[<span class="number">1</span>..].<span class="ident">to_vec</span>();
+        <span class="ident">optional</span>.<span class="ident">push</span>(<span class="ident">utxo</span>(<span class="number">500_000</span>, <span class="number">3</span>));
+
+        <span class="comment">// Defensive assertions, for sanity and in case someone changes the test utxos vector.</span>
+        <span class="kw">let</span> <span class="ident">amount</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="ident">required</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="ident">utxo</span>.<span class="ident">txout</span>().<span class="ident">value</span>).<span class="ident">sum</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">amount</span>, <span class="number">100_000</span>);
+        <span class="kw">let</span> <span class="ident">amount</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="ident">optional</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="ident">utxo</span>.<span class="ident">txout</span>().<span class="ident">value</span>).<span class="ident">sum</span>();
+        <span class="macro">assert!</span>(<span class="ident">amount</span> <span class="op">&gt;</span> <span class="number">150_000</span>);
+
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">BranchAndBoundCoinSelection::default</span>()
+            .<span class="ident">coin_select</span>(
+                <span class="kw-2">&amp;</span><span class="ident">database</span>,
+                <span class="ident">required</span>,
+                <span class="ident">optional</span>,
+                <span class="ident">FeeRate::from_sat_per_vb</span>(<span class="number">1.0</span>),
+                <span class="number">150_000</span>,
+                <span class="ident">FEE_AMOUNT</span>,
+            )
+            .<span class="ident">unwrap</span>();
+
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">300_010</span>);
+        <span class="macro">assert!</span>((<span class="ident">result</span>.<span class="ident">fee_amount</span> <span class="op">-</span> <span class="number">254.0</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">f32::EPSILON</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
