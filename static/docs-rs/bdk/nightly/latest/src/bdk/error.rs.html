@@ -216,6 +216,11 @@
 <span id="216">216</span>
 <span id="217">217</span>
 <span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
 </pre><pre class="rust">
 <span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
@@ -349,7 +354,7 @@
     <span class="ident">Electrum</span>(<span class="ident">electrum_client::Error</span>),
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;esplora&quot;</span>)]</span>
     <span class="doccomment">/// Esplora client error</span>
-    <span class="ident">Esplora</span>(<span class="kw">crate</span><span class="ident">::blockchain::esplora::EsploraError</span>),
+    <span class="ident">Esplora</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="kw">crate</span><span class="ident">::blockchain::esplora::EsploraError</span><span class="op">&gt;</span>),
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;compact_filters&quot;</span>)]</span>
     <span class="doccomment">/// Compact filters client error)</span>
     <span class="ident">CompactFilters</span>(<span class="kw">crate</span><span class="ident">::blockchain::compact_filters::CompactFiltersError</span>),
@@ -409,8 +414,6 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)]</span>
 <span class="macro">impl_error!</span>(<span class="ident">electrum_client::Error</span>, <span class="ident">Electrum</span>);
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;esplora&quot;</span>)]</span>
-<span class="macro">impl_error!</span>(<span class="kw">crate</span><span class="ident">::blockchain::esplora::EsploraError</span>, <span class="ident">Esplora</span>);
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;key-value-db&quot;</span>)]</span>
 <span class="macro">impl_error!</span>(<span class="ident">sled::Error</span>, <span class="ident">Sled</span>);
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rpc&quot;</span>)]</span>
@@ -433,6 +436,13 @@
             <span class="kw">crate</span><span class="ident">::wallet::verify::VerifyError::Global</span>(<span class="ident">inner</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">inner</span>,
             <span class="ident">err</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Error::Verification</span>(<span class="ident">err</span>),
         }
+    }
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;esplora&quot;</span>)]</span>
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw">crate</span><span class="ident">::blockchain::esplora::EsploraError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="kw">crate</span><span class="ident">::blockchain::esplora::EsploraError</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">Error::Esplora</span>(<span class="ident">Box::new</span>(<span class="ident">other</span>))
     }
 }
 </pre></div>
