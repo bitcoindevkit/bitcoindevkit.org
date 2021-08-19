@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;database&#x2F;keyvalue.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>keyvalue.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../bdk/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;database&#x2F;keyvalue.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>keyvalue.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../bdk/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -487,10 +487,10 @@
 <span class="kw">use</span> <span class="ident">bitcoin::hash_types::Txid</span>;
 <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">OutPoint</span>, <span class="ident">Script</span>, <span class="ident">Transaction</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::database::memory::MapKey</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">Database</span>};
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::error::Error</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::types</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::memory::MapKey</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">Database</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::Error</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::types</span>::<span class="kw-2">*</span>;
 
 <span class="macro">macro_rules!</span> <span class="ident">impl_batch_operations</span> {
     ( { $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">after_insert</span>:<span class="ident">tt</span>)<span class="op">*</span> }, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">process_delete</span>:<span class="ident">ident</span> ) <span class="op">=</span><span class="op">&gt;</span> {
@@ -842,11 +842,11 @@
 <span class="kw">impl</span> <span class="ident">BatchDatabase</span> <span class="kw">for</span> <span class="ident">Tree</span> {
     <span class="kw">type</span> <span class="ident">Batch</span> <span class="op">=</span> <span class="ident">sled::Batch</span>;
 
-    <span class="kw">fn</span> <span class="ident">begin_batch</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span><span class="ident">::Batch</span> {
+    <span class="kw">fn</span> <span class="ident">begin_batch</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident"><span class="self">Self</span>::Batch</span> {
         <span class="ident">sled::Batch::default</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">commit_batch</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">batch</span>: <span class="self">Self</span><span class="ident">::Batch</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">commit_batch</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">batch</span>: <span class="ident"><span class="self">Self</span>::Batch</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">apply_batch</span>(<span class="ident">batch</span>)<span class="question-mark">?</span>)
     }
 }
@@ -899,42 +899,42 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_script_pubkey</span>() {
-        <span class="kw">crate</span><span class="ident">::database::test::test_script_pubkey</span>(<span class="ident">get_tree</span>());
+        <span class="ident"><span class="kw">crate</span>::database::test::test_script_pubkey</span>(<span class="ident">get_tree</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_batch_script_pubkey</span>() {
-        <span class="kw">crate</span><span class="ident">::database::test::test_batch_script_pubkey</span>(<span class="ident">get_tree</span>());
+        <span class="ident"><span class="kw">crate</span>::database::test::test_batch_script_pubkey</span>(<span class="ident">get_tree</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_iter_script_pubkey</span>() {
-        <span class="kw">crate</span><span class="ident">::database::test::test_iter_script_pubkey</span>(<span class="ident">get_tree</span>());
+        <span class="ident"><span class="kw">crate</span>::database::test::test_iter_script_pubkey</span>(<span class="ident">get_tree</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_del_script_pubkey</span>() {
-        <span class="kw">crate</span><span class="ident">::database::test::test_del_script_pubkey</span>(<span class="ident">get_tree</span>());
+        <span class="ident"><span class="kw">crate</span>::database::test::test_del_script_pubkey</span>(<span class="ident">get_tree</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_utxo</span>() {
-        <span class="kw">crate</span><span class="ident">::database::test::test_utxo</span>(<span class="ident">get_tree</span>());
+        <span class="ident"><span class="kw">crate</span>::database::test::test_utxo</span>(<span class="ident">get_tree</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_raw_tx</span>() {
-        <span class="kw">crate</span><span class="ident">::database::test::test_raw_tx</span>(<span class="ident">get_tree</span>());
+        <span class="ident"><span class="kw">crate</span>::database::test::test_raw_tx</span>(<span class="ident">get_tree</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_tx</span>() {
-        <span class="kw">crate</span><span class="ident">::database::test::test_tx</span>(<span class="ident">get_tree</span>());
+        <span class="ident"><span class="kw">crate</span>::database::test::test_tx</span>(<span class="ident">get_tree</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_last_index</span>() {
-        <span class="kw">crate</span><span class="ident">::database::test::test_last_index</span>(<span class="ident">get_tree</span>());
+        <span class="ident"><span class="kw">crate</span>::database::test::test_last_index</span>(<span class="ident">get_tree</span>());
     }
 }
 </pre></div>

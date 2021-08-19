@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;wallet&#x2F;mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../bdk/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;wallet&#x2F;mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../bdk/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -4023,19 +4023,19 @@
 <span class="kw">use</span> <span class="ident">tx_builder</span>::{<span class="ident">BumpFee</span>, <span class="ident">CreateTx</span>, <span class="ident">FeePolicy</span>, <span class="ident">TxBuilder</span>, <span class="ident">TxParams</span>};
 <span class="kw">use</span> <span class="ident">utils</span>::{<span class="ident">check_nlocktime</span>, <span class="ident">check_nsequence_rbf</span>, <span class="ident">After</span>, <span class="ident">Older</span>, <span class="ident">SecpCtx</span>, <span class="ident">DUST_LIMIT_SATOSHI</span>};
 
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::blockchain</span>::{<span class="ident">Blockchain</span>, <span class="ident">Progress</span>};
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>};
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::descriptor::derived::AsDerived</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::descriptor::policy::BuildSatisfaction</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::descriptor</span>::{
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::blockchain</span>::{<span class="ident">Blockchain</span>, <span class="ident">Progress</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::derived::AsDerived</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::policy::BuildSatisfaction</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor</span>::{
     <span class="ident">get_checksum</span>, <span class="ident">into_wallet_descriptor_checked</span>, <span class="ident">DerivedDescriptor</span>, <span class="ident">DerivedDescriptorMeta</span>,
     <span class="ident">DescriptorMeta</span>, <span class="ident">DescriptorScripts</span>, <span class="ident">ExtendedDescriptor</span>, <span class="ident">ExtractPolicy</span>, <span class="ident">IntoWalletDescriptor</span>,
     <span class="ident">Policy</span>, <span class="ident">XKeyUtils</span>,
 };
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::error::Error</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::psbt::PsbtUtils</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::signer::SignerError</span>;
-<span class="kw">use</span> <span class="kw">crate</span><span class="ident">::types</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::Error</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::psbt::PsbtUtils</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::signer::SignerError</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::types</span>::<span class="kw-2">*</span>;
 
 <span class="kw">const</span> <span class="ident">CACHE_ADDR_BATCH_SIZE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">100</span>;
 
@@ -4080,7 +4080,7 @@
         <span class="ident">network</span>: <span class="ident">Network</span>,
         <span class="ident">database</span>: <span class="ident">D</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="self">Self</span><span class="ident">::_new</span>(<span class="ident">descriptor</span>, <span class="ident">change_descriptor</span>, <span class="ident">network</span>, <span class="ident">database</span>, (), <span class="prelude-val">None</span>)
+        <span class="ident"><span class="self">Self</span>::_new</span>(<span class="ident">descriptor</span>, <span class="ident">change_descriptor</span>, <span class="ident">network</span>, <span class="ident">database</span>, (), <span class="prelude-val">None</span>)
     }
 }
 
@@ -4182,7 +4182,7 @@
 <span class="kw">impl</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">AddressInfo</span> {
     <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">Address</span>;
 
-    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="self">Self</span><span class="ident">::Target</span> {
+    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Target</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">address</span>
     }
 }
@@ -5410,7 +5410,7 @@
         <span class="ident">client</span>: <span class="ident">B</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">current_height</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="macro">maybe_await!</span>(<span class="ident">client</span>.<span class="ident">get_height</span>())<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">u32</span>);
-        <span class="self">Self</span><span class="ident">::_new</span>(
+        <span class="ident"><span class="self">Self</span>::_new</span>(
             <span class="ident">descriptor</span>,
             <span class="ident">change_descriptor</span>,
             <span class="ident">network</span>,
@@ -5523,14 +5523,14 @@
 
     <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">util::psbt</span>, <span class="ident">Network</span>};
 
-    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::database::memory::MemoryDatabase</span>;
-    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::database::Database</span>;
-    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::types::KeychainKind</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::memory::MemoryDatabase</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::Database</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::types::KeychainKind</span>;
 
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::signer</span>::{<span class="ident">SignOptions</span>, <span class="ident">SignerError</span>};
-    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::testutils</span>;
-    <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::wallet::AddressIndex</span>::{<span class="ident">LastUnused</span>, <span class="ident">New</span>, <span class="ident">Peek</span>, <span class="ident">Reset</span>};
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::signer</span>::{<span class="ident">SignOptions</span>, <span class="ident">SignerError</span>};
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutils</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet::AddressIndex</span>::{<span class="ident">LastUnused</span>, <span class="ident">New</span>, <span class="ident">Peek</span>, <span class="ident">Reset</span>};
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_cache_addresses_fixed</span>() {
@@ -5680,7 +5680,7 @@
             .<span class="ident">set_last_index</span>(<span class="ident">KeychainKind::External</span>, <span class="ident">funding_address_kix</span>)
             .<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(<span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(), <span class="ident">tx_meta</span>, <span class="prelude-val">Some</span>(<span class="number">100</span>));
+        <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="macro">crate::populate_test_db!</span>(<span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(), <span class="ident">tx_meta</span>, <span class="prelude-val">Some</span>(<span class="number">100</span>));
 
         (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="ident">txid</span>)
     }
@@ -6053,7 +6053,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_create_tx_add_change</span>() {
-        <span class="kw">use</span> <span class="kw">super</span><span class="ident">::tx_builder::TxOrdering</span>;
+        <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::tx_builder::TxOrdering</span>;
 
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
@@ -6106,7 +6106,7 @@
         <span class="ident">builder</span>
             .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">30_000</span>)
             .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">10_000</span>)
-            .<span class="ident">ordering</span>(<span class="kw">super</span><span class="ident">::tx_builder::TxOrdering::Bip69Lexicographic</span>);
+            .<span class="ident">ordering</span>(<span class="ident"><span class="kw">super</span>::tx_builder::TxOrdering::Bip69Lexicographic</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">len</span>(), <span class="number">3</span>);
@@ -6315,7 +6315,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_create_tx_add_utxo</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">let</span> <span class="ident">small_output_txid</span> <span class="op">=</span> <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(
+        <span class="kw">let</span> <span class="ident">small_output_txid</span> <span class="op">=</span> <span class="macro">crate::populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
             <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
@@ -6344,7 +6344,7 @@
     <span class="attribute">#[<span class="ident">should_panic</span>(<span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;InsufficientFunds&quot;</span>)]</span>
     <span class="kw">fn</span> <span class="ident">test_create_tx_manually_selected_insufficient</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">let</span> <span class="ident">small_output_txid</span> <span class="op">=</span> <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(
+        <span class="kw">let</span> <span class="ident">small_output_txid</span> <span class="op">=</span> <span class="macro">crate::populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
             <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
@@ -7025,7 +7025,7 @@
     <span class="kw">fn</span> <span class="ident">test_bump_fee_drain_wallet</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="comment">// receive an extra tx so that our wallet has two utxos.</span>
-        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(
+        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="macro">crate::populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
             <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
@@ -7082,7 +7082,7 @@
         <span class="comment">// told the wallet it&#39;s not allowed to add more inputs AND it can&#39;t reduce the value of the</span>
         <span class="comment">// existing output. In other words, bump_fee + manually_selected_only is always an error</span>
         <span class="comment">// unless you&#39;ve also set &quot;allow_shrinking&quot; OR there is a change output.</span>
-        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(
+        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="macro">crate::populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
             <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
@@ -7128,7 +7128,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_add_input</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(
+        <span class="macro">crate::populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
             <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
@@ -7191,7 +7191,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_absolute_add_input</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(
+        <span class="macro">crate::populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
             <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
@@ -7254,7 +7254,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_no_change_add_input_and_change</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(
+        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="macro">crate::populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
             <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
@@ -7331,7 +7331,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_add_input_change_dust</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(
+        <span class="macro">crate::populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
             <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
@@ -7394,7 +7394,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_force_add_input</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(
+        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="macro">crate::populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
             <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
@@ -7465,7 +7465,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bump_fee_absolute_force_add_input</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
-        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(
+        <span class="kw">let</span> <span class="ident">incoming_txid</span> <span class="op">=</span> <span class="macro">crate::populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
             <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
@@ -7770,7 +7770,7 @@
         );
 
         <span class="comment">// use the above address</span>
-        <span class="kw">crate</span><span class="macro">::populate_test_db!</span>(
+        <span class="macro">crate::populate_test_db!</span>(
             <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
             <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)),
             <span class="prelude-val">Some</span>(<span class="number">100</span>),
