@@ -17,16 +17,15 @@ This opens us to a world of possibilities using Bitcoin.
 ### Script
 
 Bitcoin supports [Script](https://en.bitcoin.it/wiki/Script), a **stack-based** lightweight programming language.
-Any script written in **Script** *(pun intended)* contains only `OP_*` codes that Bitcoin Full Nodes understand and process.
-Currently, there are `186` op-codes in use.
-You can find a list of the op-codes straight from `bitcoin-core` code repository [here](https://github.com/bitcoin/bitcoin/blob/master/src/script/script.h#L65-L204).
+Any script written in **Script** *(pun intended)* contains `OP_*` codes and raw byte arrays that Bitcoin Full Nodes understand and process.
+Currently, there are `117` op-codes in use.
+You can read more about these op-codes straight [here](https://en.bitcoin.it/wiki/Script).
 
 Script is intentionally left [Turing incomplete](https://en.wikipedia.org/wiki/Turing_completeness) which is why there is no [halting problem](https://en.wikipedia.org/wiki/Halting_problem) with scripts.
 There are no loops and overall, it's a very constrained programming language.
 
-A transaction is considered valid only when an Output Script returns `true` at the end of execution.
-Output Scripts define the conditions under which the coins associated with them can be spent.
-Really, to spend the output of a particular coin implies finding an input *(signature)* that makes a particular script evaluate to `true`.
+A transaction is considered valid only when the Script returns `true` at the end of execution.
+Output Script (aka scriptpubkey) define the conditions under which coins associated with them can be spent. To spend a particular coin implies finding an input script (aka scriptsig) such that a script made out of concatenation of `scriptsig + scriptpubkey` evaluates to `true`.
 
 For example, a basic legacy `Pay-to-PubKey-Hash` transaction would look like:
 
@@ -37,15 +36,15 @@ scriptSig: <sig> <pubKey>
 
 ##### Examples of things achievable using Bitcoin Script:
 
-1. `Pay Someone (p2pkh/p2wpkh)` - A specific public key must sign to use the coins.
-2. `Escrow (2-of-3-multisig)` - Two parties need to sign together to use the coins.
-3. `Vault (locked)` - A specific key will not be able to use the coins for some time but another master key will always be able to use them.
-4. `HTLC` - The receiver needs to ACK the tx before a time, else the coins are transferred back to the payee.
+1. `Pay Someone (p2pkh/p2wpkh)` - A specific public key must sign to spend the coins.
+2. `Escrow (2-of-3-multisig)` - Two parties need to sign together to spend the coins.
+3. `Vault (locked)` - A specific key will not be able to spend the coins until a timeout but another master key will always be able to spend them.
+4. `HTLC` - The receiver needs disclose a secret before a timeout, else the coins are transferred back to the payee.
 
 ##### Motivation for Policies
 
 Unfortunately, due to its low-level and unusual stack-based nature, Script is pretty hard to reason about and use.
-Despite being around since Bitcoin creation, writing and understanding Script is not trivial.
+Despite being around since Bitcoin's creation, writing and understanding Script is not trivial.
 This is why the scripts for the above few examples are pretty lengthy and might not make sense at the first glance.
 When writing a script, we would want to know that if the logic we wrote is **correct**, **optimal** and **efficient in size** (use lower [weight](https://en.bitcoin.it/wiki/Weight_units)).
 
@@ -60,8 +59,8 @@ Using Miniscript, it's difficult to go wrong.
 
 Another very important goal of Miniscript is to replace any key used in a policy with another policy.
 This is important because people might have multiple keys and complicated timelocks in their existing setup.
-While signing a new policy, they would want to use this existing setup of theirs and also generate addresses for this setup.
-This is something accomplished using something called **Output Descriptors** which we will read about later.
+While signing a new policy, they would want to use their existing setup to also generate addresses for this new setup.
+This is accomplished using something called **Output Descriptors** which we will get into in next section.
 
 Miniscript compiler compiles a **spending policy** down to Miniscript.
 It doesn't contain any signature, it's mainly a combinator language for designing spending conditions.
@@ -84,7 +83,10 @@ The complete Miniscript Reference can be found [here](http://bitcoin.sipa.be/min
 ##### Example Policies
 
 Here are the Miniscript Policies for the examples we looked at earlier. 
-Note `A`, `B`, `C` are placeholders for keys *(or output descriptors)* involved in the tx.
+Note `A`, `B`, `C` are placeholders for keys *(`xpub`/`xprv`)* involved in the tx.
+Descriptors are high level description of scriptpubkey (p2pkh, p2sh etc). 
+And miniscripts are semantics that describes the actual redeemscript. 
+In general you have Descriptor(Miniscript) format.
 
 1. Pay A (pay-to-public-key)
 ```
@@ -112,11 +114,17 @@ with a [cli](https://github.com/bitcoindevkit/bdk-cli).
 
 ### Descriptors
 
-Descriptors are a compact and efficient way to "describe" how scripts *(and addresses)* of a wallet should be generated.
+The Bitcoin scriptpubkey supports various schemes like P2PKH, P2SH, P2WPKH, P2TR (Segwit v1) etc.
+A Descriptor is a simple "description" of what scriptpubkey to be used for a given policy.
+It can inclue a single pubkey within itself, or an entire miniscript policy.
+On the other hand, Miniscript policies are used to derive the redeemscript (the actual executable script), whereas the descriptor describes how the redeemscript will be encumbered within the scriptpubkey.
+
 They make it easier to deal with Multisig or complicated key setups.
 Descriptors are super portable and can be easily used by any wallet to determine the list of all addresses that can be generated from the same.
 This feature creates a common stage for all Bitcoin apps and software.
-It's an abstract way to replace keys.
+
+The concept of descriptor came into existence in 2018 and since then, a lot of wallets have added support for descriptors.
+You can read the descriptor doc from `bitcoin-core` [here](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md).
 
 According to Bitcoin Core, Output Descriptors are "a simple language which can be used to describe collections of output scripts".
 They bring in themselves, derivation paths, master xpub/xprv fingerprints and paths to generate addresses from.
@@ -129,14 +137,21 @@ Descriptor: pkh([d34db33f/44'/0'/0']xpub6ERaJH[...]LJRcEL/1/*)#ml40v0wf
 
 Sections:
 1 - function type (here, P2PK)
-2 - derivation path of this key
+2 - master key fingerprint and derivation path from master
 3 - xpub at m/44'/0'/0
 4 - path to deriving keys/addresses at
 5 - checksum for the descriptor
 ```
 
 This was an example of a simple descriptor using one function but they can also be used in conjugation with multiple functions like `combo`, `multi` etc.
-The concept of descriptor came into existence in 2018 and since then, a lot of wallets have added support for descriptors.
+
+There's a technicality between `combo` and `multi` over here which we should note - `combo` is a descriptor which describes scriptpubkey of any type (P2PKH, P2SH, etc).
+`multi` on the other hand is basically a miniscript which describes `m-of-n` multisig script.
+When used as descriptor it will make the scriptpubkey as the raw multisig script. 
+But its better to think it as a miniscript than a descriptor, because such raw multisigs are never used in practice.
+
+In wild you will see stuffs like wsh(multi(2, PKA, PKB, PKC)). 
+The wsh part is the descriptor describing its a P2WSH output, and multi part is the miniscript describing the actual spending condition.
 
 ### Where it all comes together...
 
@@ -173,6 +188,11 @@ elcli unloadwallet "bdk-test"
 Please note that `elcli` is an alias for `bitcoin-cli`.
 
 #### Keys and Generating Addresses
+
+Quick installation for `bdk-cli` and `miniscriptc`:
+```bash
+cargo install bdk-cli --features electrum --features compiler
+```
 
 Let us first generate an XPRV and create the wpkh wallet descriptor
 ```bash
@@ -230,7 +250,7 @@ Notes:
 
 So now we have definitive proof that descriptors can make wallets portable. That single string will be able to make any wallet generate the same set of addresses and hence they can sync and broadcast transactions in the same manner!
 
-#### Making a Secure Descriptor for Funds
+#### Making a MultiSig Descriptor for Funds
 
 In the real-life, most of us hold two kinds of savings accounts - one to store huge funds saved throughout our lifetime *(probably without internet banking functionalities)* 
 and another for regular expenses.
@@ -271,8 +291,9 @@ elcli generatetoaddress 1 $(bdk-cli -n regtest wallet --server tcp://127.0.0.1:6
 
 # generate 100 more blocks so that we can spend the coins
 # because regtest doesn't allow spending until 100 confirmations
-elcli getnewaddress
-elcli generatetoaddress 100 <address-from-last-step>
+# getnewaddress returns address with \r\n, hence ignoring the last two bytes
+NEW_ADDR=$(elcli getnewaddress | head -c -2)
+elcli generatetoaddress 100 $NEW_ADDR
 ```
 
 Let's check the balance of all `K1`, `K2` and `K3`.
@@ -312,11 +333,11 @@ the network which finally can become a proper valid *transaction*.
 
 ```bash
 # address to send tx to from this multisig wallet
-elcli getnewaddress
+NEW_ADDR=$(elcli getnewaddress | head -c -2)
 
 # create the transaction, can be started by anyone
 PSBT=$(bdk-cli -n regtest wallet --server tcp://127.0.0.1:60401 -w K2 -d $K2_DESC \
-	create_tx --to "<address-from-last-step>:5555555" | jq -r ".psbt")
+	create_tx --to "$NEW_ADDR:5555555" | jq -r ".psbt")
 
 # Sign the transaction by K1 and look at the output
 # it should say the psbt is not finalized since only one party has signed
@@ -368,8 +389,8 @@ Complicated multisig wallet descriptors are definitely a step forward - just in 
 Let us consider that a company wants to give its employees a retention bonus for two months.
 If an employee stays with that company for over 2 months, the employee would get 1 BTC as a reward.
 This would be a smart contract between the company and an employee.
-The employee should be able to see that he would get his funds after a year.
-The company would require confidence that the employee would not be able to withdraw the reward before 1 year has passed.
+The employee should be able to see that he would get his funds after two months.
+The company would require confidence that the employee would not be able to withdraw the reward before two months have passed.
 
 The Miniscript policy for this contract would be as follows:
 ```
@@ -381,7 +402,7 @@ I should emphasize over here that this policy will let the company still transfe
 It's not possible to block them after the lock time has passed, atleast not in a single policy.
 
 Surely, after two months, the funds can be unlocked by the employee but before that, the company can revoke the funds.
-Let us compile this policy down to miniscript.
+Let us compile this policy down to a descriptor.
 
 ```bash
 # The Descriptor will be on the log, the E and C are placeholders
@@ -391,7 +412,7 @@ Let us compile this policy down to miniscript.
 Error: Descriptor(Miniscript(Unexpected("Key too short (<66 char), doesn't match any format")))
 ```
 
-So the compiled miniscript is
+So the compiled descriptor is
 ```
 sh(wsh(andor(pk(E),older(8640),pk(C))))
 ```
@@ -418,8 +439,8 @@ elcli generatetoaddress 1 $(bdk-cli -n regtest wallet --server tcp://127.0.0.1:6
 
 # generate 100 more blocks so that we can spend the coins
 # because regtest doesn't allow spending until 100 confirmations
-elcli getnewaddress
-elcli generatetoaddress 100 <address-from-last-step>
+NEW_ADDR=$(elcli getnewaddress | head -c -2)
+elcli generatetoaddress 100 $NEW_ADDR
 
 # here are their balances - both will have the same balance 
 # but C should be able to use it while E will have to wait
@@ -442,14 +463,14 @@ But let's check to see what happens if `E` tries to transact before the designat
 
 ```bash
 # address to send the transaction to
-elcli getnewaddress
+NEW_ADDR=$(elcli getnewaddress | head -c -2)
 
 # get external_policy id - this will be required in many steps so keep it copied
 bdk-cli -n regtest wallet --server tcp://127.0.0.1:60401 -w E -d $E_DESC policies | jq -r ".id"
 
 # create the tx (external_policy id from last step in my case is j7ncy3au
 PSBT=$(bdk-cli -n regtest wallet --server tcp://127.0.0.1:60401 -w E -d $E_DESC create_tx \
-	--to "<address-from-last-step>:9999999" --external_policy "{\"j7ncy3au\":[0]}" | jq -r ".psbt")
+	--to "$NEW_ADDR:9999999" --external_policy "{\"j7ncy3au\":[0]}" | jq -r ".psbt")
 
 # signing
 bdk-cli -n regtest wallet --server tcp://127.0.0.1:60401 -w E -d $E_DESC sign --psbt $PSBT
@@ -474,13 +495,13 @@ Now let's simulate two months passing and retry.
 
 ```bash
 # generate address
-elcli getnewaddress
+NEW_ADDR=$(elcli getnewaddress | head -c -2)
 
 # simulate two months
-elcli generatetoaddress 8640 <address-from-last-step>
+elcli generatetoaddress 8640 $NEW_ADDR
 
 # create, sign and broadcast tx
-PSBT=$(bdk-cli -n regtest wallet --server tcp://127.0.0.1:60401 -w E -d $E_DESC create_tx --to "<address-from-last-step>:9999999" --external_policy "{\"j7ncy3au\":[0]}" | jq -r ".psbt")
+PSBT=$(bdk-cli -n regtest wallet --server tcp://127.0.0.1:60401 -w E -d $E_DESC create_tx --to "$NEW_ADDR:9999999" --external_policy "{\"j7ncy3au\":[0]}" | jq -r ".psbt")
 SIGNED_PSBT=$(bdk-cli -n regtest wallet --server tcp://127.0.0.1:60401 -w E -d $E_DESC sign --psbt $PSBT | jq -r ".psbt")
 bdk-cli -n regtest wallet --server tcp://127.0.0.1:60401 -w E -d $E_DESC broadcast --psbt $SIGNED_PSBT
 {
@@ -503,6 +524,8 @@ Hence, we saw that we can generate some smart contracts using Bitcoin.
 1. [Rethinking Wallet Architecture: Native Descriptor Wallets - Video](https://www.youtube.com/watch?v=xC25NzIjzog)
 
 Special thanks to my mentor [Steve Myers](https://twitter.com/notmandatory) for the constant motivation and support he gave me and for clearing so many doubts!
+Immense thanks to [Raj](https://github.com/rajarshimaitra) for reviewing this blog and giving such detailed suggestions.
+Many of the lines added here are his.
 Also, thanks to the folks at the `#miniscript` IRC channel to help me out with the Retention Bonus policy.
 
 This blog was written during [Summer of Bitcoin 2021](https://summerofbitcoin.org) by [Sandipan Dey](https://twitter.com/@sandipndev).
