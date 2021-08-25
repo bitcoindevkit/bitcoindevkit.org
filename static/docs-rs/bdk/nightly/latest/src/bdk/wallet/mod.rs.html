@@ -3986,6 +3986,7 @@
 <span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">HashSet</span>};
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
 <span class="kw">use</span> <span class="ident">std::ops</span>::{<span class="ident">Deref</span>, <span class="ident">DerefMut</span>};
+<span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
 <span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
 
 <span class="kw">use</span> <span class="ident">bitcoin::secp256k1::Secp256k1</span>;
@@ -4023,6 +4024,7 @@
 <span class="kw">use</span> <span class="ident">utils</span>::{<span class="ident">check_nlocktime</span>, <span class="ident">check_nsequence_rbf</span>, <span class="ident">After</span>, <span class="ident">Older</span>, <span class="ident">SecpCtx</span>, <span class="ident">DUST_LIMIT_SATOSHI</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::blockchain</span>::{<span class="ident">Blockchain</span>, <span class="ident">Progress</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::memory::MemoryDatabase</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::derived::AsDerived</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::policy::BuildSatisfaction</span>;
@@ -4034,6 +4036,7 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::Error</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::psbt::PsbtUtils</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::signer::SignerError</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutils</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::types</span>::<span class="kw-2">*</span>;
 
 <span class="kw">const</span> <span class="ident">CACHE_ADDR_BATCH_SIZE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">100</span>;
@@ -4134,6 +4137,11 @@
             <span class="ident">database</span>: <span class="ident">RefCell::new</span>(<span class="ident">database</span>),
             <span class="ident">secp</span>,
         })
+    }
+
+    <span class="doccomment">/// Get the Bitcoin network the wallet is using.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">network</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Network</span> {
+        <span class="self">self</span>.<span class="ident">network</span>
     }
 }
 
@@ -5502,11 +5510,6 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">client</span>
     }
 
-    <span class="doccomment">/// Get the Bitcoin network the wallet is using.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">network</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Network</span> {
-        <span class="self">self</span>.<span class="ident">network</span>
-    }
-
     <span class="doccomment">/// Broadcast a transaction to the network</span>
     <span class="attribute">#[<span class="ident">maybe_async</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tx</span>: <span class="ident">Transaction</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Txid</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
@@ -5516,19 +5519,60 @@
     }
 }
 
+<span class="doccomment">/// Return a fake wallet that appears to be funded for testing.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_funded_wallet</span>(
+    <span class="ident">descriptor</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
+) <span class="op">-</span><span class="op">&gt;</span> (
+    <span class="ident">Wallet</span><span class="op">&lt;</span>(), <span class="ident">MemoryDatabase</span><span class="op">&gt;</span>,
+    (<span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>),
+    <span class="ident">bitcoin::Txid</span>,
+) {
+    <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="macro">testutils!</span>(@<span class="ident">descriptors</span> (<span class="ident">descriptor</span>));
+    <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet::new_offline</span>(
+        <span class="kw-2">&amp;</span><span class="ident">descriptors</span>.<span class="number">0</span>,
+        <span class="prelude-val">None</span>,
+        <span class="ident">Network::Regtest</span>,
+        <span class="ident">MemoryDatabase::new</span>(),
+    )
+    .<span class="ident">unwrap</span>();
+
+    <span class="kw">let</span> <span class="ident">funding_address_kix</span> <span class="op">=</span> <span class="number">0</span>;
+
+    <span class="kw">let</span> <span class="ident">tx_meta</span> <span class="op">=</span> <span class="macro">testutils!</span> {
+            @<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="ident">funding_address_kix</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">50_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)
+    };
+
+    <span class="ident">wallet</span>
+        .<span class="ident">database</span>
+        .<span class="ident">borrow_mut</span>()
+        .<span class="ident">set_script_pubkey</span>(
+            <span class="kw-2">&amp;</span><span class="ident">bitcoin::Address::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">tx_meta</span>.<span class="ident">output</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">unwrap</span>().<span class="ident">to_address</span>)
+                .<span class="ident">unwrap</span>()
+                .<span class="ident">script_pubkey</span>(),
+            <span class="ident">KeychainKind::External</span>,
+            <span class="ident">funding_address_kix</span>,
+        )
+        .<span class="ident">unwrap</span>();
+    <span class="ident">wallet</span>
+        .<span class="ident">database</span>
+        .<span class="ident">borrow_mut</span>()
+        .<span class="ident">set_last_index</span>(<span class="ident">KeychainKind::External</span>, <span class="ident">funding_address_kix</span>)
+        .<span class="ident">unwrap</span>();
+
+    <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="macro">crate::populate_test_db!</span>(<span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(), <span class="ident">tx_meta</span>, <span class="prelude-val">Some</span>(<span class="number">100</span>));
+
+    (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="ident">txid</span>)
+}
+
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
-
     <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">util::psbt</span>, <span class="ident">Network</span>};
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::memory::MemoryDatabase</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::Database</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::types::KeychainKind</span>;
 
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::signer</span>::{<span class="ident">SignOptions</span>, <span class="ident">SignerError</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutils</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet::AddressIndex</span>::{<span class="ident">LastUnused</span>, <span class="ident">New</span>, <span class="ident">Peek</span>, <span class="ident">Reset</span>};
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5638,50 +5682,6 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get_test_single_sig_cltv</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
         <span class="comment">// and(pk(Alice),after(100000))</span>
         <span class="string">&quot;wsh(and_v(v:pk(cVpPVruEDdmutPzisEsYvtST1usBR3ntr8pXSyt6D2YYqXRyPcFW),after(100000)))&quot;</span>
-    }
-
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get_funded_wallet</span>(
-        <span class="ident">descriptor</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> (
-        <span class="ident">Wallet</span><span class="op">&lt;</span>(), <span class="ident">MemoryDatabase</span><span class="op">&gt;</span>,
-        (<span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>),
-        <span class="ident">bitcoin::Txid</span>,
-    ) {
-        <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="macro">testutils!</span>(@<span class="ident">descriptors</span> (<span class="ident">descriptor</span>));
-        <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet::new_offline</span>(
-            <span class="kw-2">&amp;</span><span class="ident">descriptors</span>.<span class="number">0</span>,
-            <span class="prelude-val">None</span>,
-            <span class="ident">Network::Regtest</span>,
-            <span class="ident">MemoryDatabase::new</span>(),
-        )
-        .<span class="ident">unwrap</span>();
-
-        <span class="kw">let</span> <span class="ident">funding_address_kix</span> <span class="op">=</span> <span class="number">0</span>;
-
-        <span class="kw">let</span> <span class="ident">tx_meta</span> <span class="op">=</span> <span class="macro">testutils!</span> {
-                @<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="ident">funding_address_kix</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">50_000</span> ) (@<span class="ident">confirmations</span> <span class="number">1</span>)
-        };
-
-        <span class="ident">wallet</span>
-            .<span class="ident">database</span>
-            .<span class="ident">borrow_mut</span>()
-            .<span class="ident">set_script_pubkey</span>(
-                <span class="kw-2">&amp;</span><span class="ident">bitcoin::Address::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">tx_meta</span>.<span class="ident">output</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">unwrap</span>().<span class="ident">to_address</span>)
-                    .<span class="ident">unwrap</span>()
-                    .<span class="ident">script_pubkey</span>(),
-                <span class="ident">KeychainKind::External</span>,
-                <span class="ident">funding_address_kix</span>,
-            )
-            .<span class="ident">unwrap</span>();
-        <span class="ident">wallet</span>
-            .<span class="ident">database</span>
-            .<span class="ident">borrow_mut</span>()
-            .<span class="ident">set_last_index</span>(<span class="ident">KeychainKind::External</span>, <span class="ident">funding_address_kix</span>)
-            .<span class="ident">unwrap</span>();
-
-        <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="macro">crate::populate_test_db!</span>(<span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(), <span class="ident">tx_meta</span>, <span class="prelude-val">Some</span>(<span class="number">100</span>));
-
-        (<span class="ident">wallet</span>, <span class="ident">descriptors</span>, <span class="ident">txid</span>)
     }
 
     <span class="macro">macro_rules!</span> <span class="ident">assert_fee_rate</span> {
