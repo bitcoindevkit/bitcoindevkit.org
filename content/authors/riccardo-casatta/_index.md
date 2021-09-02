@@ -1,8 +1,8 @@
 ---
 name: Riccardo Casatta
-photo: 
+photo:
 twitter: RCasatta
 mastodon: https://bitcoinhackers.org/@rcasatta
 github: https://github.com/RCasatta/
-web: 
+web:
 ---

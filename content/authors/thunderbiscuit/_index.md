@@ -1,6 +1,6 @@
 ---
 name: Thunderbiscuit
-photo: 
+photo:
 twitter: thunderB__
 mastodon: https://fosstodon.org/@thunderbiscuit
 github: https://github.com/thunderBiscuit
