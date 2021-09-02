@@ -1,6 +1,6 @@
 ---
 name: Steve Myers
-photo: 
+photo:
 twitter: notmandatory
 mastodon: https://bitcoinhackers.org/@notmandatory
 github: https://github.com/notmandatory/
