@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { capitalize } from '../../filters'
+import { capitalize } from '../filters'
 
 export default {
   name: 'PostMeta',

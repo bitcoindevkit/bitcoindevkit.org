@@ -13,10 +13,10 @@
 </template>
 
 <script>
-import LayoutWrap from '@theme/components/LayoutWrap.vue'
-import Home from '@theme/components/Home.vue'
-import Page from '@theme/components/Page.vue'
-import { resolveSidebarItems } from '@parent-theme/util'
+import LayoutWrap from '../components/LayoutWrap.vue'
+import Home from '../components/Home.vue'
+import Page from '../components/Page.vue'
+import { resolveSidebarItems } from '@vuepress/theme-default/util'
 
 export default {
   name: 'Layout',

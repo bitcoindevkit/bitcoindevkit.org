@@ -16,7 +16,7 @@
 
 <script>
 import LayoutWrap from '@theme/components/LayoutWrap.vue'
-import { capitalize } from '../../filters'
+import { capitalize } from '../filters'
 
 export default {
   name: 'FrontmatterKey',

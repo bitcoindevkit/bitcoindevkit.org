@@ -51,11 +51,11 @@
 </template>
 
 <script>
-import AlgoliaSearchBox from '@AlgoliaSearchBox'
-import SearchBox from '@SearchBox'
-import SidebarButton from '@theme/components/SidebarButton.vue'
-import NavLinks from '@theme/components/NavLinks.vue'
-import { COLOR_MODES, THEME_ATTR, setColorMode } from '../../themeSwitch'
+import AlgoliaSearchBox from '@vuepress/theme-default/components/AlgoliaSearchBox'
+import SearchBox from '@vuepress/plugin-search/SearchBox'
+import SidebarButton from './SidebarButton.vue'
+import NavLinks from './NavLinks.vue'
+import { COLOR_MODES, THEME_ATTR, setColorMode } from '../themeSwitch'
 
 export default {
   name: 'Navbar',

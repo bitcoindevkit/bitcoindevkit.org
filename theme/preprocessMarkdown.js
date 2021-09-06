@@ -26,7 +26,6 @@ const replaceYouTubeLinks = source =>
 
 // https://webpack.js.org/api/loaders/
 module.exports = function (source) {
-  const { resourcePath } = this
   let processed = source
   processed = replaceYouTubeLinks(processed)
   return processed
