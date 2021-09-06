@@ -178,22 +178,18 @@ The wallet can't choose by itself which one of these combination to use, so the 
 Now, let's draw the condition tree to understand better how the chosen policy is represented: every node has its id shown right next to its name, like `qd3um656` for the root node. These ids can be seen by running the [policies](#policies) command.
 Some ids have been omitted since they are not particularly relevant, in this example we will actually only use the root id.
 
-<!--
-<mermaid align="center">
+```mermaid
 graph TD;
     subgraph " "
-        R["Root - qd3um656"] -> A["pk(A) - ykfuwzkl"]
-        R["Root - qd3um656"] -> B["B - ms3xjley"]
-        B["B - ms3xjley"] -> B_0["pk(B)"]
-        B["B - ms3xjley"] -> B_1["older(6)"]
+        R["Root - qd3um656"] --> A["pk(A) - ykfuwzkl"]
+        R["Root - qd3um656"] --> B["B - ms3xjley"]
+        B["B - ms3xjley"] --> B_0["pk(B)"]
+        B["B - ms3xjley"] --> B_1["older(6)"]
     end
-    C["C - d8jph6ax"] -> C_0["pk(C)"]
-    C["C - d8jph6ax"] -> C_1["after(630,000)"]
-    R["Root - qd3um656"] -> C["C - d8jph6ax"]
-</mermaid>
--->
-
-![](/img/graph.svg)
+    C["C - d8jph6ax"] --> C_0["pk(C)"]
+    C["C - d8jph6ax"] --> C_1["after(630,000)"]
+    R["Root - qd3um656"] --> C["C - d8jph6ax"]
+```
 
 Let's imagine that we are walking down from the root, and we want to use option #1. So we will have to select `pk(A)` + the whole `B` node. Since these nodes have an id, we can use it to refer to them and say which children
 we want to use. In this case we want to use children #0 and #1 of the root, so our final policy will be: `--external_policy {"qd3um656":[0,1]}`.

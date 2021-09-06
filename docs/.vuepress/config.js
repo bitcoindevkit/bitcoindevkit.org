@@ -108,6 +108,7 @@ module.exports = {
       backgroundTransition: false,
       staticIcon: true
     }],
+    ['mermaidjs'],
     ['sitemap', sitemap],
     ['tabs', {
       tabsAttributes: {
