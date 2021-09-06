@@ -1,5 +1,5 @@
 const { resolve } = require('path')
-const themeConfig = require('../../theme/config')
+const themeConfig = require('squarecrypto-vuepress-devkit-theme/config')
 
 const title = 'Bitcoin Dev Kit Documentation'
 const baseUrl = 'https://bitcoindevkit.org'
@@ -54,7 +54,7 @@ const blogSidebar = [
 module.exports = {
   title,
   description: 'The Bitcoin Dev Kit (BDK) project (originally called Magical Bitcoin 🧙) aims to build a collection of tools and libraries that are designed to be a solid foundation for cross platform Bitcoin wallets, along with a fully working reference implementation wallet called Magical Bitcoin.',
-  theme: resolve(__dirname, '../../theme'),
+  theme: resolve(__dirname, '../../node_modules/squarecrypto-vuepress-devkit-theme'),
   ...themeConfig({
     baseUrl,
     title,
