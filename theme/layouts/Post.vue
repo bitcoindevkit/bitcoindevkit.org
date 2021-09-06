@@ -16,7 +16,7 @@
 import LayoutWrap from '@theme/components/LayoutWrap.vue'
 import Page from '@theme/components/Page.vue'
 import PostMeta from '@theme/components/PostMeta.vue'
-import { resolveSidebarItems } from '@parent-theme/util'
+import { resolveSidebarItems } from '@vuepress/theme-default/util'
 
 export default {
   name: 'Post',

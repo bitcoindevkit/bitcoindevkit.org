@@ -29,7 +29,7 @@
 import LayoutWrap from '@theme/components/LayoutWrap.vue'
 import PostMeta from '@theme/components/PostMeta.vue'
 import { Pagination } from '@vuepress/plugin-blog/lib/client/components'
-import { capitalize } from '../../filters'
+import { capitalize } from '../filters'
 
 export default {
   name: 'IndexPost',

@@ -4,7 +4,7 @@
 
 <script>
 import IndexPost from './IndexPost.vue'
-import { capitalize } from '../../filters'
+import { capitalize } from '../filters'
 
 export default {
   name: 'FrontmatterPagination',

@@ -38,10 +38,10 @@
 </template>
 
 <script>
-import Navbar from '@theme/components/Navbar.vue'
-import Sidebar from '@theme/components/Sidebar.vue'
-import Footer from '@theme/components/Footer.vue'
-import { resolveSidebarItems } from '@parent-theme/util'
+import Navbar from './Navbar.vue'
+import Sidebar from './Sidebar.vue'
+import Footer from './Footer.vue'
+import { resolveSidebarItems } from '@vuepress/theme-default/util'
 
 export default {
   name: 'Layout',

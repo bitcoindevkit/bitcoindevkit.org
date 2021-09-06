@@ -1,8 +1,8 @@
 const { resolve } = require('path')
 const footnotes = require('markdown-it-footnote')
 const implicitFigures = require('markdown-it-implicit-figures')
-const slugify = require('./slugify')
-const preprocessMarkdown = resolve(__dirname, 'preprocessMarkdown')
+const slugify = require('../../theme/slugify')
+const preprocessMarkdown = resolve(__dirname, '../../theme/preprocessMarkdown')
 
 const title = 'Bitcoin Dev Kit Documentation'
 const baseUrl = 'https://bitcoindevkit.org'
@@ -74,9 +74,10 @@ module.exports = {
     ['link', { rel: 'preload', href: '/fonts/ibm-plex-mono-400.woff2', as: 'font', crossorigin: true }],
     ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/img/favicon/apple-touch-icon.png' }],
     ['link', { rel: 'manifest', href: '/site.webmanifest' }],
+    ['link', { rel: 'stylesheet', href: '/css/variables.css' }],
     ['link', { name: 'msapplication-config', content: '/browserconfig.xml' }],
     ['link', { name: 'msapplication-TileColor', content: themeColor }],
-    ['link', { name: 'theme-colorr', content: themeColor }]
+    ['link', { name: 'theme-color', content: themeColor }]
   ],
   chainWebpack (config) {
     config.module
@@ -172,6 +173,7 @@ module.exports = {
     pageSuffix,
     slugify
   },
+  theme: resolve(__dirname, '../../theme'),
   themeConfig: {
     domain: baseUrl,
     logo: '/img/logo.svg',
