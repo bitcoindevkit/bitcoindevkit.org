@@ -6,6 +6,8 @@
 }
 </style>
 
+<script>alert('TEST')</script>
+
 <div class="expand">
     <div class="expand-label" style="cursor: pointer;" onclick="$h = $(this);$h.next('div').slideToggle(100,function () {$h.children('i').attr('class',function () {return $h.next('div').is(':visible') ? 'fas fa-chevron-down' : 'fas fa-chevron-right';});});">
         <i style="font-size: 24px;" class="fas fa-chevron-down"></i>
@@ -46,16 +48,16 @@
         <form>
             <div>
                 <label for="descriptor">Descriptor</label>
-                <input type="text" id="descriptor" placeholder="wpkh(tpubDBYDcH8P2PedrEN3HxWYJJJMZEdgnrqMsjeKpPNzwe7jmGwk5M3HRdSf5vudAXwrJPfUsfvUPFooKWmz79Lh111U51RNotagXiGNeJe3i6t/0/*)" required/>
+                <input type="text" id="descriptor" placeholder="wpkh(tpubDBYDcH8P2PedrEN3HxWYJJJMZEdgnrqMsjeKpPNzwe7jmGwk5M3HRdSf5vudAXwrJPfUsfvUPFooKWmz79Lh111U51RNotagXiGNeJe3i6t/0/*)" required />
             </div>
             <div>
                 <label for="change_descriptor">Change Descriptor (optional)</label>
-                <input type="text" id="change_descriptor"/>
+                <input type="text" id="change_descriptor" />
             </div>
 
             <div style="display: flex; align-items: baseline;">
                 <input type="submit" value="Start" id="start_button" style="padding: 10px; width: 100px;" disabled/>
-                <input type="submit" value="Stop" id="stop_button" style="padding: 10px; width: 100px; margin-left: 5px;" disabled/>
+                <input type="submit" value="Stop" id="stop_button" style="padding: 10px; width: 100px; margin-left: 5px" disabled/>
                 <span id="start_message" style="margin-left: 5px;"></span>
             </div>
         </form>
@@ -129,5 +131,4 @@
     (() => {
         addCompilerKeyAlias();
     })();
-
 </script>
