@@ -1600,9 +1600,6 @@
 <span id="1600">1600</span>
 <span id="1601">1601</span>
 <span id="1602">1602</span>
-<span id="1603">1603</span>
-<span id="1604">1604</span>
-<span id="1605">1605</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -1652,14 +1649,12 @@
 <span class="kw">use</span> <span class="ident">bitcoin::PublicKey</span>;
 
 <span class="kw">use</span> <span class="ident">miniscript::descriptor</span>::{<span class="ident">DescriptorPublicKey</span>, <span class="ident">ShInner</span>, <span class="ident">SortedMultiVec</span>, <span class="ident">WshInner</span>};
-<span class="kw">use</span> <span class="ident">miniscript</span>::{
-    <span class="ident">Descriptor</span>, <span class="ident">Miniscript</span>, <span class="ident">MiniscriptKey</span>, <span class="ident">Satisfier</span>, <span class="ident">ScriptContext</span>, <span class="ident">Terminal</span>, <span class="ident">ToPublicKey</span>,
-};
+<span class="kw">use</span> <span class="ident">miniscript</span>::{<span class="ident">Descriptor</span>, <span class="ident">Miniscript</span>, <span class="ident">MiniscriptKey</span>, <span class="ident">Satisfier</span>, <span class="ident">ScriptContext</span>, <span class="ident">Terminal</span>};
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
 <span class="kw">use</span> <span class="ident">log</span>::{<span class="ident">debug</span>, <span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">trace</span>};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor</span>::{<span class="ident">DerivedDescriptorKey</span>, <span class="ident">ExtractPolicy</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::ExtractPolicy</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet::signer</span>::{<span class="ident">SignerId</span>, <span class="ident">SignersContainer</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet::utils</span>::{<span class="self">self</span>, <span class="ident">After</span>, <span class="ident">Older</span>, <span class="ident">SecpCtx</span>};
 
@@ -1691,13 +1686,6 @@
                 <span class="ident">fingerprint</span>: <span class="prelude-val">Some</span>(<span class="ident">xpub</span>.<span class="ident">root_fingerprint</span>(<span class="ident">secp</span>)),
                 ..<span class="ident">Default::default</span>()
             },
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">from_key_hash</span>(<span class="ident">k</span>: <span class="ident">hash160::Hash</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">PkOrF</span> {
-            <span class="ident">pubkey_hash</span>: <span class="prelude-val">Some</span>(<span class="ident">k</span>),
-            ..<span class="ident">Default::default</span>()
         }
     }
 }
@@ -2384,25 +2372,6 @@
     })
 }
 
-<span class="kw">fn</span> <span class="ident">signature_key</span>(
-    <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="op">&lt;</span><span class="ident">DescriptorPublicKey</span> <span class="kw">as</span> <span class="ident">MiniscriptKey</span><span class="op">&gt;</span><span class="ident">::Hash</span>,
-    <span class="ident">signers</span>: <span class="kw-2">&amp;</span><span class="ident">SignersContainer</span>,
-    <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Policy</span> {
-    <span class="kw">let</span> <span class="ident">key_hash</span> <span class="op">=</span> <span class="ident">DerivedDescriptorKey::new</span>(<span class="ident">key</span>.<span class="ident">clone</span>(), <span class="ident">secp</span>)
-        .<span class="ident">to_public_key</span>()
-        .<span class="ident">to_pubkeyhash</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">policy</span>: <span class="ident">Policy</span> <span class="op">=</span> <span class="ident">SatisfiableItem::Signature</span>(<span class="ident">PkOrF::from_key_hash</span>(<span class="ident">key_hash</span>)).<span class="ident">into</span>();
-
-    <span class="kw">if</span> <span class="ident">signers</span>.<span class="ident">find</span>(<span class="ident">SignerId::PkHash</span>(<span class="ident">key_hash</span>)).<span class="ident">is_some</span>() {
-        <span class="ident">policy</span>.<span class="ident">contribution</span> <span class="op">=</span> <span class="ident">Satisfaction::Complete</span> {
-            <span class="ident">condition</span>: <span class="ident">Default::default</span>(),
-        }
-    }
-
-    <span class="ident">policy</span>
-}
-
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">ScriptContext</span><span class="op">&gt;</span> <span class="ident">ExtractPolicy</span> <span class="kw">for</span> <span class="ident">Miniscript</span><span class="op">&lt;</span><span class="ident">DescriptorPublicKey</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">extract_policy</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -2414,7 +2383,7 @@
             <span class="comment">// Leaves</span>
             <span class="ident">Terminal::True</span> <span class="op">|</span> <span class="ident">Terminal::False</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
             <span class="ident">Terminal::PkK</span>(<span class="ident">pubkey</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">signature</span>(<span class="ident">pubkey</span>, <span class="ident">signers</span>, <span class="ident">build_sat</span>, <span class="ident">secp</span>)),
-            <span class="ident">Terminal::PkH</span>(<span class="ident">pubkey_hash</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">signature_key</span>(<span class="ident">pubkey_hash</span>, <span class="ident">signers</span>, <span class="ident">secp</span>)),
+            <span class="ident">Terminal::PkH</span>(<span class="ident">pubkey_hash</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">signature</span>(<span class="ident">pubkey_hash</span>, <span class="ident">signers</span>, <span class="ident">build_sat</span>, <span class="ident">secp</span>)),
             <span class="ident">Terminal::After</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">policy</span>: <span class="ident">Policy</span> <span class="op">=</span> <span class="ident">SatisfiableItem::AbsoluteTimelock</span> { <span class="ident">value</span>: <span class="kw-2">*</span><span class="ident">value</span> }.<span class="ident">into</span>();
                 <span class="ident">policy</span>.<span class="ident">contribution</span> <span class="op">=</span> <span class="ident">Satisfaction::Complete</span> {
@@ -3049,6 +3018,7 @@
 
     <span class="kw">const</span> <span class="ident">ALICE_TPRV_STR</span>:<span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;tprv8ZgxMBicQKsPf6T5X327efHnvJDr45Xnb8W4JifNWtEoqXu9MRYS4v1oYe6DFcMVETxy5w3bqpubYRqvcVTqovG1LifFcVUuJcbwJwrhYzP&quot;</span>;
     <span class="kw">const</span> <span class="ident">BOB_TPRV_STR</span>:<span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;tprv8ZgxMBicQKsPeinZ155cJAn117KYhbaN6MV3WeG6sWhxWzcvX1eg1awd4C9GpUN1ncLEM2rzEvunAg3GizdZD4QPPCkisTz99tXXB4wZArp&quot;</span>;
+    <span class="kw">const</span> <span class="ident">CAROL_TPRV_STR</span>:<span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;tprv8ZgxMBicQKsPdC3CicFifuLCEyVVdXVUNYorxUWj3iGZ6nimnLAYAY9SYB7ib8rKzRxrCKFcEytCt6szwd2GHnGPRCBLAEAoSVDefSNk4Bt&quot;</span>;
     <span class="kw">const</span> <span class="ident">ALICE_BOB_PATH</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;m/0&#39;&quot;</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -3206,6 +3176,30 @@
             )
         );
         <span class="comment">//println!(&quot;{}&quot;, serde_json::to_string(&amp;policy_expired_signed).unwrap());</span>
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_extract_pkh</span>() {
+        <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1::new</span>();
+
+        <span class="kw">let</span> (<span class="ident">prvkey_alice</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">setup_keys</span>(<span class="ident">ALICE_TPRV_STR</span>, <span class="ident">ALICE_BOB_PATH</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>);
+        <span class="kw">let</span> (<span class="ident">prvkey_bob</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">setup_keys</span>(<span class="ident">BOB_TPRV_STR</span>, <span class="ident">ALICE_BOB_PATH</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>);
+        <span class="kw">let</span> (<span class="ident">prvkey_carol</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">setup_keys</span>(<span class="ident">CAROL_TPRV_STR</span>, <span class="ident">ALICE_BOB_PATH</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>);
+
+        <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="macro">descriptor!</span>(<span class="ident">wsh</span>(<span class="ident">c</span>: <span class="ident">andor</span>(
+            <span class="ident">pk</span>(<span class="ident">prvkey_alice</span>),
+            <span class="ident">pk_k</span>(<span class="ident">prvkey_bob</span>),
+            <span class="ident">pk_h</span>(<span class="ident">prvkey_carol</span>),
+        )))
+        .<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> (<span class="ident">wallet_desc</span>, <span class="ident">keymap</span>) <span class="op">=</span> <span class="ident">desc</span>
+            .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network::Testnet</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">signers_container</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">SignersContainer::from</span>(<span class="ident">keymap</span>));
+
+        <span class="kw">let</span> <span class="ident">policy</span> <span class="op">=</span> <span class="ident">wallet_desc</span>.<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="ident">signers_container</span>, <span class="ident">BuildSatisfaction::None</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>);
+        <span class="macro">assert!</span>(<span class="ident">policy</span>.<span class="ident">is_ok</span>());
     }
 }
 </code></pre></div>
