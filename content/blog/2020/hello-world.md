@@ -3,7 +3,8 @@ title: "Hello World!"
 description: "Getting started using the BDK library in a very simple Rust project"
 authors: 
     - Alekos Filini
-date: "2020-12-18"
+    - Claudio Ciardelli
+date: "2021-09-20"
 tags: ["getting started", "rust"]
 hidden: true
 draft: false
@@ -12,7 +13,7 @@ draft: false
 ## Introduction
 
 This article should serve as a "getting started" guide for developers who are considering integrating BDK in their projects: it tries to introduce the reader to the basic concepts behind the library and some of its
-modules and components that can be used to build a very simple functioning Bitcoin wallet. All the information written in this article are valid for the current `master` git branch, and should remain valid for the upcoming [`v0.2.0` release](https://github.com/bitcoindevkit/bdk/projects/1)
+modules and components that can be used to build a very simple functioning Bitcoin wallet. All the information written in this article are valid for the current `master` git branch, and should remain valid for the upcoming [`v0.11.0` release](https://github.com/bitcoindevkit/bdk/projects/1)
 which is planned to be tagged pretty soon.
 
 ## Design Goals
@@ -45,18 +46,21 @@ but that would very likely be released as a separate module outside of the `Wall
 Going back to our `Wallet`: given a descriptor and a `Database` we can build an "air-gapped", or "Offline" wallet: basically, a wallet that physically can't to connect to the Bitcoin network. It will still be able to generate addresses and
 sign [PSBTs][PSBT], but with a greatly reduced attack surface because a sizable part of the code that handles the logic to synchronize with the network would be entirely omitted in the final executable binary.
 
-This is how an `OfflineWallet` can be created. Notice that we are using [`MemoryDatabase`][MemoryDatabase] as our `Database`. We'll get to that in a second.
+This is how an offline `Wallet` can be created. Notice that we are using [`MemoryDatabase`][MemoryDatabase] as our `Database`. We'll get to that in a second.
 
 ```rust
-use bdk::{Wallet, OfflineWallet};
-use bdk::database::MemoryDatabase;
-use bdk::bitcoin::Network;
+use bdk::{
+        Wallet,
+        wallet::AddressIndex::New
+		database::MemoryDatabase,
+		bitcoin::Network,
+    };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let external_descriptor = "wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/0'/0'/0/*)";
     let internal_descriptor = "wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/0'/0'/1/*)";
 
-    let wallet: OfflineWallet<_> = Wallet::new_offline(
+    let wallet: Wallet<_,_> = Wallet::new_offline(
         external_descriptor,
         Some(internal_descriptor),
         Network::Testnet,
@@ -72,7 +76,8 @@ Once we have our `Wallet` instance we can generate a new address and print it ou
 ```rust
 // ...
 
-println!("Generated Address: {}", wallet.get_new_address()?);
+    let address = wallet.get_address(New)?;
+    println!("Generated Address: {}", address);
 ```
 
 Building and running this code will print out:
@@ -90,18 +95,20 @@ since that's available out of the box in BDK and is pretty fast.
 We can change our `Wallet` construction to look something like this:
 
 ```rust
-use bdk::blockchain::ElectrumBlockchain;
-use bdk::electrum_client::Client;
+use bdk::{
+        blockchain::ElectrumBlockchain,
+        electrum_client::Client,
+    };
 
 // ...
 
-let wallet = Wallet::new(
-    external_descriptor,
-    Some(internal_descriptor),
-    Network::Testnet,
-    MemoryDatabase::new(),
-    ElectrumBlockchain::from(Client::new("ssl://electrum.blockstream.info:60002").unwrap()),
-)?;
+    let wallet: Wallet<_,_> = Wallet::new(
+        external_descriptor,
+        Some(internal_descriptor),
+        Network::Testnet,
+        MemoryDatabase::new(),
+        ElectrumBlockchain::from(Client::new("ssl://electrum.blockstream.info:60002").unwrap()),
+    )?;
 ```
 
 This piece of code is very similar to the one we wrote before, but this time we are using the [`Wallet::new()`][Wallet_new] constructor instead of [`Wallet::new_offline()`][Wallet_new_offline], and this takes an extra argument for the `Blockchain` type to use.
@@ -126,7 +133,7 @@ and store the list of transactions and UTXOs in our `Database`. In this case, we
 for playing around and experimenting, but not so great for real-world wallets: for that, you can use [sled][sled] which is supported out of the box, or even use a custom database. More on that later!
 
 So now that we've synced with the blockchain we can create our first transaction. First of all, we will print out the balance of our wallet to make sure that our wallet has seen the incoming transaction. Then we
-will create the actual transaction and we will specify some flags using the [`TxBuilder`][TxBuilder]. To finish it off, we will ask the wallet to sign the transaction and then broadcast it to the network.
+will create the actual transaction and we will specify some flags using a  [`TxBuilder`][TxBuilder]. To finish it off, we will ask the wallet to sign the transaction and then broadcast it to the network.
 
 Right now we will not get into details of all the available options in `TxBuilder` since that is definitely out of the scope of a "getting started" guide. For now, you can just imagine the builder as your way to tell the library
 how to build transactions. We'll come back to this in a future article.
@@ -134,20 +141,25 @@ how to build transactions. We'll come back to this in a future article.
 ```rust
 use std::str::FromStr;
 
-use bdk::bitcoin::Address;
-use bdk::TxBuilder;
+use bdk::{
+        wallet::tx_builder::TxOrdering,
+        bitcoin::Address,
+    };
 
 // ...
+    let balance = wallet.get_balance()?;
+    println!("Wallet balance in SAT: {}", balance);
+    
+    let faucet_address = Address::from_str("mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt")?;
 
-let balance = wallet.get_balance()?;
-println!("Wallet balance in SAT: {}", balance);
-
-let faucet_address = Address::from_str("mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt")?;
-let (unsigned_psbt, tx_details) = wallet.create_tx(
-    TxBuilder::with_recipients(vec![(faucet_address.script_pubkey(), balance / 2)])
-        .enable_rbf(),
-)?;
-println!("Transaction details: {:#?}", tx_details);
+    let (mut psbt, tx_details) = {
+        let mut tx_builder = wallet.build_tx();
+        tx_builder.ordering(TxOrdering::Untouched);
+        tx_builder.add_recipient(faucet_address.script_pubkey(), balance / 2);
+        tx_builder.finish()?
+    };
+    
+    println!("Transaction details: {:#?}", tx_details);
 ```
 
 In this case, we are sending back half the balance to the faucet's address and we are also enabling RBF since the default fees are at 1 satoshi/vbyte. With RBF we will be able to *bump the fees* of the transaction, should it get
@@ -158,21 +170,20 @@ All that's left to do once we have our unsigned PSBT is to sign it:
 ```rust
 // ...
 
-let (signed_psbt, tx_finalized) = wallet.sign(unsigned_psbt, None)?;
-assert!(tx_finalized, "Tx has not been finalized");
+    let finalized = wallet.sign(&mut psbt, SignOptions::default())?;
+    assert!(finalized, "Tx has not been finalized");
 ```
 
 And then broadcast it:
 
 ```rust
 // ...
-
-let raw_transaction = signed_psbt.extract_tx();
-let txid = wallet.broadcast(raw_transaction)?;
-println!(
-    "Transaction sent! TXID: {txid}.\nExplorer URL: https://blockstream.info/testnet/tx/{txid}",
-    txid = txid
-);
+    let raw_transaction = psbt.extract_tx();
+    let txid = wallet.broadcast(raw_transaction)?;
+    println!(
+        "Transaction sent! TXID: {txid}.\nExplorer URL: https://blockstream.info/testnet/tx/{txid}",
+        txid = txid
+    );
 ```
 
 ## Custom Database and Blockchain types
