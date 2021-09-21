@@ -70,12 +70,12 @@ module.exports = {
     sidebarDepth: 0,
     nav: [
       {
-        text: 'BDK-CLI',
-        link: '/bdk-cli/'
+        text: 'Docs',
+        link: '/getting-started/'
       },
       {
-        text: 'Descriptors',
-        link: '/descriptors/'
+        text: 'Tutorials',
+        link: '/tutorials/'
       },
       {
         text: 'Blog',
@@ -99,7 +99,15 @@ module.exports = {
           children: [
             {
               text: 'Getting Started',
-              link: '/use_cases/'
+              link: '/getting-started/'
+            },
+            {
+              text: 'BDK-CLI',
+              link: '/bdk-cli/installation/'
+            },
+            {
+              text: 'Descriptors',
+              link: '/descriptors/'
             }
           ]
         },
