@@ -51,7 +51,7 @@ This is how an offline `Wallet` can be created. Notice that we are using [`Memor
 ```rust
 use bdk::{
         Wallet,
-        wallet::AddressIndex::New
+        wallet::AddressIndex::New,
 		database::MemoryDatabase,
 		bitcoin::Network,
     };
