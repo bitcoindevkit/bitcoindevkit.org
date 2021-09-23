@@ -13,7 +13,7 @@ draft: false
 ## Introduction
 
 This article should serve as a "getting started" guide for developers who are considering integrating BDK in their projects: it tries to introduce the reader to the basic concepts behind the library and some of its
-modules and components that can be used to build a very simple functioning Bitcoin wallet. All the information written in this article are valid for the current `master` git branch, and should remain valid for the upcoming [`v0.11.0` release](https://github.com/bitcoindevkit/bdk/projects/1)
+modules and components that can be used to build a very simple functioning Bitcoin wallet. All the information written in this article are valid for the current `master` git branch, and should remain valid for the [`v0.11.0` release](https://crates.io/crates/bdk/0.11.0).
 which is planned to be tagged pretty soon.
 
 ## Design Goals
