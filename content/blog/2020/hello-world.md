@@ -170,6 +170,8 @@ All that's left to do once we have our unsigned PSBT is to sign it:
 ```rust
 // ...
 
+    use bdk::SignOptions;
+
     let finalized = wallet.sign(&mut psbt, SignOptions::default())?;
     assert!(finalized, "Tx has not been finalized");
 ```
