@@ -2,29 +2,31 @@
 
 The Bitcoin Dev Kit project is proudly supported by:
 
-<div class="row justify-content-left supporters">
-    <div class="p-3">
-        <a href="https://www.bitfinex.com/" target="_blank" class="small">
-            <img src="/img/bitfinex.svg" style="width: 75px" alt="Sponsor Bitfinex"></a>
-        <a href="https://tether.to/" target="_blank" class="small">
-            <img src="/img/tether.png" style="width: 75px" alt="Sponsor Tether"></a>
-        <div>
-            <a href="https://www.bitfinex.com/" target="_blank" class="small">Bitfinex</a>/<a href="https://tether.to/" target="_blank" class="small">Tether</a>
-        </div>
-    </div>
-    <div class="p-3">
-        <a href="https://squarecrypto.org/" target="_blank" class="small">
-            <img src="/img/squarecrypto.svg" style="width: 75px" alt="Sponsor Square Crypto">
-            <div>Square Crypto</div>
-        </a>
-    </div>
-    <div class="p-3">
-        <a href="https://brink.dev/" target="_blank" class="small">
-            <img src="/img/brink.png" style="width: 75px" alt="Sponsor Brink"></a>
-        <a href="https://www.kraken.com/" target="_blank" class="small">
-            <img src="/img/kraken.png" style="width: 75px" alt="Sponsor Kraken"></a>
-        <div>
-            <a href="https://brink.dev/" target="_blank" class="small">Brink</a>/<a href="https://www.kraken.com/" target="_blank" class="small">Kraken</a>
-        </div>
-    </div>
+<div class="supporters">
+  <div class="row">
+    <a href="https://www.bitfinex.com/" target="_blank" rel="nofollow noopener">
+        <img src="/img/bitfinex.svg" alt="Sponsor Bitfinex">
+        Bitfinex
+    </a>
+    <a href="https://tether.to/" target="_blank" rel="nofollow noopener">
+      <img src="/img/tether.png" alt="Sponsor Tether">
+      Tether
+    </a>
+  </div>
+  <div class="row">
+    <a href="https://squarecrypto.org/" target="_blank" rel="nofollow noopener">
+        <img src="/img/squarecrypto.svg" alt="Sponsor Square Crypto">
+        Square Crypto
+    </a>
+  </div>
+  <div class="row">
+    <a href="https://brink.dev/"  target="_blank" rel="nofollow noopener">
+      <img src="/img/brink.png" alt="Sponsor Brink">
+      Brink
+    </a>
+    <a href="https://www.kraken.com/" target="_blank" rel="nofollow noopener">
+      <img src="/img/kraken.png" alt="Sponsor Kraken">
+      Kraken
+    </a>
+  </div>
 </div>
