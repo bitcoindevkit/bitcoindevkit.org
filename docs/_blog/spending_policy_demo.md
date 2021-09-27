@@ -6,8 +6,7 @@ authors:
     - Thunderbiscuit
 date: "2021-02-23"
 tags: ["guide", "descriptor"]
-hidden: true
-draft: false
+permalink: "/blog/2021/02/spending-policy-demo/"
 ---
 
 In this post we will use the [bdk-cli](https://github.com/bitcoindevkit/bdk-cli) tool to demonstrate how to use the [bdk](https://github.com/bitcoindevkit/bdk) library to:

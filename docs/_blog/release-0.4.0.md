@@ -1,12 +1,11 @@
 ---
 title: "Release v0.4.0"
 description: "Announcing the v0.4.0 release of BDK"
-authors: 
+authors:
     - Alekos Filini
 date: "2021-02-17"
 tags: ["rust", "release"]
-hidden: true
-draft: false
+permalink: "/blog/2021/02/release-v0.4.0/"
 ---
 
 A new release of BDK is out: the [`v0.4.0`] release brings updated dependencies, more sanity checks and an overhauled API to build transactions.

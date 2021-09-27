@@ -5,8 +5,7 @@ authors:
     - Alekos Filini
 date: "2021-06-14"
 tags: ["rust", "release"]
-hidden: true
-draft: false
+permalink: "/blog/2021/06/release-v0.8.0/"
 ---
 
 A new release of BDK is out: [`v0.8.0`] brings new APIs and other minor bugfixes and internal improvements.

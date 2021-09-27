@@ -5,8 +5,7 @@ authors:
     - Alekos Filini
 date: "2021-05-17"
 tags: ["rust", "release"]
-hidden: true
-draft: false
+permalink: "/blog/2021/05/release-v0.7.0/"
 ---
 
 A new release of BDK is out: [`v0.7.0`] improved APIs, a more robust signing process and various bugfixes and improvements.
