@@ -82,6 +82,10 @@ module.exports = {
         link: '/blog/'
       },
       {
+        text: 'Discord',
+        link: discordUrl
+      },
+      {
         text: 'GitHub',
         link: githubUrl,
         rel: 'noopener noreferrer'
