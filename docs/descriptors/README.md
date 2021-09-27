@@ -13,13 +13,19 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 
 #### Key Types
 
+<div class="descriptor-support-table">
+
 | Key Type | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
 | Hex PublicKey | ✓ | ✓ | ✓ |
 | WIF PrivateKey | ✓ | ✗ | ✓ |
 | Extended Keys (xpub/xprv) | ✓ | ✗ | ✓ |
 
+</div>
+
 #### Script Types (top level)
+
+<div class="descriptor-support-table">
 
 | Script Type | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
@@ -35,7 +41,11 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 | `raw()` | ✗  | ✗  | ✓ |
 | Bare scripts | ✓ | ✓ | ✗  |
 
+</div>
+
 #### Operators
+
+<div class="descriptor-support-table">
 
 | Operator | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
@@ -54,7 +64,11 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 | `thresh()` | ✓ | ✓ | ✗  |
 | `sortedmulti()` | ✓  | ✓  | ✓  |
 
+</div>
+
 #### Modifiers
+
+<div class="descriptor-support-table">
 
 | Script Type | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
@@ -69,11 +83,15 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 | `l:` | ✓ | ✓ | ✗ |
 | `u:` | ✓ | ✓ | ✗ |
 
+</div>
+
 For a more thorough description of these operators and modifiers see [Sipa's Miniscript Page](http://bitcoin.sipa.be/miniscript/) and [Bitcoin Core's](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md).
 
 ### Examples
 
 Some examples of valid BDK descriptors are:
+
+<div class="descriptor-examples-table">
 
 | Spending Policy | Descriptor | Address 0 | Address 1 |
 | --------------- | ---------- | --------- | --------- |
@@ -81,6 +99,8 @@ Some examples of valid BDK descriptors are:
 | Static P2PKH, watch-only | `pkh(02e96fe52ef0e22d2f131dd425ce1893073a3c6ad20e8cac36726393dfb4856a4c)` | mrkwtj5xpYQjHeJe5wsweNjVeTKkvR5fCr | mrkwtj5xpYQjHeJe5wsweNjVeTKkvR5fCr |
 | P2WSH 2-of-2 with one private key | `wsh(multi(2,tprv8ZgxMBicQKsPePmENhT9N9yiSfTtDoC1f39P7nNmgEyCB6Nm4Qiv1muq4CykB9jtnQg2VitBrWh8PJU8LHzoGMHTrS2VKBSgAz7Ssjf9S3P/0/*,tpubDBYDcH8P2PedrEN3HxWYJJJMZEdgnrqMsjeKpPNzwe7jmGwk5M3HRdSf5vudAXwrJPfUsfvUPFooKWmz79Lh111U51RNotagXiGNeJe3i6t/1/*))` | tb1qqsat6c82fvdy73rfzye8f7nwxcz3xny7t56azl73g95mt3tmzvgs9a8vjs | tb1q7sgx6gscgtau57jduend6a8l445ahpk3dt3u5zu58rx5qm27lhkqgfdjdr |
 | P2WSH-P2SH one key + 10 days timelock | `sh(wsh(and_v(vc:pk_h(tprv8ZgxMBicQKsPePmENhT9N9yiSfTtDoC1f39P7nNmgEyCB6Nm4Qiv1muq4CykB9jtnQg2VitBrWh8PJU8LHzoGMHTrS2VKBSgAz7Ssjf9S3P/0/*),older(1440))))` | 2Mtk2nyS98MCi2P7TkoBGLaJviBy956XxB1 | 2MuEStKzYhqb5HCFgHz9153tZsL5sVqV5xC |
+
+</div>
 
 ### Implementation Details
 
