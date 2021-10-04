@@ -39,6 +39,16 @@ const docsSidebar = [
   }
 ]
 
+const tutorialSidebar = [
+  {
+    title: 'Tutorials',
+    collapsable: false,
+    children: [
+      '/tutorials/hello-world',
+    ],
+  }
+]
+
 const blogSidebar = [
   {
     title: 'Blog',
@@ -75,7 +85,7 @@ module.exports = {
       },
       {
         text: 'Tutorials',
-        link: '/tutorials/'
+        link: '/tutorials/hello-world'
       },
       {
         text: 'Blog',
@@ -85,6 +95,7 @@ module.exports = {
         text: 'Discord',
         link: discordUrl
       },
+
       {
         text: 'GitHub',
         link: githubUrl,
@@ -94,6 +105,7 @@ module.exports = {
     sidebar: {
       '/_blog/': blogSidebar,
       '/blog/': blogSidebar,
+      '/tutorials/': tutorialSidebar,
       '/': docsSidebar,
     },
     footer: {
