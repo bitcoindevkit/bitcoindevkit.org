@@ -95,7 +95,6 @@ module.exports = {
         text: 'Discord',
         link: discordUrl
       },
-
       {
         text: 'GitHub',
         link: githubUrl,

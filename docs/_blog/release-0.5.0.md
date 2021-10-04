@@ -1,12 +1,11 @@
 ---
 title: "Release v0.5.0"
 description: "Announcing the v0.5.0 release of BDK"
-authors: 
+authors:
     - Alekos Filini
 date: "2021-03-18"
 tags: ["rust", "release"]
-hidden: true
-draft: false
+permalink: "/blog/2021/03/release-v0.5.0/"
 ---
 
 A new release of BDK is out: [`v0.5.0`] is our first release licensed under Apache 2.0 and MIT, brings new features, bugfixes and some internal refactoring.

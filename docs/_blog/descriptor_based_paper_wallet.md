@@ -1,13 +1,12 @@
 ---
 title: "Descriptor-based paper wallets"
 description: "Demonstrate how to create descriptor-based paper wallet and how to spend them with bdk"
-authors: 
+authors:
     - Riccardo Casatta
     - Steve Myers
 date: "2021-03-30"
 tags: ["guide", "descriptor", "paper wallets"]
-hidden: true
-draft: false
+permalink: "/blog/2021/03/descriptor-based-paper-wallets/"
 ---
 
 In this post, we will use the [Rusty Paper Wallet] tool to create a multi-owned descriptor-based paper wallet. We will use [bdk] via the [bdk-cli] tool to test our descriptor and to be able to sweep the funds from our paper wallet to a new address.
@@ -58,7 +57,7 @@ It's also a good idea to use incognito mode in the browser to prevent it from sa
 
 The following is the result:
 
-<iframe src="/images/descriptor-based-paper-wallets/Bitcoin_Paper_Wallet.html" style="width: 100%; height: 800px; border: 1px solid black;"></iframe>
+<iframe src="/descriptor-based-paper-wallets/Bitcoin_Paper_Wallet.html" class="example"></iframe>
 
 Under the hood, the command created a key pair randomly for every alias present in the descriptor, then replaced the aliases with the created keys and generated the corresponding address. This address is the same for every paper wallet and it is shown in the upper part of the paper wallet (the public part) along with the alias, linking the paper wallet to the owner.
 

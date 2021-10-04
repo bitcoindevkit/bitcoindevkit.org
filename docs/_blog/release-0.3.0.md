@@ -1,12 +1,11 @@
 ---
 title: "Release v0.3.0"
 description: "Announcing the v0.3.0 release of BDK"
-authors: 
+authors:
     - Alekos Filini
 date: "2021-01-20"
 tags: ["rust", "release"]
-hidden: true
-draft: false
+permalink: "/blog/2021/01/release-v0.3.0/"
 ---
 
 A new release of BDK is out: the [`v0.3.0`] is a relatively small update compared to `v0.2.0`, but it still brings some nice APIs improvements and general bugfixes.

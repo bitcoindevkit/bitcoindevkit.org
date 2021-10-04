@@ -1,0 +1,137 @@
+<style>
+  .error {
+    color: orange;
+  }
+</style>
+
+<div class="expand">
+  <div class="expand-label" style="cursor: pointer;"
+    onclick="$h = $(this);$h.next('div').slideToggle(100,function () {$h.children('i').attr('class',function () {return $h.next('div').is(':visible') ? 'fas fa-chevron-down' : 'fas fa-chevron-right';});});">
+    <i style="font-size: 24px;" class="fas fa-chevron-down"></i>
+    <h3 style="display: inline-block; margin-left: 5px; margin-top: 0px;">Policy Compiler</h3>
+  </div>
+  <div class="expand-content">
+    <div id="blocklyDiv" style="height: 50vh;"></div>
+
+    <form>
+      <div>
+        <div style="display: flex">
+          <input type="text" id="policy" placeholder="or(10@pk(A),and(pk(B),older(1000)))" required />
+          <select id="compiler_script_type" style="margin-bottom: 0.85rem; margin-left: 5px;">
+            <option value="sh">P2SH</option>
+            <option value="wsh">P2WSH</option>
+            <option value="sh-wsh">P2SH-P2WSH</option>
+          </select>
+        </div>
+      </div>
+
+      <i>Map every alias to an existing key or generate a new one. You can also specify known keys directly in the
+        visual editor or the policy input field.</i>
+      <div id="compiler_aliases">
+      </div>
+
+      <input type="submit" value="Compile" id="compile_button" style="padding: 10px; width: 100px;" />
+
+      <pre id="compiler_output" style="word-break: break-all;"></pre>
+    </form>
+  </div>
+</div>
+
+<div class="expand">
+  <div class="expand-label" style="cursor: pointer;"
+    onclick="$h = $(this);$h.next('div').slideToggle(100,function () {$h.children('i').attr('class',function () {return $h.next('div').is(':visible') ? 'fas fa-chevron-down' : 'fas fa-chevron-right';});});">
+    <i style="font-size: 24px;" class="fas fa-chevron-down"></i>
+    <h3 style="display: inline-block; margin-left: 5px; margin-top: 0px;">Wallet</h3>
+  </div>
+  <div class="expand-content">
+    <form>
+      <div>
+        <label for="descriptor">Descriptor</label>
+        <input type="text" id="descriptor"
+          placeholder="wpkh(tpubDBYDcH8P2PedrEN3HxWYJJJMZEdgnrqMsjeKpPNzwe7jmGwk5M3HRdSf5vudAXwrJPfUsfvUPFooKWmz79Lh111U51RNotagXiGNeJe3i6t/0/*)"
+          required />
+      </div>
+      <div>
+        <label for="change_descriptor">Change Descriptor (optional)</label>
+        <input type="text" id="change_descriptor" />
+      </div>
+
+      <div style="display: flex; align-items: baseline;">
+        <input type="submit" value="Start" id="start_button" style="padding: 10px; width: 100px;" disabled />
+        <input type="submit" value="Stop" id="stop_button" style="padding: 10px; width: 100px; margin-left: 5px;"
+          disabled />
+        <span id="start_message" style="margin-left: 5px;"></span>
+      </div>
+    </form>
+
+    <pre id="stdout" style="max-height: 50vh; overflow-y: scroll; word-break: break-all;"></pre>
+
+    <div style="display: flex; align-items: baseline;">
+      <span>></span>
+      <input type="text" id="stdin" placeholder="help" style="margin-left: 5px;" disabled />
+    </div>
+  </div>
+</div>
+
+<noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+<script src="playground.js"></script>
+<script>
+
+  let compilerKeyAliasIndex = 0;
+
+  function htmlToElement(html) {
+    var template = document.createElement('template');
+    html = html.trim(); // Never return a text node of whitespace as the result
+    template.innerHTML = html;
+    return template.content.firstChild;
+  }
+
+  function addCompilerKeyAlias(e) {
+    if (e) {
+      e.preventDefault();
+    }
+
+    const newIndex = ++compilerKeyAliasIndex;
+    const html = `
+            <div style="display: flex;">
+                <input name="alias" data-index="${newIndex}" type="text" placeholder="A" style="width: 4em; margin-right: 5px;" required/>
+                <select style="margin-bottom: 0.85rem; margin-right: 5px;" name="type" onchange="updateCompilerFormAlias(this)" data-index="${newIndex}">
+                    <option value="gen_wif" selected="selected">Generate WIF Key</option>
+                    <option value="gen_ext">Generate Extended Key</option>
+                    <option value="existing">Existing Key</option>
+                </select>
+                <input type="text" name="extra" style="flex-grow: 1; margin-right: 5px; display: none;" data-index="${newIndex}"/>
+                <button style="height: 2.2em;" onclick="addCompilerKeyAlias(event)" id="add_key_alias"><i class="fas fa-plus-circle"></i></button>
+            </div>`;
+
+    const prevAddBtn = document.getElementById('add_key_alias');
+    if (prevAddBtn) {
+      prevAddBtn.remove();
+    }
+
+    document.getElementById('compiler_aliases').appendChild(htmlToElement(html));
+  }
+
+  function updateCompilerFormAlias(e) {
+    const extraInput = Array.from(document.getElementsByName('extra')).filter((x) => x.attributes["data-index"].value == e.attributes["data-index"].value)[0];
+
+    switch (e.value) {
+      case 'gen_wif':
+        extraInput.style.display = 'none';
+        break;
+      case 'gen_ext':
+        extraInput.style.display = 'inherit';
+        extraInput.placeholder = "Derivation Path (optional). Example: /44'/0'/0'/0/*";
+        break;
+      case 'existing':
+        extraInput.style.display = 'inherit';
+        extraInput.placeholder = "WIF, tpub or hex public key. Example: 02e96fe52ef0e22d2f131dd425ce1893073a3c6ad20e8cac36726393dfb4856a4c";
+        break;
+    }
+  }
+
+  (() => {
+    addCompilerKeyAlias();
+  })();
+
+</script>

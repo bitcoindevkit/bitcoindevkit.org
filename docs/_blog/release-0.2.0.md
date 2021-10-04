@@ -1,12 +1,11 @@
 ---
 title: "Release v0.2.0"
 description: "Announcing the v0.2.0 release of BDK"
-authors: 
+authors:
     - Alekos Filini
 date: "2020-12-21"
 tags: ["rust", "release"]
-hidden: true
-draft: false
+permalink: "/blog/2020/12/release-v0.2.0/"
 ---
 
 A new release of BDK is finally out! The `v0.2.0` release contains many exciting new features, bug fixes and overall improvements. This release also marks the beginning of our new regular [release schedule][release_schedule], which will see us pushing
@@ -69,8 +68,8 @@ implemented for the [`(K, bip32::DerivationPath)`][K_path] and [`(K, bip32::KeyS
 ```rust
 impl<Ctx: ScriptContext> DerivableKey<Ctx> for MyKeyType {
      fn add_metadata(
-        self, 
-        origin: Option<KeySource>, 
+        self,
+        origin: Option<KeySource>,
         derivation_path: DerivationPath
     ) -> Result<DescriptorKey<Ctx>, KeyError> {
         // Custom conversion to `bip32::ExtendedPrivKey`

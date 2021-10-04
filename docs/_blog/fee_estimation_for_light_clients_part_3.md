@@ -1,12 +1,11 @@
 ---
 title: "Fee estimation for light-clients (Part 3)"
 description: "Applying machine learning to the bitcoin fee estimation problem"
-authors: 
+authors:
     - Riccardo Casatta
 date: "2021-01-25"
 tags: ["fee", "machine learning"]
-hidden: true
-draft: false
+permalink: "/blog/2021/01/fee-estimation-for-light-clients-part-3/"
 ---
 
 This post is part 3 of 3 of a series. ([Part 1], [Part 2])
@@ -61,7 +60,7 @@ Our model performs 2 kind of preprocessing:
 
 #### Build
 
-```python3
+```python
 all_features = tf.keras.layers.concatenate(encoded_features)
 x = tf.keras.layers.Dense(64, activation="relu")(all_features)
 x = tf.keras.layers.Dense(64, activation="relu")(x)

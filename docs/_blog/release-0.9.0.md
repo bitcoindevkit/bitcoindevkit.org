@@ -5,8 +5,7 @@ authors:
     - Alekos Filini
 date: "2021-07-11"
 tags: ["rust", "release"]
-hidden: true
-draft: false
+permalink: "/blog/2021/07/release-v0.9.0/"
 ---
 
 A new release of BDK is out: [`v0.9.0`] brings support for Bitcoin Core backends, more sanity checks and bugfixes.
