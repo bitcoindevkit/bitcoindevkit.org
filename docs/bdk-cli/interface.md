@@ -65,17 +65,17 @@ match anymore the one you've used to initialize the cache. One solution could be
 | Command | Description |
 | ------- | ----------- |
 | [broadcast](#broadcast)         | Broadcasts a transaction to the network. Takes either a raw transaction or a PSBT to extract |
-| [bump_fee](#bump_fee)         | Bumps the fees of an RBF transaction |
-| [combine_psbt](#combine_psbt)      | Combines multiple PSBTs into one |
-| [create_tx](#create_tx)         | Creates a new unsigned tranasaction |
-| [extract_psbt](#extract_psbt)      | Extracts a raw transaction from a PSBT |
-| [finalize_psbt](#finalize_psbt)     | Finalizes a psbt |
-| [get_balance](#get_balance)       | Returns the current wallet balance |
-| [get_new_address](#get_new_address)   | Generates a new external address |
-| [list_transactions](#list_transactions)      | Lists all the incoming and outgoing transactions of the wallet |
-| [list_unspent](#list_unspent)      | Lists the available spendable UTXOs |
+| [bump_fee](#bump-fee)         | Bumps the fees of an RBF transaction |
+| [combine_psbt](#combine-psbt)      | Combines multiple PSBTs into one |
+| [create_tx](#create-tx)         | Creates a new unsigned tranasaction |
+| [extract_psbt](#extract-psbt)      | Extracts a raw transaction from a PSBT |
+| [finalize_psbt](#finalize-psbt)     | Finalizes a psbt |
+| [get_balance](#get-balance)       | Returns the current wallet balance |
+| [get_new_address](#get-new-address)   | Generates a new external address |
+| [list_transactions](#list-transactions)      | Lists all the incoming and outgoing transactions of the wallet |
+| [list_unspent](#list-unspent)      | Lists the available spendable UTXOs |
 | [policies](#policies)          | Returns the available spending policies for the descriptor |
-| [public_descriptor](#public_descriptor) | Returns the public version of the wallet's descriptor(s) |
+| [public_descriptor](#public-descriptor) | Returns the public version of the wallet's descriptor(s) |
 | [repl](#repl)              | Opens an interactive shell |
 | [sign](#sign)              | Signs and tries to finalize a PSBT |
 | [sync](#sync)              | Syncs with the chosen Electrum server |
@@ -118,7 +118,7 @@ OPTIONS:
         --psbt <BASE64_PSBT>...    Add one PSBT to comine. This option can be repeated multiple times, one for each PSBT
 ```
 
-Combines multiple PSBTs by merging metadata and partial signatures. It can be used to merge multiple signed PSBTs into a single PSBT that contains every signature and is ready to be [finalized](#finalize_psbt).
+Combines multiple PSBTs by merging metadata and partial signatures. It can be used to merge multiple signed PSBTs into a single PSBT that contains every signature and is ready to be [finalized](#finalize-psbt).
 
 ### create\_tx
 
@@ -201,7 +201,7 @@ OPTIONS:
         --psbt <BASE64_PSBT>    Sets the PSBT to extract
 ```
 
-Extracts the global transaction from a PSBT. **Note that partial signatures are ignored in this step. If you want to merge the partial signatures back into the global transaction first, please use [finalize_psbt](#finalize_psbt) first**
+Extracts the global transaction from a PSBT. **Note that partial signatures are ignored in this step. If you want to merge the partial signatures back into the global transaction first, please use [finalize_psbt](#finalize-psbt) first**
 
 ### finalize\_psbt
 
@@ -225,18 +225,18 @@ This subcommand has no extra flags and returns a new address. It internally incr
 ### list\_transactions
 
 This subcommand has no extra flags and returns the history of transactions made or received by the wallet, with their txid, confirmation height and the amounts (in Satoshi) "sent" (meaning, the sum of the wallet's inputs spent in the transaction) and
-"received" (meaning, the sum of the outputs received by the wallet). Just like [`get_balance`](#get_balance) it **should normally be called after [`sync`](#sync)**, since it only operates
+"received" (meaning, the sum of the outputs received by the wallet). Just like [`get_balance`](#get-balance) it **should normally be called after [`sync`](#sync)**, since it only operates
 on the internal cache.
 
 ### list\_unspent
 
-This subcommand has no extra flags and returns the list of available UTXOs and their value in Satoshi. Just like [`get_balance`](#get_balance) it **should normally be called after [`sync`](#sync)**, since it only operates
+This subcommand has no extra flags and returns the list of available UTXOs and their value in Satoshi. Just like [`get_balance`](#get-balance) it **should normally be called after [`sync`](#sync)**, since it only operates
 on the internal cache.
 
 ### policies
 
 This subcommand has no extra flags and returns the spending policies encoded by the descriptor in a more human-readable format. As an example, running the `policies` command on the descriptor shown earlier for the
-in the explanation of the [create_tx](#create_tx) command, it will return this:
+in the explanation of the [create_tx](#create-tx) command, it will return this:
 
 ```json
 {

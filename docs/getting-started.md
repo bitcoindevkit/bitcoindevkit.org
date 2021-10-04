@@ -9,7 +9,7 @@ poorly designed projects.
 While some parts of the library are still considered "experimental" (check the docs for more info), the core `Wallet` architecture is now considered stable. We still can't commit to keeping this same exact API forever,
 but we are not expecting to do any major breaking change in that area.
 
-If you want to try out the library for your projects, now it's finally a good time to do it! You can start by checking out the ["getting started"](/blog/tags/getting-started/) section in our blog or joining our [Discord](https://discord.gg/dstn4dQ)
+If you want to try out the library for your projects, now it's finally a good time to do it! You can start by checking out the ["getting started"](/blog/tags/getting%20started/) section in our blog or joining our [Discord](https://discord.gg/dstn4dQ)
 server to chat with us.
 
 ## Playground
