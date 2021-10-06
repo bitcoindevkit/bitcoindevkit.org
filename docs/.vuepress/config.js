@@ -68,7 +68,8 @@ module.exports = {
   ...themeConfig({
     baseUrl,
     title,
-    themeColor
+    themeColor,
+    tags: ['Bitcoin', 'Bitcoin Dev Kit', 'BDK']
   }),
   themeConfig: {
     domain: baseUrl,
