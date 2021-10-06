@@ -103,7 +103,7 @@ q1-q30-... | no | Transaction confirming fast could be outliers, usually paying 
 a1-a2-... | yes | Contains the number of transaction in the mempool with known fee rate in the ith bucket.
 
 
-![The good, the bad and the ugly](/images/fee-estimation-for-light-clients/the-good-the-bad-the-ugly.jpg)
+![The good, the bad and the ugly](/img/fee-estimation-for-light-clients/the-good-the-bad-the-ugly.jpg)
 <div align="center">My biological neural network fired this, I think it's because a lot of chapters start with "The"</div>
 <br/><br/>
 

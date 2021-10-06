@@ -95,7 +95,7 @@ For these reasons, the logger is split into two parts: a process listening to th
 Raw logs are self-contained: for example, they contain all the previous transaction output values for every relevant transaction. This causes some redundancy, but in this case it's better to trade some efficiency for more performance
 when recreating the dataset.
 
-![High level graph](/images/fee-estimation-for-light-clients/high-level-graph.svg)
+![High level graph](/img/fee-estimation-for-light-clients/high-level-graph.svg)
 
 My logger instance started collecting data on the 18th of December 2020, and as of today (25th January 2020), the raw logs are about 16GB.
 

@@ -23,7 +23,7 @@ This post is part 3 of 3 of a series. ([Part 1], [Part 2])
 
 The code building and training the model with [tensorflow] is available in [google colab notebook] (jupyter notebook); you can also download the file as plain python and run it locally. At least 1 hour is needed to train the full model, but it heavily depends on the hardware available.
 
-![graph confirm_in blocks vs fee_rate](/images/fee-estimation-for-light-clients/20210125-091313-confirms_in-fee_rate.png)
+![graph confirm_in blocks vs fee_rate](/img/fee-estimation-for-light-clients/20210125-091313-confirms_in-fee_rate.png)
 <div align="center">Do you want to choose the fee without a model? In the last 5 weeks a ~50 sat/vbyte transaction never took more than a day to confirm and a ~10 sat/vbyte never took more than a week</div><br/>
 
 As a reference, in the code we have a calculation of the bitcoin core `estimatesmartfee` MAE[^MAE] and drift[^drift].
@@ -72,7 +72,7 @@ model.compile(loss='mse',
               metrics=['mae', 'mse'])
 ```
 
-![model graph](/images/fee-estimation-for-light-clients/20210125-091313-model.png)
+![model graph](/img/fee-estimation-for-light-clients/20210125-091313-model.png)
 
 The model is fed with the `encoded_features` coming from the processing phase, then there are 2 layers with 64 neurons each followed by one neuron giving the `fee_rate` as output.
 
@@ -143,7 +143,7 @@ The value `loss` is the MSE on the training data while `val_loss` is the MSE val
 
 Our model doesn't look to suffer overfitting cause `loss` and `val_loss` doesn't diverge during training
 
-![train history](/images/fee-estimation-for-light-clients/20210125-091313-train-history.png)
+![train history](/img/fee-estimation-for-light-clients/20210125-091313-train-history.png)
 
 While we told the training to do 200 epochs, the training stopped at 158 because we added an `early_stop` call back with `20` as  `PATIENCE`, meaning that after 20 epoch and no improvement in `val_loss` the training is halted, saving time and potentially avoiding overfitting.
 
@@ -154,11 +154,11 @@ A [prediction test tool] is available on github. At the moment it uses a bitcoin
 The following chart is probably the best visualization to evaluate the model, on the x axis there is the real fee rate while on the y axis there is the prediction, the more the points are centered on the bisection, the more the model is good.
 We can see the model is doing quite well, the MAE is 8 which is way lower than `estimatesmartfee`. However, there are big errors some times, in particular for prediction for fast confirmation (`confirms_in=1 or confirms_in=2`) as shown by the orange points. Creating a model only for blocks target greater than 2 instead of simply remove some observations may be an option.
 
-![prediction results](/images/fee-estimation-for-light-clients/20210125-091313-true-and-predictions.png)
+![prediction results](/img/fee-estimation-for-light-clients/20210125-091313-true-and-predictions.png)
 
 The following chart is instead a distribution of the errors, which for good model should resemble the normal distribution centered in 0, and it loooks like the model is respecting that.
 
-![error distribution](/images/fee-estimation-for-light-clients/20210125-091313-error-distribution.png)
+![error distribution](/img/fee-estimation-for-light-clients/20210125-091313-error-distribution.png)
 
 ## Conclusion and future development
 

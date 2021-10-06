@@ -175,7 +175,7 @@ problems or would like to suggest improvements leave an issue in the [Rusty Pape
 [descriptors]: /descriptors
 [bdk]: https://github.com/bitcoindevkit/bdk
 [rust]: https://www.rust-lang.org/tools/install
-[output]: /images/descriptor-based-paper-wallets/data-url.txt
+[output]: /descriptor-based-paper-wallets/data-url.txt
 [data URI scheme]: https://en.wikipedia.org/wiki/Data_URI_scheme
 [bdk-cli]: https://github.com/bitcoindevkit/bdk-cli
 [bitcoin testnet faucet]: https://bitcoinfaucet.uo1.net/
