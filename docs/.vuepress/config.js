@@ -33,7 +33,7 @@ const docsSidebar = [
     title: 'API Reference',
     collapsable: false,
     children: [
-      ['https://docs.rs/bdk/0.11.0/bdk/', 'Stable Docs'],
+      ['https://docs.rs/bdk/', 'Stable Docs'],
       ['https://bitcoindevkit.org/docs-rs/bdk/nightly/latest/bdk/', 'Nightliy Docs']
     ],
   }
@@ -68,7 +68,8 @@ module.exports = {
   ...themeConfig({
     baseUrl,
     title,
-    themeColor
+    themeColor,
+    tags: ['Bitcoin', 'Bitcoin Dev Kit', 'BDK']
   }),
   themeConfig: {
     domain: baseUrl,
