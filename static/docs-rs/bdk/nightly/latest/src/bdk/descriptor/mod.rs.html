@@ -871,7 +871,7 @@
         <span class="self">self</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">IntoWalletDescriptor</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">str</span> {
@@ -879,12 +879,12 @@
         <span class="self">self</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">descriptor</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">contains</span>(<span class="string">&#39;#&#39;</span>) {
             <span class="kw">let</span> <span class="ident">parts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">splitn</span>(<span class="number">2</span>, <span class="string">&#39;#&#39;</span>).<span class="ident">collect</span>();
             <span class="kw">if</span> <span class="op">!</span><span class="ident">get_checksum</span>(<span class="ident">parts</span>[<span class="number">0</span>])
                 .<span class="ident">ok</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">computed</span><span class="op">|</span> <span class="ident">computed</span> <span class="op">=</span><span class="op">=</span> <span class="ident">parts</span>[<span class="number">1</span>])
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">computed</span><span class="op">|</span> <span class="ident">computed</span> <span class="op">==</span> <span class="ident">parts</span>[<span class="number">1</span>])
                 .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
             {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DescriptorError::InvalidDescriptorChecksum</span>);
@@ -905,7 +905,7 @@
         <span class="self">self</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">as_str</span>().<span class="ident">into_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)
     }
 }
@@ -915,7 +915,7 @@
         <span class="self">self</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         (<span class="self">self</span>, <span class="ident">KeyMap::default</span>()).<span class="ident">into_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)
     }
 }
@@ -925,7 +925,7 @@
         <span class="self">self</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keys::DescriptorKey</span>;
 
         <span class="kw">let</span> <span class="ident">check_key</span> <span class="op">=</span> <span class="op">|</span><span class="ident">pk</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span><span class="op">|</span> {
@@ -958,7 +958,7 @@
         <span class="self">self</span>,
         <span class="ident">_secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">valid_networks</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">2</span>;
 
         <span class="kw">let</span> <span class="ident">fix_key</span> <span class="op">=</span> <span class="op">|</span><span class="ident">pk</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span><span class="op">|</span> {
@@ -969,13 +969,13 @@
                 <span class="comment">// them are valid. here we reset the network to make sure the wallet struct gets a</span>
                 <span class="comment">// descriptor with the right network everywhere.</span>
                 <span class="kw">let</span> <span class="ident">pk</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">pk</span> {
-                    <span class="ident">DescriptorPublicKey::XPub</span>(<span class="kw-2">ref</span> <span class="ident">xpub</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">DescriptorPublicKey::XPub</span>(<span class="kw-2">ref</span> <span class="ident">xpub</span>) =&gt; {
                         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">xpub</span> <span class="op">=</span> <span class="ident">xpub</span>.<span class="ident">clone</span>();
                         <span class="ident">xpub</span>.<span class="ident">xkey</span>.<span class="ident">network</span> <span class="op">=</span> <span class="ident">network</span>;
 
                         <span class="ident">DescriptorPublicKey::XPub</span>(<span class="ident">xpub</span>)
                     }
-                    <span class="ident">other</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">other</span>.<span class="ident">clone</span>(),
+                    <span class="ident">other</span> =&gt; <span class="ident">other</span>.<span class="ident">clone</span>(),
                 };
 
                 <span class="prelude-val">Ok</span>(<span class="ident">pk</span>)
@@ -997,7 +997,7 @@
     <span class="ident">inner</span>: <span class="ident">T</span>,
     <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
     <span class="ident">network</span>: <span class="ident">Network</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
     <span class="kw">let</span> (<span class="ident">descriptor</span>, <span class="ident">keymap</span>) <span class="op">=</span> <span class="ident">inner</span>.<span class="ident">into_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)<span class="question-mark">?</span>;
 
     <span class="comment">// Ensure the keys don&#39;t contain any hardened derivation steps or hardened wildcards</span>
@@ -1008,7 +1008,7 @@
             ..
         }) <span class="op">=</span> <span class="ident">k</span>.<span class="ident">as_key</span>()
         {
-            <span class="kw">return</span> <span class="kw-2">*</span><span class="ident">wildcard</span> <span class="op">=</span><span class="op">=</span> <span class="ident">Wildcard::Hardened</span>
+            <span class="kw">return</span> <span class="kw-2">*</span><span class="ident">wildcard</span> <span class="op">==</span> <span class="ident">Wildcard::Hardened</span>
                 <span class="op">|</span><span class="op">|</span> <span class="ident">derivation_path</span>.<span class="ident">into_iter</span>().<span class="ident">any</span>(<span class="ident">ChildNumber::is_hardened</span>);
         }
 
@@ -1042,13 +1042,13 @@
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
 <span class="doccomment">/// Used internally mainly by the `descriptor!()` and `fragment!()` macros</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">CheckMiniscript</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">miniscript::ScriptContext</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">check_minsicript</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">miniscript::Error</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">check_minsicript</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">miniscript::Error</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">miniscript::ScriptContext</span>, <span class="ident">Pk</span>: <span class="ident">miniscript::MiniscriptKey</span><span class="op">&gt;</span> <span class="ident">CheckMiniscript</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>
     <span class="kw">for</span> <span class="ident">miniscript::Miniscript</span><span class="op">&lt;</span><span class="ident">Pk</span>, <span class="ident">Ctx</span><span class="op">&gt;</span>
 {
-    <span class="kw">fn</span> <span class="ident">check_minsicript</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">miniscript::Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">check_minsicript</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">miniscript::Error</span><span class="op">&gt;</span> {
         <span class="ident">Ctx::check_global_validity</span>(<span class="self">self</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
@@ -1063,12 +1063,12 @@
         <span class="ident">signers</span>: <span class="kw-2">&amp;</span><span class="ident">SignersContainer</span>,
         <span class="ident">psbt</span>: <span class="ident">BuildSatisfaction</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Policy</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Policy</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">XKeyUtils</span> {
-    <span class="kw">fn</span> <span class="ident">full_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">append</span>: <span class="kw-2">&amp;</span>[<span class="ident">ChildNumber</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DerivationPath</span>;
-    <span class="kw">fn</span> <span class="ident">root_fingerprint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Fingerprint</span>;
+    <span class="kw">fn</span> <span class="ident">full_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">append</span>: <span class="kw-2">&amp;</span>[<span class="ident">ChildNumber</span>]) -&gt; <span class="ident">DerivationPath</span>;
+    <span class="kw">fn</span> <span class="ident">root_fingerprint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) -&gt; <span class="ident">Fingerprint</span>;
 }
 
 <span class="comment">// FIXME: `InnerXKey` was made private in rust-miniscript, so we have to implement this manually on</span>
@@ -1077,14 +1077,14 @@
 <span class="comment">// Revert back to using the trait once https://github.com/rust-bitcoin/rust-miniscript/pull/230 is</span>
 <span class="comment">// released</span>
 <span class="kw">impl</span> <span class="ident">XKeyUtils</span> <span class="kw">for</span> <span class="ident">DescriptorXKey</span><span class="op">&lt;</span><span class="ident">ExtendedPubKey</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">full_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">append</span>: <span class="kw-2">&amp;</span>[<span class="ident">ChildNumber</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DerivationPath</span> {
+    <span class="kw">fn</span> <span class="ident">full_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">append</span>: <span class="kw-2">&amp;</span>[<span class="ident">ChildNumber</span>]) -&gt; <span class="ident">DerivationPath</span> {
         <span class="kw">let</span> <span class="ident">full_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">origin</span> {
-            <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="kw-2">ref</span> <span class="ident">path</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">path</span>
+            <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="kw-2">ref</span> <span class="ident">path</span>)) =&gt; <span class="ident">path</span>
                 .<span class="ident">into_iter</span>()
                 .<span class="ident">chain</span>(<span class="self">self</span>.<span class="ident">derivation_path</span>.<span class="ident">into_iter</span>())
                 .<span class="ident">cloned</span>()
                 .<span class="ident">collect</span>(),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">derivation_path</span>.<span class="ident">clone</span>(),
+            <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">derivation_path</span>.<span class="ident">clone</span>(),
         };
 
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">wildcard</span> <span class="op">!</span><span class="op">=</span> <span class="ident">Wildcard::None</span> {
@@ -1098,22 +1098,22 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">root_fingerprint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Fingerprint</span> {
+    <span class="kw">fn</span> <span class="ident">root_fingerprint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) -&gt; <span class="ident">Fingerprint</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">origin</span> {
-            <span class="prelude-val">Some</span>((<span class="ident">fingerprint</span>, <span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">fingerprint</span>,
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">xkey</span>.<span class="ident">fingerprint</span>(),
+            <span class="prelude-val">Some</span>((<span class="ident">fingerprint</span>, <span class="kw">_</span>)) =&gt; <span class="ident">fingerprint</span>,
+            <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">xkey</span>.<span class="ident">fingerprint</span>(),
         }
     }
 }
 <span class="kw">impl</span> <span class="ident">XKeyUtils</span> <span class="kw">for</span> <span class="ident">DescriptorXKey</span><span class="op">&lt;</span><span class="ident">ExtendedPrivKey</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">full_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">append</span>: <span class="kw-2">&amp;</span>[<span class="ident">ChildNumber</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DerivationPath</span> {
+    <span class="kw">fn</span> <span class="ident">full_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">append</span>: <span class="kw-2">&amp;</span>[<span class="ident">ChildNumber</span>]) -&gt; <span class="ident">DerivationPath</span> {
         <span class="kw">let</span> <span class="ident">full_path</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">origin</span> {
-            <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="kw-2">ref</span> <span class="ident">path</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">path</span>
+            <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="kw-2">ref</span> <span class="ident">path</span>)) =&gt; <span class="ident">path</span>
                 .<span class="ident">into_iter</span>()
                 .<span class="ident">chain</span>(<span class="self">self</span>.<span class="ident">derivation_path</span>.<span class="ident">into_iter</span>())
                 .<span class="ident">cloned</span>()
                 .<span class="ident">collect</span>(),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">derivation_path</span>.<span class="ident">clone</span>(),
+            <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">derivation_path</span>.<span class="ident">clone</span>(),
         };
 
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">wildcard</span> <span class="op">!</span><span class="op">=</span> <span class="ident">Wildcard::None</span> {
@@ -1127,65 +1127,65 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">root_fingerprint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Fingerprint</span> {
+    <span class="kw">fn</span> <span class="ident">root_fingerprint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) -&gt; <span class="ident">Fingerprint</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">origin</span> {
-            <span class="prelude-val">Some</span>((<span class="ident">fingerprint</span>, <span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">fingerprint</span>,
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">xkey</span>.<span class="ident">fingerprint</span>(<span class="ident">secp</span>),
+            <span class="prelude-val">Some</span>((<span class="ident">fingerprint</span>, <span class="kw">_</span>)) =&gt; <span class="ident">fingerprint</span>,
+            <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">xkey</span>.<span class="ident">fingerprint</span>(<span class="ident">secp</span>),
         }
     }
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">DerivedDescriptorMeta</span> {
-    <span class="kw">fn</span> <span class="ident">get_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HdKeyPaths</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">get_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HdKeyPaths</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">DescriptorMeta</span> {
-    <span class="kw">fn</span> <span class="ident">is_witness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
-    <span class="kw">fn</span> <span class="ident">get_extended_keys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DescriptorXKey</span><span class="op">&lt;</span><span class="ident">ExtendedPubKey</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">is_witness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span>;
+    <span class="kw">fn</span> <span class="ident">get_extended_keys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DescriptorXKey</span><span class="op">&lt;</span><span class="ident">ExtendedPubKey</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
     <span class="kw">fn</span> <span class="ident">derive_from_hd_keypaths</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">hd_keypaths</span>: <span class="kw-2">&amp;</span><span class="ident">HdKeyPaths</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">SecpCtx</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DerivedDescriptor</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DerivedDescriptor</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span><span class="op">&gt;</span>;
     <span class="kw">fn</span> <span class="ident">derive_from_psbt_input</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">psbt_input</span>: <span class="kw-2">&amp;</span><span class="ident">psbt::Input</span>,
         <span class="ident">utxo</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TxOut</span><span class="op">&gt;</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">SecpCtx</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DerivedDescriptor</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DerivedDescriptor</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">DescriptorScripts</span> {
-    <span class="kw">fn</span> <span class="ident">psbt_redeem_script</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">psbt_witness_script</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">psbt_redeem_script</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">psbt_witness_script</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span> <span class="ident">DescriptorScripts</span> <span class="kw">for</span> <span class="ident">DerivedDescriptor</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">psbt_redeem_script</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">psbt_redeem_script</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">desc_type</span>() {
-            <span class="ident">DescriptorType::ShWpkh</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>()),
-            <span class="ident">DescriptorType::ShWsh</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>().<span class="ident">to_v0_p2wsh</span>()),
-            <span class="ident">DescriptorType::Sh</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>()),
-            <span class="ident">DescriptorType::Bare</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>()),
-            <span class="ident">DescriptorType::ShSortedMulti</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>()),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            <span class="ident">DescriptorType::ShWpkh</span> =&gt; <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>()),
+            <span class="ident">DescriptorType::ShWsh</span> =&gt; <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>().<span class="ident">to_v0_p2wsh</span>()),
+            <span class="ident">DescriptorType::Sh</span> =&gt; <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>()),
+            <span class="ident">DescriptorType::Bare</span> =&gt; <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>()),
+            <span class="ident">DescriptorType::ShSortedMulti</span> =&gt; <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>()),
+            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">psbt_witness_script</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">psbt_witness_script</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">desc_type</span>() {
-            <span class="ident">DescriptorType::Wsh</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>()),
-            <span class="ident">DescriptorType::ShWsh</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>()),
-            <span class="ident">DescriptorType::WshSortedMulti</span> <span class="op">|</span> <span class="ident">DescriptorType::ShWshSortedMulti</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">DescriptorType::Wsh</span> =&gt; <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>()),
+            <span class="ident">DescriptorType::ShWsh</span> =&gt; <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>()),
+            <span class="ident">DescriptorType::WshSortedMulti</span> <span class="op">|</span> <span class="ident">DescriptorType::ShWshSortedMulti</span> =&gt; {
                 <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>())
             }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
         }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">DescriptorMeta</span> <span class="kw">for</span> <span class="ident">ExtendedDescriptor</span> {
-    <span class="kw">fn</span> <span class="ident">is_witness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">is_witness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="macro">matches!</span>(
             <span class="self">self</span>.<span class="ident">desc_type</span>(),
             <span class="ident">DescriptorType::Wpkh</span>
@@ -1197,7 +1197,7 @@
         )
     }
 
-    <span class="kw">fn</span> <span class="ident">get_extended_keys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DescriptorXKey</span><span class="op">&lt;</span><span class="ident">ExtendedPubKey</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_extended_keys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">DescriptorXKey</span><span class="op">&lt;</span><span class="ident">ExtendedPubKey</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">answer</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
 
         <span class="self">self</span>.<span class="ident">for_each_key</span>(<span class="op">|</span><span class="ident">pk</span><span class="op">|</span> {
@@ -1215,7 +1215,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">hd_keypaths</span>: <span class="kw-2">&amp;</span><span class="ident">HdKeyPaths</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">SecpCtx</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DerivedDescriptor</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DerivedDescriptor</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">index</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">hd_keypaths</span>.<span class="ident">values</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">a</span>, <span class="ident">b</span>)<span class="op">|</span> (<span class="ident">a</span>, <span class="ident">b</span>)).<span class="ident">collect</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path_found</span> <span class="op">=</span> <span class="prelude-val">None</span>;
@@ -1247,16 +1247,16 @@
                     });
 
                 <span class="kw">match</span> <span class="ident">derivation_path</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">path</span>) <span class="kw">if</span> <span class="ident">xpub</span>.<span class="ident">wildcard</span> <span class="op">!</span><span class="op">=</span> <span class="ident">Wildcard::None</span> <span class="op">&amp;&amp;</span> <span class="ident">path</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">path</span>) <span class="kw">if</span> <span class="ident">xpub</span>.<span class="ident">wildcard</span> <span class="op">!</span><span class="op">=</span> <span class="ident">Wildcard::None</span> <span class="op">&amp;&amp;</span> <span class="ident">path</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> =&gt; {
                         <span class="comment">// Ignore hardened wildcards</span>
                         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">ChildNumber::Normal</span> { <span class="ident">index</span> } <span class="op">=</span> <span class="ident">path</span>[<span class="number">0</span>] {
                             <span class="ident">path_found</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">index</span>)
                         }
                     }
-                    <span class="prelude-val">Some</span>(<span class="ident">path</span>) <span class="kw">if</span> <span class="ident">xpub</span>.<span class="ident">wildcard</span> <span class="op">=</span><span class="op">=</span> <span class="ident">Wildcard::None</span> <span class="op">&amp;&amp;</span> <span class="ident">path</span>.<span class="ident">is_empty</span>() <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">path</span>) <span class="kw">if</span> <span class="ident">xpub</span>.<span class="ident">wildcard</span> <span class="op">==</span> <span class="ident">Wildcard::None</span> <span class="op">&amp;&amp;</span> <span class="ident">path</span>.<span class="ident">is_empty</span>() =&gt; {
                         <span class="ident">path_found</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">0</span>)
                     }
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
+                    <span class="kw">_</span> =&gt; {}
                 }
             }
 
@@ -1271,7 +1271,7 @@
         <span class="ident">psbt_input</span>: <span class="kw-2">&amp;</span><span class="ident">psbt::Input</span>,
         <span class="ident">utxo</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TxOut</span><span class="op">&gt;</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">SecpCtx</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DerivedDescriptor</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DerivedDescriptor</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">derived</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">derive_from_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="ident">psbt_input</span>.<span class="ident">bip32_derivation</span>, <span class="ident">secp</span>) {
             <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">derived</span>);
         }
@@ -1285,14 +1285,14 @@
             <span class="comment">// TODO: add pk() here</span>
             <span class="ident">DescriptorType::Pkh</span> <span class="op">|</span> <span class="ident">DescriptorType::Wpkh</span> <span class="op">|</span> <span class="ident">DescriptorType::ShWpkh</span>
                 <span class="kw">if</span> <span class="ident">utxo</span>.<span class="ident">is_some</span>()
-                    <span class="op">&amp;&amp;</span> <span class="ident">descriptor</span>.<span class="ident">script_pubkey</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">utxo</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">script_pubkey</span> <span class="op">=</span><span class="op">&gt;</span>
+                    <span class="op">&amp;&amp;</span> <span class="ident">descriptor</span>.<span class="ident">script_pubkey</span>() <span class="op">==</span> <span class="ident">utxo</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">script_pubkey</span> =&gt;
             {
                 <span class="prelude-val">Some</span>(<span class="ident">descriptor</span>)
             }
             <span class="ident">DescriptorType::Bare</span> <span class="op">|</span> <span class="ident">DescriptorType::Sh</span> <span class="op">|</span> <span class="ident">DescriptorType::ShSortedMulti</span>
                 <span class="kw">if</span> <span class="ident">psbt_input</span>.<span class="ident">redeem_script</span>.<span class="ident">is_some</span>()
                     <span class="op">&amp;&amp;</span> <span class="kw-2">&amp;</span><span class="ident">descriptor</span>.<span class="ident">explicit_script</span>()
-                        <span class="op">=</span><span class="op">=</span> <span class="ident">psbt_input</span>.<span class="ident">redeem_script</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() <span class="op">=</span><span class="op">&gt;</span>
+                        <span class="op">==</span> <span class="ident">psbt_input</span>.<span class="ident">redeem_script</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() =&gt;
             {
                 <span class="prelude-val">Some</span>(<span class="ident">descriptor</span>)
             }
@@ -1302,17 +1302,17 @@
             <span class="op">|</span> <span class="ident">DescriptorType::WshSortedMulti</span>
                 <span class="kw">if</span> <span class="ident">psbt_input</span>.<span class="ident">witness_script</span>.<span class="ident">is_some</span>()
                     <span class="op">&amp;&amp;</span> <span class="kw-2">&amp;</span><span class="ident">descriptor</span>.<span class="ident">explicit_script</span>()
-                        <span class="op">=</span><span class="op">=</span> <span class="ident">psbt_input</span>.<span class="ident">witness_script</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() <span class="op">=</span><span class="op">&gt;</span>
+                        <span class="op">==</span> <span class="ident">psbt_input</span>.<span class="ident">witness_script</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() =&gt;
             {
                 <span class="prelude-val">Some</span>(<span class="ident">descriptor</span>)
             }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
         }
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span> <span class="ident">DerivedDescriptorMeta</span> <span class="kw">for</span> <span class="ident">DerivedDescriptor</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">get_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HdKeyPaths</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HdKeyPaths</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">answer</span> <span class="op">=</span> <span class="ident">BTreeMap::new</span>();
         <span class="self">self</span>.<span class="ident">for_each_key</span>(<span class="op">|</span><span class="ident">key</span><span class="op">|</span> {
             <span class="kw">if</span> <span class="kw">let</span> <span class="ident">DescriptorPublicKey::XPub</span>(<span class="ident">xpub</span>) <span class="op">=</span> <span class="ident">key</span>.<span class="ident">as_key</span>().<span class="ident">deref</span>() {

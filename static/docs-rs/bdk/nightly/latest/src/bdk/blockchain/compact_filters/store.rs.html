@@ -911,33 +911,33 @@
 }
 
 <span class="kw">impl</span> <span class="ident">StoreEntry</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_prefix</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_prefix</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">StoreEntry::BlockHeader</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="string">b&quot;z&quot;</span>,
-            <span class="ident">StoreEntry::Block</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="string">b&quot;x&quot;</span>,
-            <span class="ident">StoreEntry::BlockHeaderIndex</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="string">b&quot;i&quot;</span>,
-            <span class="ident">StoreEntry::CFilterTable</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="string">b&quot;t&quot;</span>,
+            <span class="ident">StoreEntry::BlockHeader</span>(<span class="kw">_</span>) =&gt; <span class="string">b&quot;z&quot;</span>,
+            <span class="ident">StoreEntry::Block</span>(<span class="kw">_</span>) =&gt; <span class="string">b&quot;x&quot;</span>,
+            <span class="ident">StoreEntry::BlockHeaderIndex</span>(<span class="kw">_</span>) =&gt; <span class="string">b&quot;i&quot;</span>,
+            <span class="ident">StoreEntry::CFilterTable</span>(<span class="kw">_</span>) =&gt; <span class="string">b&quot;t&quot;</span>,
         }
         .<span class="ident">to_vec</span>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_prefix</span>();
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">StoreEntry::BlockHeader</span>(<span class="prelude-val">Some</span>(<span class="ident">height</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">StoreEntry::BlockHeader</span>(<span class="prelude-val">Some</span>(<span class="ident">height</span>)) =&gt; {
                 <span class="ident">prefix</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">height</span>.<span class="ident">to_be_bytes</span>())
             }
-            <span class="ident">StoreEntry::Block</span>(<span class="prelude-val">Some</span>(<span class="ident">height</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">prefix</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">height</span>.<span class="ident">to_be_bytes</span>()),
-            <span class="ident">StoreEntry::BlockHeaderIndex</span>(<span class="prelude-val">Some</span>(<span class="ident">hash</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">StoreEntry::Block</span>(<span class="prelude-val">Some</span>(<span class="ident">height</span>)) =&gt; <span class="ident">prefix</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">height</span>.<span class="ident">to_be_bytes</span>()),
+            <span class="ident">StoreEntry::BlockHeaderIndex</span>(<span class="prelude-val">Some</span>(<span class="ident">hash</span>)) =&gt; {
                 <span class="ident">prefix</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">hash</span>.<span class="ident">into_inner</span>())
             }
-            <span class="ident">StoreEntry::CFilterTable</span>((<span class="ident">filter_type</span>, <span class="ident">bundle_index</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">StoreEntry::CFilterTable</span>((<span class="ident">filter_type</span>, <span class="ident">bundle_index</span>)) =&gt; {
                 <span class="ident">prefix</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">filter_type</span>);
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">bundle_index</span>) <span class="op">=</span> <span class="ident">bundle_index</span> {
                     <span class="ident">prefix</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">bundle_index</span>.<span class="ident">to_be_bytes</span>());
                 }
             }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
+            <span class="kw">_</span> =&gt; {}
         }
 
         <span class="ident">prefix</span>
@@ -945,56 +945,56 @@
 }
 
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">SerializeDb</span>: <span class="ident">Sized</span> {
-    <span class="kw">fn</span> <span class="ident">serialize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">deserialize</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">serialize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">deserialize</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">SerializeDb</span> <span class="kw">for</span> <span class="ident">T</span>
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">Encodable</span> <span class="op">+</span> <span class="ident">Decodable</span>,
 {
-    <span class="kw">fn</span> <span class="ident">serialize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">serialize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
         <span class="ident">serialize</span>(<span class="self">self</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">deserialize</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">deserialize</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="ident">deserialize</span>(<span class="ident">data</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">CompactFiltersError::DataCorruption</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Encodable</span> <span class="kw">for</span> <span class="ident">BundleStatus</span> {
-    <span class="kw">fn</span> <span class="ident">consensus_encode</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">e</span>: <span class="ident">W</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">std::io::Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">consensus_encode</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">e</span>: <span class="ident">W</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">std::io::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">written</span> <span class="op">=</span> <span class="number">0</span>;
 
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">BundleStatus::Init</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">BundleStatus::Init</span> =&gt; {
                 <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="number">0x00u8</span>.<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
             }
-            <span class="ident">BundleStatus::CfHeaders</span> { <span class="ident">cf_headers</span> } <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">BundleStatus::CfHeaders</span> { <span class="ident">cf_headers</span> } =&gt; {
                 <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="number">0x01u8</span>.<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
                 <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="ident">VarInt</span>(<span class="ident">cf_headers</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span>).<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
                 <span class="kw">for</span> <span class="ident">header</span> <span class="kw">in</span> <span class="ident">cf_headers</span> {
                     <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="ident">header</span>.<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
                 }
             }
-            <span class="ident">BundleStatus::CFilters</span> { <span class="ident">cf_filters</span> } <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">BundleStatus::CFilters</span> { <span class="ident">cf_filters</span> } =&gt; {
                 <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="number">0x02u8</span>.<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
                 <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="ident">VarInt</span>(<span class="ident">cf_filters</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span>).<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
                 <span class="kw">for</span> <span class="ident">filter</span> <span class="kw">in</span> <span class="ident">cf_filters</span> {
                     <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="ident">filter</span>.<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
                 }
             }
-            <span class="ident">BundleStatus::Processed</span> { <span class="ident">cf_filters</span> } <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">BundleStatus::Processed</span> { <span class="ident">cf_filters</span> } =&gt; {
                 <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="number">0x03u8</span>.<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
                 <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="ident">VarInt</span>(<span class="ident">cf_filters</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span>).<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
                 <span class="kw">for</span> <span class="ident">filter</span> <span class="kw">in</span> <span class="ident">cf_filters</span> {
                     <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="ident">filter</span>.<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
                 }
             }
-            <span class="ident">BundleStatus::Pruned</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">BundleStatus::Pruned</span> =&gt; {
                 <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="number">0x04u8</span>.<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
             }
-            <span class="ident">BundleStatus::Tip</span> { <span class="ident">cf_filters</span> } <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">BundleStatus::Tip</span> { <span class="ident">cf_filters</span> } =&gt; {
                 <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="number">0x05u8</span>.<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
                 <span class="ident">written</span> <span class="op">+</span><span class="op">=</span> <span class="ident">VarInt</span>(<span class="ident">cf_filters</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span>).<span class="ident">consensus_encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">e</span>)<span class="question-mark">?</span>;
                 <span class="kw">for</span> <span class="ident">filter</span> <span class="kw">in</span> <span class="ident">cf_filters</span> {
@@ -1008,11 +1008,11 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Decodable</span> <span class="kw">for</span> <span class="ident">BundleStatus</span> {
-    <span class="kw">fn</span> <span class="ident">consensus_decode</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">d</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">bitcoin::consensus::encode::Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">consensus_decode</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">d</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">bitcoin::consensus::encode::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">byte_type</span> <span class="op">=</span> <span class="ident">u8::consensus_decode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">d</span>)<span class="question-mark">?</span>;
         <span class="kw">match</span> <span class="ident">byte_type</span> {
-            <span class="number">0x00</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">BundleStatus::Init</span>),
-            <span class="number">0x01</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="number">0x00</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">BundleStatus::Init</span>),
+            <span class="number">0x01</span> =&gt; {
                 <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="ident">VarInt::consensus_decode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">d</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="ident">num</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">usize</span>;
 
@@ -1023,7 +1023,7 @@
 
                 <span class="prelude-val">Ok</span>(<span class="ident">BundleStatus::CfHeaders</span> { <span class="ident">cf_headers</span> })
             }
-            <span class="number">0x02</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="number">0x02</span> =&gt; {
                 <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="ident">VarInt::consensus_decode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">d</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="ident">num</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">usize</span>;
 
@@ -1034,7 +1034,7 @@
 
                 <span class="prelude-val">Ok</span>(<span class="ident">BundleStatus::CFilters</span> { <span class="ident">cf_filters</span> })
             }
-            <span class="number">0x03</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="number">0x03</span> =&gt; {
                 <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="ident">VarInt::consensus_decode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">d</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="ident">num</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">usize</span>;
 
@@ -1045,8 +1045,8 @@
 
                 <span class="prelude-val">Ok</span>(<span class="ident">BundleStatus::Processed</span> { <span class="ident">cf_filters</span> })
             }
-            <span class="number">0x04</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">BundleStatus::Pruned</span>),
-            <span class="number">0x05</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="number">0x04</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">BundleStatus::Pruned</span>),
+            <span class="number">0x05</span> =&gt; {
                 <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="ident">VarInt::consensus_decode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">d</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="ident">num</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">usize</span>;
 
@@ -1057,7 +1057,7 @@
 
                 <span class="prelude-val">Ok</span>(<span class="ident">BundleStatus::Tip</span> { <span class="ident">cf_filters</span> })
             }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">bitcoin::consensus::encode::Error::ParseFailed</span>(
+            <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">bitcoin::consensus::encode::Error::ParseFailed</span>(
                 <span class="string">&quot;Invalid byte type&quot;</span>,
             )),
         }
@@ -1073,12 +1073,12 @@
 }
 
 <span class="kw">impl</span> <span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">Full</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">store</span>: <span class="ident">DB</span>, <span class="ident">network</span>: <span class="ident">Network</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">store</span>: <span class="ident">DB</span>, <span class="ident">network</span>: <span class="ident">Network</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">genesis</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">network</span> {
-            <span class="ident">Network::Bitcoin</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">MAINNET_GENESIS</span>.<span class="ident">deref</span>(),
-            <span class="ident">Network::Testnet</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TESTNET_GENESIS</span>.<span class="ident">deref</span>(),
-            <span class="ident">Network::Regtest</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">REGTEST_GENESIS</span>.<span class="ident">deref</span>(),
-            <span class="ident">Network::Signet</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SIGNET_GENESIS</span>.<span class="ident">deref</span>(),
+            <span class="ident">Network::Bitcoin</span> =&gt; <span class="ident">MAINNET_GENESIS</span>.<span class="ident">deref</span>(),
+            <span class="ident">Network::Testnet</span> =&gt; <span class="ident">TESTNET_GENESIS</span>.<span class="ident">deref</span>(),
+            <span class="ident">Network::Regtest</span> =&gt; <span class="ident">REGTEST_GENESIS</span>.<span class="ident">deref</span>(),
+            <span class="ident">Network::Signet</span> =&gt; <span class="ident">SIGNET_GENESIS</span>.<span class="ident">deref</span>(),
         };
 
         <span class="kw">let</span> <span class="ident">cf_name</span> <span class="op">=</span> <span class="string">&quot;default&quot;</span>.<span class="ident">to_string</span>();
@@ -1110,7 +1110,7 @@
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_locators</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">BlockHash</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_locators</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">BlockHash</span>, <span class="ident">usize</span>)<span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">step</span> <span class="op">=</span> <span class="number">1</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_height</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">answer</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
@@ -1140,7 +1140,7 @@
         <span class="prelude-val">Ok</span>(<span class="ident">answer</span>)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">start_snapshot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">from</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">Snapshot</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">start_snapshot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">from</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">Snapshot</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">new_cf_name</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">thread_rng</span>().<span class="ident">sample_iter</span>(<span class="kw-2">&amp;</span><span class="ident">Alphanumeric</span>).<span class="ident">take</span>(<span class="number">16</span>).<span class="ident">collect</span>();
         <span class="kw">let</span> <span class="ident">new_cf_name</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;_headers:{}&quot;</span>, <span class="ident">new_cf_name</span>);
 
@@ -1180,7 +1180,7 @@
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">recover_snapshot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">cf_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">recover_snapshot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">cf_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">write_store</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">write</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">snapshot_cf_handle</span> <span class="op">=</span> <span class="ident">write_store</span>.<span class="ident">cf_handle</span>(<span class="ident">cf_name</span>).<span class="ident">unwrap</span>();
 
@@ -1192,13 +1192,13 @@
             .<span class="ident">and_then</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">k</span>[<span class="number">1</span>..].<span class="ident">try_into</span>().<span class="ident">ok</span>())
             .<span class="ident">map</span>(<span class="ident">usize::from_be_bytes</span>)
         {
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">None</span> =&gt; {
                 <span class="ident">std::mem::drop</span>(<span class="ident">iterator</span>);
                 <span class="ident">write_store</span>.<span class="ident">drop_cf</span>(<span class="ident">cf_name</span>).<span class="ident">ok</span>();
 
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
             }
-            <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">x</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">x</span>) =&gt; <span class="ident">x</span>,
         };
         <span class="ident">std::mem::drop</span>(<span class="ident">iterator</span>);
         <span class="ident">std::mem::drop</span>(<span class="ident">write_store</span>);
@@ -1220,7 +1220,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">apply_snapshot</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">snaphost</span>: <span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">Snapshot</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">batch</span> <span class="op">=</span> <span class="ident">WriteBatch::default</span>();
 
         <span class="kw">let</span> <span class="ident">read_store</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
@@ -1269,7 +1269,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_height_for</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">block_hash</span>: <span class="kw-2">&amp;</span><span class="ident">BlockHash</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">read_store</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">cf_handle</span> <span class="op">=</span> <span class="ident">read_store</span>.<span class="ident">cf_handle</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cf_name</span>).<span class="ident">unwrap</span>();
 
@@ -1285,7 +1285,7 @@
         .<span class="ident">transpose</span>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_block_hash</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">height</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BlockHash</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_block_hash</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">height</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BlockHash</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">read_store</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">cf_handle</span> <span class="op">=</span> <span class="ident">read_store</span>.<span class="ident">cf_handle</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cf_name</span>).<span class="ident">unwrap</span>();
 
@@ -1299,14 +1299,14 @@
         .<span class="ident">transpose</span>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">save_full_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">block</span>: <span class="kw-2">&amp;</span><span class="ident">Block</span>, <span class="ident">height</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">save_full_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">block</span>: <span class="kw-2">&amp;</span><span class="ident">Block</span>, <span class="ident">height</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">StoreEntry::Block</span>(<span class="prelude-val">Some</span>(<span class="ident">height</span>)).<span class="ident">get_key</span>();
         <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>().<span class="ident">put</span>(<span class="ident">key</span>, <span class="ident">block</span>.<span class="ident">serialize</span>())<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_full_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">height</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_full_block</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">height</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">read_store</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">StoreEntry::Block</span>(<span class="prelude-val">Some</span>(<span class="ident">height</span>)).<span class="ident">get_key</span>();
@@ -1318,7 +1318,7 @@
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">CompactFiltersError::DataCorruption</span>)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">delete_blocks_until</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">height</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">delete_blocks_until</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">height</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">from_key</span> <span class="op">=</span> <span class="ident">StoreEntry::Block</span>(<span class="prelude-val">Some</span>(<span class="number">0</span>)).<span class="ident">get_key</span>();
         <span class="kw">let</span> <span class="ident">to_key</span> <span class="op">=</span> <span class="ident">StoreEntry::Block</span>(<span class="prelude-val">Some</span>(<span class="ident">height</span>)).<span class="ident">get_key</span>();
 
@@ -1330,7 +1330,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_full_blocks</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">Block</span>)<span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_full_blocks</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">Block</span>)<span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">read_store</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="ident">StoreEntry::Block</span>(<span class="prelude-val">None</span>).<span class="ident">get_key</span>();
@@ -1355,7 +1355,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">StoreType</span><span class="op">&gt;</span> <span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">work</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Uint256</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">work</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Uint256</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">read_store</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">cf_handle</span> <span class="op">=</span> <span class="ident">read_store</span>.<span class="ident">cf_handle</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cf_name</span>).<span class="ident">unwrap</span>();
 
@@ -1364,7 +1364,7 @@
 
         <span class="prelude-val">Ok</span>(<span class="ident">iterator</span>
             .<span class="ident">last</span>()
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">v</span>)<span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+            .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">v</span>)<span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">work</span>): (<span class="ident">BlockHeader</span>, <span class="ident">Uint256</span>) <span class="op">=</span> <span class="ident">SerializeDb::deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>)<span class="question-mark">?</span>;
 
                 <span class="prelude-val">Ok</span>(<span class="ident">work</span>)
@@ -1373,7 +1373,7 @@
             .<span class="ident">unwrap_or_default</span>())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_height</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_height</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">read_store</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">cf_handle</span> <span class="op">=</span> <span class="ident">read_store</span>.<span class="ident">cf_handle</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cf_name</span>).<span class="ident">unwrap</span>();
 
@@ -1382,7 +1382,7 @@
 
         <span class="prelude-val">Ok</span>(<span class="ident">iterator</span>
             .<span class="ident">last</span>()
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="kw">_</span>)<span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">height</span> <span class="op">=</span> <span class="ident">usize::from_be_bytes</span>(
                     <span class="ident">k</span>[<span class="number">1</span>..]
                         .<span class="ident">try_into</span>()
@@ -1395,7 +1395,7 @@
             .<span class="ident">unwrap_or_default</span>())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_tip_hash</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BlockHash</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_tip_hash</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BlockHash</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">read_store</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">cf_handle</span> <span class="op">=</span> <span class="ident">read_store</span>.<span class="ident">cf_handle</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cf_name</span>).<span class="ident">unwrap</span>();
 
@@ -1404,7 +1404,7 @@
 
         <span class="ident">iterator</span>
             .<span class="ident">last</span>()
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">v</span>)<span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+            .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">v</span>)<span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> (<span class="ident">header</span>, <span class="kw">_</span>): (<span class="ident">BlockHeader</span>, <span class="ident">Uint256</span>) <span class="op">=</span> <span class="ident">SerializeDb::deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>)<span class="question-mark">?</span>;
 
                 <span class="prelude-val">Ok</span>(<span class="ident">header</span>.<span class="ident">block_hash</span>())
@@ -1416,7 +1416,7 @@
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">from</span>: <span class="ident">usize</span>,
         <span class="ident">headers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BlockHeader</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BlockHash</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BlockHash</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">batch</span> <span class="op">=</span> <span class="ident">WriteBatch::default</span>();
 
         <span class="kw">let</span> <span class="ident">read_store</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
@@ -1460,7 +1460,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">StoreType</span><span class="op">&gt;</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
         <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;ChainStore&lt;{:?}&gt;&quot;</span>, <span class="ident">T::default</span>()))
             .<span class="ident">field</span>(<span class="string">&quot;cf_name&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cf_name</span>)
             .<span class="ident">field</span>(<span class="string">&quot;min_height&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">min_height</span>)
@@ -1491,17 +1491,17 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
         <span class="ident">headers_store</span>: <span class="kw-2">&amp;</span><span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">Full</span><span class="op">&gt;</span>,
         <span class="ident">filter_type</span>: <span class="ident">u8</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">cf_store</span> <span class="op">=</span> <span class="ident">CfStore</span> {
             <span class="ident">store</span>: <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">headers_store</span>.<span class="ident">store</span>),
             <span class="ident">filter_type</span>,
         };
 
         <span class="kw">let</span> <span class="ident">genesis</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">headers_store</span>.<span class="ident">network</span> {
-            <span class="ident">Network::Bitcoin</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">MAINNET_GENESIS</span>.<span class="ident">deref</span>(),
-            <span class="ident">Network::Testnet</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TESTNET_GENESIS</span>.<span class="ident">deref</span>(),
-            <span class="ident">Network::Regtest</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">REGTEST_GENESIS</span>.<span class="ident">deref</span>(),
-            <span class="ident">Network::Signet</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SIGNET_GENESIS</span>.<span class="ident">deref</span>(),
+            <span class="ident">Network::Bitcoin</span> =&gt; <span class="ident">MAINNET_GENESIS</span>.<span class="ident">deref</span>(),
+            <span class="ident">Network::Testnet</span> =&gt; <span class="ident">TESTNET_GENESIS</span>.<span class="ident">deref</span>(),
+            <span class="ident">Network::Regtest</span> =&gt; <span class="ident">REGTEST_GENESIS</span>.<span class="ident">deref</span>(),
+            <span class="ident">Network::Signet</span> =&gt; <span class="ident">SIGNET_GENESIS</span>.<span class="ident">deref</span>(),
         };
 
         <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span> <span class="ident">BlockFilter::new_script_filter</span>(<span class="ident">genesis</span>, <span class="op">|</span><span class="ident">utxo</span><span class="op">|</span> {
@@ -1527,11 +1527,11 @@
         <span class="prelude-val">Ok</span>(<span class="ident">cf_store</span>)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_filter_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_filter_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u8</span> {
         <span class="self">self</span>.<span class="ident">filter_type</span>
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_bundles</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BundleEntry</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_bundles</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BundleEntry</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">read_store</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="ident">StoreEntry::CFilterTable</span>((<span class="self">self</span>.<span class="ident">filter_type</span>, <span class="prelude-val">None</span>)).<span class="ident">get_key</span>();
@@ -1545,7 +1545,7 @@
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_checkpoints</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FilterHeader</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_checkpoints</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FilterHeader</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">read_store</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">read</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="ident">StoreEntry::CFilterTable</span>((<span class="self">self</span>.<span class="ident">filter_type</span>, <span class="prelude-val">None</span>)).<span class="ident">get_key</span>();
@@ -1563,7 +1563,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">replace_checkpoints</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">checkpoints</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FilterHeader</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">current_checkpoints</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_checkpoints</span>()<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">equal_bundles</span> <span class="op">=</span> <span class="number">0</span>;
@@ -1606,7 +1606,7 @@
         <span class="ident">bundle</span>: <span class="ident">usize</span>,
         <span class="ident">checkpoint</span>: <span class="ident">FilterHeader</span>,
         <span class="ident">filter_hashes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FilterHash</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BundleStatus</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BundleStatus</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">cf_headers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FilterHeader</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">filter_hashes</span>
             .<span class="ident">into_iter</span>()
             .<span class="ident">scan</span>(<span class="ident">checkpoint</span>, <span class="op">|</span><span class="ident">prev_header</span>, <span class="ident">filter_hash</span><span class="op">|</span> {
@@ -1645,7 +1645,7 @@
         <span class="ident">checkpoint</span>: <span class="ident">FilterHeader</span>,
         <span class="ident">headers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FilterHeader</span><span class="op">&gt;</span>,
         <span class="ident">filters</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>)<span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BundleStatus</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BundleStatus</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">cf_filters</span> <span class="op">=</span> <span class="ident">filters</span>
             .<span class="ident">into_iter</span>()
             .<span class="ident">zip</span>(<span class="ident">headers</span>.<span class="ident">into_iter</span>())
@@ -1673,7 +1673,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">bundle</span>: <span class="ident">usize</span>,
         <span class="ident">checkpoint</span>: <span class="ident">FilterHeader</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BundleStatus</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BundleStatus</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">StoreEntry::CFilterTable</span>((<span class="self">self</span>.<span class="ident">filter_type</span>, <span class="prelude-val">Some</span>(<span class="ident">bundle</span>))).<span class="ident">get_key</span>();
         <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> (<span class="ident">BundleStatus::Pruned</span>, <span class="ident">checkpoint</span>);
 
@@ -1688,7 +1688,7 @@
         <span class="ident">bundle</span>: <span class="ident">usize</span>,
         <span class="ident">cf_filters</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="ident">checkpoint</span>: <span class="ident">FilterHeader</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BundleStatus</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BundleStatus</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">StoreEntry::CFilterTable</span>((<span class="self">self</span>.<span class="ident">filter_type</span>, <span class="prelude-val">Some</span>(<span class="ident">bundle</span>))).<span class="ident">get_key</span>();
         <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> (<span class="ident">BundleStatus::Tip</span> { <span class="ident">cf_filters</span> }, <span class="ident">checkpoint</span>);
 

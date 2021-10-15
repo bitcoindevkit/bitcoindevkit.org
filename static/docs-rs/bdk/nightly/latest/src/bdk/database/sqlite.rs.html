@@ -1020,7 +1020,7 @@
 <span class="kw">impl</span> <span class="ident">SqliteDatabase</span> {
     <span class="doccomment">/// Instantiate a new SqliteDatabase instance by creating a connection</span>
     <span class="doccomment">/// to the database stored at path</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">path</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">path</span>: <span class="ident">String</span>) -&gt; <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">connection</span> <span class="op">=</span> <span class="ident">get_connection</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>).<span class="ident">unwrap</span>();
         <span class="ident">SqliteDatabase</span> { <span class="ident">path</span>, <span class="ident">connection</span> }
     }
@@ -1029,7 +1029,7 @@
         <span class="ident">keychain</span>: <span class="ident">String</span>,
         <span class="ident">child</span>: <span class="ident">u32</span>,
         <span class="ident">script</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">prepare_cached</span>(<span class="string">&quot;INSERT INTO script_pubkeys (keychain, child, script) VALUES (:keychain, :child, :script)&quot;</span>)<span class="question-mark">?</span>;
         <span class="ident">statement</span>.<span class="ident">execute</span>(<span class="macro">named_params!</span> {
             <span class="string">&quot;:keychain&quot;</span>: <span class="ident">keychain</span>,
@@ -1046,7 +1046,7 @@
         <span class="ident">vout</span>: <span class="ident">u32</span>,
         <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
         <span class="ident">script</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">prepare_cached</span>(<span class="string">&quot;INSERT INTO utxos (value, keychain, vout, txid, script) VALUES (:value, :keychain, :vout, :txid, :script)&quot;</span>)<span class="question-mark">?</span>;
         <span class="ident">statement</span>.<span class="ident">execute</span>(<span class="macro">named_params!</span> {
             <span class="string">&quot;:value&quot;</span>: <span class="ident">value</span>,
@@ -1058,7 +1058,7 @@
 
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">last_insert_rowid</span>())
     }
-    <span class="kw">fn</span> <span class="ident">insert_transaction</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">raw_tx</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">insert_transaction</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">raw_tx</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;INSERT INTO transactions (txid, raw_tx) VALUES (:txid, :raw_tx)&quot;</span>)<span class="question-mark">?</span>;
@@ -1070,7 +1070,7 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">last_insert_rowid</span>())
     }
 
-    <span class="kw">fn</span> <span class="ident">update_transaction</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">raw_tx</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">update_transaction</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">raw_tx</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;UPDATE transactions SET raw_tx=:raw_tx WHERE txid=:txid&quot;</span>)<span class="question-mark">?</span>;
@@ -1083,13 +1083,13 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">insert_transaction_details</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">TransactionDetails</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">insert_transaction_details</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">TransactionDetails</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">timestamp</span>, <span class="ident">height</span>) <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">transaction</span>.<span class="ident">confirmation_time</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">confirmation_time</span>) <span class="op">=</span><span class="op">&gt;</span> (
+            <span class="prelude-val">Some</span>(<span class="ident">confirmation_time</span>) =&gt; (
                 <span class="prelude-val">Some</span>(<span class="ident">confirmation_time</span>.<span class="ident">timestamp</span>),
                 <span class="prelude-val">Some</span>(<span class="ident">confirmation_time</span>.<span class="ident">height</span>),
             ),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>),
         };
 
         <span class="kw">let</span> <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">transaction</span>.<span class="ident">txid</span>;
@@ -1109,13 +1109,13 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">last_insert_rowid</span>())
     }
 
-    <span class="kw">fn</span> <span class="ident">update_transaction_details</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">TransactionDetails</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">update_transaction_details</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">TransactionDetails</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">timestamp</span>, <span class="ident">height</span>) <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">transaction</span>.<span class="ident">confirmation_time</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">confirmation_time</span>) <span class="op">=</span><span class="op">&gt;</span> (
+            <span class="prelude-val">Some</span>(<span class="ident">confirmation_time</span>) =&gt; (
                 <span class="prelude-val">Some</span>(<span class="ident">confirmation_time</span>.<span class="ident">timestamp</span>),
                 <span class="prelude-val">Some</span>(<span class="ident">confirmation_time</span>.<span class="ident">height</span>),
             ),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>),
         };
 
         <span class="kw">let</span> <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">transaction</span>.<span class="ident">txid</span>;
@@ -1135,7 +1135,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">insert_last_derivation_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>, <span class="ident">value</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">insert_last_derivation_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>, <span class="ident">value</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">prepare_cached</span>(
             <span class="string">&quot;INSERT INTO last_derivation_indices (keychain, value) VALUES (:keychain, :value)&quot;</span>,
         )<span class="question-mark">?</span>;
@@ -1148,7 +1148,7 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">last_insert_rowid</span>())
     }
 
-    <span class="kw">fn</span> <span class="ident">insert_checksum</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>, <span class="ident">checksum</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">insert_checksum</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>, <span class="ident">checksum</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">prepare_cached</span>(
             <span class="string">&quot;INSERT INTO checksums (keychain, checksum) VALUES (:keychain, :checksum)&quot;</span>,
         )<span class="question-mark">?</span>;
@@ -1160,7 +1160,7 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">last_insert_rowid</span>())
     }
 
-    <span class="kw">fn</span> <span class="ident">update_last_derivation_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>, <span class="ident">value</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">update_last_derivation_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>, <span class="ident">value</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">prepare_cached</span>(
             <span class="string">&quot;INSERT INTO last_derivation_indices (keychain, value) VALUES (:keychain, :value) ON CONFLICT(keychain) DO UPDATE SET value=:value WHERE keychain=:keychain&quot;</span>,
         )<span class="question-mark">?</span>;
@@ -1173,7 +1173,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">select_script_pubkeys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">select_script_pubkeys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;SELECT script FROM script_pubkeys&quot;</span>)<span class="question-mark">?</span>;
@@ -1187,7 +1187,7 @@
         <span class="prelude-val">Ok</span>(<span class="ident">scripts</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">select_script_pubkeys_by_keychain</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">select_script_pubkeys_by_keychain</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;SELECT script FROM script_pubkeys WHERE keychain=:keychain&quot;</span>)<span class="question-mark">?</span>;
@@ -1205,42 +1205,42 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">keychain</span>: <span class="ident">String</span>,
         <span class="ident">child</span>: <span class="ident">u32</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">prepare_cached</span>(
             <span class="string">&quot;SELECT script FROM script_pubkeys WHERE keychain=:keychain AND child=:child&quot;</span>,
         )<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rows</span> <span class="op">=</span> <span class="ident">statement</span>.<span class="ident">query</span>(<span class="macro">named_params!</span> {<span class="string">&quot;:keychain&quot;</span>: <span class="ident">keychain</span>,<span class="string">&quot;:child&quot;</span>: <span class="ident">child</span>})<span class="question-mark">?</span>;
 
         <span class="kw">match</span> <span class="ident">rows</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">row</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">row</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">script</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">script</span>: <span class="ident">Script</span> <span class="op">=</span> <span class="ident">script</span>.<span class="ident">into</span>();
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">script</span>))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
     <span class="kw">fn</span> <span class="ident">select_script_pubkey_by_script</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">script</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">KeychainKind</span>, <span class="ident">u32</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">KeychainKind</span>, <span class="ident">u32</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;SELECT keychain, child FROM script_pubkeys WHERE script=:script&quot;</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rows</span> <span class="op">=</span> <span class="ident">statement</span>.<span class="ident">query</span>(<span class="macro">named_params!</span> {<span class="string">&quot;:script&quot;</span>: <span class="ident">script</span>})<span class="question-mark">?</span>;
         <span class="kw">match</span> <span class="ident">rows</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">row</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">row</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">keychain</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">keychain</span>: <span class="ident">KeychainKind</span> <span class="op">=</span> <span class="ident">serde_json::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">keychain</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">child</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">1</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((<span class="ident">keychain</span>, <span class="ident">child</span>)))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">select_utxos</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">select_utxos</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;SELECT value, keychain, vout, txid, script FROM utxos&quot;</span>)<span class="question-mark">?</span>;
@@ -1272,13 +1272,13 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
         <span class="ident">vout</span>: <span class="ident">u32</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">u64</span>, <span class="ident">KeychainKind</span>, <span class="ident">Script</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">u64</span>, <span class="ident">KeychainKind</span>, <span class="ident">Script</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">prepare_cached</span>(
             <span class="string">&quot;SELECT value, keychain, script FROM utxos WHERE txid=:txid AND vout=:vout&quot;</span>,
         )<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rows</span> <span class="op">=</span> <span class="ident">statement</span>.<span class="ident">query</span>(<span class="macro">named_params!</span> {<span class="string">&quot;:txid&quot;</span>: <span class="ident">txid</span>,<span class="string">&quot;:vout&quot;</span>: <span class="ident">vout</span>})<span class="question-mark">?</span>;
         <span class="kw">match</span> <span class="ident">rows</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">row</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">row</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">value</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">keychain</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">1</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">keychain</span>: <span class="ident">KeychainKind</span> <span class="op">=</span> <span class="ident">serde_json::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">keychain</span>)<span class="question-mark">?</span>;
@@ -1287,11 +1287,11 @@
 
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((<span class="ident">value</span>, <span class="ident">keychain</span>, <span class="ident">script</span>)))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">select_transactions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">select_transactions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;SELECT raw_tx FROM transactions&quot;</span>)<span class="question-mark">?</span>;
@@ -1305,22 +1305,22 @@
         <span class="prelude-val">Ok</span>(<span class="ident">txs</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">select_transaction_by_txid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">select_transaction_by_txid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;SELECT raw_tx FROM transactions WHERE txid=:txid&quot;</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rows</span> <span class="op">=</span> <span class="ident">statement</span>.<span class="ident">query</span>(<span class="macro">named_params!</span> {<span class="string">&quot;:txid&quot;</span>: <span class="ident">txid</span>})<span class="question-mark">?</span>;
         <span class="kw">match</span> <span class="ident">rows</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">row</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">row</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">raw_tx</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">tx</span>: <span class="ident">Transaction</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">raw_tx</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">tx</span>))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">select_transaction_details_with_raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">select_transaction_details_with_raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">prepare_cached</span>(<span class="string">&quot;SELECT transaction_details.txid, transaction_details.timestamp, transaction_details.received, transaction_details.sent, transaction_details.fee, transaction_details.height, transaction_details.verified, transactions.raw_tx FROM transaction_details, transactions WHERE transaction_details.txid = transactions.txid&quot;</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">transaction_details</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rows</span> <span class="op">=</span> <span class="ident">statement</span>.<span class="ident">query</span>([])<span class="question-mark">?</span>;
@@ -1335,16 +1335,16 @@
             <span class="kw">let</span> <span class="ident">verified</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">6</span>)<span class="question-mark">?</span>;
             <span class="kw">let</span> <span class="ident">raw_tx</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">7</span>)<span class="question-mark">?</span>;
             <span class="kw">let</span> <span class="ident">tx</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">raw_tx</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">raw_tx</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">raw_tx</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">tx</span>: <span class="ident">Transaction</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">raw_tx</span>)<span class="question-mark">?</span>;
                     <span class="prelude-val">Some</span>(<span class="ident">tx</span>)
                 }
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
             };
 
             <span class="kw">let</span> <span class="ident">confirmation_time</span> <span class="op">=</span> <span class="kw">match</span> (<span class="ident">height</span>, <span class="ident">timestamp</span>) {
-                (<span class="prelude-val">Some</span>(<span class="ident">height</span>), <span class="prelude-val">Some</span>(<span class="ident">timestamp</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">ConfirmationTime</span> { <span class="ident">height</span>, <span class="ident">timestamp</span> }),
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                (<span class="prelude-val">Some</span>(<span class="ident">height</span>), <span class="prelude-val">Some</span>(<span class="ident">timestamp</span>)) =&gt; <span class="prelude-val">Some</span>(<span class="ident">ConfirmationTime</span> { <span class="ident">height</span>, <span class="ident">timestamp</span> }),
+                <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
             };
 
             <span class="ident">transaction_details</span>.<span class="ident">push</span>(<span class="ident">TransactionDetails</span> {
@@ -1360,7 +1360,7 @@
         <span class="prelude-val">Ok</span>(<span class="ident">transaction_details</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">select_transaction_details</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">select_transaction_details</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">prepare_cached</span>(
             <span class="string">&quot;SELECT txid, timestamp, received, sent, fee, height, verified FROM transaction_details&quot;</span>,
         )<span class="question-mark">?</span>;
@@ -1377,8 +1377,8 @@
             <span class="kw">let</span> <span class="ident">verified</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">6</span>)<span class="question-mark">?</span>;
 
             <span class="kw">let</span> <span class="ident">confirmation_time</span> <span class="op">=</span> <span class="kw">match</span> (<span class="ident">height</span>, <span class="ident">timestamp</span>) {
-                (<span class="prelude-val">Some</span>(<span class="ident">height</span>), <span class="prelude-val">Some</span>(<span class="ident">timestamp</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">ConfirmationTime</span> { <span class="ident">height</span>, <span class="ident">timestamp</span> }),
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                (<span class="prelude-val">Some</span>(<span class="ident">height</span>), <span class="prelude-val">Some</span>(<span class="ident">timestamp</span>)) =&gt; <span class="prelude-val">Some</span>(<span class="ident">ConfirmationTime</span> { <span class="ident">height</span>, <span class="ident">timestamp</span> }),
+                <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
             };
 
             <span class="ident">transaction_details</span>.<span class="ident">push</span>(<span class="ident">TransactionDetails</span> {
@@ -1397,12 +1397,12 @@
     <span class="kw">fn</span> <span class="ident">select_transaction_details_by_txid</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">prepare_cached</span>(<span class="string">&quot;SELECT transaction_details.timestamp, transaction_details.received, transaction_details.sent, transaction_details.fee, transaction_details.height, transaction_details.verified, transactions.raw_tx FROM transaction_details, transactions WHERE transaction_details.txid=transactions.txid AND transaction_details.txid=:txid&quot;</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rows</span> <span class="op">=</span> <span class="ident">statement</span>.<span class="ident">query</span>(<span class="macro">named_params!</span> { <span class="string">&quot;:txid&quot;</span>: <span class="ident">txid</span> })<span class="question-mark">?</span>;
 
         <span class="kw">match</span> <span class="ident">rows</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">row</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">row</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">timestamp</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">received</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">1</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">sent</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">2</span>)<span class="question-mark">?</span>;
@@ -1412,16 +1412,16 @@
 
                 <span class="kw">let</span> <span class="ident">raw_tx</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">6</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">tx</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">raw_tx</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">raw_tx</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">raw_tx</span>) =&gt; {
                         <span class="kw">let</span> <span class="ident">tx</span>: <span class="ident">Transaction</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">raw_tx</span>)<span class="question-mark">?</span>;
                         <span class="prelude-val">Some</span>(<span class="ident">tx</span>)
                     }
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                    <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
                 };
 
                 <span class="kw">let</span> <span class="ident">confirmation_time</span> <span class="op">=</span> <span class="kw">match</span> (<span class="ident">height</span>, <span class="ident">timestamp</span>) {
-                    (<span class="prelude-val">Some</span>(<span class="ident">height</span>), <span class="prelude-val">Some</span>(<span class="ident">timestamp</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">ConfirmationTime</span> { <span class="ident">height</span>, <span class="ident">timestamp</span> }),
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                    (<span class="prelude-val">Some</span>(<span class="ident">height</span>), <span class="prelude-val">Some</span>(<span class="ident">timestamp</span>)) =&gt; <span class="prelude-val">Some</span>(<span class="ident">ConfirmationTime</span> { <span class="ident">height</span>, <span class="ident">timestamp</span> }),
+                    <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
                 };
 
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">TransactionDetails</span> {
@@ -1434,43 +1434,43 @@
                     <span class="ident">verified</span>,
                 }))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
     <span class="kw">fn</span> <span class="ident">select_last_derivation_index_by_keychain</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">keychain</span>: <span class="ident">String</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;SELECT value FROM last_derivation_indices WHERE keychain=:keychain&quot;</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rows</span> <span class="op">=</span> <span class="ident">statement</span>.<span class="ident">query</span>(<span class="macro">named_params!</span> {<span class="string">&quot;:keychain&quot;</span>: <span class="ident">keychain</span>})<span class="question-mark">?</span>;
         <span class="kw">match</span> <span class="ident">rows</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">row</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">row</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">value</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">value</span>))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">select_checksum_by_keychain</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">select_checksum_by_keychain</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;SELECT checksum FROM checksums WHERE keychain=:keychain&quot;</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rows</span> <span class="op">=</span> <span class="ident">statement</span>.<span class="ident">query</span>(<span class="macro">named_params!</span> {<span class="string">&quot;:keychain&quot;</span>: <span class="ident">keychain</span>})<span class="question-mark">?</span>;
 
         <span class="kw">match</span> <span class="ident">rows</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">row</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">row</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">checksum</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">checksum</span>))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">delete_script_pubkey_by_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>, <span class="ident">child</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">delete_script_pubkey_by_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>, <span class="ident">child</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">prepare_cached</span>(
             <span class="string">&quot;DELETE FROM script_pubkeys WHERE keychain=:keychain AND child=:child&quot;</span>,
         )<span class="question-mark">?</span>;
@@ -1482,7 +1482,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">delete_script_pubkey_by_script</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">script</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">delete_script_pubkey_by_script</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">script</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;DELETE FROM script_pubkeys WHERE script=:script&quot;</span>)<span class="question-mark">?</span>;
@@ -1493,7 +1493,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">delete_utxo_by_outpoint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">vout</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">delete_utxo_by_outpoint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">vout</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;DELETE FROM utxos WHERE txid=:txid AND vout=:vout&quot;</span>)<span class="question-mark">?</span>;
@@ -1505,7 +1505,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">delete_transaction_by_txid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">delete_transaction_by_txid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;DELETE FROM transactions WHERE txid=:txid&quot;</span>)<span class="question-mark">?</span>;
@@ -1513,7 +1513,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">delete_transaction_details_by_txid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">delete_transaction_details_by_txid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;DELETE FROM transaction_details WHERE txid=:txid&quot;</span>)<span class="question-mark">?</span>;
@@ -1521,7 +1521,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">delete_last_derivation_index_by_keychain</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">delete_last_derivation_index_by_keychain</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">String</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">statement</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">connection</span>
             .<span class="ident">prepare_cached</span>(<span class="string">&quot;DELETE FROM last_derivation_indices WHERE keychain=:keychain&quot;</span>)<span class="question-mark">?</span>;
@@ -1539,13 +1539,13 @@
         <span class="ident">script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>,
         <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
         <span class="ident">child</span>: <span class="ident">u32</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">keychain</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">keychain</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">insert_script_pubkey</span>(<span class="ident">keychain</span>, <span class="ident">child</span>, <span class="ident">script</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">set_utxo</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">utxo</span>: <span class="kw-2">&amp;</span><span class="ident">LocalUtxo</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">set_utxo</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">utxo</span>: <span class="kw-2">&amp;</span><span class="ident">LocalUtxo</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">insert_utxo</span>(
             <span class="ident">utxo</span>.<span class="ident">txout</span>.<span class="ident">value</span>,
             <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">utxo</span>.<span class="ident">keychain</span>)<span class="question-mark">?</span>,
@@ -1556,24 +1556,24 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">set_raw_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">Transaction</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">set_raw_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">Transaction</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_transaction_by_txid</span>(<span class="kw-2">&amp;</span><span class="ident">transaction</span>.<span class="ident">txid</span>())<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; {
                 <span class="self">self</span>.<span class="ident">update_transaction</span>(<span class="kw-2">&amp;</span><span class="ident">transaction</span>.<span class="ident">txid</span>(), <span class="kw-2">&amp;</span><span class="ident">serialize</span>(<span class="ident">transaction</span>))<span class="question-mark">?</span>;
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">None</span> =&gt; {
                 <span class="self">self</span>.<span class="ident">insert_transaction</span>(<span class="kw-2">&amp;</span><span class="ident">transaction</span>.<span class="ident">txid</span>(), <span class="kw-2">&amp;</span><span class="ident">serialize</span>(<span class="ident">transaction</span>))<span class="question-mark">?</span>;
             }
         }
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">TransactionDetails</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">TransactionDetails</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_transaction_details_by_txid</span>(<span class="kw-2">&amp;</span><span class="ident">transaction</span>.<span class="ident">txid</span>)<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; {
                 <span class="self">self</span>.<span class="ident">update_transaction_details</span>(<span class="ident">transaction</span>)<span class="question-mark">?</span>;
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">None</span> =&gt; {
                 <span class="self">self</span>.<span class="ident">insert_transaction_details</span>(<span class="ident">transaction</span>)<span class="question-mark">?</span>;
             }
         }
@@ -1585,7 +1585,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">set_last_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>, <span class="ident">value</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">set_last_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>, <span class="ident">value</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">update_last_derivation_index</span>(<span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">keychain</span>)<span class="question-mark">?</span>, <span class="ident">value</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
@@ -1594,34 +1594,34 @@
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
         <span class="ident">child</span>: <span class="ident">u32</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">keychain</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">keychain</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">script</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">select_script_pubkey_by_path</span>(<span class="ident">keychain</span>.<span class="ident">clone</span>(), <span class="ident">child</span>)<span class="question-mark">?</span>;
         <span class="kw">match</span> <span class="ident">script</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">script</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">script</span>) =&gt; {
                 <span class="self">self</span>.<span class="ident">delete_script_pubkey_by_path</span>(<span class="ident">keychain</span>, <span class="ident">child</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">script</span>))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
     <span class="kw">fn</span> <span class="ident">del_path_from_script_pubkey</span>(
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">KeychainKind</span>, <span class="ident">u32</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">KeychainKind</span>, <span class="ident">u32</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_script_pubkey_by_script</span>(<span class="ident">script</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>((<span class="ident">keychain</span>, <span class="ident">child</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>((<span class="ident">keychain</span>, <span class="ident">child</span>)) =&gt; {
                 <span class="self">self</span>.<span class="ident">delete_script_pubkey_by_script</span>(<span class="ident">script</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((<span class="ident">keychain</span>, <span class="ident">child</span>)))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">del_utxo</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">outpoint</span>: <span class="kw-2">&amp;</span><span class="ident">OutPoint</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">del_utxo</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">outpoint</span>: <span class="kw-2">&amp;</span><span class="ident">OutPoint</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_utxo_by_outpoint</span>(<span class="kw-2">&amp;</span><span class="ident">outpoint</span>.<span class="ident">txid</span>, <span class="ident">outpoint</span>.<span class="ident">vout</span>)<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>((<span class="ident">value</span>, <span class="ident">keychain</span>, <span class="ident">script_pubkey</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>((<span class="ident">value</span>, <span class="ident">keychain</span>, <span class="ident">script_pubkey</span>)) =&gt; {
                 <span class="self">self</span>.<span class="ident">delete_utxo_by_outpoint</span>(<span class="kw-2">&amp;</span><span class="ident">outpoint</span>.<span class="ident">txid</span>, <span class="ident">outpoint</span>.<span class="ident">vout</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">LocalUtxo</span> {
                     <span class="ident">outpoint</span>: <span class="kw-2">*</span><span class="ident">outpoint</span>,
@@ -1632,17 +1632,17 @@
                     <span class="ident">keychain</span>,
                 }))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">del_raw_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">del_raw_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_transaction_by_txid</span>(<span class="ident">txid</span>)<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">tx</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">tx</span>) =&gt; {
                 <span class="self">self</span>.<span class="ident">delete_transaction_by_txid</span>(<span class="ident">txid</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">tx</span>))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
@@ -1650,9 +1650,9 @@
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>,
         <span class="ident">include_raw</span>: <span class="ident">bool</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_transaction_details_by_txid</span>(<span class="ident">txid</span>)<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">transaction_details</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">transaction_details</span>) =&gt; {
                 <span class="self">self</span>.<span class="ident">delete_transaction_details_by_txid</span>(<span class="ident">txid</span>)<span class="question-mark">?</span>;
 
                 <span class="kw">if</span> <span class="ident">include_raw</span> {
@@ -1660,19 +1660,19 @@
                 }
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">transaction_details</span>))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">del_last_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">del_last_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">keychain</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">keychain</span>)<span class="question-mark">?</span>;
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_last_derivation_index_by_keychain</span>(<span class="ident">keychain</span>.<span class="ident">clone</span>())<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">value</span>) =&gt; {
                 <span class="self">self</span>.<span class="ident">delete_last_derivation_index_by_keychain</span>(<span class="ident">keychain</span>)<span class="question-mark">?</span>;
 
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">value</span>))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 }
@@ -1682,46 +1682,46 @@
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
         <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
         <span class="ident">bytes</span>: <span class="ident">B</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">keychain</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">keychain</span>)<span class="question-mark">?</span>;
 
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_checksum_by_keychain</span>(<span class="ident">keychain</span>.<span class="ident">clone</span>())<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">checksum</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">if</span> <span class="ident">checksum</span> <span class="op">=</span><span class="op">=</span> <span class="ident">bytes</span>.<span class="ident">as_ref</span>().<span class="ident">to_vec</span>() {
+            <span class="prelude-val">Some</span>(<span class="ident">checksum</span>) =&gt; {
+                <span class="kw">if</span> <span class="ident">checksum</span> <span class="op">==</span> <span class="ident">bytes</span>.<span class="ident">as_ref</span>().<span class="ident">to_vec</span>() {
                     <span class="prelude-val">Ok</span>(())
                 } <span class="kw">else</span> {
                     <span class="prelude-val">Err</span>(<span class="ident">Error::ChecksumMismatch</span>)
                 }
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">None</span> =&gt; {
                 <span class="self">self</span>.<span class="ident">insert_checksum</span>(<span class="ident">keychain</span>, <span class="ident">bytes</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(())
             }
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">iter_script_pubkeys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">KeychainKind</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">iter_script_pubkeys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">KeychainKind</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">keychain</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">keychain</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">keychain</span>) =&gt; {
                 <span class="kw">let</span> <span class="ident">keychain</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">keychain</span>)<span class="question-mark">?</span>;
                 <span class="self">self</span>.<span class="ident">select_script_pubkeys_by_keychain</span>(<span class="ident">keychain</span>)
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">select_script_pubkeys</span>(),
+            <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">select_script_pubkeys</span>(),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">iter_utxos</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">iter_utxos</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">select_utxos</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">iter_raw_txs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">iter_raw_txs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">select_transactions</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">iter_txs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">include_raw</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">iter_txs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">include_raw</span>: <span class="ident">bool</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">include_raw</span> {
-            <span class="bool-val">true</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">select_transaction_details_with_raw</span>(),
-            <span class="bool-val">false</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">select_transaction_details</span>(),
+            <span class="bool-val">true</span> =&gt; <span class="self">self</span>.<span class="ident">select_transaction_details_with_raw</span>(),
+            <span class="bool-val">false</span> =&gt; <span class="self">self</span>.<span class="ident">select_transaction_details</span>(),
         }
     }
 
@@ -1729,27 +1729,27 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
         <span class="ident">child</span>: <span class="ident">u32</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">keychain</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">keychain</span>)<span class="question-mark">?</span>;
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_script_pubkey_by_path</span>(<span class="ident">keychain</span>, <span class="ident">child</span>)<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">script</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">script</span>)),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">Some</span>(<span class="ident">script</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">script</span>)),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
     <span class="kw">fn</span> <span class="ident">get_path_from_script_pubkey</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">KeychainKind</span>, <span class="ident">u32</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">KeychainKind</span>, <span class="ident">u32</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_script_pubkey_by_script</span>(<span class="ident">script</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>((<span class="ident">keychain</span>, <span class="ident">child</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((<span class="ident">keychain</span>, <span class="ident">child</span>))),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">Some</span>((<span class="ident">keychain</span>, <span class="ident">child</span>)) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((<span class="ident">keychain</span>, <span class="ident">child</span>))),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">get_utxo</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">outpoint</span>: <span class="kw-2">&amp;</span><span class="ident">OutPoint</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_utxo</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">outpoint</span>: <span class="kw-2">&amp;</span><span class="ident">OutPoint</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_utxo_by_outpoint</span>(<span class="kw-2">&amp;</span><span class="ident">outpoint</span>.<span class="ident">txid</span>, <span class="ident">outpoint</span>.<span class="ident">vout</span>)<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>((<span class="ident">value</span>, <span class="ident">keychain</span>, <span class="ident">script_pubkey</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">LocalUtxo</span> {
+            <span class="prelude-val">Some</span>((<span class="ident">value</span>, <span class="ident">keychain</span>, <span class="ident">script_pubkey</span>)) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">LocalUtxo</span> {
                 <span class="ident">outpoint</span>: <span class="kw-2">*</span><span class="ident">outpoint</span>,
                 <span class="ident">txout</span>: <span class="ident">TxOut</span> {
                     <span class="ident">value</span>,
@@ -1757,50 +1757,50 @@
                 },
                 <span class="ident">keychain</span>,
             })),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">get_raw_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_raw_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_transaction_by_txid</span>(<span class="ident">txid</span>)<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">tx</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">tx</span>)),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">Some</span>(<span class="ident">tx</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">tx</span>)),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>, <span class="ident">include_raw</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>, <span class="ident">include_raw</span>: <span class="ident">bool</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">select_transaction_details_by_txid</span>(<span class="ident">txid</span>)<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">transaction_details</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">transaction_details</span>) =&gt; {
                 <span class="kw">if</span> <span class="op">!</span><span class="ident">include_raw</span> {
                     <span class="ident">transaction_details</span>.<span class="ident">transaction</span> <span class="op">=</span> <span class="prelude-val">None</span>;
                 }
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">transaction_details</span>))
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">get_last_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_last_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">keychain</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">keychain</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">select_last_derivation_index_by_keychain</span>(<span class="ident">keychain</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">value</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">increment_last_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">increment_last_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">keychain_string</span> <span class="op">=</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">keychain</span>)<span class="question-mark">?</span>;
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">get_last_index</span>(<span class="ident">keychain</span>)<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">value</span>) =&gt; {
                 <span class="self">self</span>.<span class="ident">update_last_derivation_index</span>(<span class="ident">keychain_string</span>, <span class="ident">value</span> <span class="op">+</span> <span class="number">1</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident">value</span> <span class="op">+</span> <span class="number">1</span>)
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">None</span> =&gt; {
                 <span class="self">self</span>.<span class="ident">insert_last_derivation_index</span>(<span class="ident">keychain_string</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="number">0</span>)
             }
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(())
     }
 }
@@ -1808,61 +1808,61 @@
 <span class="kw">impl</span> <span class="ident">BatchDatabase</span> <span class="kw">for</span> <span class="ident">SqliteDatabase</span> {
     <span class="kw">type</span> <span class="ident">Batch</span> <span class="op">=</span> <span class="ident">SqliteDatabase</span>;
 
-    <span class="kw">fn</span> <span class="ident">begin_batch</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident"><span class="self">Self</span>::Batch</span> {
+    <span class="kw">fn</span> <span class="ident">begin_batch</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Batch</span> {
         <span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">SqliteDatabase::new</span>(<span class="self">self</span>.<span class="ident">path</span>.<span class="ident">clone</span>());
         <span class="ident">db</span>.<span class="ident">connection</span>.<span class="ident">execute</span>(<span class="string">&quot;BEGIN TRANSACTION&quot;</span>, []).<span class="ident">unwrap</span>();
         <span class="ident">db</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">commit_batch</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">batch</span>: <span class="ident"><span class="self">Self</span>::Batch</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">commit_batch</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">batch</span>: <span class="ident"><span class="self">Self</span>::Batch</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="ident">batch</span>.<span class="ident">connection</span>.<span class="ident">execute</span>(<span class="string">&quot;COMMIT TRANSACTION&quot;</span>, [])<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_connection</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Connection</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_connection</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Connection</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">connection</span> <span class="op">=</span> <span class="ident">Connection::open</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
     <span class="ident">migrate</span>(<span class="kw-2">&amp;</span><span class="ident">connection</span>)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="ident">connection</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_schema_version</span>(<span class="ident">conn</span>: <span class="kw-2">&amp;</span><span class="ident">Connection</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">rusqlite::Result</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_schema_version</span>(<span class="ident">conn</span>: <span class="kw-2">&amp;</span><span class="ident">Connection</span>) -&gt; <span class="ident">rusqlite::Result</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">statement</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare_cached</span>(<span class="string">&quot;SELECT version FROM version&quot;</span>);
     <span class="kw">match</span> <span class="ident">statement</span> {
-        <span class="prelude-val">Err</span>(<span class="ident">rusqlite::Error::SqliteFailure</span>(<span class="ident">e</span>, <span class="prelude-val">Some</span>(<span class="ident">msg</span>))) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="kw">if</span> <span class="ident">msg</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;no such table: version&quot;</span> {
+        <span class="prelude-val">Err</span>(<span class="ident">rusqlite::Error::SqliteFailure</span>(<span class="ident">e</span>, <span class="prelude-val">Some</span>(<span class="ident">msg</span>))) =&gt; {
+            <span class="kw">if</span> <span class="ident">msg</span> <span class="op">==</span> <span class="string">&quot;no such table: version&quot;</span> {
                 <span class="prelude-val">Ok</span>(<span class="number">0</span>)
             } <span class="kw">else</span> {
                 <span class="prelude-val">Err</span>(<span class="ident">rusqlite::Error::SqliteFailure</span>(<span class="ident">e</span>, <span class="prelude-val">Some</span>(<span class="ident">msg</span>)))
             }
         }
-        <span class="prelude-val">Ok</span>(<span class="kw-2">mut</span> <span class="ident">stmt</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="kw-2">mut</span> <span class="ident">stmt</span>) =&gt; {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rows</span> <span class="op">=</span> <span class="ident">stmt</span>.<span class="ident">query</span>([])<span class="question-mark">?</span>;
             <span class="kw">match</span> <span class="ident">rows</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">row</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">row</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">version</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
                     <span class="prelude-val">Ok</span>(<span class="ident">version</span>)
                 }
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="number">0</span>),
+                <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="number">0</span>),
             }
         }
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="number">0</span>),
+        <span class="kw">_</span> =&gt; <span class="prelude-val">Ok</span>(<span class="number">0</span>),
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_schema_version</span>(<span class="ident">conn</span>: <span class="kw-2">&amp;</span><span class="ident">Connection</span>, <span class="ident">version</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">rusqlite::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_schema_version</span>(<span class="ident">conn</span>: <span class="kw-2">&amp;</span><span class="ident">Connection</span>, <span class="ident">version</span>: <span class="ident">i32</span>) -&gt; <span class="ident">rusqlite::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
     <span class="ident">conn</span>.<span class="ident">execute</span>(
         <span class="string">&quot;UPDATE version SET version=:version&quot;</span>,
         <span class="macro">named_params!</span> {<span class="string">&quot;:version&quot;</span>: <span class="ident">version</span>},
     )
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">migrate</span>(<span class="ident">conn</span>: <span class="kw-2">&amp;</span><span class="ident">Connection</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">rusqlite::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">migrate</span>(<span class="ident">conn</span>: <span class="kw-2">&amp;</span><span class="ident">Connection</span>) -&gt; <span class="ident">rusqlite::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="ident">get_schema_version</span>(<span class="ident">conn</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">stmts</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">MIGRATIONS</span>[(<span class="ident">version</span> <span class="kw">as</span> <span class="ident">usize</span>)..];
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="ident">version</span>;
 
-    <span class="kw">if</span> <span class="ident">version</span> <span class="op">=</span><span class="op">=</span> <span class="ident">MIGRATIONS</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">i32</span> {
+    <span class="kw">if</span> <span class="ident">version</span> <span class="op">==</span> <span class="ident">MIGRATIONS</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">i32</span> {
         <span class="macro">log::info!</span>(<span class="string">&quot;db up to date, no migration needed&quot;</span>);
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
     }
@@ -1887,7 +1887,7 @@
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::SqliteDatabase</span>;
     <span class="kw">use</span> <span class="ident">std::time</span>::{<span class="ident">SystemTime</span>, <span class="ident">UNIX_EPOCH</span>};
 
-    <span class="kw">fn</span> <span class="ident">get_database</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SqliteDatabase</span> {
+    <span class="kw">fn</span> <span class="ident">get_database</span>() -&gt; <span class="ident">SqliteDatabase</span> {
         <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> <span class="ident">SystemTime::now</span>().<span class="ident">duration_since</span>(<span class="ident">UNIX_EPOCH</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dir</span> <span class="op">=</span> <span class="ident">std::env::temp_dir</span>();
         <span class="ident">dir</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;bdk_{}&quot;</span>, <span class="ident">time</span>.<span class="ident">as_nanos</span>()));

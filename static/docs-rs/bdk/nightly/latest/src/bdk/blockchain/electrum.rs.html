@@ -234,7 +234,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">std::convert::From</span><span class="op">&lt;</span><span class="ident">Client</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ElectrumBlockchain</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">client</span>: <span class="ident">Client</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">client</span>: <span class="ident">Client</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">ElectrumBlockchain</span> {
             <span class="ident">client</span>,
             <span class="ident">stop_gap</span>: <span class="number">20</span>,
@@ -243,7 +243,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Blockchain</span> <span class="kw">for</span> <span class="ident">ElectrumBlockchain</span> {
-    <span class="kw">fn</span> <span class="ident">get_capabilities</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">Capability</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_capabilities</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">Capability</span><span class="op">&gt;</span> {
         <span class="macro">vec!</span>[
             <span class="ident">Capability::FullHistory</span>,
             <span class="ident">Capability::GetAnyTx</span>,
@@ -257,20 +257,20 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">database</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">D</span>,
         <span class="ident">progress_update</span>: <span class="ident">P</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">client</span>
             .<span class="ident">electrum_like_setup</span>(<span class="self">self</span>.<span class="ident">stop_gap</span>, <span class="ident">database</span>, <span class="ident">progress_update</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">client</span>.<span class="ident">transaction_get</span>(<span class="ident">txid</span>).<span class="ident">map</span>(<span class="ident">Option::Some</span>)<span class="question-mark">?</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tx</span>: <span class="kw-2">&amp;</span><span class="ident">Transaction</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">broadcast</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tx</span>: <span class="kw-2">&amp;</span><span class="ident">Transaction</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">client</span>.<span class="ident">transaction_broadcast</span>(<span class="ident">tx</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ())<span class="question-mark">?</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_height</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_height</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="comment">// TODO: unsubscribe when added to the client, or is there a better call to use here?</span>
 
         <span class="prelude-val">Ok</span>(<span class="self">self</span>
@@ -279,7 +279,7 @@
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">data</span><span class="op">|</span> <span class="ident">data</span>.<span class="ident">height</span> <span class="kw">as</span> <span class="ident">u32</span>)<span class="question-mark">?</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">estimate_fee</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">target</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">FeeRate</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">estimate_fee</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">target</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">FeeRate</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">FeeRate::from_btc_per_kvb</span>(
             <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">estimate_fee</span>(<span class="ident">target</span>)<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">f32</span>
         ))
@@ -290,7 +290,7 @@
     <span class="kw">fn</span> <span class="ident">els_batch_script_get_history</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span>, <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">Script</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">scripts</span>: <span class="ident">I</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ElsGetHistoryRes</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ElsGetHistoryRes</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">batch_script_get_history</span>(<span class="ident">scripts</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> {
                 <span class="ident">v</span>.<span class="ident">into_iter</span>()
@@ -314,14 +314,14 @@
     <span class="kw">fn</span> <span class="ident">els_batch_transaction_get</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span>, <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">Txid</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">txids</span>: <span class="ident">I</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">batch_transaction_get</span>(<span class="ident">txids</span>).<span class="ident">map_err</span>(<span class="ident">Error::Electrum</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">els_batch_block_header</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">u32</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">heights</span>: <span class="ident">I</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BlockHeader</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BlockHeader</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">batch_block_header</span>(<span class="ident">heights</span>).<span class="ident">map_err</span>(<span class="ident">Error::Electrum</span>)
     }
 }
@@ -346,7 +346,7 @@
 <span class="kw">impl</span> <span class="ident">ConfigurableBlockchain</span> <span class="kw">for</span> <span class="ident">ElectrumBlockchain</span> {
     <span class="kw">type</span> <span class="ident">Config</span> <span class="op">=</span> <span class="ident">ElectrumBlockchainConfig</span>;
 
-    <span class="kw">fn</span> <span class="ident">from_config</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Config</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from_config</span>(<span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Config</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">socks5</span> <span class="op">=</span> <span class="ident">config</span>.<span class="ident">socks5</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="ident">Socks5Config::new</span>);
         <span class="kw">let</span> <span class="ident">electrum_config</span> <span class="op">=</span> <span class="ident">ConfigBuilder::new</span>()
             .<span class="ident">retry</span>(<span class="ident">config</span>.<span class="ident">retry</span>)
@@ -364,7 +364,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-electrum&quot;</span>)]</span>
 <span class="macro">crate::bdk_blockchain_tests!</span> {
-    <span class="kw">fn</span> <span class="ident">test_instance</span>(<span class="ident">test_client</span>: <span class="kw-2">&amp;</span><span class="ident">TestClient</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ElectrumBlockchain</span> {
+    <span class="kw">fn</span> <span class="ident">test_instance</span>(<span class="ident">test_client</span>: <span class="kw-2">&amp;</span><span class="ident">TestClient</span>) -&gt; <span class="ident">ElectrumBlockchain</span> {
         <span class="ident">ElectrumBlockchain::from</span>(<span class="ident">Client::new</span>(<span class="kw-2">&amp;</span><span class="ident">test_client</span>.<span class="ident">electrsd</span>.<span class="ident">electrum_url</span>).<span class="ident">unwrap</span>())
     }
 }

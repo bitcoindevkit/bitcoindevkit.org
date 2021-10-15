@@ -333,7 +333,7 @@
         <span class="ident">headers_store</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">Full</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="ident">skip_blocks</span>: <span class="ident">usize</span>,
         <span class="ident">filter_type</span>: <span class="ident">u8</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">cf_store</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">CfStore::new</span>(<span class="kw-2">&amp;</span><span class="ident">headers_store</span>, <span class="ident">filter_type</span>)<span class="question-mark">?</span>);
 
         <span class="prelude-val">Ok</span>(<span class="ident">CfSync</span> {
@@ -344,19 +344,19 @@
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pruned_bundles</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pruned_bundles</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="self">self</span>
             .<span class="ident">cf_store</span>
             .<span class="ident">get_bundles</span>()<span class="question-mark">?</span>
             .<span class="ident">into_iter</span>()
             .<span class="ident">skip</span>(<span class="self">self</span>.<span class="ident">skip_blocks</span> <span class="op">/</span> <span class="number">1000</span>)
             .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, (<span class="ident">status</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">status</span> {
-                <span class="ident">BundleStatus::Pruned</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">acc</span> <span class="op">+</span> <span class="number">1</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">acc</span>,
+                <span class="ident">BundleStatus::Pruned</span> =&gt; <span class="ident">acc</span> <span class="op">+</span> <span class="number">1</span>,
+                <span class="kw">_</span> =&gt; <span class="ident">acc</span>,
             }))
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prepare_sync</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">peer</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Peer</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prepare_sync</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">peer</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Peer</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bundles_lock</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bundles</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">resp</span> <span class="op">=</span> <span class="ident">peer</span>.<span class="ident">get_cf_checkpt</span>(
@@ -378,17 +378,17 @@
         <span class="ident">peer</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Peer</span><span class="op">&gt;</span>,
         <span class="ident">process</span>: <span class="ident">F</span>,
         <span class="ident">completed_bundle</span>: <span class="ident">Q</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span>
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">CompactFiltersError</span><span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">BlockHash</span>, <span class="kw-2">&amp;</span><span class="ident">BlockFilter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span>,
-        <span class="ident">Q</span>: <span class="ident">Fn</span>(<span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>,
+        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">BlockHash</span>, <span class="kw-2">&amp;</span><span class="ident">BlockFilter</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span>,
+        <span class="ident">Q</span>: <span class="ident">Fn</span>(<span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>,
     {
         <span class="kw">let</span> <span class="ident">current_height</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">headers_store</span>.<span class="ident">get_height</span>()<span class="question-mark">?</span>; <span class="comment">// TODO: we should update it in case headers_store is also updated</span>
 
         <span class="kw">loop</span> {
             <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">status</span>, <span class="ident">checkpoint</span>, <span class="ident">index</span>) <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">bundles</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>().<span class="ident">pop_front</span>() {
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">break</span>,
-                <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">x</span>,
+                <span class="prelude-val">None</span> =&gt; <span class="kw">break</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">x</span>) =&gt; <span class="ident">x</span>,
             };
 
             <span class="macro">log::debug!</span>(
@@ -399,7 +399,7 @@
             );
 
             <span class="kw">let</span> <span class="ident">process_received_filters</span> <span class="op">=</span>
-                <span class="op">|</span><span class="ident">expected_filters</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
+                <span class="op">|</span><span class="ident">expected_filters</span><span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">filters_map</span> <span class="op">=</span> <span class="ident">BTreeMap::new</span>();
                     <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">expected_filters</span> {
                         <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span> <span class="ident">peer</span>.<span class="ident">pop_cf_filter_resp</span>()<span class="question-mark">?</span>;
@@ -408,8 +408,8 @@
                         }
 
                         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">headers_store</span>.<span class="ident">get_height_for</span>(<span class="kw-2">&amp;</span><span class="ident">filter</span>.<span class="ident">block_hash</span>)<span class="question-mark">?</span> {
-                            <span class="prelude-val">Some</span>(<span class="ident">height</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">filters_map</span>.<span class="ident">insert</span>(<span class="ident">height</span>, <span class="ident">filter</span>.<span class="ident">filter</span>),
-                            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CompactFiltersError::InvalidFilter</span>),
+                            <span class="prelude-val">Some</span>(<span class="ident">height</span>) =&gt; <span class="ident">filters_map</span>.<span class="ident">insert</span>(<span class="ident">height</span>, <span class="ident">filter</span>.<span class="ident">filter</span>),
+                            <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CompactFiltersError::InvalidFilter</span>),
                         };
                     }
 
@@ -431,7 +431,7 @@
 
                 <span class="kw">let</span> <span class="ident">resp</span> <span class="op">=</span> <span class="ident">peer</span>.<span class="ident">get_cf_headers</span>(<span class="number">0x00</span>, <span class="ident">start_height</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="ident">stop_hash</span>)<span class="question-mark">?</span>;
 
-                <span class="macro">assert!</span>(<span class="ident">resp</span>.<span class="ident">previous_filter_header</span> <span class="op">=</span><span class="op">=</span> <span class="ident">checkpoint</span>);
+                <span class="macro">assert!</span>(<span class="ident">resp</span>.<span class="ident">previous_filter_header</span> <span class="op">==</span> <span class="ident">checkpoint</span>);
                 <span class="ident">status</span> <span class="op">=</span>
                     <span class="self">self</span>.<span class="ident">cf_store</span>
                         .<span class="ident">advance_to_cf_headers</span>(<span class="ident">index</span>, <span class="ident">checkpoint</span>, <span class="ident">resp</span>.<span class="ident">filter_hashes</span>)<span class="question-mark">?</span>;
@@ -447,8 +447,8 @@
                     <span class="ident">checkpoint</span>,
                     <span class="ident">headers_resp</span>.<span class="ident">filter_hashes</span>,
                 )<span class="question-mark">?</span> {
-                    <span class="ident">BundleStatus::CfHeaders</span> { <span class="ident">cf_headers</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">cf_headers</span>,
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CompactFiltersError::InvalidResponse</span>),
+                    <span class="ident">BundleStatus::CfHeaders</span> { <span class="ident">cf_headers</span> } =&gt; <span class="ident">cf_headers</span>,
+                    <span class="kw">_</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CompactFiltersError::InvalidResponse</span>),
                 };
 
                 <span class="ident">peer</span>.<span class="ident">get_cf_filters</span>(
@@ -540,9 +540,9 @@
     <span class="ident">peer</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Peer</span><span class="op">&gt;</span>,
     <span class="ident">store</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">Full</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">sync_fn</span>: <span class="ident">F</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">Snapshot</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span>
+) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ChainStore</span><span class="op">&lt;</span><span class="ident">Snapshot</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">CompactFiltersError</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>,
+    <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>,
 {
     <span class="kw">let</span> <span class="ident">locators</span> <span class="op">=</span> <span class="ident">store</span>.<span class="ident">get_locators</span>()<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">locators_vec</span> <span class="op">=</span> <span class="ident">locators</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">hash</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">hash</span>).<span class="ident">cloned</span>().<span class="ident">collect</span>();
@@ -561,8 +561,8 @@
         }
 
         <span class="kw">match</span> <span class="ident">locators_map</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">headers</span>[<span class="number">0</span>].<span class="ident">prev_blockhash</span>) {
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CompactFiltersError::InvalidHeaders</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">from</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">store</span>.<span class="ident">start_snapshot</span>(<span class="kw-2">*</span><span class="ident">from</span>)<span class="question-mark">?</span>, <span class="ident">headers</span>[<span class="number">0</span>].<span class="ident">prev_blockhash</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CompactFiltersError::InvalidHeaders</span>),
+            <span class="prelude-val">Some</span>(<span class="ident">from</span>) =&gt; (<span class="ident">store</span>.<span class="ident">start_snapshot</span>(<span class="kw-2">*</span><span class="ident">from</span>)<span class="question-mark">?</span>, <span class="ident">headers</span>[<span class="number">0</span>].<span class="ident">prev_blockhash</span>),
         }
     } <span class="kw">else</span> {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">CompactFiltersError::InvalidResponse</span>);
