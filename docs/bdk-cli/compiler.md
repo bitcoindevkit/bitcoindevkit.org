@@ -41,7 +41,7 @@ miniscriptc --parsed_policy "and(pk(cSQPHDBwXGjVzWRqAHm6zfvQhaTuj1f2bFH58h55ghbj
 
 The compiler should print something like:
 
-```text
+```bash
 [2020-04-29T10:42:05Z INFO  miniscriptc] Compiling policy: and(pk(cSQPHDBwXGjVzWRqAHm6zfvQhaTuj1f2bFH58h55ghbjtFwvmeXR),or(50@pk(02e96fe52ef0e22d2f131dd425ce1893073a3c6ad20e8cac36726393dfb4856a4c),older(1000)))
 [2020-04-29T10:42:05Z INFO  miniscriptc] ... Descriptor: sh(wsh(and_v(or_c(c:pk(02e96fe52ef0e22d2f131dd425ce1893073a3c6ad20e8cac36726393dfb4856a4c),v:older(1000)),c:pk(cSQPHDBwXGjVzWRqAHm6zfvQhaTuj1f2bFH58h55ghbjtFwvmeXR))))
 [2020-04-29T10:42:05Z INFO  miniscriptc] ... First address: 2MsqrJuZewY3o3ADAy1Uhi5vsBqTANjH3Cf

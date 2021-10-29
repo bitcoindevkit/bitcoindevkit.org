@@ -76,7 +76,7 @@ println!("Generated Address: {}", wallet.get_new_address()?);
 
 Building and running this code will print out:
 
-```text
+```bash
 Generated Address: tb1q7w0t936xp5p994qx506xj53gjdcmzjr2mkqghn
 ```
 

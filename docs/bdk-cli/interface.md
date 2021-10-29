@@ -4,7 +4,7 @@ Remember the `bdk-cli --help` command you ran before? Let's analyze its output h
 
 ## Flags
 
-```text
+```bash
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
@@ -23,7 +23,7 @@ export RUST_LOG="bdk=debug"
 
 ## Options
 
-```text
+```bash
 OPTIONS:
     -c, --change_descriptor <CHANGE_DESCRIPTOR>        Sets the descriptor to use for internal addresses
     -d, --descriptor <DESCRIPTOR>                      Sets the descriptor to use for the external addresses
@@ -84,7 +84,7 @@ These are the main "functions" of the wallet. Most of them are pretty self expla
 
 ### broadcast
 
-```text
+```bash
 OPTIONS:
         --psbt <BASE64_PSBT>    Sets the PSBT to extract and broadcast
         --tx <RAWTX>            Sets the raw transaction to broadcast
@@ -94,7 +94,7 @@ Broadcasts a transaction. The transaction can be a raw hex transaction or a PSBT
 
 ### bump\_fee
 
-```text
+```bash
 FLAGS:
     -a, --send_all    Allows the wallet to reduce the amount of the only output in order to increase fees. This is
                       generally the expected behavior for transactions originally created with `send_all`
@@ -113,7 +113,7 @@ The `--send_all` flag should be enabled if the original transaction was also mad
 
 ### combine\_psbt
 
-```text
+```bash
 OPTIONS:
         --psbt <BASE64_PSBT>...    Add one PSBT to comine. This option can be repeated multiple times, one for each PSBT
 ```
@@ -122,7 +122,7 @@ Combines multiple PSBTs by merging metadata and partial signatures. It can be us
 
 ### create\_tx
 
-```text
+```bash
 FLAGS:
     -r, --enable_rbf        Enables Replace-By-Fee (BIP125)
         --offline_signer    Make a PSBT that can be signed by offline signers and hardware wallets. Forces the addition
@@ -196,7 +196,7 @@ we want to use. In this case we want to use children #0 and #1 of the root, so o
 
 ### extract\_psbt
 
-```text
+```bash
 OPTIONS:
         --psbt <BASE64_PSBT>    Sets the PSBT to extract
 ```
@@ -205,7 +205,7 @@ Extracts the global transaction from a PSBT. **Note that partial signatures are 
 
 ### finalize\_psbt
 
-```text
+```bash
 OPTIONS:
         --psbt <BASE64_PSBT>        Sets the PSBT to finalize
         --assume_height <HEIGHT>    Assume the blockchain has reached a specific height
@@ -506,7 +506,7 @@ This subcommand has no extra flags and launches an interactive shell session.
 
 ### `sign`
 
-```text
+```bash
 OPTIONS:
           --psbt <BASE64_PSBT>        Sets the PSBT to sign
           --assume_height <HEIGHT>    Assume the blockchain has reached a specific height. This affects the transaction

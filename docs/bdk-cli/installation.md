@@ -37,7 +37,7 @@ This command may take a while to finish, since it will fetch and compile all the
 
 Once it's done, you can check if everything went fine by running `bdk-cli --help` which should print something like this:
 
-```text
+```bash
 BDK CLI 0.2.1-dev
 Alekos Filini <alekos.filini@gmail.com>:Riccardo Casatta <riccardo@casatta.it>:Steve Myers <steve@notmandatory.org>
 Top level options and command modes
