@@ -20,7 +20,7 @@ only be using testnet coins.
 
 The [previous version] of the [Rusty Paper Wallet] followed the original paper wallet design: WIF[^WIF] as secret part with the option to generate a different kind of addresses (legacy, nested segwit, and segwit).
 
-There were plans to [support mnemonic](https://github.com/RCasatta/rusty-paper-wallet/issues/5) instead of WIF keys because it may[^WIF core] save the sweep transaction[^sweep] and there are more wallets capable of importing a mnemonic instead of a WIF.
+There were plans to [support mnemonic](https://github.com/RCasatta/rusty-paper-wallet/issues/5) instead of WIF keys because it may[^WIFcore] save the sweep transaction[^sweep] and there are more wallets capable of importing a mnemonic instead of a WIF.
 
 However, choosing a single address type or having wallet support for a specific format is the kind of problem [descriptors] solve perfectly, so the latest [Rusty Paper Wallet] version now accepts a descriptor and the network as parameters.
 
@@ -65,7 +65,7 @@ The lower part is the secret part, the written part is the descriptor with the a
 
 The paper wallet must then be printed, and it is better to use a printer without wifi and also to be aware that some sensitive data may remain in the printer's cache.
 
-Then the paper wallet must be cut along the dotted lines, the secret part should be folded twice over the black zone[^black zone]. The black zone helps to avoid showing the secret parts in the presence of back-light. Once the folding is done the paper wallet should be plasticized to prevent being damaged by water.
+Then the paper wallet must be cut along the dotted lines, the secret part should be folded twice over the black zone[^blackzone]. The black zone helps to avoid showing the secret parts in the presence of back-light. Once the folding is done the paper wallet should be plasticized to prevent being damaged by water.
 
 ## BDK
 
@@ -185,6 +185,6 @@ problems or would like to suggest improvements leave an issue in the [Rusty Pape
 [guarantees]: https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md#checksums
 
 [^WIF]: Wallet Input Format, a string encoding a ECDSA private key  https://en.bitcoin.it/wiki/Wallet_import_format
-[^WIF core]: Unless the user import the WIF directly into bitcoin core
+[^WIFcore]: Unless the user import the WIF directly into bitcoin core
 [^sweep]: Some wallets refers to sweep as the action to create a transaction taking all the funds from the paper wallet and sending those to the wallet itself.
-[^black zone]: Ideally, the black zone should be twice as long as the secret part to cover it back and front, long descriptor may leave a shorter black zone, ensure to have you printer set with vertical layout for best results.
+[^blackzone]: Ideally, the black zone should be twice as long as the secret part to cover it back and front, long descriptor may leave a shorter black zone, ensure to have you printer set with vertical layout for best results.

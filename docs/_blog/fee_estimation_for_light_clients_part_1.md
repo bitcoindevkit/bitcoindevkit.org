@@ -18,7 +18,7 @@ This post is part 1 of 3 of a series. ([Part 2], [Part 3])
 
 ## Introduction: what is fee estimation?
 
-Fee estimation is the process of selecting the fee rate[^fee rate] for a bitcoin transaction being created, according to two main factors:
+Fee estimation is the process of selecting the fee rate[^feerate] for a bitcoin transaction being created, according to two main factors:
 
 * The current congestion of the Bitcoin network.
 * The urgency, or lack thereof, for the transaction confirmation, i.e, its inclusion in a block.
@@ -85,7 +85,7 @@ The [data logger] is built with the purpose of collecting all the data we need, 
 We need to register the moment in time when transactions enter in the node's mempool; to be efficient and precise we should not only call the RPC endpoints but listen to [ZMQ] events. Luckily, the just released bitcoin core 0.21.0 added a new [ZMQ] topic `zmqpubsequence` notifying mempool events (and block events). The logger is also listening to `zmqpubrawtx` and `zmqpubrawblock` topics, to make less RPC calls.
 
 We are not only interested in the timestamp of the transaction entering the mempool, but also how many blocks it will take until the same transaction is confirmed.
-In the final dataset this field is called `confirms_in`[^blocks target]; if `confirms_in = 1` it means the transaction is confirmed in the first block created after it has been seen for the first time.
+In the final dataset this field is called `confirms_in`[^blockstarget]; if `confirms_in = 1` it means the transaction is confirmed in the first block created after it has been seen for the first time.
 
 Another critical piece of information logged by the data logger is the `fee_rate` of the transaction, since the absolute fee value paid by a bitcoin transaction is not available nor derivable given only the transaction itself, as the inputs don't have explicit amounts.
 
@@ -103,10 +103,10 @@ I expect (or at least hope) the raw logs, the CSV dataset, or the data logger wi
 
 In the following [Part 2] we are going to talk about the dataset.
 
-[^fee rate]: The transaction fee rate is the ratio between the absolute fee expressed in satoshi, over the weight of the transaction measured in virtual bytes. The weight of the transaction is similar to the byte size, however a part of the transaction (the segwit part) is discounted, their byte size is considered less because it creates less burden for the network.
+[^feerate]: The transaction fee rate is the ratio between the absolute fee expressed in satoshi, over the weight of the transaction measured in virtual bytes. The weight of the transaction is similar to the byte size, however a part of the transaction (the segwit part) is discounted, their byte size is considered less because it creates less burden for the network.
 [^mempool]: mempool is the set of transactions that are valid by consensus rules (for example, they are spending existing bitcoin), broadcasted in the bitcoin peer to peer network, but they are not yet part of the blockchain.
 [^disclaimer]: DISCLAIMER: I am not an expert data-scientist!
-[^blocks target]: Conceptually similar to bitcoin core `estimatesmartfee` parameter called "blocks target", however, `confirms_in` is the real value not the desired target.
+[^blockstarget]: Conceptually similar to bitcoin core `estimatesmartfee` parameter called "blocks target", however, `confirms_in` is the real value not the desired target.
 [^fast]: 16GB of compressed raw logs are processed and a compressed CSV produced in about 5 minutes.
 
 [Part 1]: /blog/2021/01/fee-estimation-for-light-clients-part-1/

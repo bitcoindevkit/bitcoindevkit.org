@@ -58,7 +58,7 @@ The array stops at `a15` because `a16` would have a bucket min greater than `arr
 
 The model is for light-client such as [neutrino] based ones. In these clients the mempool is already available (it's needed to check for received transactions) but we can't compute fee rates of this transactions because previous confirmed inputs are not in the mempool!
 
-Luckily, **thanks to temporal locality [^temporal locality], an important part of mempool transactions spend outputs created very recently**, for example in the last 6 blocks.
+Luckily, **thanks to temporal locality [^temporallocality], an important part of mempool transactions spend outputs created very recently**, for example in the last 6 blocks.
 The blocks are available through the p2p network, and downloading the last 6 is considered a good compromise between resource consumption and accurate prediction. We need the model to be built with the same data available in the prediction phase, as a consequence *the mempool data in the dataset refers only to transactions having their inputs in the last 6 blocks*. However the `bitcoin-csv` tool inside the [data logger] allows to configure this parameter.
 
 #### The outliers
@@ -111,7 +111,7 @@ In the previous [Part 1] we talked about the problem.
 
 In the following [Part 3] we are going to talk about the model.
 
-[^temporal locality]: In computer science temporal locality refers to the tendency to access recent data more often than older data.
+[^temporallocality]: In computer science temporal locality refers to the tendency to access recent data more often than older data.
 
 [Part 1]: /blog/2021/01/fee-estimation-for-light-clients-part-1/
 [Part 2]: /blog/2021/01/fee-estimation-for-light-clients-part-2/
