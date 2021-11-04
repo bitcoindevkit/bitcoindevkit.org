@@ -188,6 +188,24 @@
 <span id="188">188</span>
 <span id="189">189</span>
 <span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -209,7 +227,23 @@
 
 <span class="kw">use</span> <span class="ident">miniscript::ScriptContext</span>;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">bip39</span>::{<span class="ident">Language</span>, <span class="ident">Mnemonic</span>, <span class="ident">MnemonicType</span>, <span class="ident">Seed</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">bip39</span>::{<span class="ident">Language</span>, <span class="ident">Mnemonic</span>};
+
+<span class="kw">type</span> <span class="ident">Seed</span> <span class="op">=</span> [<span class="ident">u8</span>; <span class="number">64</span>];
+
+<span class="doccomment">/// Type describing entropy length (aka word count) in the mnemonic</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">WordsCount</span> {
+    <span class="doccomment">/// 12 words mnemonic (128 bits entropy)</span>
+    <span class="ident">Words12</span> <span class="op">=</span> <span class="number">128</span>,
+    <span class="doccomment">/// 15 words mnemonic (160 bits entropy)</span>
+    <span class="ident">Words15</span> <span class="op">=</span> <span class="number">160</span>,
+    <span class="doccomment">/// 18 words mnemonic (192 bits entropy)</span>
+    <span class="ident">Words18</span> <span class="op">=</span> <span class="number">192</span>,
+    <span class="doccomment">/// 21 words mnemonic (224 bits entropy)</span>
+    <span class="ident">Words21</span> <span class="op">=</span> <span class="number">224</span>,
+    <span class="doccomment">/// 24 words mnemonic (256 bits entropy)</span>
+    <span class="ident">Words24</span> <span class="op">=</span> <span class="number">256</span>,
+}
 
 <span class="kw">use</span> <span class="kw">super</span>::{
     <span class="ident">any_network</span>, <span class="ident">DerivableKey</span>, <span class="ident">DescriptorKey</span>, <span class="ident">ExtendedKey</span>, <span class="ident">GeneratableKey</span>, <span class="ident">GeneratedKey</span>, <span class="ident">KeyError</span>,
@@ -230,7 +264,7 @@
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;keys-bip39&quot;</span>)))]</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">ScriptContext</span><span class="op">&gt;</span> <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Seed</span> {
     <span class="kw">fn</span> <span class="ident">into_extended_key</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ExtendedKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">bip32::ExtendedPrivKey::new_master</span>(<span class="ident">Network::Bitcoin</span>, <span class="self">self</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>.<span class="ident">into</span>())
+        <span class="prelude-val">Ok</span>(<span class="ident">bip32::ExtendedPrivKey::new_master</span>(<span class="ident">Network::Bitcoin</span>, <span class="kw-2">&amp;</span><span class="self">self</span>[..])<span class="question-mark">?</span>.<span class="ident">into</span>())
     }
 
     <span class="kw">fn</span> <span class="ident">into_descriptor_key</span>(
@@ -250,7 +284,7 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">ScriptContext</span><span class="op">&gt;</span> <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MnemonicWithPassphrase</span> {
     <span class="kw">fn</span> <span class="ident">into_extended_key</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ExtendedKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">mnemonic</span>, <span class="ident">passphrase</span>) <span class="op">=</span> <span class="self">self</span>;
-        <span class="kw">let</span> <span class="ident">seed</span> <span class="op">=</span> <span class="ident">Seed::new</span>(<span class="kw-2">&amp;</span><span class="ident">mnemonic</span>, <span class="ident">passphrase</span>.<span class="ident">as_deref</span>().<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>));
+        <span class="kw">let</span> <span class="ident">seed</span>: <span class="ident">Seed</span> <span class="op">=</span> <span class="ident">mnemonic</span>.<span class="ident">to_seed</span>(<span class="ident">passphrase</span>.<span class="ident">as_deref</span>().<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>));
 
         <span class="ident">seed</span>.<span class="ident">into_extended_key</span>()
     }
@@ -291,15 +325,15 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">ScriptContext</span><span class="op">&gt;</span> <span class="ident">GeneratableKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Mnemonic</span> {
     <span class="kw">type</span> <span class="ident">Entropy</span> <span class="op">=</span> [<span class="ident">u8</span>; <span class="number">32</span>];
 
-    <span class="kw">type</span> <span class="ident">Options</span> <span class="op">=</span> (<span class="ident">MnemonicType</span>, <span class="ident">Language</span>);
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bip39::ErrorKind</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Options</span> <span class="op">=</span> (<span class="ident">WordsCount</span>, <span class="ident">Language</span>);
+    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bip39::Error</span><span class="op">&gt;</span>;
 
     <span class="kw">fn</span> <span class="ident">generate_with_entropy</span>(
-        (<span class="ident">mnemonic_type</span>, <span class="ident">language</span>): <span class="ident"><span class="self">Self</span>::Options</span>,
+        (<span class="ident">word_count</span>, <span class="ident">language</span>): <span class="ident"><span class="self">Self</span>::Options</span>,
         <span class="ident">entropy</span>: <span class="ident"><span class="self">Self</span>::Entropy</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">GeneratedKey</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Ctx</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">entropy</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">entropy</span>.<span class="ident">as_ref</span>()[..(<span class="ident">mnemonic_type</span>.<span class="ident">entropy_bits</span>() <span class="op">/</span> <span class="number">8</span>)];
-        <span class="kw">let</span> <span class="ident">mnemonic</span> <span class="op">=</span> <span class="ident">Mnemonic::from_entropy</span>(<span class="ident">entropy</span>, <span class="ident">language</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">downcast</span>().<span class="ident">ok</span>())<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">entropy</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">entropy</span>.<span class="ident">as_ref</span>()[..(<span class="ident">word_count</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">/</span> <span class="number">8</span>)];
+        <span class="kw">let</span> <span class="ident">mnemonic</span> <span class="op">=</span> <span class="ident">Mnemonic::from_entropy_in</span>(<span class="ident">language</span>, <span class="ident">entropy</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="ident">GeneratedKey::new</span>(<span class="ident">mnemonic</span>, <span class="ident">any_network</span>()))
     }
@@ -311,15 +345,17 @@
 
     <span class="kw">use</span> <span class="ident">bitcoin::util::bip32</span>;
 
-    <span class="kw">use</span> <span class="ident">bip39</span>::{<span class="ident">Language</span>, <span class="ident">Mnemonic</span>, <span class="ident">MnemonicType</span>};
+    <span class="kw">use</span> <span class="ident">bip39</span>::{<span class="ident">Language</span>, <span class="ident">Mnemonic</span>};
 
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keys</span>::{<span class="ident">any_network</span>, <span class="ident">GeneratableKey</span>, <span class="ident">GeneratedKey</span>};
+
+    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::WordsCount</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_keys_bip39_mnemonic</span>() {
         <span class="kw">let</span> <span class="ident">mnemonic</span> <span class="op">=</span>
             <span class="string">&quot;aim bunker wash balance finish force paper analyst cabin spoon stable organ&quot;</span>;
-        <span class="kw">let</span> <span class="ident">mnemonic</span> <span class="op">=</span> <span class="ident">Mnemonic::from_phrase</span>(<span class="ident">mnemonic</span>, <span class="ident">Language::English</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">mnemonic</span> <span class="op">=</span> <span class="ident">Mnemonic::parse_in</span>(<span class="ident">Language::English</span>, <span class="ident">mnemonic</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">bip32::DerivationPath::from_str</span>(<span class="string">&quot;m/44&#39;/0&#39;/0&#39;/0&quot;</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> (<span class="ident">mnemonic</span>, <span class="ident">path</span>);
@@ -333,7 +369,7 @@
     <span class="kw">fn</span> <span class="ident">test_keys_bip39_mnemonic_passphrase</span>() {
         <span class="kw">let</span> <span class="ident">mnemonic</span> <span class="op">=</span>
             <span class="string">&quot;aim bunker wash balance finish force paper analyst cabin spoon stable organ&quot;</span>;
-        <span class="kw">let</span> <span class="ident">mnemonic</span> <span class="op">=</span> <span class="ident">Mnemonic::from_phrase</span>(<span class="ident">mnemonic</span>, <span class="ident">Language::English</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">mnemonic</span> <span class="op">=</span> <span class="ident">Mnemonic::parse_in</span>(<span class="ident">Language::English</span>, <span class="ident">mnemonic</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">bip32::DerivationPath::from_str</span>(<span class="string">&quot;m/44&#39;/0&#39;/0&#39;/0&quot;</span>).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> ((<span class="ident">mnemonic</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;passphrase&quot;</span>.<span class="ident">into</span>())), <span class="ident">path</span>);
@@ -347,7 +383,7 @@
     <span class="kw">fn</span> <span class="ident">test_keys_generate_bip39</span>() {
         <span class="kw">let</span> <span class="ident">generated_mnemonic</span>: <span class="ident">GeneratedKey</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">miniscript::Segwitv0</span><span class="op">&gt;</span> <span class="op">=</span>
             <span class="ident">Mnemonic::generate_with_entropy</span>(
-                (<span class="ident">MnemonicType::Words12</span>, <span class="ident">Language::English</span>),
+                (<span class="ident">WordsCount::Words12</span>, <span class="ident">Language::English</span>),
                 <span class="ident"><span class="kw">crate</span>::keys::test::TEST_ENTROPY</span>,
             )
             .<span class="ident">unwrap</span>();
@@ -359,7 +395,7 @@
 
         <span class="kw">let</span> <span class="ident">generated_mnemonic</span>: <span class="ident">GeneratedKey</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">miniscript::Segwitv0</span><span class="op">&gt;</span> <span class="op">=</span>
             <span class="ident">Mnemonic::generate_with_entropy</span>(
-                (<span class="ident">MnemonicType::Words24</span>, <span class="ident">Language::English</span>),
+                (<span class="ident">WordsCount::Words24</span>, <span class="ident">Language::English</span>),
                 <span class="ident"><span class="kw">crate</span>::keys::test::TEST_ENTROPY</span>,
             )
             .<span class="ident">unwrap</span>();
@@ -370,11 +406,11 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_keys_generate_bip39_random</span>() {
         <span class="kw">let</span> <span class="ident">generated_mnemonic</span>: <span class="ident">GeneratedKey</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">miniscript::Segwitv0</span><span class="op">&gt;</span> <span class="op">=</span>
-            <span class="ident">Mnemonic::generate</span>((<span class="ident">MnemonicType::Words12</span>, <span class="ident">Language::English</span>)).<span class="ident">unwrap</span>();
+            <span class="ident">Mnemonic::generate</span>((<span class="ident">WordsCount::Words12</span>, <span class="ident">Language::English</span>)).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">generated_mnemonic</span>.<span class="ident">valid_networks</span>, <span class="ident">any_network</span>());
 
         <span class="kw">let</span> <span class="ident">generated_mnemonic</span>: <span class="ident">GeneratedKey</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">miniscript::Segwitv0</span><span class="op">&gt;</span> <span class="op">=</span>
-            <span class="ident">Mnemonic::generate</span>((<span class="ident">MnemonicType::Words24</span>, <span class="ident">Language::English</span>)).<span class="ident">unwrap</span>();
+            <span class="ident">Mnemonic::generate</span>((<span class="ident">WordsCount::Words24</span>, <span class="ident">Language::English</span>)).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">generated_mnemonic</span>.<span class="ident">valid_networks</span>, <span class="ident">any_network</span>());
     }
 }
