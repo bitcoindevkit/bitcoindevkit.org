@@ -155,7 +155,7 @@ tx_builder
     .fee_rate(FeeRate::from_sat_per_vb(5.0))
     .do_not_spend_change()
     .enable_rbf();
-let (mut psbt, tx_details) = tx_builder.finish()?
+let (mut psbt, tx_details) = tx_builder.finish()?;
 
 println!("Transaction details: {:#?}", tx_details);
 ```
