@@ -152,7 +152,6 @@ let faucet_address = Address::from_str("mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt")?;
 let mut tx_builder = wallet.build_tx();
 tx_builder
     .add_recipient(faucet_address.script_pubkey(), balance / 2)
-    .fee_rate(FeeRate::from_sat_per_vb(5.0))
     .enable_rbf();
 let (mut psbt, tx_details) = tx_builder.finish()?;
 
