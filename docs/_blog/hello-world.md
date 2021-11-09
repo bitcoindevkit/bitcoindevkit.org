@@ -50,7 +50,6 @@ use bdk::{
     bitcoin::Network,
     database::MemoryDatabase,
     Wallet,
-    wallet::AddressIndex,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -98,6 +97,7 @@ use bdk::{
     database::MemoryDatabase,
     electrum_client::Client,
     Wallet,
+    wallet:AddressIndex
 };
 
 // ...
