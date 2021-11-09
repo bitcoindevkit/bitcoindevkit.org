@@ -153,7 +153,6 @@ let mut tx_builder = wallet.build_tx();
 tx_builder
     .add_recipient(faucet_address.script_pubkey(), 0_900)
     .fee_rate(FeeRate::from_sat_per_vb(5.0))
-    .do_not_spend_change()
     .enable_rbf();
 let (mut psbt, tx_details) = tx_builder.finish()?;
 
