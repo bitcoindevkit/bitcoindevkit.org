@@ -3981,6 +3981,20 @@
 <span id="3981">3981</span>
 <span id="3982">3982</span>
 <span id="3983">3983</span>
+<span id="3984">3984</span>
+<span id="3985">3985</span>
+<span id="3986">3986</span>
+<span id="3987">3987</span>
+<span id="3988">3988</span>
+<span id="3989">3989</span>
+<span id="3990">3990</span>
+<span id="3991">3991</span>
+<span id="3992">3992</span>
+<span id="3993">3993</span>
+<span id="3994">3994</span>
+<span id="3995">3995</span>
+<span id="3996">3996</span>
+<span id="3997">3997</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -4040,7 +4054,7 @@
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::blockchain</span>::{<span class="ident">Blockchain</span>, <span class="ident">Progress</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::memory::MemoryDatabase</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>, <span class="ident">SyncTime</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::derived::AsDerived</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::policy::BuildSatisfaction</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor</span>::{
@@ -5430,6 +5444,11 @@
 
         <span class="prelude-val">Ok</span>(())
     }
+
+    <span class="doccomment">/// Return an immutable reference to the internal database</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">database</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl</span> <span class="ident">std::ops::Deref</span><span class="op">&lt;</span><span class="ident">Target</span> <span class="op">=</span> <span class="ident">D</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span> {
+        <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow</span>()
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Wallet</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">D</span><span class="op">&gt;</span>
@@ -5531,6 +5550,15 @@
                 }
             }
         }
+
+        <span class="kw">let</span> <span class="ident">sync_time</span> <span class="op">=</span> <span class="ident">SyncTime</span> {
+            <span class="ident">block_time</span>: <span class="ident">BlockTime</span> {
+                <span class="ident">height</span>: <span class="macro">maybe_await!</span>(<span class="self">self</span>.<span class="ident">client</span>.<span class="ident">get_height</span>())<span class="question-mark">?</span>,
+                <span class="ident">timestamp</span>: <span class="ident">time::get_timestamp</span>(),
+            },
+        };
+        <span class="macro">debug!</span>(<span class="string">&quot;Saving `sync_time` = {:?}&quot;</span>, <span class="ident">sync_time</span>);
+        <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>().<span class="ident">set_sync_time</span>(<span class="ident">sync_time</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
@@ -6761,7 +6789,7 @@
         <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">txid</span>();
         <span class="comment">// skip saving the utxos, we know they can&#39;t be used anyways</span>
         <span class="ident">details</span>.<span class="ident">transaction</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">tx</span>);
-        <span class="ident">details</span>.<span class="ident">confirmation_time</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ConfirmationTime</span> {
+        <span class="ident">details</span>.<span class="ident">confirmation_time</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">BlockTime</span> {
             <span class="ident">timestamp</span>: <span class="number">12345678</span>,
             <span class="ident">height</span>: <span class="number">42</span>,
         });

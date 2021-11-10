@@ -591,6 +591,33 @@
 <span id="591">591</span>
 <span id="592">592</span>
 <span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -615,7 +642,7 @@
 <span class="kw">use</span> <span class="ident">bitcoin::hash_types::Txid</span>;
 <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">OutPoint</span>, <span class="ident">Script</span>, <span class="ident">Transaction</span>};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">ConfigurableDatabase</span>, <span class="ident">Database</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">ConfigurableDatabase</span>, <span class="ident">Database</span>, <span class="ident">SyncTime</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::Error</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::types</span>::<span class="kw-2">*</span>;
 
@@ -626,6 +653,7 @@
 <span class="comment">// transactions         t&lt;txid&gt; -&gt; tx details</span>
 <span class="comment">// deriv indexes        c{i,e} -&gt; u32</span>
 <span class="comment">// descriptor checksum  d{i,e} -&gt; vec&lt;u8&gt;</span>
+<span class="comment">// last sync time       l -&gt; { height, timestamp }</span>
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">MapKey</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">Path</span>((<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">KeychainKind</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>)),
@@ -634,6 +662,7 @@
     <span class="ident">RawTx</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Txid</span><span class="op">&gt;</span>),
     <span class="ident">Transaction</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Txid</span><span class="op">&gt;</span>),
     <span class="ident">LastIndex</span>(<span class="ident">KeychainKind</span>),
+    <span class="ident">SyncTime</span>,
     <span class="ident">DescriptorChecksum</span>(<span class="ident">KeychainKind</span>),
 }
 
@@ -652,6 +681,7 @@
             <span class="ident">MapKey::RawTx</span>(<span class="kw">_</span>) =&gt; <span class="string">b&quot;r&quot;</span>.<span class="ident">to_vec</span>(),
             <span class="ident">MapKey::Transaction</span>(<span class="kw">_</span>) =&gt; <span class="string">b&quot;t&quot;</span>.<span class="ident">to_vec</span>(),
             <span class="ident">MapKey::LastIndex</span>(<span class="ident">st</span>) =&gt; [<span class="string">b&quot;c&quot;</span>, <span class="ident">st</span>.<span class="ident">as_ref</span>()].<span class="ident">concat</span>(),
+            <span class="ident">MapKey::SyncTime</span> =&gt; <span class="string">b&quot;l&quot;</span>.<span class="ident">to_vec</span>(),
             <span class="ident">MapKey::DescriptorChecksum</span>(<span class="ident">st</span>) =&gt; [<span class="string">b&quot;d&quot;</span>, <span class="ident">st</span>.<span class="ident">as_ref</span>()].<span class="ident">concat</span>(),
         }
     }
@@ -773,6 +803,12 @@
 
         <span class="prelude-val">Ok</span>(())
     }
+    <span class="kw">fn</span> <span class="ident">set_sync_time</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="ident">SyncTime</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::SyncTime</span>.<span class="ident">as_map_key</span>();
+        <span class="self">self</span>.<span class="ident">map</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">Box::new</span>(<span class="ident">data</span>));
+
+        <span class="prelude-val">Ok</span>(())
+    }
 
     <span class="kw">fn</span> <span class="ident">del_script_pubkey_from_path</span>(
         <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
@@ -862,6 +898,13 @@
             <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
             <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">b</span>.<span class="ident">downcast_ref</span>().<span class="ident">unwrap</span>())),
         }
+    }
+    <span class="kw">fn</span> <span class="ident">del_sync_time</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SyncTime</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::SyncTime</span>.<span class="ident">as_map_key</span>();
+        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">map</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>);
+        <span class="self">self</span>.<span class="ident">deleted_keys</span>.<span class="ident">push</span>(<span class="ident">key</span>);
+
+        <span class="prelude-val">Ok</span>(<span class="ident">res</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">b</span>.<span class="ident">downcast_ref</span>().<span class="ident">cloned</span>().<span class="ident">unwrap</span>()))
     }
 }
 
@@ -1000,6 +1043,14 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">map</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">b</span>.<span class="ident">downcast_ref</span>().<span class="ident">unwrap</span>()))
     }
 
+    <span class="kw">fn</span> <span class="ident">get_sync_time</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SyncTime</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::SyncTime</span>.<span class="ident">as_map_key</span>();
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>
+            .<span class="ident">map</span>
+            .<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>)
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">b</span>.<span class="ident">downcast_ref</span>().<span class="ident">cloned</span>().<span class="ident">unwrap</span>()))
+    }
+
     <span class="comment">// inserts 0 if not present</span>
     <span class="kw">fn</span> <span class="ident">increment_last_index</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::LastIndex</span>(<span class="ident">keychain</span>).<span class="ident">as_map_key</span>();
@@ -1072,12 +1123,10 @@
         };
 
         <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">txid</span>();
-        <span class="kw">let</span> <span class="ident">confirmation_time</span> <span class="op">=</span> <span class="ident">tx_meta</span>
-            .<span class="ident">min_confirmations</span>
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">conf</span><span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::ConfirmationTime</span> {
-                <span class="ident">height</span>: <span class="ident">current_height</span>.<span class="ident">unwrap</span>().<span class="ident">checked_sub</span>(<span class="ident">conf</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">unwrap</span>(),
-                <span class="ident">timestamp</span>: <span class="number">0</span>,
-            });
+        <span class="kw">let</span> <span class="ident">confirmation_time</span> <span class="op">=</span> <span class="ident">tx_meta</span>.<span class="ident">min_confirmations</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">conf</span><span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::BlockTime</span> {
+            <span class="ident">height</span>: <span class="ident">current_height</span>.<span class="ident">unwrap</span>().<span class="ident">checked_sub</span>(<span class="ident">conf</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">timestamp</span>: <span class="number">0</span>,
+        });
 
         <span class="kw">let</span> <span class="ident">tx_details</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::TransactionDetails</span> {
             <span class="ident">transaction</span>: <span class="prelude-val">Some</span>(<span class="ident">tx</span>.<span class="ident">clone</span>()),
@@ -1182,6 +1231,11 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_last_index</span>() {
         <span class="ident"><span class="kw">crate</span>::database::test::test_last_index</span>(<span class="ident">get_tree</span>());
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_sync_time</span>() {
+        <span class="ident"><span class="kw">crate</span>::database::test::test_sync_time</span>(<span class="ident">get_tree</span>());
     }
 }
 </code></pre></div>

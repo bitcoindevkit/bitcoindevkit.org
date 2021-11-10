@@ -251,6 +251,12 @@
 <span id="251">251</span>
 <span id="252">252</span>
 <span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -463,7 +469,7 @@
     <span class="kw">pub</span> <span class="ident">fee</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
     <span class="doccomment">/// If the transaction is confirmed, contains height and timestamp of the block containing the</span>
     <span class="doccomment">/// transaction, unconfirmed transaction contains `None`.</span>
-    <span class="kw">pub</span> <span class="ident">confirmation_time</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ConfirmationTime</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">confirmation_time</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BlockTime</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Whether the tx has been verified against the consensus rules</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Confirmed txs are considered &quot;verified&quot; by default, while unconfirmed txs are checked to</span>
@@ -475,20 +481,26 @@
     <span class="kw">pub</span> <span class="ident">verified</span>: <span class="ident">bool</span>,
 }
 
-<span class="doccomment">/// Block height and timestamp of the block containing the confirmed transaction</span>
+<span class="doccomment">/// Block height and timestamp of a block</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ConfirmationTime</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BlockTime</span> {
     <span class="doccomment">/// confirmation block height</span>
     <span class="kw">pub</span> <span class="ident">height</span>: <span class="ident">u32</span>,
     <span class="doccomment">/// confirmation block timestamp</span>
     <span class="kw">pub</span> <span class="ident">timestamp</span>: <span class="ident">u64</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">ConfirmationTime</span> {
-    <span class="doccomment">/// Returns `Some` `ConfirmationTime` if both `height` and `timestamp` are `Some`</span>
+<span class="doccomment">/// **DEPRECATED**: Confirmation time of a transaction</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The structure has been renamed to `BlockTime`</span>
+<span class="attribute">#[<span class="ident">deprecated</span>(<span class="ident">note</span> <span class="op">=</span> <span class="string">&quot;This structure has been renamed to `BlockTime`&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ConfirmationTime</span> <span class="op">=</span> <span class="ident">BlockTime</span>;
+
+<span class="kw">impl</span> <span class="ident">BlockTime</span> {
+    <span class="doccomment">/// Returns `Some` `BlockTime` if both `height` and `timestamp` are `Some`</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">timestamp</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">match</span> (<span class="ident">height</span>, <span class="ident">timestamp</span>) {
-            (<span class="prelude-val">Some</span>(<span class="ident">height</span>), <span class="prelude-val">Some</span>(<span class="ident">timestamp</span>)) =&gt; <span class="prelude-val">Some</span>(<span class="ident">ConfirmationTime</span> { <span class="ident">height</span>, <span class="ident">timestamp</span> }),
+            (<span class="prelude-val">Some</span>(<span class="ident">height</span>), <span class="prelude-val">Some</span>(<span class="ident">timestamp</span>)) =&gt; <span class="prelude-val">Some</span>(<span class="ident">BlockTime</span> { <span class="ident">height</span>, <span class="ident">timestamp</span> }),
             <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
         }
     }
