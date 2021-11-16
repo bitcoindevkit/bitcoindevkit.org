@@ -8,49 +8,49 @@ tags: ["BDK", "taproot", "miniscript"]
 permalink: "/blog/2021/11/first-bdk-taproot-tx-look-at-the-code-part-1"
 ---
 
-This is the first of a two-parts blog series in which I will try to explain all the changes that I made to BDK (and some of its dependencies) to make our first Taproot transaction in mainnet, which also
-turned out to be the first ever use of the new `OP_CHECKSIGADD` opcode.
+This is the first of a two-parts blog series in which I will try to explain all the changes that I made to BDK (and some of its dependencies) to make our [first Taproot transaction in mainnet][first-mainnet-tx], which also
+turned out to be [the first ever use of the new `OP_CHECKSIGADD` opcode][first-ever-use-checksigadd].
 
 Hopefully this will give an insight into what kind of changes need to be made to a wallet in order to support spending `P2TR` outputs, both with key-spend and script-spend. BDK actually delegates
-most of the hard work to rust-miniscript, and luckily most of the Taproot code was already implemented by the time I started working on it. I only had to patch a few little bugs here and there, and it ended up
+most of the hard work to [rust-miniscript], and luckily most of the Taproot code was already implemented by the time I started working on it. I only had to patch a few little bugs here and there, and it ended up
 working flawlessly in the end.
 
-In this first part I will focus on the changes made to our dependencies, rust-bitcoin and rust-miniscript. In the second part I will talk about BDK itself.
+In this first part I will focus on the changes made to our dependencies, [rust-bitcoin] and [rust-miniscript]. In the second part I will talk about BDK itself.
 
 ## Backstory
 
-On the evening of Thursday, November 11th I was attending our weekly Satoshi Spritz meetup in Milan. The activation of Taproot was right around the corner, and naturally that was the main discussion
+On the evening of Thursday, November 11th I was attending our weekly [Satoshi Spritz] meetup in Milan. The activation of Taproot was right around the corner, and naturally that was the main discussion
 topic that night. The activation was forecasted for the early afternoon of Sunday, November 14th, a little less than 72h later.
 
-I began to wonder how hard it would be to patch BDK and add support for Taproot. I knew most of the work had already been done in our main dependencies, rust-bitcoin and rust-miniscript, and so I decided
+I began to wonder how hard it would be to patch BDK and add support for Taproot. I knew most of the work had already been done in our main dependencies, [rust-bitcoin] and [rust-miniscript], and so I decided
 to challenge myself: could I make it in time for the activation?
 
 The following day I started digging into the topic. It didn't help that up until that time I only had a rather "high level" idea of how Taproot worked, but luckily all the BIPs were very well written and
 straightforward to understand.
 
-By Friday night (or rather, early Saturday morning) I had Taproot key-spend working, which made me pretty optimistic even though the activation date was actually moving closer, now being forecasted for
+By Friday night (or rather, early Saturday morning) [I had Taproot key-spend working][first-key-spend], which made me pretty optimistic even though the activation date was actually moving closer, now being forecasted for
 Sunday *morning*.
 
-After a few hours of sleep I went back to work and by early Saturday afternoon I had Taproot key-spend working as well. This left me a few hours to coordinate with some friends and generate a vanity address
+After a few hours of sleep I went back to work and by early Saturday afternoon [I had Taproot key-spend working as well][first-script-spend]. This left me a few hours to coordinate with some friends and [generate a vanity address][vanity-addr]
 to deposit funds into temporarily, as we didn't trust sending them to Taproot addresses before the activation (as they were anyone-can-spend according to the pre-activation rules).
 
 After another pretty short night, I woke up a 5:30 AM on Sunday to monitor the activation. I broadcasted our transactions shortly after 6:00 AM as the activation block was being mined. Unfortunately, the first
-three blocks that were enforcing Taproot rules didn't include any Taproot transaction, which indicates that the miners weren't actually running the new Bitcoin Core 22.0 nodes. The fourth block, mined by Foundry
-USA included my transaction and a few others.
+three blocks that were enforcing Taproot rules [didn't include any Taproot transaction][no-taproot-transactions-blocks], which indicates that the miners weren't actually running the new Bitcoin Core 22.0 nodes. The fourth block, mined by `Foundry
+USA` [included my transaction][my-taproot-transaction] and [a few others][few-other-transactions].
 
-In the end our transaction was the third Taproot script-spend in the block, but the first to use the new `OP_CHECKSIGADD` opcode, as the two preceeding it were respectively a single-sig and a 2-of-2 multisig
+In the end our transaction was the third Taproot script-spend in the block, but the first to use the new `OP_CHECKSIGADD` opcode, as the two preceeding it were respectively [a single-sig][taproot-single-sig] and [a 2-of-2 multisig][taproot-bitgo-multisig]
 script, made with with two `OP_CHECKSIG(VERIFY)`s.
 
 Now, with the context out of the way, we can begin talking about the code!
 
 ## rust-bitcoin
 
-The first dependency I had to update was rust-bitcoin. Most of the taproot stuff were already merged in `master` (altough they hadn't been released yet). One notable missing part was the support for `BIP371`,
-which is an extension of `BIP174`, aka the `Partially Signed Bitcoin Transaction` BIP. This new BIP defines a few new fields that are required to properly handle Taproot transactions.
+The first dependency I had to update was [rust-bitcoin]. Most of the taproot stuff were already merged in `master` (altough they hadn't been released yet). One notable missing part was the support for [`BIP371`],
+which is an extension of [`BIP174`], aka the `Partially Signed Bitcoin Transaction` BIP. This new BIP defines a few new fields that are required to properly handle Taproot transactions.
 
-Luckily most of the work had already been done by sanket1729, so I forked his branch and made only few very minor changes, just to expose a structure that I will have to use later which in his code wasn't `public`.
+Luckily most of the work had already been done by [sanket1729], so I forked his branch and made only few very minor changes, just to expose a structure that I will have to use later which in his code wasn't `public`.
 
-You can find all the commits mentioned here in my rust-bitcoin `taproot-testing` branch.
+You can find all the commits mentioned here in [my rust-bitcoin `taproot-testing` branch][rust-bitcoin-taproot-testing].
 
 ```
 $ git diff 187234f f830df9
@@ -124,12 +124,12 @@ We will use this structure later to recover the merkle root of a Taproot script 
 
 ## rust-miniscript
 
-Moving on to rust-miniscript: once again, most of the work required to support Taproot had already been done by sanket1729, but this time I was working with very "early" prototype-like code, so I was prepared to
+Moving on to [rust-miniscript]: once again, most of the work required to support Taproot had already been done by [sanket1729], but this time I was working with very "early" prototype-like code, so I was prepared to
 make some changes to the code to get it to work how I wanted.
 
 Instead of showing one big diff I will talk about the commits individually, which I think will help making more clear what I was doing.
 
-Once again, you can find all the commits referenced here in my rust-miniscript `taproot` branch.
+Once again, you can find all the commits referenced here in [my rust-miniscript `taproot` branch][rust-miniscript-taproot].
 
 ```
 $ git show 34cf15b
@@ -184,8 +184,8 @@ index 79d3c05..314c7f4 100644
          None
 ```
 
-`TapTreeIterator` is an iterator that goes through a `TapTree` and yields a `(depth, node)` pair. This is then fed to `TaprootBuilder` (src/descriptor/tr.rs#183), which returns an error if trying to insert nodes
-in an order that is not DFS.
+`TapTreeIterator` is an iterator that goes through a `TapTree` and yields a `(depth, node)` pair. This is then fed to [`TaprootBuilder`][taproot-builder-iter], which returns an error if trying to insert nodes
+in [an order that is not DFS][order-that-is-not-dfs].
 
 The way the depth was computed before made the builder always fail for non-trivial trees (i.e. more than 1 node).
 
@@ -218,7 +218,7 @@ index 12825e8..8240024 100644
  version = "1.0"
 ```
 
-Trivial commit, switch to my fork of `rust-bitcoin` so that I can make changes if necessary.
+Trivial commit, switch to [my fork of rust-bitcoin][rust-bitcoin-taproot-testing] so that I can make changes if necessary.
 
 ```
 $ git show 0446b16
@@ -278,7 +278,7 @@ index e168b16..3a2335e 100644
 ```
 
 This, I'm not really sure of: Taproot uses x-only public keys, which means that the first byte (which is usually a `03` or a `02`) that indicates the parity of the EC point is completely dropped, and it's implicit
-that the point is even (= `02`). Check out BIP340 for a much better explanation.
+that the point is even (= `02`). Check out [`BIP340`] for a much better explanation.
 
 So here when I find a string that is only 64 characters long I will assume it's an x-only pubkey, and I will parse it as a normal `bitcoin::PublicKey` by prefixing it with `02`.
 
@@ -332,7 +332,7 @@ index 1cef614..11a68d3 100644
 
 When trying to parse a descriptor (essentially turning a recursive string of `operator(args)` into an abstract tree in memory) use a *curly-bracket-aware* parser if there is one in the string.
 
-The code to then build a `Tr` struct given an `expression::Tree` (and the `from_slice_helper_curly` function) were already implemented by sanket1729, so it was just a matter of correctly
+The code to then build a `Tr` struct given an `expression::Tree` (and the `from_slice_helper_curly` function) were already implemented by [sanket1729], so it was just a matter of correctly
 building the abstract tree by parsing curly brackets in descriptors.
 
 ```
@@ -378,7 +378,7 @@ index 314c7f4..8487d56 100644
 
 This is where things get more interesting: this section of code builds the witness to satisfy a Taproot descriptor. In case of a script-spend, we need to prove that the script we are using had been commited
 into the public key of our `P2TR` input. We do this by adding a "control block", that contains data about the parity of the key, the leaf version used, and the merkle path from the leaf we are using to spend
-up to the merkle root, which is committed into the public key.
+up to the merkle root, which is committed into the public key. Once again, this is explained very well in [`BIP341`].
 
 Before my patch the code was only getting the set of merkle paths that could lead from the root to the leaves that contain a given script. For context, the signature of `TaprootSpendInfo::as_script_map(&self)` is:
 
@@ -453,7 +453,7 @@ This is a little bug in the code that tries to compute what the maximum satisfac
 in order to target a given fee rate, assuming the descriptor is satisfied with the worst (larger and most expensive) path.
 
 For Taproot descriptors, it's just a matter of iterating over the leaves in the tree and pick the most expensive one... or is it? This doesn't take into account that Taproot outputs can also be spent with
-key-spend, which means just pushing a signature to the witness. This signature is 64 bytes long when using the new `SIGHASH_DEFAULT` sighash, or 65 otherwise. Since we are thinking about the maximum satisfaction
+key-spend, which means just pushing a signature to the witness. This signature is 64 bytes long when using the new [`SIGHASH_DEFAULT`][`BIP341`] sighash, or 65 otherwise. Since we are thinking about the maximum satisfaction
 weight, or the worst case possible, we natuarlly pick the latter.
 
 Note that theoretically you could build a Taproot address "without" an available key-path spend (by using an unspendable Schnorr public key), but the code here in rust-miniscript doesn't take that into
@@ -592,7 +592,7 @@ index 36c4b69..a54a371 100644
              _ => None,
 ```
 
-Taproot descriptors add a new miniscript operator called `multi_a()` which behaves like `multi()` in non-Taproot descriptors, but uses the new `OP_CHECKSIGADD` opcode when serialized in a script.
+Taproot descriptors add a new miniscript operator called `multi_a()` which behaves like `multi()` in non-Taproot descriptors, but uses the new [`OP_CHECKSIGADD`][`BIP342`] opcode when serialized in a script.
 
 When this was added, somebody forgot to update the various methods that iterate over the public keys of a descriptor to correctly return the keys contained in `multi_a()` - essentially, it was falling back in
 the default case used by the operators that don't contain any key, but this one does!
@@ -630,8 +630,36 @@ rust-miniscript was pushing them in reverse order, so script validation was alwa
 
 ## Conclusion
 
-And that was it! We now have a fully working rust-bitcoin and rust-miniscript ready for Taproot.
+And that was it! We now have a fully working [rust-bitcoin] and rust-miniscript ready for Taproot.
 
 In Part 2 I will go over the code changes in BDK, but I think it's now time for you and I to take a break :)
+
+[first-mainnet-tx]: https://twitter.com/afilini/status/1459763243556163584
+[first-ever-use-checksigadd]: https://twitter.com/afilini/status/1459774394054725634
+[Satoshi Spritz]: https://www.satoshispritz.com/
+[first-key-spend]: https://mempool.space/signet/tx/ba0ebb350717701ca4ea109aadfbaf3058f6cd73e5ece3927ddee653de06cf5a
+[first-script-spend]: https://mempool.space/signet/tx/41d7d49f9f4edffa9ca88ad6fb887fbf1ae68f9f31def267fdb3a5949f766bf5
+[vanity-addr]: https://mempool.space/address/1Taproote7gvQGKz5g982ecSbPvqJhMUf
+[no-taproot-transactions-blocks]: https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2021-November/019598.html
+[my-taproot-transaction]: https://mempool.space/tx/2eb8dbaa346d4be4e82fe444c2f0be00654d8cfd8c4a9a61b11aeaab8c00b272
+[few-other-transactions]: https://twitter.com/achow101/status/1459760452775387136?s=20
+[taproot-single-sig]: https://mempool.space/tx/37777defed8717c581b4c0509329550e344bdc14ac38f71fc050096887e535c8
+[taproot-bitgo-multisig]: https://mempool.space/tx/905ecdf95a84804b192f4dc221cfed4d77959b81ed66013a7e41a6e61e7ed530
+
+[`BIP174`]: https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki
+[`BIP340`]: https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
+[`BIP341`]: https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
+[`BIP342`]: https://github.com/bitcoin/bips/blob/master/bip-0342.mediawiki
+[`BIP371`]: https://github.com/bitcoin/bips/blob/master/bip-0371.mediawiki
+
+[sanket1729]: https://twitter.com/sanket1729
+
+[taproot-builder-iter]: https://github.com/afilini/rust-miniscript/blob/taproot/src/descriptor/tr.rs#L183-L189
+[order-that-is-not-dfs]: https://github.com/afilini/rust-bitcoin/blob/taproot-testing/src/util/taproot.rs#L403-L405
+
+[rust-miniscript]: https://github.com/rust-bitcoin/rust-miniscript
+[rust-bitcoin]: https://github.com/rust-bitcoin/rust-bitcoin
+[rust-bitcoin-taproot-testing]: https://github.com/afilini/rust-bitcoin/tree/taproot-testing
+[rust-miniscript-taproot]: https://github.com/afilini/rust-miniscript/tree/taproot
 
 [fix-control-block-bug-pr]: https://github.com/rust-bitcoin/rust-bitcoin/pull/703
