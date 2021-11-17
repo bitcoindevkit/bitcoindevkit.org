@@ -31,14 +31,14 @@ straightforward to understand.
 By Friday night (or rather, early Saturday morning) [I had Taproot key-spend working][first-key-spend], which made me pretty optimistic even though the activation date was actually moving closer, now being forecasted for
 Sunday *morning*.
 
-After a few hours of sleep I went back to work and by early Saturday afternoon [I had Taproot key-spend working as well][first-script-spend]. This left me a few hours to coordinate with some friends and [generate a vanity address][vanity-addr]
+After a few hours of sleep I went back to work and by early Saturday afternoon [I had Taproot script-spend working as well][first-script-spend]. This left me a few hours to coordinate with some friends and [generate a vanity address][vanity-addr]
 to deposit funds into temporarily, as we didn't trust sending them to Taproot addresses before the activation (as they were anyone-can-spend according to the pre-activation rules).
 
 After another pretty short night, I woke up a 5:30 AM on Sunday to monitor the activation. I broadcasted our transactions shortly after 6:00 AM as the activation block was being mined. Unfortunately, the first
 three blocks that were enforcing Taproot rules [didn't include any Taproot transaction][no-taproot-transactions-blocks], which indicates that the miners weren't actually running the new Bitcoin Core 22.0 nodes. The fourth block, mined by `Foundry
 USA` [included my transaction][my-taproot-transaction] and [a few others][few-other-transactions].
 
-In the end our transaction was the third Taproot script-spend in the block, but the first to use the new `OP_CHECKSIGADD` opcode, as the two preceeding it were respectively [a single-sig][taproot-single-sig] and [a 2-of-2 multisig][taproot-bitgo-multisig]
+In the end our transaction was the third Taproot script-spend in the block, but the first to use the new [`OP_CHECKSIGADD`] opcode, as the two preceeding it were respectively [a single-sig][taproot-single-sig] and [a 2-of-2 multisig][taproot-bitgo-multisig]
 script, made with with two `OP_CHECKSIG(VERIFY)`s.
 
 Now, with the context out of the way, we can begin talking about the code!
@@ -48,7 +48,7 @@ Now, with the context out of the way, we can begin talking about the code!
 The first dependency I had to update was [rust-bitcoin]. Most of the taproot stuff were already merged in `master` (altough they hadn't been released yet). One notable missing part was the support for [`BIP371`],
 which is an extension of [`BIP174`], aka the `Partially Signed Bitcoin Transaction` BIP. This new BIP defines a few new fields that are required to properly handle Taproot transactions.
 
-Luckily most of the work had already been done by [sanket1729], so I forked his branch and made only few very minor changes, just to expose a structure that I will have to use later which in his code wasn't `public`.
+Luckily most of the work had already been done by [sanket1729], so I forked his branch and made only few very minor changes, just to expose a structure that I will have to use later which in his code wasn't public.
 
 You can find all the commits mentioned here in [my rust-bitcoin `taproot-testing` branch][rust-bitcoin-taproot-testing].
 
@@ -118,13 +118,13 @@ index 674eeee..3d56cbc 100644
 ```
 
 There isn't much to explain here: I disabled the `missing_docs` lint so that the compiler wouldn't complain about the new public methods that aren't documented.
-Then, I added a getter for the `hash` field of `NodeInfo` and made the strcut itself and a bunch of methods public.
+Then, I added a getter for the `hash` field of `NodeInfo` and made the struct itself and a bunch of methods public.
 
 We will use this structure later to recover the merkle root of a Taproot script tree, given one leaf and the other "hidden" branches.
 
 ## rust-miniscript
 
-Moving on to [rust-miniscript]: once again, most of the work required to support Taproot had already been done by [sanket1729], but this time I was working with very "early" prototype-like code, so I was prepared to
+Moving on to [rust-miniscript]: once again, most of the work required to support Taproot had already been done, but this time I was working with very "early" prototype-like code, so I was prepared to
 make some changes to the code to get it to work how I wanted.
 
 Instead of showing one big diff I will talk about the commits individually, which I think will help making more clear what I was doing.
@@ -332,7 +332,7 @@ index 1cef614..11a68d3 100644
 
 When trying to parse a descriptor (essentially turning a recursive string of `operator(args)` into an abstract tree in memory) use a *curly-bracket-aware* parser if there is one in the string.
 
-The code to then build a `Tr` struct given an `expression::Tree` (and the `from_slice_helper_curly` function) were already implemented by [sanket1729], so it was just a matter of correctly
+The code to then build a `Tr` struct given an `expression::Tree` (and the `from_slice_helper_curly` function) were already implemented, so it was just a matter of correctly
 building the abstract tree by parsing curly brackets in descriptors.
 
 ```
@@ -592,7 +592,7 @@ index 36c4b69..a54a371 100644
              _ => None,
 ```
 
-Taproot descriptors add a new miniscript operator called `multi_a()` which behaves like `multi()` in non-Taproot descriptors, but uses the new [`OP_CHECKSIGADD`][`BIP342`] opcode when serialized in a script.
+Taproot descriptors add a new miniscript operator called `multi_a()` which behaves like `multi()` in non-Taproot descriptors, but uses the new [`OP_CHECKSIGADD`] opcode when serialized in a script.
 
 When this was added, somebody forgot to update the various methods that iterate over the public keys of a descriptor to correctly return the keys contained in `multi_a()` - essentially, it was falling back in
 the default case used by the operators that don't contain any key, but this one does!
@@ -623,14 +623,14 @@ index 655436e..ab43707 100644
                              sigs[i] = sig;
 ```
 
-And finally, the last little fix: the `multi_a()` operator is satisfied by pushing to the witness either a signature (if you have one available for that specific public key) or an empty stack element. The problem is,
+And finally, the last little fix: the `multi_a()` operator is satisfied by pushing to the witness either a signature (if you have one available for that specific public key) or an empty vector. The problem is,
 they have to be in the right order to match the order of public keys in your Taproot script.
 
 rust-miniscript was pushing them in reverse order, so script validation was always failing for multisigs that had more than 1 key. Adding a `.rev()` to the iterator fixed the issue.
 
 ## Conclusion
 
-And that was it! We now have a fully working [rust-bitcoin] and rust-miniscript ready for Taproot.
+And that was it! We now have a fully working [rust-bitcoin] and [rust-miniscript] ready for Taproot.
 
 In Part 2 I will go over the code changes in BDK, but I think it's now time for you and I to take a break :)
 
@@ -649,8 +649,8 @@ In Part 2 I will go over the code changes in BDK, but I think it's now time for 
 [`BIP174`]: https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki
 [`BIP340`]: https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
 [`BIP341`]: https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
-[`BIP342`]: https://github.com/bitcoin/bips/blob/master/bip-0342.mediawiki
 [`BIP371`]: https://github.com/bitcoin/bips/blob/master/bip-0371.mediawiki
+[`OP_CHECKSIGADD`]: https://github.com/bitcoin/bips/blob/master/bip-0342.mediawiki#script-execution
 
 [sanket1729]: https://twitter.com/sanket1729
 
