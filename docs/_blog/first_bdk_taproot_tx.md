@@ -38,7 +38,7 @@ After another pretty short night, I woke up a 5:30 AM on Sunday to monitor the a
 three blocks that were enforcing Taproot rules [didn't include any Taproot transaction][no-taproot-transactions-blocks], which indicates that the miners weren't actually running the new Bitcoin Core 22.0 nodes. The fourth block, mined by `Foundry
 USA` [included my transaction][my-taproot-transaction] and [a few others][few-other-transactions].
 
-In the end our transaction was the third Taproot script-spend in the block, but the first to use the new [`OP_CHECKSIGADD`] opcode, as the two preceeding it were respectively [a single-sig][taproot-single-sig] and [a 2-of-2 multisig][taproot-bitgo-multisig]
+In the end our transaction was the third Taproot script-spend in the block, but the first to use the new [`OP_CHECKSIGADD`] opcode, as the two preceding it were respectively [a single-sig][taproot-single-sig] and [a 2-of-2 multisig][taproot-bitgo-multisig]
 script, made with with two `OP_CHECKSIG(VERIFY)`s.
 
 Now, with the context out of the way, we can begin talking about the code!
@@ -376,7 +376,7 @@ index 314c7f4..8487d56 100644
 
 ```
 
-This is where things get more interesting: this section of code builds the witness to satisfy a Taproot descriptor. In case of a script-spend, we need to prove that the script we are using had been commited
+This is where things get more interesting: this section of code builds the witness to satisfy a Taproot descriptor. In case of a script-spend, we need to prove that the script we are using had been committed
 into the public key of our `P2TR` input. We do this by adding a "control block", that contains data about the parity of the key, the leaf version used, and the merkle path from the leaf we are using to spend
 up to the merkle root, which is committed into the public key. Once again, this is explained very well in [`BIP341`].
 
@@ -391,7 +391,7 @@ Then the code would look for the "shortest" path to that specific script, as it 
 in their path to the root, and thus require a longer control block to reveal them all).
 
 The issue here is that the `control_block` variable is then serialized directly into the witness. But this is not a control block, it's just a set of merkle paths! A control block only has *one* merkle path, and
-incldues the leaf version and the key parity bit.
+includes the leaf version and the key parity bit.
 
 Conveniently, the `TaprootSpendInfo` struct also has this other method (I'm including the implementation as well, because it shows that internally it does the same "trick" to find the shortest path):
 
@@ -454,7 +454,7 @@ in order to target a given fee rate, assuming the descriptor is satisfied with t
 
 For Taproot descriptors, it's just a matter of iterating over the leaves in the tree and pick the most expensive one... or is it? This doesn't take into account that Taproot outputs can also be spent with
 key-spend, which means just pushing a signature to the witness. This signature is 64 bytes long when using the new [`SIGHASH_DEFAULT`][`BIP341`] sighash, or 65 otherwise. Since we are thinking about the maximum satisfaction
-weight, or the worst case possible, we natuarlly pick the latter.
+weight, or the worst case possible, we naturally pick the latter.
 
 Note that theoretically you could build a Taproot address "without" an available key-path spend (by using an unspendable Schnorr public key), but the code here in rust-miniscript doesn't take that into
 account, as there's no way that I'm aware of to specificy in a `tr()` descriptor that the key is unspendable. So, while theoretically here we should first check whether the key-spend path is available before
