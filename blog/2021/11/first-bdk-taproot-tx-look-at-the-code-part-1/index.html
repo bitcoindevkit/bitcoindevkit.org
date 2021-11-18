@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>The first BDK Taproot TX: a look at the code (Part 1) | Bitcoin Dev Kit Documentation</title>
+    <meta name="generator" content="VuePress 1.8.2">
+    <link rel="preload" href="/fonts/ibm-plex-mono-400.woff2" as="font" crossorigin="true">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link name="msapplication-config" content="/browserconfig.xml">
+    <link name="msapplication-TileColor" content="#ffffff">
+    <link name="theme-color" content="#ffffff">
+    <meta name="description" content="A quick overview of the changes made to bdk, rust-miniscript and rust-bitcoin to make a Taproot transaction">
+    <meta property="article:published_time" content="2021-11-15T00:00:00.000Z">
+    <meta property="og:site_name" content="Bitcoin Dev Kit Documentation">
+    <meta property="og:title" content="The first BDK Taproot TX: a look at the code (Part 1)">
+    <meta property="og:description" content="A quick overview of the changes made to bdk, rust-miniscript and rust-bitcoin to make a Taproot transaction">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bitcoindevkit.org/blog/2021/11/first-bdk-taproot-tx-look-at-the-code-part-1/">
+    <meta property="og:image" content="https://bitcoindevkit.org/card.png">
+    <meta name="twitter:title" content="The first BDK Taproot TX: a look at the code (Part 1)">
+    <meta name="twitter:description" content="A quick overview of the changes made to bdk, rust-miniscript and rust-bitcoin to make a Taproot transaction">
+    <meta name="twitter:url" content="https://bitcoindevkit.org/blog/2021/11/first-bdk-taproot-tx-look-at-the-code-part-1/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://bitcoindevkit.org/card.png">
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="BDK, taproot, miniscript">
+    <meta property="article:tag" content="BDK">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    
+    <link rel="preload" href="/assets/css/0.styles.b24aebc5.css" as="style"><link rel="preload" href="/assets/js/app.523722c4.js" as="script"><link rel="preload" href="/assets/js/8.cbf41989.js" as="script"><link rel="preload" href="/assets/js/1.e424882b.js" as="script"><link rel="preload" href="/assets/js/22.34abfbd8.js" as="script"><link rel="prefetch" href="/assets/js/10.bcd26a93.js"><link rel="prefetch" href="/assets/js/11.893b3d04.js"><link rel="prefetch" href="/assets/js/12.5cdf14d4.js"><link rel="prefetch" href="/assets/js/13.f3d94d80.js"><link rel="prefetch" href="/assets/js/14.9d333dd1.js"><link rel="prefetch" href="/assets/js/15.65c46ddb.js"><link rel="prefetch" href="/assets/js/16.286d6318.js"><link rel="prefetch" href="/assets/js/17.8dd7030d.js"><link rel="prefetch" href="/assets/js/18.8b55cb05.js"><link rel="prefetch" href="/assets/js/19.74f879dd.js"><link rel="prefetch" href="/assets/js/20.4339a74d.js"><link rel="prefetch" href="/assets/js/21.c3363a9a.js"><link rel="prefetch" href="/assets/js/23.97bedc5d.js"><link rel="prefetch" href="/assets/js/24.12cf3cb6.js"><link rel="prefetch" href="/assets/js/25.9feb69bd.js"><link rel="prefetch" href="/assets/js/26.8760e9e8.js"><link rel="prefetch" href="/assets/js/27.ec89f341.js"><link rel="prefetch" href="/assets/js/28.42097992.js"><link rel="prefetch" href="/assets/js/29.77dadad4.js"><link rel="prefetch" href="/assets/js/30.210f75d3.js"><link rel="prefetch" href="/assets/js/31.aa5f1d20.js"><link rel="prefetch" href="/assets/js/32.43407455.js"><link rel="prefetch" href="/assets/js/33.597ba3c6.js"><link rel="prefetch" href="/assets/js/34.dee6b33e.js"><link rel="prefetch" href="/assets/js/35.77f4e90a.js"><link rel="prefetch" href="/assets/js/36.1dd3763f.js"><link rel="prefetch" href="/assets/js/37.82392fd5.js"><link rel="prefetch" href="/assets/js/38.7800f126.js"><link rel="prefetch" href="/assets/js/39.0406c74b.js"><link rel="prefetch" href="/assets/js/40.354daea8.js"><link rel="prefetch" href="/assets/js/41.d671e5f9.js"><link rel="prefetch" href="/assets/js/42.91f9b55a.js"><link rel="prefetch" href="/assets/js/43.1be0596c.js"><link rel="prefetch" href="/assets/js/44.4d79346a.js"><link rel="prefetch" href="/assets/js/5.8b5dddc4.js"><link rel="prefetch" href="/assets/js/6.22609606.js"><link rel="prefetch" href="/assets/js/7.1fff5745.js"><link rel="prefetch" href="/assets/js/9.18c7fd01.js"><link rel="prefetch" href="/assets/js/vendors~docsearch.45087a28.js"><link rel="prefetch" href="/assets/js/vuejs-paginate.8696e0bd.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.b24aebc5.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container" data-v-9ca807bc data-v-5a6fa056><header class="navbar" data-v-9ca807bc><div class="wrap"><div class="wrap-border"><a href="/" class="home-link router-link-active"><svg role="img" alt="Bitcoin Dev Kit Documentation" class="logo"><use href="/img/logo.svg#small" class="small"></use> <use href="/img/logo.svg#large" class="large"></use></svg></a> <div class="links"><nav class="nav-links can-hide"><div class="nav-item"><a href="/getting-started/" class="nav-link">
+  Docs
+</a></div><div class="nav-item"><a href="/tutorials/hello-world.html" class="nav-link">
+  Tutorials
+</a></div><div class="nav-item"><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div><div class="nav-item"><a href="https://discord.gg/dstn4dQ" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Discord
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div class="nav-item"><a href="https://github.com/bitcoindevkit" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <a href="https://github.com/bitcoindevkit/bitcoindevkit.org" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav> <div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <button type="button" class="theme-switch"><svg viewBox="0 0 30 31" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="theme-switch-dark"><path d="M15 20.4219C12.5187 20.4219 10.5 18.4032 10.5 15.9219C10.5 13.4406 12.5187 11.4219 15 11.4219C17.4813 11.4219 19.5 13.4406 19.5 15.9219C19.5 18.4032 17.4813 20.4219 15 20.4219Z" fill="currentColor"></path> <path d="M19.4541 20.3769L21.3644 22.2862M15 24.9219V22.2219V24.9219ZM15 9.62187V6.92188V9.62187ZM6 15.9219H8.7H6ZM21.3 15.9219H24H21.3ZM8.6361 22.2862L10.5454 20.3769L8.6361 22.2862ZM19.4541 11.4678L21.3644 9.55797L19.4541 11.4678ZM8.6361 9.55797L10.5454 11.4678L8.6361 9.55797Z" stroke="currentColor" stroke-width="1" stroke-linecap="round"></path></g> <g fill="currentColor" class="theme-switch-light"><path d="M10.1539 8.75585C10.018 8.75585 9.88774 8.70189 9.79168 8.60583C9.69563 8.50977 9.64166 8.37949 9.64166 8.24365V6.19482C9.64166 6.05898 9.69563 5.9287 9.79168 5.83264C9.88774 5.73658 10.018 5.68262 10.1539 5.68262C10.2897 5.68262 10.42 5.73658 10.5161 5.83264C10.6121 5.9287 10.6661 6.05898 10.6661 6.19482V8.24365C10.6661 8.37949 10.6121 8.50977 10.5161 8.60583C10.42 8.70189 10.2897 8.75585 10.1539 8.75585Z"></path> <path d="M11.1783 7.73144H9.12945C8.9936 7.73144 8.86332 7.67748 8.76726 7.58142C8.6712 7.48536 8.61724 7.35508 8.61724 7.21924C8.61724 7.08339 8.6712 6.95311 8.76726 6.85705C8.86332 6.761 8.9936 6.70703 9.12945 6.70703H11.1783C11.3141 6.70703 11.4444 6.761 11.5405 6.85705C11.6365 6.95311 11.6905 7.08339 11.6905 7.21924C11.6905 7.35508 11.6365 7.48536 11.5405 7.58142C11.4444 7.67748 11.3141 7.73144 11.1783 7.73144ZM6.05621 13.8779C5.92037 13.8779 5.79009 13.8239 5.69403 13.7279C5.59797 13.6318 5.54401 13.5015 5.54401 13.3657V12.3413C5.54401 12.2054 5.59797 12.0752 5.69403 11.9791C5.79009 11.8831 5.92037 11.8291 6.05621 11.8291C6.19206 11.8291 6.32234 11.8831 6.4184 11.9791C6.51445 12.0752 6.56842 12.2054 6.56842 12.3413V13.3657C6.56842 13.5015 6.51445 13.6318 6.4184 13.7279C6.32234 13.8239 6.19206 13.8779 6.05621 13.8779Z"></path> <path d="M6.56842 13.366H5.544C5.40816 13.366 5.27788 13.312 5.18182 13.216C5.08576 13.1199 5.0318 12.9896 5.0318 12.8538C5.0318 12.7179 5.08576 12.5877 5.18182 12.4916C5.27788 12.3955 5.40816 12.3416 5.544 12.3416H6.56842C6.70426 12.3416 6.83454 12.3955 6.9306 12.4916C7.02666 12.5877 7.08062 12.7179 7.08062 12.8538C7.08062 12.9896 7.02666 13.1199 6.9306 13.216C6.83454 13.312 6.70426 13.366 6.56842 13.366ZM16.8125 23.6101C12.8583 23.6101 9.64165 20.3934 9.64165 16.4392C9.64165 12.8983 12.2851 9.85021 15.7907 9.34876L16.4658 9.25195L16.37 9.92755C16.326 10.218 16.3027 10.5112 16.3003 10.805C16.3003 14.1942 19.0575 16.9514 22.4468 16.9514C22.708 16.9514 22.9872 16.9294 23.3247 16.8813L23.9998 16.7855L23.9035 17.4606C23.401 20.9666 20.3524 23.6101 16.8125 23.6101Z"></path></g></svg></button></div> <div class="sidebar-button"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" class="icon"><g fill="currentColor" class="hamburger"><path d="M33.75 11.6699H6.25C5.55964 11.6699 5 12.2296 5 12.9199C5 13.6103 5.55964 14.1699 6.25 14.1699H33.75C34.4404 14.1699 35 13.6103 35 12.9199C35 12.2296 34.4404 11.6699 33.75 11.6699Z"></path> <path d="M28.75 18.752H6.25C5.55964 18.752 5 19.3116 5 20.002C5 20.6923 5.55964 21.252 6.25 21.252H28.75C29.4404 21.252 30 20.6923 30 20.002C30 19.3116 29.4404 18.752 28.75 18.752Z"></path> <path d="M33.75 25.8301H6.25C5.55964 25.8301 5 26.3897 5 27.0801C5 27.7704 5.55964 28.3301 6.25 28.3301H33.75C34.4404 28.3301 35 27.7704 35 27.0801C35 26.3897 34.4404 25.8301 33.75 25.8301Z"></path></g> <g stroke="currentColor" class="close"><path d="M10 10L30 30" stroke-width="2" stroke-linecap="round"></path> <path d="M30 10L10 30" stroke-width="2" stroke-linecap="round"></path></g></svg></div></div></div></header> <div class="wrap" data-v-9ca807bc><div class="wrap-border" data-v-9ca807bc><div class="sidebar-mask" data-v-9ca807bc></div> <aside class="sidebar" data-v-9ca807bc><nav class="nav-links"><div class="nav-item"><a href="/getting-started/" class="nav-link">
+  Docs
+</a></div><div class="nav-item"><a href="/tutorials/hello-world.html" class="nav-link">
+  Tutorials
+</a></div><div class="nav-item"><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div><div class="nav-item"><a href="https://discord.gg/dstn4dQ" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Discord
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div class="nav-item"><a href="https://github.com/bitcoindevkit" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <a href="https://github.com/bitcoindevkit/bitcoindevkit.org" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav>  <ul class="sidebar-links"><li><section class="sidebar-group depth-0"><p class="sidebar-heading open"><span>Blog</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/blog/" aria-current="page" class="sidebar-link">Articles</a></li><li><a href="/blog/tags/" class="sidebar-link">Tags</a></li><li><a href="/blog/author/" class="sidebar-link">Authors</a></li></ul></section></li></ul> </aside> <main class="page" data-v-5a6fa056><header class="theme-default-content post-header" data-v-5a6fa056><h1 data-v-5a6fa056>The first BDK Taproot TX: a look at the code (Part 1)</h1> <p class="meta" data-v-070abed8 data-v-5a6fa056>
+  By
+
+  <span data-v-070abed8><a href="/blog/author/Alekos Filini" class="meta-link" data-v-070abed8>Alekos Filini</a><!----></span>
+
+  on
+
+  11/16/2021
+
+  - Tags:
+
+  <span data-v-070abed8><a href="/blog/tags/BDK" class="meta-link" data-v-070abed8>BDK</a>, </span><span data-v-070abed8><a href="/blog/tags/taproot" class="meta-link" data-v-070abed8>Taproot</a>, </span><span data-v-070abed8><a href="/blog/tags/miniscript" class="meta-link" data-v-070abed8>Miniscript</a><!----></span></p> <hr data-v-5a6fa056></header> <div class="theme-default-content content__default"><p>This is the first of a two-parts blog series in which I will try to explain all the changes that I made to BDK (and some of its dependencies) to make our <a href="https://twitter.com/afilini/status/1459763243556163584" target="_blank" rel="noopener noreferrer">first Taproot transaction in mainnet<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>, which also
+turned out to be <a href="https://twitter.com/afilini/status/1459774394054725634" target="_blank" rel="noopener noreferrer">the first ever use of the new <code>OP_CHECKSIGADD</code> opcode<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>.</p> <p>Hopefully this will give an insight into what kind of changes need to be made to a wallet in order to support spending <code>P2TR</code> outputs, both with key-spend and script-spend. BDK actually delegates
+most of the hard work to <a href="https://github.com/rust-bitcoin/rust-miniscript" target="_blank" rel="noopener noreferrer">rust-miniscript<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>, and luckily most of the Taproot code was already implemented by the time I started working on it. I only had to patch a few little bugs here and there, and it ended up
+working flawlessly in the end.</p> <p>In this first part I will focus on the changes made to our dependencies, <a href="https://github.com/rust-bitcoin/rust-bitcoin" target="_blank" rel="noopener noreferrer">rust-bitcoin<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> and <a href="https://github.com/rust-bitcoin/rust-miniscript" target="_blank" rel="noopener noreferrer">rust-miniscript<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>. In the second part I will talk about BDK itself.</p> <h2 id="backstory"><a href="#backstory" class="header-anchor">#</a> Backstory</h2> <p>On the evening of Thursday, November 11th I was attending our weekly <a href="https://www.satoshispritz.com/" target="_blank" rel="noopener noreferrer">Satoshi Spritz<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> meetup in Milan. The activation of Taproot was right around the corner, and naturally that was the main discussion
+topic that night. The activation was forecasted for the early afternoon of Sunday, November 14th, a little less than 72h later.</p> <p>I began to wonder how hard it would be to patch BDK and add support for Taproot. I knew most of the work had already been done in our main dependencies, <a href="https://github.com/rust-bitcoin/rust-bitcoin" target="_blank" rel="noopener noreferrer">rust-bitcoin<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> and <a href="https://github.com/rust-bitcoin/rust-miniscript" target="_blank" rel="noopener noreferrer">rust-miniscript<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>, and so I decided
+to challenge myself: could I make it in time for the activation?</p> <p>The following day I started digging into the topic. It didn't help that up until that time I only had a rather &quot;high level&quot; idea of how Taproot worked, but luckily all the BIPs were very well written and
+straightforward to understand.</p> <p>By Friday night (or rather, early Saturday morning) <a href="https://mempool.space/signet/tx/ba0ebb350717701ca4ea109aadfbaf3058f6cd73e5ece3927ddee653de06cf5a" target="_blank" rel="noopener noreferrer">I had Taproot key-spend working<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>, which made me pretty optimistic even though the activation date was actually moving closer, now being forecasted for
+Sunday <em>morning</em>.</p> <p>After a few hours of sleep I went back to work and by early Saturday afternoon <a href="https://mempool.space/signet/tx/41d7d49f9f4edffa9ca88ad6fb887fbf1ae68f9f31def267fdb3a5949f766bf5" target="_blank" rel="noopener noreferrer">I had Taproot script-spend working as well<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>. This left me a few hours to coordinate with some friends and <a href="https://mempool.space/address/1Taproote7gvQGKz5g982ecSbPvqJhMUf" target="_blank" rel="noopener noreferrer">generate a vanity address<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>
+to deposit funds into temporarily, as we didn't trust sending them to Taproot addresses before the activation (as they were anyone-can-spend according to the pre-activation rules).</p> <p>After another pretty short night, I woke up a 5:30 AM on Sunday to monitor the activation. I broadcasted our transactions shortly after 6:00 AM as the activation block was being mined. Unfortunately, the first
+three blocks that were enforcing Taproot rules <a href="https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2021-November/019598.html" target="_blank" rel="noopener noreferrer">didn't include any Taproot transaction<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>, which indicates that the miners weren't actually running the new Bitcoin Core 22.0 nodes. The fourth block, mined by <code>Foundry USA</code> <a href="https://mempool.space/tx/2eb8dbaa346d4be4e82fe444c2f0be00654d8cfd8c4a9a61b11aeaab8c00b272" target="_blank" rel="noopener noreferrer">included my transaction<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> and <a href="https://twitter.com/achow101/status/1459760452775387136?s=20" target="_blank" rel="noopener noreferrer">a few others<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>.</p> <p>In the end our transaction was the third Taproot script-spend in the block, but the first to use the new <a href="https://github.com/bitcoin/bips/blob/master/bip-0342.mediawiki#script-execution" target="_blank" rel="noopener noreferrer"><code>OP_CHECKSIGADD</code><span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> opcode, as the two preceding it were respectively <a href="https://mempool.space/tx/37777defed8717c581b4c0509329550e344bdc14ac38f71fc050096887e535c8" target="_blank" rel="noopener noreferrer">a single-sig<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> and <a href="https://mempool.space/tx/905ecdf95a84804b192f4dc221cfed4d77959b81ed66013a7e41a6e61e7ed530" target="_blank" rel="noopener noreferrer">a 2-of-2 multisig<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>
+script, made with with two <code>OP_CHECKSIG(VERIFY)</code>s.</p> <p>Now, with the context out of the way, we can begin talking about the code!</p> <h2 id="rust-bitcoin"><a href="#rust-bitcoin" class="header-anchor">#</a> rust-bitcoin</h2> <p>The first dependency I had to update was <a href="https://github.com/rust-bitcoin/rust-bitcoin" target="_blank" rel="noopener noreferrer">rust-bitcoin<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>. Most of the taproot stuff were already merged in <code>master</code> (altough they hadn't been released yet). One notable missing part was the support for <a href="https://github.com/bitcoin/bips/blob/master/bip-0371.mediawiki" target="_blank" rel="noopener noreferrer"><code>BIP371</code><span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>,
+which is an extension of <a href="https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki" target="_blank" rel="noopener noreferrer"><code>BIP174</code><span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>, aka the <code>Partially Signed Bitcoin Transaction</code> BIP. This new BIP defines a few new fields that are required to properly handle Taproot transactions.</p> <p>Luckily most of the work had already been done by <a href="https://twitter.com/sanket1729" target="_blank" rel="noopener noreferrer">sanket1729<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>, so I forked his branch and made only few very minor changes, just to expose a structure that I will have to use later which in his code wasn't public.</p> <p>You can find all the commits mentioned here in <a href="https://github.com/afilini/rust-bitcoin/tree/taproot-testing" target="_blank" rel="noopener noreferrer">my rust-bitcoin <code>taproot-testing</code> branch<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>.</p> <div class="language- extra-class"><pre class="language-text"><code>$ git diff 187234f f830df9
+</code></pre></div><div class="language-diff extra-class"><pre class="language-diff"><code>diff --git a/src/lib.rs b/src/lib.rs
+index 87d9c36..d5e5802 100644
+<span class="token coord">--- a/src/lib.rs</span>
+<span class="token coord">+++ b/src/lib.rs</span>
+<span class="token coord">@@ -54,7 +54,6 @@</span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">#![deny(unused_mut)]
+</span><span class="token prefix unchanged"> </span><span class="token line">#![deny(dead_code)]
+</span><span class="token prefix unchanged"> </span><span class="token line">#![deny(unused_imports)]
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">#![deny(missing_docs)]
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">#![deny(unused_must_use)]
+</span><span class="token prefix unchanged"> </span><span class="token line">#![deny(broken_intra_doc_links)]
+</span></span>
+diff --git a/src/util/taproot.rs b/src/util/taproot.rs
+index 674eeee..3d56cbc 100644
+<span class="token coord">--- a/src/util/taproot.rs</span>
+<span class="token coord">+++ b/src/util/taproot.rs</span>
+@@ -440,7 +440,7 @@ impl TaprootBuilder {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">// Internally used structure to represent the node information in taproot tree
+</span><span class="token prefix unchanged"> </span><span class="token line">#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+</span><span class="token prefix unchanged"> </span><span class="token line">#[cfg_attr(feature = &quot;serde&quot;, derive(Serialize, Deserialize))]
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">pub(crate) struct NodeInfo {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">pub struct NodeInfo {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    /// Merkle Hash for this node
+</span><span class="token prefix unchanged"> </span><span class="token line">    pub(crate) hash: sha256::Hash,
+</span><span class="token prefix unchanged"> </span><span class="token line">    /// information about leaves inside this node
+</span></span>@@ -448,8 +448,12 @@ pub(crate) struct NodeInfo {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">}
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">impl NodeInfo {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    pub fn hash(&amp;self) -&gt; &amp;sha256::Hash {
+</span><span class="token prefix inserted">+</span><span class="token line">        &amp;self.hash
+</span><span class="token prefix inserted">+</span><span class="token line">    }
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    // Create a new NodeInfo with omitted/hidden info
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">    fn new_hidden(hash: sha256::Hash) -&gt; Self {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    pub fn new_hidden(hash: sha256::Hash) -&gt; Self {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        Self {
+</span><span class="token prefix unchanged"> </span><span class="token line">            hash: hash,
+</span><span class="token prefix unchanged"> </span><span class="token line">            leaves: vec![],
+</span></span>@@ -457,7 +461,7 @@ impl NodeInfo {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    // Create a new leaf with NodeInfo
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">    fn new_leaf_with_ver(script: Script, ver: LeafVersion) -&gt; Self {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    pub fn new_leaf_with_ver(script: Script, ver: LeafVersion) -&gt; Self {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        let leaf = LeafInfo::new(script, ver);
+</span><span class="token prefix unchanged"> </span><span class="token line">        Self {
+</span><span class="token prefix unchanged"> </span><span class="token line">            hash: leaf.hash(),
+</span></span>@@ -466,7 +470,7 @@ impl NodeInfo {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    // Combine two NodeInfo's to create a new parent
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">    fn combine(a: Self, b: Self) -&gt; Result&lt;Self, TaprootBuilderError&gt; {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    pub fn combine(a: Self, b: Self) -&gt; Result&lt;Self, TaprootBuilderError&gt; {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        let mut all_leaves = Vec::with_capacity(a.leaves.len() + b.leaves.len());
+</span><span class="token prefix unchanged"> </span><span class="token line">        for mut a_leaf in a.leaves {
+</span><span class="token prefix unchanged"> </span><span class="token line">            a_leaf.merkle_branch.push(b.hash)?; // add hashing partner
+</span></span>
+</code></pre></div><p>There isn't much to explain here: I disabled the <code>missing_docs</code> lint so that the compiler wouldn't complain about the new public methods that aren't documented.
+Then, I added a getter for the <code>hash</code> field of <code>NodeInfo</code> and made the struct itself and a bunch of methods public.</p> <p>We will use this structure later to recover the merkle root of a Taproot script tree, given one leaf and the other &quot;hidden&quot; branches.</p> <h2 id="rust-miniscript"><a href="#rust-miniscript" class="header-anchor">#</a> rust-miniscript</h2> <p>Moving on to <a href="https://github.com/rust-bitcoin/rust-miniscript" target="_blank" rel="noopener noreferrer">rust-miniscript<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>: once again, most of the work required to support Taproot had already been done, but this time I was working with very &quot;early&quot; prototype-like code, so I was prepared to
+make some changes to the code to get it to work how I wanted.</p> <p>Instead of showing one big diff I will talk about the commits individually, which I think will help making more clear what I was doing.</p> <p>Once again, you can find all the commits referenced here in <a href="https://github.com/afilini/rust-miniscript/tree/taproot" target="_blank" rel="noopener noreferrer">my rust-miniscript <code>taproot</code> branch<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>.</p> <div class="language- extra-class"><pre class="language-text"><code>$ git show 34cf15b
+</code></pre></div><div class="language-diff extra-class"><pre class="language-diff"><code>commit 34cf15b3aac1d8c2693af1b9749b888f3f29e510
+Author: Alekos Filini &lt;alekos.filini@gmail.com&gt;
+Date:   Fri Nov 12 12:06:35 2021 +0100
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   Fix TapTree iter depth
+</span></span>
+diff --git a/src/descriptor/tr.rs b/src/descriptor/tr.rs
+index 79d3c05..314c7f4 100644
+<span class="token coord">--- a/src/descriptor/tr.rs</span>
+<span class="token coord">+++ b/src/descriptor/tr.rs</span>
+@@ -65,7 +65,7 @@ impl&lt;Pk: MiniscriptKey&gt; TapTree&lt;Pk&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">
+</span><span class="token prefix unchanged"> </span><span class="token line">    /// Iterate over all miniscripts
+</span><span class="token prefix unchanged"> </span><span class="token line">    pub fn iter(&amp;self) -&gt; TapTreeIter&lt;Pk&gt; {
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        TapTreeIter { stack: vec![self] }
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        TapTreeIter { stack: vec![(0, self)] }
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    }
+</span><span class="token prefix unchanged"> </span><span class="token line">
+</span><span class="token prefix unchanged"> </span><span class="token line">    // Helper function to translate keys
+</span></span>@@ -262,7 +262,7 @@ pub struct TapTreeIter&lt;'a, Pk: MiniscriptKey&gt;
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">where
+</span><span class="token prefix unchanged"> </span><span class="token line">    Pk: 'a,
+</span><span class="token prefix unchanged"> </span><span class="token line">{
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">    stack: Vec&lt;&amp;'a TapTree&lt;Pk&gt;&gt;,
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    stack: Vec&lt;(usize, &amp;'a TapTree&lt;Pk&gt;)&gt;,
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">}
+</span><span class="token prefix unchanged"> </span><span class="token line">
+</span><span class="token prefix unchanged"> </span><span class="token line">impl&lt;'a, Pk&gt; Iterator for TapTreeIter&lt;'a, Pk&gt;
+</span></span>@@ -273,13 +273,13 @@ where
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">
+</span><span class="token prefix unchanged"> </span><span class="token line">    fn next(&amp;mut self) -&gt; Option&lt;Self::Item&gt; {
+</span><span class="token prefix unchanged"> </span><span class="token line">        while !self.stack.is_empty() {
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            let last = self.stack.pop().expect(&quot;Size checked above&quot;);
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            let (depth, last) = self.stack.pop().expect(&quot;Size checked above&quot;);
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            match &amp;*last {
+</span><span class="token prefix unchanged"> </span><span class="token line">                TapTree::Tree(l, r) =&gt; {
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">                    self.stack.push(&amp;r);
+</span><span class="token prefix deleted">-</span><span class="token line">                    self.stack.push(&amp;l);
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">                    self.stack.push((depth + 1, &amp;r));
+</span><span class="token prefix inserted">+</span><span class="token line">                    self.stack.push((depth + 1, &amp;l));
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                }
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">                TapTree::Leaf(ref ms) =&gt; return Some((self.stack.len(), ms)),
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">                TapTree::Leaf(ref ms) =&gt; return Some((depth, ms)),
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            }
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span><span class="token prefix unchanged"> </span><span class="token line">        None
+</span></span></code></pre></div><p><code>TapTreeIterator</code> is an iterator that goes through a <code>TapTree</code> and yields a <code>(depth, node)</code> pair. This is then fed to <a href="https://github.com/afilini/rust-miniscript/blob/taproot/src/descriptor/tr.rs#L183-L189" target="_blank" rel="noopener noreferrer"><code>TaprootBuilder</code><span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>, which returns an error if trying to insert nodes
+in <a href="https://github.com/afilini/rust-bitcoin/blob/taproot-testing/src/util/taproot.rs#L403-L405" target="_blank" rel="noopener noreferrer">an order that is not DFS<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>.</p> <p>The way the depth was computed before made the builder always fail for non-trivial trees (i.e. more than 1 node).</p> <p>Here I decided to play the safe card, and just keep track of the depth explicitly: I think there might be a way to compute the depth just knowing the <code>self.stack.len()</code> (assuming the tree has a specific structure,
+which I'm not sure applies here), but anyway I didn't have much time to think about it and I just went for the &quot;dumb but idiot-proof&quot; way which ended up working fine.</p> <div class="language- extra-class"><pre class="language-text"><code>$ git show f4a3459
+</code></pre></div><div class="language-diff extra-class"><pre class="language-diff"><code>commit f4a3459128e37ca0c2701b8b6da064d4952296ff
+Author: Alekos Filini &lt;alekos.filini@gmail.com&gt;
+Date:   Sat Nov 13 14:15:52 2021 +0100
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   Switch rust-bitcoin rev
+</span></span>
+diff --git a/Cargo.toml b/Cargo.toml
+index 12825e8..8240024 100644
+<span class="token coord">--- a/Cargo.toml</span>
+<span class="token coord">+++ b/Cargo.toml</span>
+@@ -17,7 +17,7 @@ rand = [&quot;bitcoin/rand&quot;]
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">[dependencies]
+</span><span class="token prefix unchanged"> </span><span class="token line"># bitcoin = &quot;0.27&quot;
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">bitcoin = {git = &quot;https://github.com/sanket1729/rust-bitcoin&quot;, branch = &quot;taproot_psbt&quot;}
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">bitcoin = { git = &quot;https://github.com/afilini/rust-bitcoin.git&quot;, branch = &quot;taproot-testing&quot; }
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">[dependencies.serde]
+</span><span class="token prefix unchanged"> </span><span class="token line">version = &quot;1.0&quot;
+</span></span></code></pre></div><p>Trivial commit, switch to <a href="https://github.com/afilini/rust-bitcoin/tree/taproot-testing" target="_blank" rel="noopener noreferrer">my fork of rust-bitcoin<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> so that I can make changes if necessary.</p> <div class="language- extra-class"><pre class="language-text"><code>$ git show 0446b16
+</code></pre></div><div class="language-diff extra-class"><pre class="language-diff"><code>commit 0446b1631cec9f7118d46f0f4c94ccd20de29f94
+Author: Alekos Filini &lt;alekos.filini@gmail.com&gt;
+Date:   Sat Nov 13 14:25:18 2021 +0100
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   Parse x-only keys
+</span></span>
+diff --git a/src/descriptor/key.rs b/src/descriptor/key.rs
+index 4108d00..b7f90b5 100644
+<span class="token coord">--- a/src/descriptor/key.rs</span>
+<span class="token coord">+++ b/src/descriptor/key.rs</span>
+@@ -283,9 +283,9 @@ impl FromStr for DescriptorPublicKey {
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    fn from_str(s: &amp;str) -&gt; Result&lt;Self, Self::Err&gt; {
+</span><span class="token prefix unchanged"> </span><span class="token line">        // A &quot;raw&quot; public key without any origin is the least we accept.
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        if s.len() &lt; 66 {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        if s.len() &lt; 64 {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            return Err(DescriptorKeyParseError(
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">                &quot;Key too short (&lt;66 char), doesn't match any format&quot;,
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">                &quot;Key too short (&lt;64 char), doesn't match any format&quot;,
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            ));
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span></span>
+@@ -301,6 +301,14 @@ impl FromStr for DescriptorPublicKey {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                derivation_path,
+</span><span class="token prefix unchanged"> </span><span class="token line">                wildcard,
+</span><span class="token prefix unchanged"> </span><span class="token line">            }))
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        } else if key_part.len() == 64 {
+</span><span class="token prefix inserted">+</span><span class="token line">            // x-only pubkey, prefix it with `02`
+</span><span class="token prefix inserted">+</span><span class="token line">            let key = bitcoin::PublicKey::from_str(&amp;format!(&quot;02{}&quot;, key_part))
+</span><span class="token prefix inserted">+</span><span class="token line">                .map_err(|_| DescriptorKeyParseError(&quot;Error while parsing x-only public key&quot;))?;
+</span><span class="token prefix inserted">+</span><span class="token line">            Ok(DescriptorPublicKey::SinglePub(DescriptorSinglePub {
+</span><span class="token prefix inserted">+</span><span class="token line">                key,
+</span><span class="token prefix inserted">+</span><span class="token line">                origin,
+</span><span class="token prefix inserted">+</span><span class="token line">            }))
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        } else {
+</span><span class="token prefix unchanged"> </span><span class="token line">            if key_part.len() &gt;= 2
+</span><span class="token prefix unchanged"> </span><span class="token line">                &amp;&amp; !(&amp;key_part[0..2] == &quot;02&quot; || &amp;key_part[0..2] == &quot;03&quot; || &amp;key_part[0..2] == &quot;04&quot;)
+</span></span>diff --git a/src/lib.rs b/src/lib.rs
+index e168b16..3a2335e 100644
+<span class="token coord">--- a/src/lib.rs</span>
+<span class="token coord">+++ b/src/lib.rs</span>
+<span class="token coord">@@ -95,8 +95,6 @@</span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">#![deny(non_snake_case)]
+</span><span class="token prefix unchanged"> </span><span class="token line">#![deny(unused_mut)]
+</span><span class="token prefix unchanged"> </span><span class="token line">#![deny(dead_code)]
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">#![deny(unused_imports)]
+</span><span class="token prefix deleted">-</span><span class="token line">#![deny(missing_docs)]
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">pub extern crate bitcoin;
+</span><span class="token prefix unchanged"> </span><span class="token line">#[cfg(feature = &quot;serde&quot;)]
+</span></span></code></pre></div><p>This, I'm not really sure of: Taproot uses x-only public keys, which means that the first byte (which is usually a <code>03</code> or a <code>02</code>) that indicates the parity of the EC point is completely dropped, and it's implicit
+that the point is even (= <code>02</code>). Check out <a href="https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki" target="_blank" rel="noopener noreferrer"><code>BIP340</code><span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> for a much better explanation.</p> <p>So here when I find a string that is only 64 characters long I will assume it's an x-only pubkey, and I will parse it as a normal <code>bitcoin::PublicKey</code> by prefixing it with <code>02</code>.</p> <p>I guess one alternative could have been to try and parse it as a <code>schnorr::PublicKey</code> and then &quot;convert&quot; it to a <code>ecdsa::PublicKey</code> which should be supported, but once again I just wanted to get it done quickly and
+this worked fine.</p> <p>I also disabled the <code>unused_imports</code> and <code>missing_docs</code> lint so that the compiler wouldn't whine too much.</p> <div class="language- extra-class"><pre class="language-text"><code>$ git show 87316ff
+</code></pre></div><div class="language-diff extra-class"><pre class="language-diff"><code>commit 87316fffd06ab3bdf300fd1a958ddaa2789a6696
+Author: Alekos Filini &lt;alekos.filini@gmail.com&gt;
+Date:   Sat Nov 13 14:26:01 2021 +0100
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   Parse `tr()` descriptors
+</span></span>
+diff --git a/src/descriptor/mod.rs b/src/descriptor/mod.rs
+index 06d98e1..4190786 100644
+<span class="token coord">--- a/src/descriptor/mod.rs</span>
+<span class="token coord">+++ b/src/descriptor/mod.rs</span>
+@@ -610,6 +610,7 @@ where
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            (&quot;wpkh&quot;, 1) =&gt; Descriptor::Wpkh(Wpkh::from_tree(top)?),
+</span><span class="token prefix unchanged"> </span><span class="token line">            (&quot;sh&quot;, 1) =&gt; Descriptor::Sh(Sh::from_tree(top)?),
+</span><span class="token prefix unchanged"> </span><span class="token line">            (&quot;wsh&quot;, 1) =&gt; Descriptor::Wsh(Wsh::from_tree(top)?),
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            (&quot;tr&quot;, _) =&gt; Descriptor::Tr(Tr::from_tree(top)?),
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            _ =&gt; Descriptor::Bare(Bare::from_tree(top)?),
+</span><span class="token prefix unchanged"> </span><span class="token line">        })
+</span><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span>diff --git a/src/expression.rs b/src/expression.rs
+index 1cef614..11a68d3 100644
+<span class="token coord">--- a/src/expression.rs</span>
+<span class="token coord">+++ b/src/expression.rs</span>
+@@ -100,7 +100,12 @@ impl&lt;'a&gt; Tree&lt;'a&gt; {
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                sl = &amp;sl[n + 1..];
+</span><span class="token prefix unchanged"> </span><span class="token line">                loop {
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">                    let (arg, new_sl) = Tree::from_slice_helper_round(sl, depth + 1)?;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">                    let (arg, new_sl) = if sl.contains('{') {
+</span><span class="token prefix inserted">+</span><span class="token line">                        Tree::from_slice_helper_curly(sl, depth + 1)?
+</span><span class="token prefix inserted">+</span><span class="token line">                    } else {
+</span><span class="token prefix inserted">+</span><span class="token line">                        Tree::from_slice_helper_round(sl, depth + 1)?
+</span><span class="token prefix inserted">+</span><span class="token line">                    };
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                    ret.args.push(arg);
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                    if new_sl.is_empty() {
+</span></span></code></pre></div><p>When trying to parse a descriptor (essentially turning a recursive string of <code>operator(args)</code> into an abstract tree in memory) use a <em>curly-bracket-aware</em> parser if there is one in the string.</p> <p>The code to then build a <code>Tr</code> struct given an <code>expression::Tree</code> (and the <code>from_slice_helper_curly</code> function) were already implemented, so it was just a matter of correctly
+building the abstract tree by parsing curly brackets in descriptors.</p> <div class="language- extra-class"><pre class="language-text"><code>$ git show 3055cab
+</code></pre></div><div class="language-diff extra-class"><pre class="language-diff"><code>commit 3055cabef8bd51eda344ce501b03c533fd367b4f
+Author: Alekos Filini &lt;alekos.filini@gmail.com&gt;
+Date:   Sat Nov 13 14:26:30 2021 +0100
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   Fix control block creation when satisfying `Tr`
+</span></span>
+diff --git a/src/descriptor/tr.rs b/src/descriptor/tr.rs
+index 314c7f4..8487d56 100644
+<span class="token coord">--- a/src/descriptor/tr.rs</span>
+<span class="token coord">+++ b/src/descriptor/tr.rs</span>
+@@ -571,17 +571,14 @@ impl&lt;Pk: MiniscriptKey&gt; DescriptorTrait&lt;Pk&gt; for Tr&lt;Pk&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                } else {
+</span><span class="token prefix unchanged"> </span><span class="token line">                    let ver = LeafVersion::default();
+</span><span class="token prefix unchanged"> </span><span class="token line">                    let leaf_script = (ms.encode(), ver);
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">                    let control_block_set = spend_info
+</span><span class="token prefix deleted">-</span><span class="token line">                        .as_script_map()
+</span><span class="token prefix deleted">-</span><span class="token line">                        .get(&amp;leaf_script)
+</span><span class="token prefix deleted">-</span><span class="token line">                        .expect(&quot;Control block must exist in script map for every known leaf&quot;);
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">                    // let control_block_set = spend_info
+</span><span class="token prefix inserted">+</span><span class="token line">                    //     .as_script_map()
+</span><span class="token prefix inserted">+</span><span class="token line">                    //     .get(&amp;leaf_script)
+</span><span class="token prefix inserted">+</span><span class="token line">                    //     .expect(&quot;Control block must exist in script map for every known leaf&quot;);
+</span><span class="token prefix inserted">+</span><span class="token line">                    let control_block = spend_info.control_block(&amp;leaf_script).expect(&quot;Control block must exist in script map for every known leaf&quot;);
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                    wit.push(leaf_script.0.into_bytes()); // Push the leaf script
+</span><span class="token prefix unchanged"> </span><span class="token line">                                                          // There can be multiple control blocks for a (script, ver) pair
+</span><span class="token prefix unchanged"> </span><span class="token line">                                                          // Find the smallest one amongst those
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">                    let control_block = control_block_set
+</span><span class="token prefix deleted">-</span><span class="token line">                        .iter()
+</span><span class="token prefix deleted">-</span><span class="token line">                        .min_by(|x, y| x.as_inner().len().cmp(&amp;y.as_inner().len()))
+</span><span class="token prefix deleted">-</span><span class="token line">                        .expect(&quot;Atleast one control must exist for a known leaf&quot;);
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                    wit.push(control_block.serialize());
+</span><span class="token prefix unchanged"> </span><span class="token line">                    // Finally, save the minimum
+</span><span class="token prefix unchanged"> </span><span class="token line">                    min_wit = Some(wit);
+</span></span>
+</code></pre></div><p>This is where things get more interesting: this section of code builds the witness to satisfy a Taproot descriptor. In case of a script-spend, we need to prove that the script we are using had been committed
+into the public key of our <code>P2TR</code> input. We do this by adding a &quot;control block&quot;, that contains data about the parity of the key, the leaf version used, and the merkle path from the leaf we are using to spend
+up to the merkle root, which is committed into the public key. Once again, this is explained very well in <a href="https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki" target="_blank" rel="noopener noreferrer"><code>BIP341</code><span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>.</p> <p>Before my patch the code was only getting the set of merkle paths that could lead from the root to the leaves that contain a given script. For context, the signature of <code>TaprootSpendInfo::as_script_map(&amp;self)</code> is:</p> <div class="language-rust extra-class"><pre class="language-rust"><code><span class="token comment">/// Access the internal script map</span>
+<span class="token keyword">pub</span> <span class="token keyword">fn</span> <span class="token function-definition function">as_script_map</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token keyword">self</span><span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token operator">&amp;</span><span class="token class-name">BTreeMap</span><span class="token operator">&lt;</span><span class="token punctuation">(</span><span class="token class-name">Script</span><span class="token punctuation">,</span> <span class="token class-name">LeafVersion</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">BTreeSet</span><span class="token operator">&lt;</span><span class="token class-name">TaprootMerkleBranch</span><span class="token operator">&gt;&gt;</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+</code></pre></div><p>Then the code would look for the &quot;shortest&quot; path to that specific script, as it would save size in the final transaction (leaves that are more &quot;deep&quot; in the tree than others naturally have more hidden branches
+in their path to the root, and thus require a longer control block to reveal them all).</p> <p>The issue here is that the <code>control_block</code> variable is then serialized directly into the witness. But this is not a control block, it's just a set of merkle paths! A control block only has <em>one</em> merkle path, and
+includes the leaf version and the key parity bit.</p> <p>Conveniently, the <code>TaprootSpendInfo</code> struct also has this other method (I'm including the implementation as well, because it shows that internally it does the same &quot;trick&quot; to find the shortest path):</p> <div class="language-rust extra-class"><pre class="language-rust"><code><span class="token comment">/// Obtain a [`ControlBlock`] for particular script with the given version.</span>
+<span class="token comment">/// Returns [`None`] if the script is not contained in the [`TaprootSpendInfo`]</span>
+<span class="token comment">/// If there are multiple ControlBlocks possible, this returns the shortest one.</span>
+<span class="token keyword">pub</span> <span class="token keyword">fn</span> <span class="token function-definition function">control_block</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token keyword">self</span><span class="token punctuation">,</span> script_ver<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token punctuation">(</span><span class="token class-name">Script</span><span class="token punctuation">,</span> <span class="token class-name">LeafVersion</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token class-name">Option</span><span class="token operator">&lt;</span><span class="token class-name">ControlBlock</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+    <span class="token keyword">let</span> merkle_branch_set <span class="token operator">=</span> <span class="token keyword">self</span><span class="token punctuation">.</span>script_map<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>script_ver<span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">;</span>
+    <span class="token comment">// Choose the smallest one amongst the multiple script maps</span>
+    <span class="token keyword">let</span> smallest <span class="token operator">=</span> merkle_branch_set
+        <span class="token punctuation">.</span><span class="token function">iter</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token punctuation">.</span><span class="token function">min_by</span><span class="token punctuation">(</span><span class="token closure-params"><span class="token closure-punctuation punctuation">|</span>x<span class="token punctuation">,</span> y<span class="token closure-punctuation punctuation">|</span></span> x<span class="token number">.0</span><span class="token punctuation">.</span><span class="token function">len</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">cmp</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>y<span class="token number">.0</span><span class="token punctuation">.</span><span class="token function">len</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token punctuation">.</span><span class="token function">expect</span><span class="token punctuation">(</span><span class="token string">&quot;Non-empty iterator&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token class-name">Some</span><span class="token punctuation">(</span><span class="token class-name">ControlBlock</span> <span class="token punctuation">{</span>
+        internal_key<span class="token punctuation">:</span> <span class="token keyword">self</span><span class="token punctuation">.</span>internal_key<span class="token punctuation">,</span>
+        output_key_parity<span class="token punctuation">:</span> <span class="token keyword">self</span><span class="token punctuation">.</span>output_key_parity<span class="token punctuation">,</span>
+        leaf_version<span class="token punctuation">:</span> <span class="token class-name">LeafVersion</span><span class="token punctuation">::</span><span class="token function">default</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        merkle_branch<span class="token punctuation">:</span> smallest<span class="token punctuation">.</span><span class="token function">clone</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p>So to fix this code we just have to use that method instead, and we can get it done in one single line!</p> <p>Instead of removing the old code at the time I only commented it out, because I initially thought I would still have to look for the shortest script myself, and I figured the &quot;sorting&quot; code would come in handy
+later on.</p> <p>Also, if you are an acute observer, you might have noticed that there's a bug in this last snippet of code. Feel free to think about it a little bit, then check out the <a href="https://github.com/rust-bitcoin/rust-bitcoin/pull/703" target="_blank" rel="noopener noreferrer">PR<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> I made
+if you wanna know the answer!</p> <div class="language- extra-class"><pre class="language-text"><code>git show 35378ad
+</code></pre></div><div class="language-diff extra-class"><pre class="language-diff"><code>commit 35378ad01a6f2b8161a3f36448b24d031f8aeaec
+Author: Alekos Filini &lt;alekos.filini@gmail.com&gt;
+Date:   Sat Nov 13 14:27:14 2021 +0100
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   Consider key-spend max satisfaction weight
+</span></span>
+diff --git a/src/descriptor/tr.rs b/src/descriptor/tr.rs
+index 8487d56..fabf860 100644
+<span class="token coord">--- a/src/descriptor/tr.rs</span>
+<span class="token coord">+++ b/src/descriptor/tr.rs</span>
+@@ -593,7 +593,7 @@ impl&lt;Pk: MiniscriptKey&gt; DescriptorTrait&lt;Pk&gt; for Tr&lt;Pk&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    fn max_satisfaction_weight(&amp;self) -&gt; Result&lt;usize, Error&gt; {
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        let mut max_wieght = None;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        let mut max_wieght = Some(65);
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        for (depth, ms) in self.iter_scripts() {
+</span><span class="token prefix unchanged"> </span><span class="token line">            let script_size = ms.script_size();
+</span><span class="token prefix unchanged"> </span><span class="token line">            let max_sat_elems = match ms.max_satisfaction_witness_elements() {
+</span></span></code></pre></div><p>This is a little bug in the code that tries to compute what the maximum satisfaction weight would be for a descriptor. For instance, we use this in BDK to compute how many extra sats of fees we need to pay
+in order to target a given fee rate, assuming the descriptor is satisfied with the worst (larger and most expensive) path.</p> <p>For Taproot descriptors, it's just a matter of iterating over the leaves in the tree and pick the most expensive one... or is it? This doesn't take into account that Taproot outputs can also be spent with
+key-spend, which means just pushing a signature to the witness. This signature is 64 bytes long when using the new <a href="https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki" target="_blank" rel="noopener noreferrer"><code>SIGHASH_DEFAULT</code><span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> sighash, or 65 otherwise. Since we are thinking about the maximum satisfaction
+weight, or the worst case possible, we naturally pick the latter.</p> <p>Note that theoretically you could build a Taproot address &quot;without&quot; an available key-path spend (by using an unspendable Schnorr public key), but the code here in rust-miniscript doesn't take that into
+account, as there's no way that I'm aware of to specificy in a <code>tr()</code> descriptor that the key is unspendable. So, while theoretically here we should first check whether the key-spend path is available before
+accounting for its weight, in practice this is always true in miniscript so we just use that as our starting worst case and update it later if necessary while iterating the tree leaves.</p> <div class="language- extra-class"><pre class="language-text"><code>$ git show b4878f8
+</code></pre></div><div class="language-diff extra-class"><pre class="language-diff"><code>commit b4878f816e9ede11d5ed947c06e03aa988e3e26f
+Author: Alekos Filini &lt;alekos.filini@gmail.com&gt;
+Date:   Sat Nov 13 14:27:53 2021 +0100
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   Look for taproot stuff in psbts
+</span></span>
+diff --git a/src/psbt/mod.rs b/src/psbt/mod.rs
+index 9a8b17d..42c6ce8 100644
+<span class="token coord">--- a/src/psbt/mod.rs</span>
+<span class="token coord">+++ b/src/psbt/mod.rs</span>
+@@ -25,13 +25,14 @@ use bitcoin;
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">use bitcoin::hashes::{hash160, ripemd160, sha256, sha256d};
+</span><span class="token prefix unchanged"> </span><span class="token line">use bitcoin::secp256k1::{self, Secp256k1};
+</span><span class="token prefix unchanged"> </span><span class="token line">use bitcoin::util::psbt::PartiallySignedTransaction as Psbt;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">use bitcoin::util::taproot::TapLeafHash;
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">use bitcoin::Script;
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">use interpreter;
+</span><span class="token prefix unchanged"> </span><span class="token line">use miniscript::limits::SEQUENCE_LOCKTIME_DISABLE_FLAG;
+</span><span class="token prefix unchanged"> </span><span class="token line">use miniscript::satisfy::{After, Older};
+</span><span class="token prefix unchanged"> </span><span class="token line">use Satisfier;
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">use {BitcoinECSig, Preimage32};
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">use {BitcoinECSig, BitcoinSchnorrSig, Preimage32};
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">use {MiniscriptKey, ToPublicKey};
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">mod finalizer;
+</span></span>@@ -231,6 +232,24 @@ impl&lt;'psbt&gt; PsbtInputSatisfier&lt;'psbt&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">}
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">impl&lt;'psbt, Pk: MiniscriptKey + ToPublicKey&gt; Satisfier&lt;Pk&gt; for PsbtInputSatisfier&lt;'psbt&gt; {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    fn lookup_tap_key_spend_sig(&amp;self) -&gt; Option&lt;BitcoinSchnorrSig&gt; {
+</span><span class="token prefix inserted">+</span><span class="token line">        if let Some((sig, hash_ty)) = self.psbt.inputs[self.index].tap_key_sig {
+</span><span class="token prefix inserted">+</span><span class="token line">            Some(BitcoinSchnorrSig { sig, hash_ty })
+</span><span class="token prefix inserted">+</span><span class="token line">        } else {
+</span><span class="token prefix inserted">+</span><span class="token line">            None
+</span><span class="token prefix inserted">+</span><span class="token line">        }
+</span><span class="token prefix inserted">+</span><span class="token line">    }
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">    fn lookup_tap_leaf_script_sig(&amp;self, pk: &amp;Pk, lh: &amp;TapLeafHash) -&gt; Option&lt;BitcoinSchnorrSig&gt; {
+</span><span class="token prefix inserted">+</span><span class="token line">        let pk = pk.to_x_only_pubkey();
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        if let Some((sig, hash_ty)) = self.psbt.inputs[self.index].tap_script_sigs.get(&amp;(pk, *lh)) {
+</span><span class="token prefix inserted">+</span><span class="token line">            Some(BitcoinSchnorrSig { sig: *sig, hash_ty: *hash_ty })
+</span><span class="token prefix inserted">+</span><span class="token line">        } else {
+</span><span class="token prefix inserted">+</span><span class="token line">            None
+</span><span class="token prefix inserted">+</span><span class="token line">        }
+</span><span class="token prefix inserted">+</span><span class="token line">    }
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    fn lookup_ec_sig(&amp;self, pk: &amp;Pk) -&gt; Option&lt;BitcoinECSig&gt; {
+</span><span class="token prefix unchanged"> </span><span class="token line">        if let Some(rawsig) = self.psbt.inputs[self.index]
+</span><span class="token prefix unchanged"> </span><span class="token line">            .partial_sigs
+</span></span></code></pre></div><p>This commit implements the Taproot-specific <code>Satisfier</code> methods on <code>PsbtInputSatisfier</code>. The code to produce a valid witness (i.e. <em>satisfy</em>) a descriptor by looking for Taproot key-spend or script-spend signatures
+is already implemented, so it's just a matter of actually returning those, if they are present in a PSBT.</p> <div class="language- extra-class"><pre class="language-text"><code>$ git show 80da0ba
+</code></pre></div><div class="language-diff extra-class"><pre class="language-diff"><code>commit 80da0ba9b742b2dee23e7302e2f95a6e96b1d6ed
+Author: Alekos Filini &lt;alekos.filini@gmail.com&gt;
+Date:   Sat Nov 13 16:54:27 2021 +0100
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   Iter keys in `MultiA`
+</span></span>
+diff --git a/src/miniscript/iter.rs b/src/miniscript/iter.rs
+index 36c4b69..a54a371 100644
+<span class="token coord">--- a/src/miniscript/iter.rs</span>
+<span class="token coord">+++ b/src/miniscript/iter.rs</span>
+@@ -121,7 +121,7 @@ impl&lt;Pk: MiniscriptKey, Ctx: ScriptContext&gt; Miniscript&lt;Pk, Ctx&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    pub fn get_leaf_pk(&amp;self) -&gt; Vec&lt;Pk&gt; {
+</span><span class="token prefix unchanged"> </span><span class="token line">        match self.node {
+</span><span class="token prefix unchanged"> </span><span class="token line">            Terminal::PkK(ref key) =&gt; vec![key.clone()],
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            Terminal::Multi(_, ref keys) =&gt; keys.clone(),
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            Terminal::Multi(_, ref keys) | Terminal::MultiA(_, ref keys) =&gt; keys.clone(),
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            _ =&gt; vec![],
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span>@@ -139,7 +139,7 @@ impl&lt;Pk: MiniscriptKey, Ctx: ScriptContext&gt; Miniscript&lt;Pk, Ctx&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        match self.node {
+</span><span class="token prefix unchanged"> </span><span class="token line">            Terminal::PkH(ref hash) =&gt; vec![hash.clone()],
+</span><span class="token prefix unchanged"> </span><span class="token line">            Terminal::PkK(ref key) =&gt; vec![key.to_pubkeyhash()],
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            Terminal::Multi(_, ref keys) =&gt; keys.iter().map(Pk::to_pubkeyhash).collect(),
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            Terminal::Multi(_, ref keys) | Terminal::MultiA(_, ref keys) =&gt; keys.iter().map(Pk::to_pubkeyhash).collect(),
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            _ =&gt; vec![],
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span>@@ -155,7 +155,7 @@ impl&lt;Pk: MiniscriptKey, Ctx: ScriptContext&gt; Miniscript&lt;Pk, Ctx&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        match self.node {
+</span><span class="token prefix unchanged"> </span><span class="token line">            Terminal::PkH(ref hash) =&gt; vec![PkPkh::HashedPubkey(hash.clone())],
+</span><span class="token prefix unchanged"> </span><span class="token line">            Terminal::PkK(ref key) =&gt; vec![PkPkh::PlainPubkey(key.clone())],
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            Terminal::Multi(_, ref keys) =&gt; keys
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            Terminal::Multi(_, ref keys) | Terminal::MultiA(_, ref keys) =&gt; keys
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                .into_iter()
+</span><span class="token prefix unchanged"> </span><span class="token line">                .map(|key| PkPkh::PlainPubkey(key.clone()))
+</span><span class="token prefix unchanged"> </span><span class="token line">                .collect(),
+</span></span>@@ -170,7 +170,7 @@ impl&lt;Pk: MiniscriptKey, Ctx: ScriptContext&gt; Miniscript&lt;Pk, Ctx&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    pub fn get_nth_pk(&amp;self, n: usize) -&gt; Option&lt;Pk&gt; {
+</span><span class="token prefix unchanged"> </span><span class="token line">        match (&amp;self.node, n) {
+</span><span class="token prefix unchanged"> </span><span class="token line">            (&amp;Terminal::PkK(ref key), 0) =&gt; Some(key.clone()),
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            (&amp;Terminal::Multi(_, ref keys), _) =&gt; keys.get(n).cloned(),
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            (&amp;Terminal::Multi(_, ref keys), _) | (&amp;Terminal::MultiA(_, ref keys), _) =&gt; keys.get(n).cloned(),
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            _ =&gt; None,
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span>@@ -186,7 +186,7 @@ impl&lt;Pk: MiniscriptKey, Ctx: ScriptContext&gt; Miniscript&lt;Pk, Ctx&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        match (&amp;self.node, n) {
+</span><span class="token prefix unchanged"> </span><span class="token line">            (&amp;Terminal::PkH(ref hash), 0) =&gt; Some(hash.clone()),
+</span><span class="token prefix unchanged"> </span><span class="token line">            (&amp;Terminal::PkK(ref key), 0) =&gt; Some(key.to_pubkeyhash()),
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            (&amp;Terminal::Multi(_, ref keys), _) =&gt; keys.get(n).map(Pk::to_pubkeyhash),
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            (&amp;Terminal::Multi(_, ref keys), _) | (&amp;Terminal::MultiA(_, ref keys), _) =&gt; keys.get(n).map(Pk::to_pubkeyhash),
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            _ =&gt; None,
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span>@@ -199,7 +199,7 @@ impl&lt;Pk: MiniscriptKey, Ctx: ScriptContext&gt; Miniscript&lt;Pk, Ctx&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        match (&amp;self.node, n) {
+</span><span class="token prefix unchanged"> </span><span class="token line">            (&amp;Terminal::PkH(ref hash), 0) =&gt; Some(PkPkh::HashedPubkey(hash.clone())),
+</span><span class="token prefix unchanged"> </span><span class="token line">            (&amp;Terminal::PkK(ref key), 0) =&gt; Some(PkPkh::PlainPubkey(key.clone())),
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            (&amp;Terminal::Multi(_, ref keys), _) =&gt; {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            (&amp;Terminal::Multi(_, ref keys), _) | (&amp;Terminal::MultiA(_, ref keys), _) =&gt; {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                keys.get(n).map(|key| PkPkh::PlainPubkey(key.clone()))
+</span><span class="token prefix unchanged"> </span><span class="token line">            }
+</span><span class="token prefix unchanged"> </span><span class="token line">            _ =&gt; None,
+</span></span></code></pre></div><p>Taproot descriptors add a new miniscript operator called <code>multi_a()</code> which behaves like <code>multi()</code> in non-Taproot descriptors, but uses the new <a href="https://github.com/bitcoin/bips/blob/master/bip-0342.mediawiki#script-execution" target="_blank" rel="noopener noreferrer"><code>OP_CHECKSIGADD</code><span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> opcode when serialized in a script.</p> <p>When this was added, somebody forgot to update the various methods that iterate over the public keys of a descriptor to correctly return the keys contained in <code>multi_a()</code> - essentially, it was falling back in
+the default case used by the operators that don't contain any key, but this one does!</p> <div class="language- extra-class"><pre class="language-text"><code>$ git show 8b108c5
+</code></pre></div><div class="language-diff extra-class"><pre class="language-diff"><code>commit 8b108c5c0bf50b66b7220746525742b71f6cd4b4
+Author: Alekos Filini &lt;alekos.filini@gmail.com&gt;
+Date:   Sat Nov 13 17:26:53 2021 +0100
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">   Fix witness generation for `MultiA`
+</span></span>
+diff --git a/src/miniscript/satisfy.rs b/src/miniscript/satisfy.rs
+index 655436e..ab43707 100644
+<span class="token coord">--- a/src/miniscript/satisfy.rs</span>
+<span class="token coord">+++ b/src/miniscript/satisfy.rs</span>
+@@ -1264,7 +1264,7 @@ impl Satisfaction {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                // Collect all available signatures
+</span><span class="token prefix unchanged"> </span><span class="token line">                let mut sig_count = 0;
+</span><span class="token prefix unchanged"> </span><span class="token line">                let mut sigs = vec![vec![vec![]]; keys.len()];
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">                for (i, pk) in keys.iter().enumerate() {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">                for (i, pk) in keys.iter().rev().enumerate() {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                    match Witness::signature::&lt;_, _, Ctx&gt;(stfr, pk, leaf_hash) {
+</span><span class="token prefix unchanged"> </span><span class="token line">                        Witness::Stack(sig) =&gt; {
+</span><span class="token prefix unchanged"> </span><span class="token line">                            sigs[i] = sig;
+</span></span></code></pre></div><p>And finally, the last little fix: the <code>multi_a()</code> operator is satisfied by pushing to the witness either a signature (if you have one available for that specific public key) or an empty vector. The problem is,
+they have to be in the right order to match the order of public keys in your Taproot script.</p> <p>rust-miniscript was pushing them in reverse order, so script validation was always failing for multisigs that had more than 1 key. Adding a <code>.rev()</code> to the iterator fixed the issue.</p> <h2 id="conclusion"><a href="#conclusion" class="header-anchor">#</a> Conclusion</h2> <p>And that was it! We now have a fully working <a href="https://github.com/rust-bitcoin/rust-bitcoin" target="_blank" rel="noopener noreferrer">rust-bitcoin<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> and <a href="https://github.com/rust-bitcoin/rust-miniscript" target="_blank" rel="noopener noreferrer">rust-miniscript<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> ready for Taproot.</p> <p>In Part 2 I will go over the code changes in BDK, but I think it's now time for you and I to take a break 😃</p></div> <footer class="page-edit"><div class="edit-link"><a href="https://github.com/bitcoindevkit/bitcoindevkit.org/edit/master/docs/_blog/first_bdk_taproot_tx.md" target="_blank" rel="noopener noreferrer">Edit this page</a> <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></div> <div class="last-updated"><span class="prefix">Last Updated:</span> <span class="time">11/18/2021, 12:40:05 AM</span></div></footer> <!----> </main></div></div> <footer class="footer" data-v-9ca807bc><div class="wrap"><div class="wrap-border"><div class="inner"><div class="footer-content"><div class="footer-block"><h4>Docs</h4> <div><a href="/getting-started/" class="nav-link">
+  Getting Started
+</a></div><div><a href="/bdk-cli/installation/" class="nav-link">
+  BDK-CLI
+</a></div><div><a href="/descriptors/" class="nav-link">
+  Descriptors
+</a></div></div><div class="footer-block"><h4>Community</h4> <div><a href="https://github.com/bitcoindevkit" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div><a href="https://twitter.com/intent/follow?screen_name=bitcoindevkit" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Twitter
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div><a href="https://discord.gg/dstn4dQ" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Chat on Discord
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div></div><div class="footer-block"><h4>More</h4> <div><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div><div><a href="/supporters/" class="nav-link">
+  Supporters
+</a></div></div></div> <p class="copyright">Copyright © 2021 BDK Developers</p></div></div></div></footer></div><div class="global-ui"></div></div>
+    <script src="/assets/js/app.523722c4.js" defer></script><script src="/assets/js/8.cbf41989.js" defer></script><script src="/assets/js/1.e424882b.js" defer></script><script src="/assets/js/22.34abfbd8.js" defer></script>
+  </body>
+</html>
