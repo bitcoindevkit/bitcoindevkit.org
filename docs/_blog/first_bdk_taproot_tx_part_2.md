@@ -3,14 +3,14 @@ title: "The first BDK Taproot TX: a look at the code (Part 2)"
 description: "A quick overview of the changes made to bdk, rust-miniscript and rust-bitcoin to make a Taproot transaction"
 authors:
     - Alekos Filini
-date: "2021-11-25"
+date: "2021-12-10"
 tags: ["BDK", "taproot", "miniscript"]
-permalink: "/blog/2021/11/first-bdk-taproot-tx-look-at-the-code-part-2"
+permalink: "/blog/2021/12/first-bdk-taproot-tx-look-at-the-code-part-2"
 ---
 
 This is the second part of a two-part blog series in which I talk through the changes made to BDK to make a Taproot transaction. If you haven't read it yet, check out [Part 1].
 
-While in the first part I managed to show full raw commits, in this case I will only focus on the relevant changes, otherwise the post would get very long. You can always find the full diff here, if you are interested
+While in the first part I managed to show full raw commits, in this case I will only focus on the relevant changes, otherwise the post would get very long. You can always find the [full diff] here, if you are interested
 in that.
 
 ## Shortcuts
@@ -19,7 +19,7 @@ As mentioned previously, the main goal of this journey for me was to find out wh
 some shortcuts were taken, in particular:
 
 - No support for BIP32 extended keys: this is probably very quick to add, but in the first "proof of concept" I decided to only work with WIF keys for simplicity
-- No support for `SIGHASH_DEFAULT`: this would require some minor changes to a few traits in BDK that still use the "legacy" `SigHashType` enum from rust-bitcoin
+- No support for [`SIGHASH_DEFAULT`][`BIP341`]: this would require some minor changes to a few traits in BDK that still use the "legacy" `SigHashType` enum from [rust-bitcoin]
 
 ## Utilities
 
@@ -62,7 +62,7 @@ The second one constructs the merkle root of a taptree given a leaf hash and the
 
 Many of the methods exposed by a `Descriptor` struct used to be infallible: for instance, it was always possible to "encode" a descriptor into a Bitcoin script by calling the `script_pubkey()` method.
 
-Unfortunately, taproot descriptors need some more metadata to do that: they can be computed by calling the `spend_info()` method, and they will be cached inside the descriptor, but since it's not guaranteed by the
+Unfortunately, taproot descriptors need some extra metadata to do that: they can be computed by calling the `spend_info()` method, and they will be cached inside the descriptor, but since it's not guaranteed by the
 compiler that the method will be called before trying to encode it, the infallible methods had to be changed to return a `Result`, so that they can fail if the spend info is not present.
 
 In BDK we call the `spend_info()` method right after "deriving" the descriptor, so it's guaranteed that we will never encounter that error: for this reason, we wrap those methods and call `expect()` on them, to keep
@@ -239,7 +239,7 @@ we have to update them:
 
 ## Policy
 
-Our `policy` module contains code to "distill" the content of a descriptor into a more human- or machine-readable format that clearly explains what's needed to satisfy a descriptor.
+Our [`policy`] module contains code to "distill" the content of a descriptor into a more human- or machine-readable format that clearly explains what's needed to satisfy a descriptor.
 
 For instance, for a `multi(2,Alice,Bob)` descriptor the policy module will tell you that both `Alice` and `Bob` need to sign to spend from the descriptor.
 
@@ -296,7 +296,7 @@ Taproot (Segwit v1) scripts are satisfied with Schnorr signatures instead of ECD
 unique needs of Taproot (the signature could either be used in a key-spend or script-spend branch, and in the latter case it should commit to the specific leaf used to spend, so that the same key can be safely
 used in multiple leaves without worrying about "reply" attacks).
 
-The new sighash algorithm also fixes the infamous "segwit bug", that a malicious software could use to trick external signers like hardware wallets into burning a lot of the user's funds by sending a very large fee.
+The new sighash algorithm also fixes the infamous ["segwit bug"], that a malicious software could use to trick external signers like hardware wallets into burning a lot of the user's funds by sending a very large fee.
 We will get back to this later on.
 
 There are a lot of changes made to our signing code, I'll try to break them down in more manageable chunks:
@@ -349,7 +349,7 @@ impl ComputeSighash for Legacy {
          }
 ```
 
-The implementation on `Legacy` and `Segwitv0` is updated accordingly: they don't need any extra data, so the `Extra` type will be an empty tuple, and they return the "legacy" rust-bitcoin `SigHash` type.
+The implementation on `Legacy` and `Segwitv0` is updated accordingly: they don't need any extra data, so the `Extra` type will be an empty tuple, and they return the "legacy" [rust-bitcoin] `SigHash` type.
 
 ```rust
 fn tap_signature(
@@ -436,13 +436,13 @@ Then, we write a function to produce the taproot signatures given a private key 
 Internally we check if the key matches the `internal_key` metadata (and in that case we make a key-spend signature by tweaking our key with the taptree merkle root), otherwise we get all the leaves that
 involve our key (`psbt_input.tap_key_origins.get(&public)`), iterate on them and produce a signature for each of them.
 
-Unfortunately due to a limitation of the current rust-bitcoin API, we have to come up with the full Bitcoin script in order to produce the signature: this is technically not required, because the sighash only
-contains the leaf hash, but rust-bitcoin doesn't allow us to pass in a simple hash, it wants the full script and leaf version and computes the hash internally.
+Unfortunately due to a limitation of the current [rust-bitcoin] API, we have to come up with the full Bitcoin script in order to produce the signature: this is technically not required, because the sighash only
+contains the leaf hash, but [rust-bitcoin] doesn't allow us to pass in a simple hash, it wants the full script and leaf version and computes the hash internally.
 
 So the "hack" I came up with is: iterate on all the `tap_scripts` contained in the PSBT (this is a `ControlBlock` -> (`Script`, `LeafVersion`) map), try to compute the merkle tree assuming that the control block is the right one for
 the `leaf_hash` we are looking at (if it is the computed merkle root will match the one stored in the PSBT) and if so produce a signature using the script.
 
-This is obviously computationally intensive and totally useless, but there was no other way around it. I opened a PR to change the rust-bitcoin API so that a leaf hash can be passed in directly. With that change the
+This is obviously computationally intensive and totally useless, but there was no other way around it. I opened a [PR][sighash-leafhash-pr] to change the [rust-bitcoin] API so that a leaf hash can be passed in directly. With that change the
 code will look something like this:
 
 ```rust
@@ -621,7 +621,7 @@ In our signer code we use the taproot-specific PSBT metadata to produce the righ
 If our descriptor is a `Tr` variant, we include the `internal_key` in the PSBT, the `merkle_root` (if present) and then iterate on all the scripts and all the keys in every scripts and populate the `tap_scripts`
 and `tap_key_origins` maps. Since we don't support extended keys for the time being, we use an empty (`Default::default()`) key origin, but all the other fields are populated with the right values.
 
-Remember when I said that the taproot sighash algorithm fixes the "segwit bug"? This means that we don't have to include the full previous transaction (`non_witness_utxo`) for every input, since it's safe to just
+Remember when I said that the taproot sighash algorithm fixes the ["segwit bug"]? This means that we don't have to include the full previous transaction (`non_witness_utxo`) for every input, since it's safe to just
 use the previous UTXO (`witness_utxo`). We also change this:
 
 ```diff
@@ -775,7 +775,7 @@ Finally, we update the `descriptor!()` macro to correctly parse `tr()` descripto
 The `parse_tap_tree!()` macro parses the second (and optional) argument of a `tr()` descriptor: curly brackets are used to build a tree of descriptor. The macro matches the four possible cases individually:
 
 1. Two sub-trees: `{{ "\{\{...}{...\}\}" }}`
-2. Operator on the left side, sub-tree on the right: `{op(),{...}`
+2. Operator on the left side, sub-tree on the right: `{op(),{...}}`
 3. Operator on the right side, sub-tree on the left: `{{...},op()}`
 4. Just a single operator: `op()`
 
@@ -875,7 +875,7 @@ To share the code with the `multi_vec()` operator we create an external macro to
 
 And this concludes our journey into the deep technical details of taproot and BDK!
 
-With this changes all it took to make our taproot transaction was:
+With this changes all it took to make [our taproot transaction was][our-taproot-tx]:
 
 ```rust
 let unspendable_key = bitcoin::PublicKey::from_str("020000000000000000000000000000000000000000000000000000000000000001").unwrap();
@@ -909,3 +909,13 @@ wallet.broadcast(&psbt.extract_tx())?;
 ```
 
 [Part 1]: /blog/2021/11/first-bdk-taproot-tx-look-at-the-code-part-1
+
+[rust-bitcoin]: https://github.com/rust-bitcoin/rust-bitcoin
+[full diff]: https://github.com/bitcoindevkit/bdk/compare/aa075f0...afilini:taproot-testing
+
+[`policy`]: https://docs.rs/bdk/0.14.0/bdk/descriptor/policy/index.html
+["segwit bug"]: https://blog.trezor.io/details-of-firmware-updates-for-trezor-one-version-1-9-1-and-trezor-model-t-version-2-3-1-1eba8f60f2dd
+[sighash-leafhash-pr]: https://github.com/rust-bitcoin/rust-bitcoin/pull/722
+[our-taproot-tx]: https://mempool.space/tx/2eb8dbaa346d4be4e82fe444c2f0be00654d8cfd8c4a9a61b11aeaab8c00b272
+
+[`BIP341`]: https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
