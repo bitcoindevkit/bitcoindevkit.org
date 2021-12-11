@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>The first BDK Taproot TX: a look at the code (Part 2) | Bitcoin Dev Kit Documentation</title>
+    <meta name="generator" content="VuePress 1.8.2">
+    <link rel="preload" href="/fonts/ibm-plex-mono-400.woff2" as="font" crossorigin="true">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link name="msapplication-config" content="/browserconfig.xml">
+    <link name="msapplication-TileColor" content="#ffffff">
+    <link name="theme-color" content="#ffffff">
+    <meta name="description" content="A quick overview of the changes made to bdk, rust-miniscript and rust-bitcoin to make a Taproot transaction">
+    <meta property="article:published_time" content="2021-12-10T00:00:00.000Z">
+    <meta property="og:site_name" content="Bitcoin Dev Kit Documentation">
+    <meta property="og:title" content="The first BDK Taproot TX: a look at the code (Part 2)">
+    <meta property="og:description" content="A quick overview of the changes made to bdk, rust-miniscript and rust-bitcoin to make a Taproot transaction">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bitcoindevkit.org/blog/2021/12/first-bdk-taproot-tx-look-at-the-code-part-2/">
+    <meta property="og:image" content="https://bitcoindevkit.org/card.png">
+    <meta name="twitter:title" content="The first BDK Taproot TX: a look at the code (Part 2)">
+    <meta name="twitter:description" content="A quick overview of the changes made to bdk, rust-miniscript and rust-bitcoin to make a Taproot transaction">
+    <meta name="twitter:url" content="https://bitcoindevkit.org/blog/2021/12/first-bdk-taproot-tx-look-at-the-code-part-2/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://bitcoindevkit.org/card.png">
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="BDK, taproot, miniscript">
+    <meta property="article:tag" content="BDK">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    
+    <link rel="preload" href="/assets/css/0.styles.b24aebc5.css" as="style"><link rel="preload" href="/assets/js/app.2556ec59.js" as="script"><link rel="preload" href="/assets/js/8.cbf41989.js" as="script"><link rel="preload" href="/assets/js/1.e424882b.js" as="script"><link rel="preload" href="/assets/js/24.dd41f47c.js" as="script"><link rel="prefetch" href="/assets/js/10.9a67fe95.js"><link rel="prefetch" href="/assets/js/11.893b3d04.js"><link rel="prefetch" href="/assets/js/12.5cdf14d4.js"><link rel="prefetch" href="/assets/js/13.f3d94d80.js"><link rel="prefetch" href="/assets/js/14.9d333dd1.js"><link rel="prefetch" href="/assets/js/15.65c46ddb.js"><link rel="prefetch" href="/assets/js/16.2c54b186.js"><link rel="prefetch" href="/assets/js/17.3efb05a1.js"><link rel="prefetch" href="/assets/js/18.a24d0741.js"><link rel="prefetch" href="/assets/js/19.1ff07f8b.js"><link rel="prefetch" href="/assets/js/20.64f82651.js"><link rel="prefetch" href="/assets/js/21.c2a78f63.js"><link rel="prefetch" href="/assets/js/22.7857514e.js"><link rel="prefetch" href="/assets/js/23.ee15c71e.js"><link rel="prefetch" href="/assets/js/25.b25f8f20.js"><link rel="prefetch" href="/assets/js/26.0b3c80e5.js"><link rel="prefetch" href="/assets/js/27.4c3ccb74.js"><link rel="prefetch" href="/assets/js/28.2866e08a.js"><link rel="prefetch" href="/assets/js/29.a4f8e7a7.js"><link rel="prefetch" href="/assets/js/30.4cca13f2.js"><link rel="prefetch" href="/assets/js/31.a1e68a26.js"><link rel="prefetch" href="/assets/js/32.2eb3191a.js"><link rel="prefetch" href="/assets/js/33.a6fd33d0.js"><link rel="prefetch" href="/assets/js/34.8a2ca964.js"><link rel="prefetch" href="/assets/js/35.561626e7.js"><link rel="prefetch" href="/assets/js/36.7a33ad49.js"><link rel="prefetch" href="/assets/js/37.a6439799.js"><link rel="prefetch" href="/assets/js/38.bdbb71b8.js"><link rel="prefetch" href="/assets/js/39.e2e168ab.js"><link rel="prefetch" href="/assets/js/40.acab6ee8.js"><link rel="prefetch" href="/assets/js/41.da4afc2f.js"><link rel="prefetch" href="/assets/js/42.5a21ff55.js"><link rel="prefetch" href="/assets/js/43.e688079d.js"><link rel="prefetch" href="/assets/js/44.bb08a76d.js"><link rel="prefetch" href="/assets/js/45.f97587a8.js"><link rel="prefetch" href="/assets/js/46.da69450a.js"><link rel="prefetch" href="/assets/js/5.8b5dddc4.js"><link rel="prefetch" href="/assets/js/6.22609606.js"><link rel="prefetch" href="/assets/js/7.1fff5745.js"><link rel="prefetch" href="/assets/js/9.18c7fd01.js"><link rel="prefetch" href="/assets/js/vendors~docsearch.45087a28.js"><link rel="prefetch" href="/assets/js/vuejs-paginate.8696e0bd.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.b24aebc5.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container" data-v-9ca807bc data-v-5a6fa056><header class="navbar" data-v-9ca807bc><div class="wrap"><div class="wrap-border"><a href="/" class="home-link router-link-active"><svg role="img" alt="Bitcoin Dev Kit Documentation" class="logo"><use href="/img/logo.svg#small" class="small"></use> <use href="/img/logo.svg#large" class="large"></use></svg></a> <div class="links"><nav class="nav-links can-hide"><div class="nav-item"><a href="/getting-started/" class="nav-link">
+  Docs
+</a></div><div class="nav-item"><a href="/tutorials/hello-world.html" class="nav-link">
+  Tutorials
+</a></div><div class="nav-item"><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div><div class="nav-item"><a href="https://discord.gg/dstn4dQ" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Discord
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div class="nav-item"><a href="https://github.com/bitcoindevkit" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <a href="https://github.com/bitcoindevkit/bitcoindevkit.org" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav> <div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <button type="button" class="theme-switch"><svg viewBox="0 0 30 31" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="theme-switch-dark"><path d="M15 20.4219C12.5187 20.4219 10.5 18.4032 10.5 15.9219C10.5 13.4406 12.5187 11.4219 15 11.4219C17.4813 11.4219 19.5 13.4406 19.5 15.9219C19.5 18.4032 17.4813 20.4219 15 20.4219Z" fill="currentColor"></path> <path d="M19.4541 20.3769L21.3644 22.2862M15 24.9219V22.2219V24.9219ZM15 9.62187V6.92188V9.62187ZM6 15.9219H8.7H6ZM21.3 15.9219H24H21.3ZM8.6361 22.2862L10.5454 20.3769L8.6361 22.2862ZM19.4541 11.4678L21.3644 9.55797L19.4541 11.4678ZM8.6361 9.55797L10.5454 11.4678L8.6361 9.55797Z" stroke="currentColor" stroke-width="1" stroke-linecap="round"></path></g> <g fill="currentColor" class="theme-switch-light"><path d="M10.1539 8.75585C10.018 8.75585 9.88774 8.70189 9.79168 8.60583C9.69563 8.50977 9.64166 8.37949 9.64166 8.24365V6.19482C9.64166 6.05898 9.69563 5.9287 9.79168 5.83264C9.88774 5.73658 10.018 5.68262 10.1539 5.68262C10.2897 5.68262 10.42 5.73658 10.5161 5.83264C10.6121 5.9287 10.6661 6.05898 10.6661 6.19482V8.24365C10.6661 8.37949 10.6121 8.50977 10.5161 8.60583C10.42 8.70189 10.2897 8.75585 10.1539 8.75585Z"></path> <path d="M11.1783 7.73144H9.12945C8.9936 7.73144 8.86332 7.67748 8.76726 7.58142C8.6712 7.48536 8.61724 7.35508 8.61724 7.21924C8.61724 7.08339 8.6712 6.95311 8.76726 6.85705C8.86332 6.761 8.9936 6.70703 9.12945 6.70703H11.1783C11.3141 6.70703 11.4444 6.761 11.5405 6.85705C11.6365 6.95311 11.6905 7.08339 11.6905 7.21924C11.6905 7.35508 11.6365 7.48536 11.5405 7.58142C11.4444 7.67748 11.3141 7.73144 11.1783 7.73144ZM6.05621 13.8779C5.92037 13.8779 5.79009 13.8239 5.69403 13.7279C5.59797 13.6318 5.54401 13.5015 5.54401 13.3657V12.3413C5.54401 12.2054 5.59797 12.0752 5.69403 11.9791C5.79009 11.8831 5.92037 11.8291 6.05621 11.8291C6.19206 11.8291 6.32234 11.8831 6.4184 11.9791C6.51445 12.0752 6.56842 12.2054 6.56842 12.3413V13.3657C6.56842 13.5015 6.51445 13.6318 6.4184 13.7279C6.32234 13.8239 6.19206 13.8779 6.05621 13.8779Z"></path> <path d="M6.56842 13.366H5.544C5.40816 13.366 5.27788 13.312 5.18182 13.216C5.08576 13.1199 5.0318 12.9896 5.0318 12.8538C5.0318 12.7179 5.08576 12.5877 5.18182 12.4916C5.27788 12.3955 5.40816 12.3416 5.544 12.3416H6.56842C6.70426 12.3416 6.83454 12.3955 6.9306 12.4916C7.02666 12.5877 7.08062 12.7179 7.08062 12.8538C7.08062 12.9896 7.02666 13.1199 6.9306 13.216C6.83454 13.312 6.70426 13.366 6.56842 13.366ZM16.8125 23.6101C12.8583 23.6101 9.64165 20.3934 9.64165 16.4392C9.64165 12.8983 12.2851 9.85021 15.7907 9.34876L16.4658 9.25195L16.37 9.92755C16.326 10.218 16.3027 10.5112 16.3003 10.805C16.3003 14.1942 19.0575 16.9514 22.4468 16.9514C22.708 16.9514 22.9872 16.9294 23.3247 16.8813L23.9998 16.7855L23.9035 17.4606C23.401 20.9666 20.3524 23.6101 16.8125 23.6101Z"></path></g></svg></button></div> <div class="sidebar-button"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" class="icon"><g fill="currentColor" class="hamburger"><path d="M33.75 11.6699H6.25C5.55964 11.6699 5 12.2296 5 12.9199C5 13.6103 5.55964 14.1699 6.25 14.1699H33.75C34.4404 14.1699 35 13.6103 35 12.9199C35 12.2296 34.4404 11.6699 33.75 11.6699Z"></path> <path d="M28.75 18.752H6.25C5.55964 18.752 5 19.3116 5 20.002C5 20.6923 5.55964 21.252 6.25 21.252H28.75C29.4404 21.252 30 20.6923 30 20.002C30 19.3116 29.4404 18.752 28.75 18.752Z"></path> <path d="M33.75 25.8301H6.25C5.55964 25.8301 5 26.3897 5 27.0801C5 27.7704 5.55964 28.3301 6.25 28.3301H33.75C34.4404 28.3301 35 27.7704 35 27.0801C35 26.3897 34.4404 25.8301 33.75 25.8301Z"></path></g> <g stroke="currentColor" class="close"><path d="M10 10L30 30" stroke-width="2" stroke-linecap="round"></path> <path d="M30 10L10 30" stroke-width="2" stroke-linecap="round"></path></g></svg></div></div></div></header> <div class="wrap" data-v-9ca807bc><div class="wrap-border" data-v-9ca807bc><div class="sidebar-mask" data-v-9ca807bc></div> <aside class="sidebar" data-v-9ca807bc><nav class="nav-links"><div class="nav-item"><a href="/getting-started/" class="nav-link">
+  Docs
+</a></div><div class="nav-item"><a href="/tutorials/hello-world.html" class="nav-link">
+  Tutorials
+</a></div><div class="nav-item"><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div><div class="nav-item"><a href="https://discord.gg/dstn4dQ" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Discord
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div class="nav-item"><a href="https://github.com/bitcoindevkit" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <a href="https://github.com/bitcoindevkit/bitcoindevkit.org" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav>  <ul class="sidebar-links"><li><section class="sidebar-group depth-0"><p class="sidebar-heading open"><span>Blog</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/blog/" aria-current="page" class="sidebar-link">Articles</a></li><li><a href="/blog/tags/" class="sidebar-link">Tags</a></li><li><a href="/blog/author/" class="sidebar-link">Authors</a></li></ul></section></li></ul> </aside> <main class="page" data-v-5a6fa056><header class="theme-default-content post-header" data-v-5a6fa056><h1 data-v-5a6fa056>The first BDK Taproot TX: a look at the code (Part 2)</h1> <p class="meta" data-v-070abed8 data-v-5a6fa056>
+  By
+
+  <span data-v-070abed8><a href="/blog/author/Alekos Filini" class="meta-link" data-v-070abed8>Alekos Filini</a><!----></span>
+
+  on
+
+  12/11/2021
+
+  - Tags:
+
+  <span data-v-070abed8><a href="/blog/tags/BDK" class="meta-link" data-v-070abed8>BDK</a>, </span><span data-v-070abed8><a href="/blog/tags/taproot" class="meta-link" data-v-070abed8>Taproot</a>, </span><span data-v-070abed8><a href="/blog/tags/miniscript" class="meta-link" data-v-070abed8>Miniscript</a><!----></span></p> <hr data-v-5a6fa056></header> <div class="theme-default-content content__default"><p>This is the second part of a two-part blog series in which I talk through the changes made to BDK to make a Taproot transaction. If you haven't read it yet, check out <a href="/blog/2021/11/first-bdk-taproot-tx-look-at-the-code-part-1">Part 1</a>.</p> <p>While in the first part I managed to show full raw commits, in this case I will only focus on the relevant changes, otherwise the post would get very long. You can always find the <a href="https://github.com/bitcoindevkit/bdk/compare/aa075f0...afilini:taproot-testing" target="_blank" rel="noopener noreferrer">full diff<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> here, if you are interested
+in that.</p> <h2 id="shortcuts"><a href="#shortcuts" class="header-anchor">#</a> Shortcuts</h2> <p>As mentioned previously, the main goal of this journey for me was to find out what it really takes to support Taproot in BDK. The code shown here wasn't written to be readable and/or maintainable, so
+some shortcuts were taken, in particular:</p> <ul><li>No support for BIP32 extended keys: this is probably very quick to add, but in the first &quot;proof of concept&quot; I decided to only work with WIF keys for simplicity</li> <li>No support for <a href="https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki" target="_blank" rel="noopener noreferrer"><code>SIGHASH_DEFAULT</code><span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>: this would require some minor changes to a few traits in BDK that still use the &quot;legacy&quot; <code>SigHashType</code> enum from <a href="https://github.com/rust-bitcoin/rust-bitcoin" target="_blank" rel="noopener noreferrer">rust-bitcoin<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul> <h2 id="utilities"><a href="#utilities" class="header-anchor">#</a> Utilities</h2> <p>Let's start with some utilities:</p> <div class="language-rust extra-class"><pre class="language-rust"><code><span class="token keyword">pub</span> <span class="token keyword">fn</span> <span class="token function-definition function">ecdsa_to_schnorr</span><span class="token punctuation">(</span>pk<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token namespace">ecdsa<span class="token punctuation">::</span></span><span class="token class-name">PublicKey</span><span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token namespace">schnorr<span class="token punctuation">::</span></span><span class="token class-name">PublicKey</span> <span class="token punctuation">{</span>
+    <span class="token namespace">schnorr<span class="token punctuation">::</span></span><span class="token class-name">PublicKey</span><span class="token punctuation">::</span><span class="token function">from_slice</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>pk<span class="token punctuation">.</span><span class="token function">to_bytes</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">..</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">expect</span><span class="token punctuation">(</span><span class="token string">&quot;Key conversion failure&quot;</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">pub</span> <span class="token keyword">fn</span> <span class="token function-definition function">compute_merkle_root</span><span class="token punctuation">(</span>
+    leaf_hash<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token namespace">taproot<span class="token punctuation">::</span></span><span class="token class-name">TapLeafHash</span><span class="token punctuation">,</span>
+    control_block<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token namespace">taproot<span class="token punctuation">::</span></span><span class="token class-name">ControlBlock</span><span class="token punctuation">,</span>
+<span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token namespace">taproot<span class="token punctuation">::</span></span><span class="token class-name">TapBranchHash</span> <span class="token punctuation">{</span>
+    <span class="token namespace">taproot<span class="token punctuation">::</span></span><span class="token class-name">TapBranchHash</span><span class="token punctuation">::</span><span class="token function">from_inner</span><span class="token punctuation">(</span>
+        control_block
+            <span class="token punctuation">.</span>merkle_branch
+            <span class="token punctuation">.</span><span class="token function">as_inner</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token punctuation">.</span><span class="token function">iter</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token punctuation">.</span><span class="token function">fold</span><span class="token punctuation">(</span>
+                <span class="token namespace">taproot<span class="token punctuation">::</span></span><span class="token class-name">NodeInfo</span><span class="token punctuation">::</span><span class="token function">new_hidden</span><span class="token punctuation">(</span>
+                    <span class="token namespace">sha256<span class="token punctuation">::</span></span><span class="token class-name">Hash</span><span class="token punctuation">::</span><span class="token function">from_slice</span><span class="token punctuation">(</span>leaf_hash<span class="token punctuation">.</span><span class="token function">as_inner</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">expect</span><span class="token punctuation">(</span><span class="token string">&quot;Invalid TapLeafHash&quot;</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                <span class="token punctuation">)</span><span class="token punctuation">,</span>
+                <span class="token closure-params"><span class="token closure-punctuation punctuation">|</span>acc<span class="token punctuation">,</span> branch<span class="token closure-punctuation punctuation">|</span></span> <span class="token punctuation">{</span>
+                    <span class="token namespace">taproot<span class="token punctuation">::</span></span><span class="token class-name">NodeInfo</span><span class="token punctuation">::</span><span class="token function">combine</span><span class="token punctuation">(</span>acc<span class="token punctuation">,</span> <span class="token namespace">taproot<span class="token punctuation">::</span></span><span class="token class-name">NodeInfo</span><span class="token punctuation">::</span><span class="token function">new_hidden</span><span class="token punctuation">(</span><span class="token operator">*</span>branch<span class="token punctuation">)</span><span class="token punctuation">)</span>
+                        <span class="token punctuation">.</span><span class="token function">expect</span><span class="token punctuation">(</span><span class="token string">&quot;Invalid tree&quot;</span><span class="token punctuation">)</span>
+                <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token punctuation">)</span>
+            <span class="token punctuation">.</span><span class="token function">hash</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token punctuation">.</span><span class="token function">into_inner</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p>The first function &quot;converts&quot; an ECDSA key to a Schnorr key by dropping the first byte that encodes the key parity, since Schnorr keys are &quot;x-only&quot;.</p> <p>The second one constructs the merkle root of a taptree given a leaf hash and the corresponding control block.</p> <h2 id="wrap-fallible-methods"><a href="#wrap-fallible-methods" class="header-anchor">#</a> Wrap Fallible Methods</h2> <p>Many of the methods exposed by a <code>Descriptor</code> struct used to be infallible: for instance, it was always possible to &quot;encode&quot; a descriptor into a Bitcoin script by calling the <code>script_pubkey()</code> method.</p> <p>Unfortunately, taproot descriptors need some extra metadata to do that: they can be computed by calling the <code>spend_info()</code> method, and they will be cached inside the descriptor, but since it's not guaranteed by the
+compiler that the method will be called before trying to encode it, the infallible methods had to be changed to return a <code>Result</code>, so that they can fail if the spend info is not present.</p> <p>In BDK we call the <code>spend_info()</code> method right after &quot;deriving&quot; the descriptor, so it's guaranteed that we will never encounter that error: for this reason, we wrap those methods and call <code>expect()</code> on them, to keep
+the original code mostly unchanged.</p> <p>Here we call <code>spend_info()</code> right after deriving the descriptor, if it's a <code>Tr</code> variant:</p> <div class="language-diff extra-class"><pre class="language-diff"><code>@@ -136,10 +133,16 @@ impl AsDerived for Descriptor&lt;DescriptorPublicKey&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        index: u32,
+</span><span class="token prefix unchanged"> </span><span class="token line">        secp: &amp;'s SecpCtx,
+</span><span class="token prefix unchanged"> </span><span class="token line">    ) -&gt; Descriptor&lt;DerivedDescriptorKey&lt;'s&gt;&gt; {
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        self.derive(index).translate_pk_infallible(
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        let mut derived = self.derive(index).translate_pk_infallible(
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            |key| DerivedDescriptorKey::new(key.clone(), secp),
+</span><span class="token prefix unchanged"> </span><span class="token line">            |key| DerivedDescriptorKey::new(key.clone(), secp),
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        )
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        );
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        if let Descriptor::Tr(tr) = &amp;mut derived {
+</span><span class="token prefix inserted">+</span><span class="token line">            tr.spend_info(secp);
+</span><span class="token prefix inserted">+</span><span class="token line">        }
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        derived
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span></code></pre></div><p>And here we wrap the <code>script_pubkey()</code> method and call <code>expect()</code> on it. Note that we only implement it on <code>DerivedDescriptor</code>, because it's not guaranteed that &quot;extended descriptors&quot; will have the cached metadata inside.</p> <div class="language-rust extra-class"><pre class="language-rust"><code><span class="token keyword">pub</span><span class="token punctuation">(</span><span class="token keyword">crate</span><span class="token punctuation">)</span> <span class="token keyword">trait</span> <span class="token class-name">DerivedDescriptorSafeOps</span> <span class="token punctuation">{</span>
+    <span class="token comment">/// The [`Descriptor::script_pubkey`] method can fail on `Tr` descriptors that don't have the</span>
+    <span class="token comment">/// `spend_info` inside. Since we generate those upon derivation, it's guaranteed that the</span>
+    <span class="token comment">/// method will not fail on `DerivedDescriptor`s.</span>
+    <span class="token keyword">fn</span> <span class="token function-definition function">script_pubkey_derived</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token keyword">self</span><span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token class-name">Script</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">impl</span><span class="token operator">&lt;</span><span class="token lifetime-annotation symbol">'s</span><span class="token operator">&gt;</span> <span class="token class-name">DerivedDescriptorSafeOps</span> <span class="token keyword">for</span> <span class="token class-name">Descriptor</span><span class="token operator">&lt;</span><span class="token class-name">DerivedDescriptorKey</span><span class="token operator">&lt;</span><span class="token lifetime-annotation symbol">'s</span><span class="token operator">&gt;&gt;</span> <span class="token punctuation">{</span>
+    <span class="token keyword">fn</span> <span class="token function-definition function">script_pubkey_derived</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token keyword">self</span><span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token class-name">Script</span> <span class="token punctuation">{</span>
+        <span class="token keyword">self</span><span class="token punctuation">.</span><span class="token function">script_pubkey</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token punctuation">.</span><span class="token function">expect</span><span class="token punctuation">(</span><span class="token string">&quot;`spend_info` is always present in `DerivedDescriptor`s&quot;</span><span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre></div><h2 id="descriptor-metadata"><a href="#descriptor-metadata" class="header-anchor">#</a> Descriptor Metadata</h2> <p>In BDK we have a few traits that in a way &quot;unify&quot; the interface of a descriptor: things like the <code>redeem_script</code> of an input has to be computed differently depending on the type of descriptor. The traits we define
+are implemented on the <code>DerivedDescriptor</code> or <code>ExtendedDescriptor</code> structs and allow us to quickly get what we need without having to check the descriptor type manually.</p> <p>Internally, they are essentially large <code>match</code>es that return different things depending on the descriptor variant. Due to some renaming that had been done recently in <code>miniscript</code> (not necessarily related to taproot)
+we have to update them:</p> <div class="language-diff extra-class"><pre class="language-diff"><code>@@ -337,6 +339,7 @@ pub(crate) trait DerivedDescriptorMeta {
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">pub(crate) trait DescriptorMeta {
+</span><span class="token prefix unchanged"> </span><span class="token line">    fn is_witness(&amp;self) -&gt; bool;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    fn is_tap(&amp;self) -&gt; bool;
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    fn get_extended_keys(&amp;self) -&gt; Result&lt;Vec&lt;DescriptorXKey&lt;ExtendedPubKey&gt;&gt;, DescriptorError&gt;;
+</span><span class="token prefix unchanged"> </span><span class="token line">    fn derive_from_hd_keypaths&lt;'s&gt;(
+</span><span class="token prefix unchanged"> </span><span class="token line">        &amp;self,
+</span></span>@@ -358,23 +361,29 @@ pub(crate) trait DescriptorScripts {
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">impl&lt;'s&gt; DescriptorScripts for DerivedDescriptor&lt;'s&gt; {
+</span><span class="token prefix unchanged"> </span><span class="token line">    fn psbt_redeem_script(&amp;self) -&gt; Option&lt;Script&gt; {
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        match self.desc_type() {
+</span><span class="token prefix deleted">-</span><span class="token line">            DescriptorType::ShWpkh =&gt; Some(self.explicit_script()),
+</span><span class="token prefix deleted">-</span><span class="token line">            DescriptorType::ShWsh =&gt; Some(self.explicit_script().to_v0_p2wsh()),
+</span><span class="token prefix deleted">-</span><span class="token line">            DescriptorType::Sh =&gt; Some(self.explicit_script()),
+</span><span class="token prefix deleted">-</span><span class="token line">            DescriptorType::Bare =&gt; Some(self.explicit_script()),
+</span><span class="token prefix deleted">-</span><span class="token line">            DescriptorType::ShSortedMulti =&gt; Some(self.explicit_script()),
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        match self {
+</span><span class="token prefix inserted">+</span><span class="token line">            Descriptor::Sh(ref sh) =&gt; match sh.as_inner() {
+</span><span class="token prefix inserted">+</span><span class="token line">                ShInner::Wsh(_) =&gt; Some(sh.inner_script().to_v0_p2wsh()),
+</span><span class="token prefix inserted">+</span><span class="token line">                _ =&gt; Some(sh.inner_script()),
+</span><span class="token prefix inserted">+</span><span class="token line">            },
+</span><span class="token prefix inserted">+</span><span class="token line">            Descriptor::Bare(ref bare) =&gt; Some(bare.inner_script()),
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            _ =&gt; None,
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    fn psbt_witness_script(&amp;self) -&gt; Option&lt;Script&gt; {
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        match self.desc_type() {
+</span><span class="token prefix deleted">-</span><span class="token line">            DescriptorType::Wsh =&gt; Some(self.explicit_script()),
+</span><span class="token prefix deleted">-</span><span class="token line">            DescriptorType::ShWsh =&gt; Some(self.explicit_script()),
+</span><span class="token prefix deleted">-</span><span class="token line">            DescriptorType::WshSortedMulti | DescriptorType::ShWshSortedMulti =&gt; {
+</span><span class="token prefix deleted">-</span><span class="token line">                Some(self.explicit_script())
+</span><span class="token prefix deleted">-</span><span class="token line">            }
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        match self {
+</span><span class="token prefix inserted">+</span><span class="token line">            Descriptor::Wsh(ref wsh) =&gt; Some(wsh.inner_script()),
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            _ =&gt; None,
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span>@@ -390,9 +399,14 @@ impl DescriptorMeta for ExtendedDescriptor {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                | DescriptorType::ShWsh
+</span><span class="token prefix unchanged"> </span><span class="token line">                | DescriptorType::ShWshSortedMulti
+</span><span class="token prefix unchanged"> </span><span class="token line">                | DescriptorType::WshSortedMulti
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">                | DescriptorType::Tr
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        )
+</span><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span>
+<span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    fn is_tap(&amp;self) -&gt; bool {
+</span><span class="token prefix inserted">+</span><span class="token line">        self.desc_type() == DescriptorType::Tr
+</span><span class="token prefix inserted">+</span><span class="token line">    }
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    fn get_extended_keys(&amp;self) -&gt; Result&lt;Vec&lt;DescriptorXKey&lt;ExtendedPubKey&gt;&gt;, DescriptorError&gt; {
+</span><span class="token prefix unchanged"> </span><span class="token line">        let mut answer = Vec::new();
+</span></span>
+@@ -477,31 +491,69 @@ impl DescriptorMeta for ExtendedDescriptor {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        }
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        let descriptor = self.as_derived_fixed(secp);
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        match descriptor.desc_type() {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        match (
+</span><span class="token prefix inserted">+</span><span class="token line">            &amp;descriptor,
+</span><span class="token prefix inserted">+</span><span class="token line">            utxo,
+</span><span class="token prefix inserted">+</span><span class="token line">            psbt_input.redeem_script.as_ref(),
+</span><span class="token prefix inserted">+</span><span class="token line">            psbt_input.witness_script.as_ref(),
+</span><span class="token prefix inserted">+</span><span class="token line">        ) {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            // TODO: add pk() here
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            DescriptorType::Pkh | DescriptorType::Wpkh | DescriptorType::ShWpkh
+</span><span class="token prefix deleted">-</span><span class="token line">                if utxo.is_some()
+</span><span class="token prefix deleted">-</span><span class="token line">                    &amp;&amp; descriptor.script_pubkey() == utxo.as_ref().unwrap().script_pubkey =&gt;
+</span><span class="token prefix deleted">-</span><span class="token line">            {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            (Descriptor::Pkh(ref pkh), Some(utxo), _, _) if utxo.script_pubkey == pkh.spk() =&gt; {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                Some(descriptor)
+</span><span class="token prefix unchanged"> </span><span class="token line">            }
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            DescriptorType::Bare | DescriptorType::Sh | DescriptorType::ShSortedMulti
+</span><span class="token prefix deleted">-</span><span class="token line">                if psbt_input.redeem_script.is_some()
+</span><span class="token prefix deleted">-</span><span class="token line">                    &amp;&amp; &amp;descriptor.explicit_script()
+</span><span class="token prefix deleted">-</span><span class="token line">                        == psbt_input.redeem_script.as_ref().unwrap() =&gt;
+</span><span class="token prefix deleted">-</span><span class="token line">            {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            (Descriptor::Wpkh(ref wpkh), Some(utxo), _, _) if utxo.script_pubkey == wpkh.spk() =&gt; {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                Some(descriptor)
+</span><span class="token prefix unchanged"> </span><span class="token line">            }
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            DescriptorType::Wsh
+</span><span class="token prefix deleted">-</span><span class="token line">            | DescriptorType::ShWsh
+</span><span class="token prefix deleted">-</span><span class="token line">            | DescriptorType::ShWshSortedMulti
+</span><span class="token prefix deleted">-</span><span class="token line">            | DescriptorType::WshSortedMulti
+</span><span class="token prefix deleted">-</span><span class="token line">                if psbt_input.witness_script.is_some()
+</span><span class="token prefix deleted">-</span><span class="token line">                    &amp;&amp; &amp;descriptor.explicit_script()
+</span><span class="token prefix deleted">-</span><span class="token line">                        == psbt_input.witness_script.as_ref().unwrap() =&gt;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            (Descriptor::Sh(ref sh), utxo, rscript, wscript) =&gt; {
+</span><span class="token prefix inserted">+</span><span class="token line">                match (sh.as_inner(), utxo, rscript, wscript) {
+</span><span class="token prefix inserted">+</span><span class="token line">                    (ShInner::Wpkh(ref wpkh), Some(utxo), _, _)
+</span><span class="token prefix inserted">+</span><span class="token line">                        if utxo.script_pubkey == wpkh.spk() =&gt;
+</span><span class="token prefix inserted">+</span><span class="token line">                    {
+</span><span class="token prefix inserted">+</span><span class="token line">                        Some(descriptor)
+</span><span class="token prefix inserted">+</span><span class="token line">                    }
+</span><span class="token prefix inserted">+</span><span class="token line">                    (ShInner::Wsh(ref wsh), _, _, Some(wscript))
+</span><span class="token prefix inserted">+</span><span class="token line">                        if wscript == &amp;wsh.inner_script() =&gt;
+</span><span class="token prefix inserted">+</span><span class="token line">                    {
+</span><span class="token prefix inserted">+</span><span class="token line">                        Some(descriptor)
+</span><span class="token prefix inserted">+</span><span class="token line">                    }
+</span><span class="token prefix inserted">+</span><span class="token line">                    (_, _, Some(rscript), _) if rscript == &amp;sh.inner_script() =&gt; Some(descriptor),
+</span><span class="token prefix inserted">+</span><span class="token line">                    _ =&gt; None,
+</span><span class="token prefix inserted">+</span><span class="token line">                }
+</span><span class="token prefix inserted">+</span><span class="token line">            }
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">            (Descriptor::Wsh(ref wsh), _, _, Some(wscript)) if wscript == &amp;wsh.inner_script() =&gt; {
+</span><span class="token prefix inserted">+</span><span class="token line">                Some(descriptor)
+</span><span class="token prefix inserted">+</span><span class="token line">            }
+</span><span class="token prefix inserted">+</span><span class="token line">            (Descriptor::Bare(ref bare), _, Some(rscript), _)
+</span><span class="token prefix inserted">+</span><span class="token line">                if rscript == &amp;bare.inner_script() =&gt;
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            {
+</span><span class="token prefix unchanged"> </span><span class="token line">                Some(descriptor)
+</span><span class="token prefix unchanged"> </span><span class="token line">            }
+</span><span class="token prefix unchanged"> </span><span class="token line">            _ =&gt; None,
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span><span class="token prefix unchanged"> </span><span class="token line">    }
+</span></span>
+</code></pre></div><h2 id="policy"><a href="#policy" class="header-anchor">#</a> Policy</h2> <p>Our <a href="https://docs.rs/bdk/0.14.0/bdk/descriptor/policy/index.html" target="_blank" rel="noopener noreferrer"><code>policy</code><span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> module contains code to &quot;distill&quot; the content of a descriptor into a more human- or machine-readable format that clearly explains what's needed to satisfy a descriptor.</p> <p>For instance, for a <code>multi(2,Alice,Bob)</code> descriptor the policy module will tell you that both <code>Alice</code> and <code>Bob</code> need to sign to spend from the descriptor.</p> <p>It can also tell you whether you can do anything (if <code>Alice</code> runs this analysis on her descriptor the answer will be something like &quot;you can sign but Bob also has to&quot;) and if somebody has already signed a given PSBT,
+but that's not important for us right now.</p> <p>The policies are recursive structures that form a tree: at its core there's the <code>SatisfiableItem</code> enum, which has some &quot;leaf&quot; variants (like <code>Signature</code>, <code>Preimage</code>, etc) and a <code>Thresh</code> variant that is used to piece
+together multiple sub-trees: <code>Thresh</code> defines a set of sub-policies that are policies trees (hence the recusiveness of this structure) and a numeric threshold that needs to be reached to satisfy the descriptor.</p> <p>For instance, the <code>and_v(or_c(pk(Service),v:older(12960)),pk(User))</code> descriptor will be turned into a tree containing two <code>Thresh</code> items (one for the <code>and_v</code> and one for the <code>or_c</code>) and a total of three leaves
+(two <code>Signature</code>s, one for <code>User</code> and one for <code>Service</code> and a timelock). Logically, the <code>and_v</code> will be translated into a thresh with value <code>2</code> (both sub-trees need to be satisfied) and the <code>or_c</code> will
+have a value of <code>1</code>.</p> <p>Taproot descriptors can be seen as a large logical &quot;or&quot;: you can spend with the key-path OR with one of the n leaves in the tapscript tree. Translated into code it looks like this:</p> <div class="language-diff extra-class"><pre class="language-diff"><code>@@ -842,7 +842,7 @@ impl&lt;Ctx: ScriptContext&gt; ExtractPolicy for Miniscript&lt;DescriptorPublicKey, Ctx&gt;
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            Terminal::Hash160(hash) =&gt; {
+</span><span class="token prefix unchanged"> </span><span class="token line">                Some(SatisfiableItem::Hash160Preimage { hash: *hash }.into())
+</span><span class="token prefix unchanged"> </span><span class="token line">            }
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            Terminal::Multi(k, pks) =&gt; {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            Terminal::Multi(k, pks) | Terminal::MultiA(k, pks) =&gt; {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                Policy::make_multisig(pks, signers, build_sat, *k, false, secp)?
+</span><span class="token prefix unchanged"> </span><span class="token line">            }
+</span><span class="token prefix unchanged"> </span><span class="token line">            // Identities
+</span></span>@@ -969,6 +969,19 @@ impl ExtractPolicy for Descriptor&lt;DescriptorPublicKey&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                WshInner::SortedMulti(ref keys) =&gt; make_sortedmulti(keys, signers, build_sat, secp),
+</span><span class="token prefix unchanged"> </span><span class="token line">            },
+</span><span class="token prefix unchanged"> </span><span class="token line">            Descriptor::Bare(ms) =&gt; Ok(ms.as_inner().extract_policy(signers, build_sat, secp)?),
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            Descriptor::Tr(tr) =&gt; {
+</span><span class="token prefix inserted">+</span><span class="token line">                let mut items = vec![signature(tr.internal_key(), signers, build_sat, secp)];
+</span><span class="token prefix inserted">+</span><span class="token line">                items.append(
+</span><span class="token prefix inserted">+</span><span class="token line">                    &amp;mut tr
+</span><span class="token prefix inserted">+</span><span class="token line">                        .iter_scripts()
+</span><span class="token prefix inserted">+</span><span class="token line">                        .filter_map(|(_, ms)| {
+</span><span class="token prefix inserted">+</span><span class="token line">                            ms.extract_policy(signers, build_sat, secp).transpose()
+</span><span class="token prefix inserted">+</span><span class="token line">                        })
+</span><span class="token prefix inserted">+</span><span class="token line">                        .collect::&lt;Result&lt;Vec&lt;_&gt;, _&gt;&gt;()?,
+</span><span class="token prefix inserted">+</span><span class="token line">                );
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">                Ok(Policy::make_thresh(items, 1)?)
+</span><span class="token prefix inserted">+</span><span class="token line">            }
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        }
+</span><span class="token prefix unchanged"> </span><span class="token line">    }
+</span><span class="token prefix unchanged"> </span><span class="token line">}
+</span></span></code></pre></div><p>We essentially construct a vector of items by always inserting the <code>Signature</code> leaf for the key-spend branch and then appending the policy of all the tapscript leaves. The threshold value is <code>1</code>, since satisfying any of
+those items is enough to fully satisfy the descriptor.</p> <h2 id="signer"><a href="#signer" class="header-anchor">#</a> Signer</h2> <p>Taproot (Segwit v1) scripts are satisfied with Schnorr signatures instead of ECDSA which was used for legacy and Segwit v0 scripts. Moreover, the <em>sighash</em> algorithm has been changed to make it better suited for the
+unique needs of Taproot (the signature could either be used in a key-spend or script-spend branch, and in the latter case it should commit to the specific leaf used to spend, so that the same key can be safely
+used in multiple leaves without worrying about &quot;reply&quot; attacks).</p> <p>The new sighash algorithm also fixes the infamous <a href="https://blog.trezor.io/details-of-firmware-updates-for-trezor-one-version-1-9-1-and-trezor-model-t-version-2-3-1-1eba8f60f2dd" target="_blank" rel="noopener noreferrer">&quot;segwit bug&quot;<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>, that a malicious software could use to trick external signers like hardware wallets into burning a lot of the user's funds by sending a very large fee.
+We will get back to this later on.</p> <p>There are a lot of changes made to our signing code, I'll try to break them down in more manageable chunks:</p> <div class="language-diff extra-class"><pre class="language-diff"><code><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">pub(crate) trait ComputeSighash {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    type SigHash;
+</span><span class="token prefix inserted">+</span><span class="token line">    type Extra;
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    fn sighash(
+</span><span class="token prefix unchanged"> </span><span class="token line">        psbt: &amp;psbt::PartiallySignedTransaction,
+</span><span class="token prefix unchanged"> </span><span class="token line">        input_index: usize,
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">    ) -&gt; Result&lt;(SigHash, SigHashType), SignerError&gt;;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        extra: Self::Extra,
+</span><span class="token prefix inserted">+</span><span class="token line">    ) -&gt; Result&lt;(Self::SigHash, SigHashType), SignerError&gt;;
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">}
+</span></span></code></pre></div><p>First of all, we update our internal <code>ComputeSighash</code> trait so that it can optionally take &quot;extra&quot; data and return a custom <code>SigHash</code> type.</p> <div class="language-diff extra-class"><pre class="language-diff"><code>impl ComputeSighash for Legacy {
+<span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    type SigHash = bitcoin::SigHash;
+</span><span class="token prefix inserted">+</span><span class="token line">    type Extra = ();
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    fn sighash(
+</span><span class="token prefix unchanged"> </span><span class="token line">        psbt: &amp;psbt::PartiallySignedTransaction,
+</span><span class="token prefix unchanged"> </span><span class="token line">        input_index: usize,
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">    ) -&gt; Result&lt;(SigHash, SigHashType), SignerError&gt; {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        _: (),
+</span><span class="token prefix inserted">+</span><span class="token line">    ) -&gt; Result&lt;(Self::SigHash, SigHashType), SignerError&gt; {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        if input_index &gt;= psbt.inputs.len() || input_index &gt;= psbt.global.unsigned_tx.input.len() {
+</span><span class="token prefix unchanged"> </span><span class="token line">            return Err(SignerError::InputIndexOutOfRange);
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span></span>@@ -545,10 +658,14 @@ fn p2wpkh_script_code(script: &amp;Script) -&gt; Script {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">}
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">impl ComputeSighash for Segwitv0 {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    type SigHash = bitcoin::SigHash;
+</span><span class="token prefix inserted">+</span><span class="token line">    type Extra = ();
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    fn sighash(
+</span><span class="token prefix unchanged"> </span><span class="token line">        psbt: &amp;psbt::PartiallySignedTransaction,
+</span><span class="token prefix unchanged"> </span><span class="token line">        input_index: usize,
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">    ) -&gt; Result&lt;(SigHash, SigHashType), SignerError&gt; {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        _: (),
+</span><span class="token prefix inserted">+</span><span class="token line">    ) -&gt; Result&lt;(Self::SigHash, SigHashType), SignerError&gt; {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        if input_index &gt;= psbt.inputs.len() || input_index &gt;= psbt.global.unsigned_tx.input.len() {
+</span><span class="token prefix unchanged"> </span><span class="token line">            return Err(SignerError::InputIndexOutOfRange);
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span></span></code></pre></div><p>The implementation on <code>Legacy</code> and <code>Segwitv0</code> is updated accordingly: they don't need any extra data, so the <code>Extra</code> type will be an empty tuple, and they return the &quot;legacy&quot; <a href="https://github.com/rust-bitcoin/rust-bitcoin" target="_blank" rel="noopener noreferrer">rust-bitcoin<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> <code>SigHash</code> type.</p> <div class="language-rust extra-class"><pre class="language-rust"><code><span class="token keyword">fn</span> <span class="token function-definition function">tap_signature</span><span class="token punctuation">(</span>
+    key<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token class-name">PrivateKey</span><span class="token punctuation">,</span>
+    psbt<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token keyword">mut</span> <span class="token namespace">psbt<span class="token punctuation">::</span></span><span class="token class-name">PartiallySignedTransaction</span><span class="token punctuation">,</span>
+    input_index<span class="token punctuation">:</span> <span class="token keyword">usize</span><span class="token punctuation">,</span>
+    secp<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token class-name">SecpCtx</span><span class="token punctuation">,</span>
+<span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token class-name">Result</span><span class="token operator">&lt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">SignerError</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+    <span class="token keyword">let</span> <span class="token keyword">mut</span> keypair <span class="token operator">=</span> <span class="token namespace">schnorr<span class="token punctuation">::</span></span><span class="token class-name">KeyPair</span><span class="token punctuation">::</span><span class="token function">from_seckey_slice</span><span class="token punctuation">(</span>secp<span class="token punctuation">,</span> key<span class="token punctuation">.</span>key<span class="token punctuation">.</span><span class="token function">as_ref</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> public <span class="token operator">=</span> <span class="token function">ecdsa_to_schnorr</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>key<span class="token punctuation">.</span><span class="token function">public_key</span><span class="token punctuation">(</span>secp<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">fn</span> <span class="token function-definition function">make_sig</span><span class="token operator">&lt;</span><span class="token class-name">H</span><span class="token punctuation">:</span> <span class="token class-name">AsRef</span><span class="token operator">&lt;</span><span class="token punctuation">[</span><span class="token keyword">u8</span><span class="token punctuation">]</span><span class="token operator">&gt;&gt;</span><span class="token punctuation">(</span>
+        secp<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token class-name">SecpCtx</span><span class="token punctuation">,</span>
+        keypair<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token namespace">schnorr<span class="token punctuation">::</span></span><span class="token class-name">KeyPair</span><span class="token punctuation">,</span>
+        hash<span class="token punctuation">:</span> <span class="token class-name">H</span><span class="token punctuation">,</span>
+    <span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token namespace">bitcoin<span class="token punctuation">::</span>secp256k1<span class="token punctuation">::</span>schnorrsig<span class="token punctuation">::</span></span><span class="token class-name">Signature</span> <span class="token punctuation">{</span>
+        secp<span class="token punctuation">.</span><span class="token function">schnorrsig_sign</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token class-name">Message</span><span class="token punctuation">::</span><span class="token function">from_slice</span><span class="token punctuation">(</span>hash<span class="token punctuation">.</span><span class="token function">as_ref</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">unwrap</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>keypair<span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">let</span> psbt_input <span class="token operator">=</span> <span class="token operator">&amp;</span>psbt<span class="token punctuation">.</span>inputs<span class="token punctuation">[</span>input_index<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> <span class="token keyword">mut</span> new_psbt_input <span class="token operator">=</span> <span class="token namespace">psbt<span class="token punctuation">::</span></span><span class="token class-name">Input</span><span class="token punctuation">::</span><span class="token function">default</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token macro property">debug!</span><span class="token punctuation">(</span>
+        <span class="token string">&quot;tap_internal: {}, public: {}&quot;</span><span class="token punctuation">,</span>
+        psbt_input<span class="token punctuation">.</span>tap_internal_key<span class="token punctuation">.</span><span class="token function">as_ref</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">unwrap</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        public
+    <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">match</span> <span class="token punctuation">(</span>
+        psbt_input<span class="token punctuation">.</span>tap_internal_key<span class="token punctuation">,</span>
+        psbt_input<span class="token punctuation">.</span>tap_merkle_root<span class="token punctuation">,</span>
+        psbt_input<span class="token punctuation">.</span>tap_key_origins<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>public<span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token comment">// Key Spend</span>
+        <span class="token punctuation">(</span><span class="token class-name">Some</span><span class="token punctuation">(</span>internal_key<span class="token punctuation">)</span><span class="token punctuation">,</span> _<span class="token punctuation">,</span> _<span class="token punctuation">)</span> <span class="token keyword">if</span> internal_key <span class="token operator">==</span> public <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+            <span class="token keyword">let</span> tweak <span class="token operator">=</span> <span class="token namespace">taproot<span class="token punctuation">::</span></span><span class="token function">compute_tap_tweak</span><span class="token punctuation">(</span>
+                psbt_input
+                    <span class="token punctuation">.</span>tap_merkle_root
+                    <span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token closure-params"><span class="token closure-punctuation punctuation">|</span>r<span class="token closure-punctuation punctuation">|</span></span> <span class="token namespace">bitcoin<span class="token punctuation">::</span>hashes<span class="token punctuation">::</span>sha256<span class="token punctuation">::</span></span><span class="token class-name">Hash</span><span class="token punctuation">::</span><span class="token function">from_slice</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>r<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">unwrap</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                public<span class="token punctuation">,</span>
+            <span class="token punctuation">)</span><span class="token punctuation">;</span>
+            keypair
+                <span class="token punctuation">.</span><span class="token function">tweak_add_assign</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>secp<span class="token punctuation">,</span> <span class="token operator">&amp;</span>tweak<span class="token punctuation">)</span>
+                <span class="token punctuation">.</span><span class="token function">expect</span><span class="token punctuation">(</span><span class="token string">&quot;TapTweakHash::from_key_and_tweak is broken&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">let</span> <span class="token punctuation">(</span>hash<span class="token punctuation">,</span> sighash_type<span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token class-name">Tap</span><span class="token punctuation">::</span><span class="token function">sighash</span><span class="token punctuation">(</span>psbt<span class="token punctuation">,</span> input_index<span class="token punctuation">,</span> <span class="token class-name">None</span><span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">;</span>
+            <span class="token keyword">let</span> signature <span class="token operator">=</span> <span class="token function">make_sig</span><span class="token punctuation">(</span>secp<span class="token punctuation">,</span> <span class="token operator">&amp;</span>keypair<span class="token punctuation">,</span> <span class="token operator">&amp;</span>hash<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            new_psbt_input<span class="token punctuation">.</span>tap_key_sig <span class="token operator">=</span> <span class="token class-name">Some</span><span class="token punctuation">(</span><span class="token punctuation">(</span>signature<span class="token punctuation">,</span> sighash_type<span class="token punctuation">.</span><span class="token function">into</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// Script Spend</span>
+        <span class="token punctuation">(</span>_<span class="token punctuation">,</span> <span class="token class-name">Some</span><span class="token punctuation">(</span>merkle_root<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">Some</span><span class="token punctuation">(</span><span class="token punctuation">(</span>leaf_hashes<span class="token punctuation">,</span> _<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">{</span>
+            <span class="token keyword">for</span> leaf_hash <span class="token keyword">in</span> leaf_hashes <span class="token punctuation">{</span>
+                <span class="token comment">// check if a control block is valid for this leaf hash</span>
+                <span class="token comment">// this sucks but I can't think of a better way to do it</span>
+                <span class="token keyword">for</span> <span class="token punctuation">(</span>control_block<span class="token punctuation">,</span> script_ver<span class="token punctuation">)</span> <span class="token keyword">in</span> <span class="token operator">&amp;</span>psbt_input<span class="token punctuation">.</span>tap_scripts <span class="token punctuation">{</span>
+                    <span class="token keyword">if</span> merkle_root <span class="token operator">==</span> <span class="token function">compute_merkle_root</span><span class="token punctuation">(</span>leaf_hash<span class="token punctuation">,</span> control_block<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                        <span class="token keyword">let</span> <span class="token punctuation">(</span>hash<span class="token punctuation">,</span> sighash_type<span class="token punctuation">)</span> <span class="token operator">=</span>
+                            <span class="token class-name">Tap</span><span class="token punctuation">::</span><span class="token function">sighash</span><span class="token punctuation">(</span>psbt<span class="token punctuation">,</span> input_index<span class="token punctuation">,</span> <span class="token class-name">Some</span><span class="token punctuation">(</span>script_ver<span class="token punctuation">.</span><span class="token function">clone</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">;</span>
+                        <span class="token keyword">let</span> signature <span class="token operator">=</span> <span class="token function">make_sig</span><span class="token punctuation">(</span>secp<span class="token punctuation">,</span> <span class="token operator">&amp;</span>keypair<span class="token punctuation">,</span> <span class="token operator">&amp;</span>hash<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+                        new_psbt_input
+                            <span class="token punctuation">.</span>tap_script_sigs
+                            <span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span><span class="token punctuation">(</span>public<span class="token punctuation">,</span> <span class="token operator">*</span>leaf_hash<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>signature<span class="token punctuation">,</span> sighash_type<span class="token punctuation">.</span><span class="token function">into</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                    <span class="token punctuation">}</span>
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token comment">// We can't do anything</span>
+        _ <span class="token operator">=&gt;</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+
+    psbt<span class="token punctuation">.</span>inputs<span class="token punctuation">[</span>input_index<span class="token punctuation">]</span>
+        <span class="token punctuation">.</span><span class="token function">merge</span><span class="token punctuation">(</span>new_psbt_input<span class="token punctuation">)</span>
+        <span class="token punctuation">.</span><span class="token function">expect</span><span class="token punctuation">(</span><span class="token string">&quot;Unable to merge PSBT inputs&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token class-name">Ok</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p>Then, we write a function to produce the taproot signatures given a private key and a PSBT.</p> <p>Internally we check if the key matches the <code>internal_key</code> metadata (and in that case we make a key-spend signature by tweaking our key with the taptree merkle root), otherwise we get all the leaves that
+involve our key (<code>psbt_input.tap_key_origins.get(&amp;public)</code>), iterate on them and produce a signature for each of them.</p> <p>Unfortunately due to a limitation of the current <a href="https://github.com/rust-bitcoin/rust-bitcoin" target="_blank" rel="noopener noreferrer">rust-bitcoin<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> API, we have to come up with the full Bitcoin script in order to produce the signature: this is technically not required, because the sighash only
+contains the leaf hash, but <a href="https://github.com/rust-bitcoin/rust-bitcoin" target="_blank" rel="noopener noreferrer">rust-bitcoin<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> doesn't allow us to pass in a simple hash, it wants the full script and leaf version and computes the hash internally.</p> <p>So the &quot;hack&quot; I came up with is: iterate on all the <code>tap_scripts</code> contained in the PSBT (this is a <code>ControlBlock</code> -&gt; (<code>Script</code>, <code>LeafVersion</code>) map), try to compute the merkle tree assuming that the control block is the right one for
+the <code>leaf_hash</code> we are looking at (if it is the computed merkle root will match the one stored in the PSBT) and if so produce a signature using the script.</p> <p>This is obviously computationally intensive and totally useless, but there was no other way around it. I opened a <a href="https://github.com/rust-bitcoin/rust-bitcoin/pull/722" target="_blank" rel="noopener noreferrer">PR<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> to change the <a href="https://github.com/rust-bitcoin/rust-bitcoin" target="_blank" rel="noopener noreferrer">rust-bitcoin<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> API so that a leaf hash can be passed in directly. With that change the
+code will look something like this:</p> <div class="language-rust extra-class"><pre class="language-rust"><code><span class="token keyword">for</span> leaf_hash <span class="token keyword">in</span> leaf_hashes <span class="token punctuation">{</span>
+    <span class="token keyword">let</span> <span class="token punctuation">(</span>hash<span class="token punctuation">,</span> sighash_type<span class="token punctuation">)</span> <span class="token operator">=</span>
+        <span class="token class-name">Tap</span><span class="token punctuation">::</span><span class="token function">sighash</span><span class="token punctuation">(</span>psbt<span class="token punctuation">,</span> input_index<span class="token punctuation">,</span> <span class="token class-name">Some</span><span class="token punctuation">(</span>leaf_hash<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> signature <span class="token operator">=</span> <span class="token function">make_sig</span><span class="token punctuation">(</span>secp<span class="token punctuation">,</span> <span class="token operator">&amp;</span>keypair<span class="token punctuation">,</span> <span class="token operator">&amp;</span>hash<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    new_psbt_input
+        <span class="token punctuation">.</span>tap_script_sigs
+        <span class="token punctuation">.</span><span class="token function">insert</span><span class="token punctuation">(</span><span class="token punctuation">(</span>public<span class="token punctuation">,</span> <span class="token operator">*</span>leaf_hash<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>signature<span class="token punctuation">,</span> sighash_type<span class="token punctuation">.</span><span class="token function">into</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p>With a function to produce the raw Schnorr signature, we implement our <code>ComputeSighash</code> trait on the <code>Tap</code> context:</p> <div class="language-rust extra-class"><pre class="language-rust"><code><span class="token keyword">impl</span> <span class="token class-name">ComputeSighash</span> <span class="token keyword">for</span> <span class="token class-name">Tap</span> <span class="token punctuation">{</span>
+    <span class="token keyword">type</span> <span class="token class-name">SigHash</span> <span class="token operator">=</span> <span class="token namespace">taproot<span class="token punctuation">::</span></span><span class="token class-name">TapSighashHash</span><span class="token punctuation">;</span>
+    <span class="token keyword">type</span> <span class="token class-name">Extra</span> <span class="token operator">=</span> <span class="token class-name">Option</span><span class="token operator">&lt;</span><span class="token punctuation">(</span><span class="token namespace">bitcoin<span class="token punctuation">::</span></span><span class="token class-name">Script</span><span class="token punctuation">,</span> <span class="token namespace">taproot<span class="token punctuation">::</span></span><span class="token class-name">LeafVersion</span><span class="token punctuation">)</span><span class="token operator">&gt;</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">fn</span> <span class="token function-definition function">sighash</span><span class="token punctuation">(</span>
+        psbt<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token namespace">psbt<span class="token punctuation">::</span></span><span class="token class-name">PartiallySignedTransaction</span><span class="token punctuation">,</span>
+        input_index<span class="token punctuation">:</span> <span class="token keyword">usize</span><span class="token punctuation">,</span>
+        extra<span class="token punctuation">:</span> <span class="token keyword">Self</span><span class="token punctuation">::</span><span class="token class-name">Extra</span><span class="token punctuation">,</span>
+    <span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token class-name">Result</span><span class="token operator">&lt;</span><span class="token punctuation">(</span><span class="token keyword">Self</span><span class="token punctuation">::</span><span class="token class-name">SigHash</span><span class="token punctuation">,</span> <span class="token class-name">SigHashType</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">SignerError</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
+        <span class="token keyword">if</span> input_index <span class="token operator">&gt;=</span> psbt<span class="token punctuation">.</span>inputs<span class="token punctuation">.</span><span class="token function">len</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">||</span> input_index <span class="token operator">&gt;=</span> psbt<span class="token punctuation">.</span>global<span class="token punctuation">.</span>unsigned_tx<span class="token punctuation">.</span>input<span class="token punctuation">.</span><span class="token function">len</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">return</span> <span class="token class-name">Err</span><span class="token punctuation">(</span><span class="token class-name">SignerError</span><span class="token punctuation">::</span><span class="token class-name">InputIndexOutOfRange</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+
+        <span class="token keyword">let</span> psbt_input <span class="token operator">=</span> <span class="token operator">&amp;</span>psbt<span class="token punctuation">.</span>inputs<span class="token punctuation">[</span>input_index<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">let</span> tx_input <span class="token operator">=</span> <span class="token operator">&amp;</span>psbt<span class="token punctuation">.</span>global<span class="token punctuation">.</span>unsigned_tx<span class="token punctuation">.</span>input<span class="token punctuation">[</span>input_index<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">let</span> sighash_type <span class="token operator">=</span> psbt_input<span class="token punctuation">.</span>sighash_type<span class="token punctuation">.</span><span class="token function">unwrap_or</span><span class="token punctuation">(</span><span class="token class-name">SigHashType</span><span class="token punctuation">::</span><span class="token class-name">All</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">let</span> witness_utxos <span class="token operator">=</span> psbt
+            <span class="token punctuation">.</span>inputs
+            <span class="token punctuation">.</span><span class="token function">iter</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token punctuation">.</span><span class="token function">cloned</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token closure-params"><span class="token closure-punctuation punctuation">|</span>i<span class="token closure-punctuation punctuation">|</span></span> i<span class="token punctuation">.</span>witness_utxo<span class="token punctuation">)</span>
+            <span class="token punctuation">.</span><span class="token function">collect</span><span class="token punctuation">::</span><span class="token operator">&lt;</span><span class="token class-name">Vec</span><span class="token operator">&lt;</span>_<span class="token operator">&gt;&gt;</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">let</span> <span class="token keyword">mut</span> all_witness_utxos <span class="token operator">=</span> <span class="token macro property">vec!</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">let</span> <span class="token keyword">mut</span> cache <span class="token operator">=</span> <span class="token namespace">sighash<span class="token punctuation">::</span></span><span class="token class-name">SigHashCache</span><span class="token punctuation">::</span><span class="token function">new</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>psbt<span class="token punctuation">.</span>global<span class="token punctuation">.</span>unsigned_tx<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">let</span> prevouts <span class="token operator">=</span> <span class="token keyword">if</span> sighash_type<span class="token punctuation">.</span><span class="token function">as_u32</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span> <span class="token number">0x80</span> <span class="token operator">!=</span> <span class="token number">0</span> <span class="token punctuation">{</span>
+            <span class="token namespace">sighash<span class="token punctuation">::</span></span><span class="token class-name">Prevouts</span><span class="token punctuation">::</span><span class="token class-name">One</span><span class="token punctuation">(</span>
+                input_index<span class="token punctuation">,</span>
+                witness_utxos<span class="token punctuation">[</span>input_index<span class="token punctuation">]</span>
+                    <span class="token punctuation">.</span><span class="token function">as_ref</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+                    <span class="token punctuation">.</span><span class="token function">ok_or</span><span class="token punctuation">(</span><span class="token class-name">SignerError</span><span class="token punctuation">::</span><span class="token class-name">MissingWitnessUtxo</span><span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">,</span>
+            <span class="token punctuation">)</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token keyword">if</span> witness_utxos<span class="token punctuation">.</span><span class="token function">iter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">all</span><span class="token punctuation">(</span><span class="token class-name">Option</span><span class="token punctuation">::</span>is_some<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            all_witness_utxos<span class="token punctuation">.</span><span class="token function">extend</span><span class="token punctuation">(</span>witness_utxos<span class="token punctuation">.</span><span class="token function">into_iter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">filter_map</span><span class="token punctuation">(</span><span class="token closure-params"><span class="token closure-punctuation punctuation">|</span>x<span class="token closure-punctuation punctuation">|</span></span> x<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token namespace">sighash<span class="token punctuation">::</span></span><span class="token class-name">Prevouts</span><span class="token punctuation">::</span><span class="token class-name">All</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>all_witness_utxos<span class="token punctuation">)</span>
+        <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+            <span class="token keyword">return</span> <span class="token class-name">Err</span><span class="token punctuation">(</span><span class="token class-name">SignerError</span><span class="token punctuation">::</span><span class="token class-name">MissingWitnessUtxo</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+        <span class="token comment">// Assume no OP_CODESEPARATOR</span>
+        <span class="token keyword">let</span> extra <span class="token operator">=</span> extra
+            <span class="token punctuation">.</span><span class="token function">as_ref</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token closure-params"><span class="token closure-punctuation punctuation">|</span><span class="token punctuation">(</span>script<span class="token punctuation">,</span> version<span class="token punctuation">)</span><span class="token closure-punctuation punctuation">|</span></span> <span class="token namespace">sighash<span class="token punctuation">::</span></span><span class="token class-name">ScriptPath</span><span class="token punctuation">::</span><span class="token function">new</span><span class="token punctuation">(</span>script<span class="token punctuation">,</span> <span class="token number">0xFFFFFFFF</span><span class="token punctuation">,</span> <span class="token operator">*</span>version<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">Ok</span><span class="token punctuation">(</span><span class="token punctuation">(</span>
+            cache<span class="token punctuation">.</span><span class="token function">taproot_signature_hash</span><span class="token punctuation">(</span>
+                input_index<span class="token punctuation">,</span>
+                <span class="token operator">&amp;</span>prevouts<span class="token punctuation">,</span>
+                <span class="token class-name">None</span><span class="token punctuation">,</span>
+                extra<span class="token punctuation">,</span>
+                sighash_type<span class="token punctuation">.</span><span class="token function">into</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">,</span>
+            sighash_type<span class="token punctuation">,</span>
+        <span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p>In this case we do have some &quot;extra data&quot;, the optional <code>(Script, LeafVersion)</code> tuple: if present, we make a script-spend signature for that leaf, otherwise we make a key-spend signature.</p> <p>Also, the <code>SigHash</code> type in this case is the &quot;new&quot; <code>taproot::TapSighashHash</code> enum.</p> <p>Finally, we integrate this in our &quot;main&quot; signing code that decides which kind of signature to produce: if the PSBT input contains one of the taproot-specific metadata, like the <code>tap_internal_key</code> or
+a <code>tap_merkle_root</code> we produce a taproot signature, otherwise we continue with the original code.</p> <div class="language-diff extra-class"><pre class="language-diff"><code>@@ -283,6 +382,12 @@ impl Signer for PrivateKey {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            return Ok(());
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span></span>
+<span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        if psbt.inputs[input_index].tap_internal_key.is_some()
+</span><span class="token prefix inserted">+</span><span class="token line">            || psbt.inputs[input_index].tap_merkle_root.is_some()
+</span><span class="token prefix inserted">+</span><span class="token line">        {
+</span><span class="token prefix inserted">+</span><span class="token line">            return tap_signature(self, psbt, input_index, secp);
+</span><span class="token prefix inserted">+</span><span class="token line">        }
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        let pubkey = self.public_key(secp);
+</span><span class="token prefix unchanged"> </span><span class="token line">        if psbt.inputs[input_index].partial_sigs.contains_key(&amp;pubkey) {
+</span><span class="token prefix unchanged"> </span><span class="token line">            return Ok(());
+</span></span>@@ -293,8 +398,8 @@ impl Signer for PrivateKey {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        // these? The original idea was to declare sign() as sign&lt;Ctx: ScriptContex&gt;() and use Ctx,
+</span><span class="token prefix unchanged"> </span><span class="token line">        // but that violates the rules for trait-objects, so we can't do it.
+</span><span class="token prefix unchanged"> </span><span class="token line">        let (hash, sighash) = match psbt.inputs[input_index].witness_utxo {
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            Some(_) =&gt; Segwitv0::sighash(psbt, input_index)?,
+</span><span class="token prefix deleted">-</span><span class="token line">            None =&gt; Legacy::sighash(psbt, input_index)?,
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            Some(_) =&gt; Segwitv0::sighash(psbt, input_index, ())?,
+</span><span class="token prefix inserted">+</span><span class="token line">            None =&gt; Legacy::sighash(psbt, input_index, ())?,
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        };
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        let signature = secp.sign(
+</span></span></code></pre></div><h2 id="psbt-metadata"><a href="#psbt-metadata" class="header-anchor">#</a> PSBT Metadata</h2> <p>In our signer code we use the taproot-specific PSBT metadata to produce the right signatures, so we should also include them in the PSBTs we create!</p> <div class="language-diff extra-class"><pre class="language-diff"><code>@@ -1401,18 +1408,66 @@ where
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        };
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        let desc = self.get_descriptor_for_keychain(keychain);
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        let derived_descriptor = desc.as_derived(child, &amp;self.secp);
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        let mut derived_descriptor = desc.as_derived(child, &amp;self.secp);
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        psbt_input.bip32_derivation = derived_descriptor.get_hd_keypaths(&amp;self.secp)?;
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        psbt_input.redeem_script = derived_descriptor.psbt_redeem_script();
+</span><span class="token prefix unchanged"> </span><span class="token line">        psbt_input.witness_script = derived_descriptor.psbt_witness_script();
+</span></span>
+<span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        if let Descriptor::Tr(tr) = &amp;mut derived_descriptor {
+</span><span class="token prefix inserted">+</span><span class="token line">            let internal_key = ecdsa_to_schnorr(&amp;tr.internal_key().to_public_key());
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">            // add taproot metadata
+</span><span class="token prefix inserted">+</span><span class="token line">            psbt_input.tap_internal_key = Some(internal_key);
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">            let spend_info = tr.spend_info(&amp;self.secp).clone();
+</span><span class="token prefix inserted">+</span><span class="token line">            psbt_input.tap_merkle_root = spend_info.merkle_root.map(|h| {
+</span><span class="token prefix inserted">+</span><span class="token line">                taproot::TapBranchHash::from_slice(h.as_ref()).expect(&quot;Invalid TapBranchHash&quot;)
+</span><span class="token prefix inserted">+</span><span class="token line">            });
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">            debug!(&quot;spend_info = {:#?}&quot;, spend_info);
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">            let mut key_map_leaves = BTreeMap::new();
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">            for (_, script) in tr.iter_scripts() {
+</span><span class="token prefix inserted">+</span><span class="token line">                trace!(&quot;checking script: {}&quot;, script.encode());
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">                let script_ver = (script.encode(), taproot::LeafVersion::default());
+</span><span class="token prefix inserted">+</span><span class="token line">                let leaf_hash = taproot::TapLeafHash::from_slice(&amp;taproot::compute_leaf_hash(
+</span><span class="token prefix inserted">+</span><span class="token line">                    &amp;script_ver.0,
+</span><span class="token prefix inserted">+</span><span class="token line">                    script_ver.1,
+</span><span class="token prefix inserted">+</span><span class="token line">                ))
+</span><span class="token prefix inserted">+</span><span class="token line">                .expect(&quot;Invalid TapLeafHash&quot;);
+</span><span class="token prefix inserted">+</span><span class="token line">                // println!(&quot;leaf_hash: {}&quot;, leaf_hash);
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">                for key in script.iter_pk() {
+</span><span class="token prefix inserted">+</span><span class="token line">                    let key = ecdsa_to_schnorr(&amp;key.to_public_key());
+</span><span class="token prefix inserted">+</span><span class="token line">                    key_map_leaves
+</span><span class="token prefix inserted">+</span><span class="token line">                        .entry(key)
+</span><span class="token prefix inserted">+</span><span class="token line">                        .or_insert(vec![])
+</span><span class="token prefix inserted">+</span><span class="token line">                        .push(leaf_hash.clone());
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">                    // println!(&quot;key {} in script {:?}&quot;, key, script);
+</span><span class="token prefix inserted">+</span><span class="token line">                }
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">                if let Some(control_block) = spend_info.control_block(&amp;script_ver) {
+</span><span class="token prefix inserted">+</span><span class="token line">                    psbt_input.tap_scripts.insert(control_block, script_ver);
+</span><span class="token prefix inserted">+</span><span class="token line">                }
+</span><span class="token prefix inserted">+</span><span class="token line">            }
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">            psbt_input.tap_key_origins = key_map_leaves
+</span><span class="token prefix inserted">+</span><span class="token line">                .into_iter()
+</span><span class="token prefix inserted">+</span><span class="token line">                .map(|(pk, leaf_hash)| (pk, (leaf_hash, Default::default())))
+</span><span class="token prefix inserted">+</span><span class="token line">                .collect();
+</span><span class="token prefix inserted">+</span><span class="token line">            debug!(&quot;psbt_input = {:#?}&quot;, psbt_input);
+</span><span class="token prefix inserted">+</span><span class="token line">        }
+</span></span></code></pre></div><p>If our descriptor is a <code>Tr</code> variant, we include the <code>internal_key</code> in the PSBT, the <code>merkle_root</code> (if present) and then iterate on all the scripts and all the keys in every scripts and populate the <code>tap_scripts</code>
+and <code>tap_key_origins</code> maps. Since we don't support extended keys for the time being, we use an empty (<code>Default::default()</code>) key origin, but all the other fields are populated with the right values.</p> <p>Remember when I said that the taproot sighash algorithm fixes the <a href="https://blog.trezor.io/details-of-firmware-updates-for-trezor-one-version-1-9-1-and-trezor-model-t-version-2-3-1-1eba8f60f2dd" target="_blank" rel="noopener noreferrer">&quot;segwit bug&quot;<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>? This means that we don't have to include the full previous transaction (<code>non_witness_utxo</code>) for every input, since it's safe to just
+use the previous UTXO (<code>witness_utxo</code>). We also change this:</p> <div class="language-diff extra-class"><pre class="language-diff"><code><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        // If we aren't allowed to use `witness_utxo`, ensure that every input but finalized one
+</span><span class="token prefix unchanged"> </span><span class="token line">        // has the `non_witness_utxo`
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        if !sign_options.trust_witness_utxo
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        if !self.descriptor.is_tap() &amp;&amp; !sign_options.trust_witness_utxo // TODO: should be separate for the two descriptors
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            &amp;&amp; psbt
+</span><span class="token prefix unchanged"> </span><span class="token line">                .inputs
+</span><span class="token prefix unchanged"> </span><span class="token line">                .iter()
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        // &lt;snip&gt;
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        let prev_output = utxo.outpoint;
+</span><span class="token prefix unchanged"> </span><span class="token line">        if let Some(prev_tx) = self.database.borrow().get_raw_tx(&amp;prev_output.txid)? {
+</span><span class="token prefix unchanged"> </span><span class="token line">            if desc.is_witness() {
+</span><span class="token prefix unchanged"> </span><span class="token line">                psbt_input.witness_utxo = Some(prev_tx.output[prev_output.vout as usize].clone());
+</span><span class="token prefix unchanged"> </span><span class="token line">            }
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">            if !desc.is_witness() || !only_witness_utxo {
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">            if (!desc.is_witness() || !only_witness_utxo) &amp;&amp; !desc.is_tap() {
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">                psbt_input.non_witness_utxo = Some(prev_tx);
+</span><span class="token prefix unchanged"> </span><span class="token line">            }
+</span><span class="token prefix unchanged"> </span><span class="token line">        }
+</span></span></code></pre></div><h2 id="descriptor-macro"><a href="#descriptor-macro" class="header-anchor">#</a> <code>descriptor!()</code> Macro</h2> <p>Finally, we update the <code>descriptor!()</code> macro to correctly parse <code>tr()</code> descriptors and the new <code>multi_a()</code> operator:</p> <h3 id="tr-descriptors"><a href="#tr-descriptors" class="header-anchor">#</a> <code>tr()</code> Descriptors</h3> <div class="language-diff extra-class"><pre class="language-diff"><code>@@ -73,6 +73,38 @@ macro_rules! impl_top_level_pk {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    }};
+</span><span class="token prefix unchanged"> </span><span class="token line">}
+</span></span>
+<span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">#[doc(hidden)]
+</span><span class="token prefix inserted">+</span><span class="token line">#[macro_export]
+</span><span class="token prefix inserted">+</span><span class="token line">macro_rules! impl_top_level_tr {
+</span><span class="token prefix inserted">+</span><span class="token line">    ( $internal_key:expr, $tap_tree:expr ) =&gt; {{
+</span><span class="token prefix inserted">+</span><span class="token line">        use $crate::miniscript::descriptor::{Descriptor, DescriptorPublicKey, Tr};
+</span><span class="token prefix inserted">+</span><span class="token line">        use $crate::miniscript::Tap;
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        #[allow(unused_imports)]
+</span><span class="token prefix inserted">+</span><span class="token line">        use $crate::keys::{DescriptorKey, IntoDescriptorKey};
+</span><span class="token prefix inserted">+</span><span class="token line">        let secp = $crate::bitcoin::secp256k1::Secp256k1::new();
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        $internal_key
+</span><span class="token prefix inserted">+</span><span class="token line">            .into_descriptor_key()
+</span><span class="token prefix inserted">+</span><span class="token line">            .and_then(|key: DescriptorKey&lt;Tap&gt;| key.extract(&amp;secp))
+</span><span class="token prefix inserted">+</span><span class="token line">            .map_err($crate::descriptor::DescriptorError::Key)
+</span><span class="token prefix inserted">+</span><span class="token line">            .and_then(|(pk, mut key_map, mut valid_networks)| {
+</span><span class="token prefix inserted">+</span><span class="token line">                let tap_tree = $tap_tree.map(|(tap_tree, tree_keymap, tree_networks)| {
+</span><span class="token prefix inserted">+</span><span class="token line">                    key_map.extend(tree_keymap.into_iter());
+</span><span class="token prefix inserted">+</span><span class="token line">                    valid_networks = $crate::keys::merge_networks(&amp;valid_networks, &amp;tree_networks);
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">                    tap_tree
+</span><span class="token prefix inserted">+</span><span class="token line">                });
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">                Ok((
+</span><span class="token prefix inserted">+</span><span class="token line">                    Descriptor::&lt;DescriptorPublicKey&gt;::Tr(Tr::new(pk, tap_tree)?),
+</span><span class="token prefix inserted">+</span><span class="token line">                    key_map,
+</span><span class="token prefix inserted">+</span><span class="token line">                    valid_networks,
+</span><span class="token prefix inserted">+</span><span class="token line">                ))
+</span><span class="token prefix inserted">+</span><span class="token line">            })
+</span><span class="token prefix inserted">+</span><span class="token line">    }};
+</span><span class="token prefix inserted">+</span><span class="token line">}
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">#[doc(hidden)]
+</span><span class="token prefix unchanged"> </span><span class="token line">#[macro_export]
+</span><span class="token prefix unchanged"> </span><span class="token line">macro_rules! impl_leaf_opcode {
+</span></span>@@ -228,6 +260,62 @@ macro_rules! impl_sortedmulti {
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">}
+</span></span>
+<span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">#[doc(hidden)]
+</span><span class="token prefix inserted">+</span><span class="token line">#[macro_export]
+</span><span class="token prefix inserted">+</span><span class="token line">macro_rules! parse_tap_tree {
+</span><span class="token prefix inserted">+</span><span class="token line">    ( @merge $tree_a:expr, $tree_b:expr) =&gt; {{
+</span><span class="token prefix inserted">+</span><span class="token line">        use std::sync::Arc;
+</span><span class="token prefix inserted">+</span><span class="token line">        use $crate::miniscript::descriptor::TapTree;
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        $tree_a
+</span><span class="token prefix inserted">+</span><span class="token line">            .and_then(|tree_a| Ok((tree_a, $tree_b?)))
+</span><span class="token prefix inserted">+</span><span class="token line">            .and_then(|((a_tree, mut a_keymap, a_networks), (b_tree, b_keymap, b_networks))| {
+</span><span class="token prefix inserted">+</span><span class="token line">                a_keymap.extend(b_keymap.into_iter());
+</span><span class="token prefix inserted">+</span><span class="token line">                Ok((TapTree::Tree(Arc::new(a_tree), Arc::new(b_tree)), a_keymap, $crate::keys::merge_networks(&amp;a_networks, &amp;b_networks)))
+</span><span class="token prefix inserted">+</span><span class="token line">            })
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">    }};
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">    // Two sub-trees
+</span><span class="token prefix inserted">+</span><span class="token line">    ( { { $( $tree_a:tt )* }, { $( $tree_b:tt )* } } ) =&gt; {{
+</span><span class="token prefix inserted">+</span><span class="token line">        let tree_a = $crate::parse_tap_tree!( { $( $tree_a )* } );
+</span><span class="token prefix inserted">+</span><span class="token line">        let tree_b = $crate::parse_tap_tree!( { $( $tree_b )* } );
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        $crate::parse_tap_tree!(@merge tree_a, tree_b)
+</span><span class="token prefix inserted">+</span><span class="token line">    }};
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">    // One leaf and a sub-tree
+</span><span class="token prefix inserted">+</span><span class="token line">    ( { $op_a:ident ( $( $minisc_a:tt )* ), { $( $tree_b:tt )* } } ) =&gt; {{
+</span><span class="token prefix inserted">+</span><span class="token line">        let tree_a = $crate::parse_tap_tree!( $op_a ( $( $minisc_a )* ) );
+</span><span class="token prefix inserted">+</span><span class="token line">        let tree_b = $crate::parse_tap_tree!( { $( $tree_b )* } );
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        $crate::parse_tap_tree!(@merge tree_a, tree_b)
+</span><span class="token prefix inserted">+</span><span class="token line">    }};
+</span><span class="token prefix inserted">+</span><span class="token line">    ( { { $( $tree_a:tt )* }, $op_b:ident ( $( $minisc_b:tt )* ) } ) =&gt; {{
+</span><span class="token prefix inserted">+</span><span class="token line">        let tree_a = $crate::parse_tap_tree!( { $( $tree_a )* } );
+</span><span class="token prefix inserted">+</span><span class="token line">        let tree_b = $crate::parse_tap_tree!( $op_b ( $( $minisc_b )* ) );
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        $crate::parse_tap_tree!(@merge tree_a, tree_b)
+</span><span class="token prefix inserted">+</span><span class="token line">    }};
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">    // Two leaves
+</span><span class="token prefix inserted">+</span><span class="token line">    ( { $op_a:ident ( $( $minisc_a:tt )* ), $op_b:ident ( $( $minisc_b:tt )* ) } ) =&gt; {{
+</span><span class="token prefix inserted">+</span><span class="token line">        let tree_a = $crate::parse_tap_tree!( $op_a ( $( $minisc_a )* ) );
+</span><span class="token prefix inserted">+</span><span class="token line">        let tree_b = $crate::parse_tap_tree!( $op_b ( $( $minisc_b )* ) );
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        $crate::parse_tap_tree!(@merge tree_a, tree_b)
+</span><span class="token prefix inserted">+</span><span class="token line">    }};
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">    // Single leaf
+</span><span class="token prefix inserted">+</span><span class="token line">    ( $op:ident ( $( $minisc:tt )* ) ) =&gt; {{
+</span><span class="token prefix inserted">+</span><span class="token line">        use std::sync::Arc;
+</span><span class="token prefix inserted">+</span><span class="token line">        use $crate::miniscript::descriptor::TapTree;
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        $crate::fragment!( $op ( $( $minisc )* ) )
+</span><span class="token prefix inserted">+</span><span class="token line">            .map(|(a_minisc, a_keymap, a_networks)| (TapTree::Leaf(Arc::new(a_minisc)), a_keymap, a_networks))
+</span><span class="token prefix inserted">+</span><span class="token line">    }};
+</span><span class="token prefix inserted">+</span><span class="token line">}
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">#[doc(hidden)]
+</span><span class="token prefix unchanged"> </span><span class="token line">#[macro_export]
+</span><span class="token prefix unchanged"> </span><span class="token line">macro_rules! apply_modifier {
+</span></span>@@ -441,6 +529,15 @@ macro_rules! descriptor {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    ( wsh ( $( $minisc:tt )* ) ) =&gt; ({
+</span><span class="token prefix unchanged"> </span><span class="token line">        $crate::impl_top_level_sh!(Wsh, new, new_sortedmulti, Segwitv0, $( $minisc )*)
+</span><span class="token prefix unchanged"> </span><span class="token line">    });
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">    ( tr ( $internal_key:expr ) ) =&gt; ({
+</span><span class="token prefix inserted">+</span><span class="token line">        $crate::impl_top_level_tr!($internal_key, None)
+</span><span class="token prefix inserted">+</span><span class="token line">    });
+</span><span class="token prefix inserted">+</span><span class="token line">    ( tr ( $internal_key:expr, $( $taptree:tt )* ) ) =&gt; ({
+</span><span class="token prefix inserted">+</span><span class="token line">        let tap_tree = $crate::parse_tap_tree!( $( $taptree )* );
+</span><span class="token prefix inserted">+</span><span class="token line">        tap_tree
+</span><span class="token prefix inserted">+</span><span class="token line">            .and_then(|tap_tree| $crate::impl_top_level_tr!($internal_key, Some(tap_tree)))
+</span><span class="token prefix inserted">+</span><span class="token line">    });
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">}
+</span></span></code></pre></div><p>The <code>parse_tap_tree!()</code> macro parses the second (and optional) argument of a <code>tr()</code> descriptor: curly brackets are used to build a tree of descriptor. The macro matches the four possible cases individually:</p> <ol><li>Two sub-trees: <code>{{...}{...}}</code></li> <li>Operator on the left side, sub-tree on the right: <code>{op(),{...}}</code></li> <li>Operator on the right side, sub-tree on the left: <code>{{...},op()}</code></li> <li>Just a single operator: <code>op()</code></li></ol> <p>In the main <code>descriptor!()</code> macro we add two new variant:</p> <ul><li>One matches the simple &quot;single-key&quot; taproot descriptor: <code>tr(internal_key)</code></li> <li>The other one matches a key and a taptree: <code>tr(internal_key,{...})</code></li></ul> <h3 id="multi-a-operator"><a href="#multi-a-operator" class="header-anchor">#</a> <code>multi_a()</code> Operator</h3> <div class="language-diff extra-class"><pre class="language-diff"><code>@@ -480,6 +577,23 @@ impl&lt;A, B, C&gt; From&lt;(A, (B, (C, ())))&gt; for TupleThree&lt;A, B, C&gt; {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    }
+</span><span class="token prefix unchanged"> </span><span class="token line">}
+</span></span>
+<span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">#[doc(hidden)]
+</span><span class="token prefix inserted">+</span><span class="token line">#[macro_export]
+</span><span class="token prefix inserted">+</span><span class="token line">macro_rules! group_multi_keys {
+</span><span class="token prefix inserted">+</span><span class="token line">    ( $( $key:expr ),+ ) =&gt; {{
+</span><span class="token prefix inserted">+</span><span class="token line">        use $crate::keys::IntoDescriptorKey;
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        let keys = vec![
+</span><span class="token prefix inserted">+</span><span class="token line">            $(
+</span><span class="token prefix inserted">+</span><span class="token line">                $key.into_descriptor_key(),
+</span><span class="token prefix inserted">+</span><span class="token line">            )*
+</span><span class="token prefix inserted">+</span><span class="token line">        ];
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        keys.into_iter().collect::&lt;Result&lt;Vec&lt;_&gt;, _&gt;&gt;()
+</span><span class="token prefix inserted">+</span><span class="token line">            .map_err($crate::descriptor::DescriptorError::Key)
+</span><span class="token prefix inserted">+</span><span class="token line">    }};
+</span><span class="token prefix inserted">+</span><span class="token line">}
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">#[doc(hidden)]
+</span><span class="token prefix unchanged"> </span><span class="token line">#[macro_export]
+</span><span class="token prefix unchanged"> </span><span class="token line">macro_rules! fragment_internal {
+</span></span>@@ -640,21 +754,22 @@ macro_rules! fragment {
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">            .and_then(|items| $crate::fragment!(thresh_vec($thresh, items)))
+</span><span class="token prefix unchanged"> </span><span class="token line">    });
+</span><span class="token prefix unchanged"> </span><span class="token line">    ( multi_vec ( $thresh:expr, $keys:expr ) ) =&gt; ({
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        $crate::keys::make_multi($thresh, $keys)
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        let secp = $crate::bitcoin::secp256k1::Secp256k1::new();
+</span><span class="token prefix inserted">+</span><span class="token line">
+</span><span class="token prefix inserted">+</span><span class="token line">        $crate::keys::make_multi($thresh, $crate::miniscript::Terminal::Multi, $keys, &amp;secp)
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    });
+</span><span class="token prefix unchanged"> </span><span class="token line">    ( multi ( $thresh:expr $(, $key:expr )+ ) ) =&gt; ({
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        use $crate::keys::IntoDescriptorKey;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        $crate::group_multi_keys!( $( $key ),* )
+</span><span class="token prefix inserted">+</span><span class="token line">            .and_then(|keys| $crate::fragment!( multi_vec ( $thresh, keys ) ))
+</span><span class="token prefix inserted">+</span><span class="token line">    });
+</span><span class="token prefix inserted">+</span><span class="token line">    ( multi_a_vec ( $thresh:expr, $keys:expr ) ) =&gt; ({
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">        let secp = $crate::bitcoin::secp256k1::Secp256k1::new();
+</span></span>
+<span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">        let keys = vec![
+</span><span class="token prefix deleted">-</span><span class="token line">            $(
+</span><span class="token prefix deleted">-</span><span class="token line">                $key.into_descriptor_key(),
+</span><span class="token prefix deleted">-</span><span class="token line">            )*
+</span><span class="token prefix deleted">-</span><span class="token line">        ];
+</span><span class="token prefix deleted">-</span><span class="token line">
+</span><span class="token prefix deleted">-</span><span class="token line">        keys.into_iter().collect::&lt;Result&lt;Vec&lt;_&gt;, _&gt;&gt;()
+</span><span class="token prefix deleted">-</span><span class="token line">            .map_err($crate::descriptor::DescriptorError::Key)
+</span><span class="token prefix deleted">-</span><span class="token line">            .and_then(|keys| $crate::keys::make_multi($thresh, keys, &amp;secp))
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">        $crate::keys::make_multi($thresh, $crate::miniscript::Terminal::MultiA, $keys, &amp;secp)
+</span><span class="token prefix inserted">+</span><span class="token line">    });
+</span><span class="token prefix inserted">+</span><span class="token line">    ( multi_a ( $thresh:expr $(, $key:expr )+ ) ) =&gt; ({
+</span><span class="token prefix inserted">+</span><span class="token line">        $crate::group_multi_keys!( $( $key ),* )
+</span><span class="token prefix inserted">+</span><span class="token line">            .and_then(|keys| $crate::fragment!( multi_a_vec ( $thresh, keys ) ))
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    });
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    // `sortedmulti()` is handled separately
+</span></span></code></pre></div><p>To share the code with the <code>multi_vec()</code> operator we create an external macro to group a vec of keys, and then use it in both places. We also generalize the <code>make_multi()</code> function, so that it returns a
+<code>Terminal::Multi()</code> when used with <code>multi()</code> or <code>multi_vec()</code> and <code>Terminal::MultiA()</code> when used with <code>multi_a()</code> or <code>multi_a_vec()</code>:</p> <div class="language-diff extra-class"><pre class="language-diff"><code>@@ -769,13 +769,18 @@ pub fn make_pkh&lt;Pk: IntoDescriptorKey&lt;Ctx&gt;, Ctx: ScriptContext&gt;(
+
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">// Used internally by `bdk::fragment!` to build `multi()` fragments
+</span><span class="token prefix unchanged"> </span><span class="token line">#[doc(hidden)]
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">pub fn make_multi&lt;Pk: IntoDescriptorKey&lt;Ctx&gt;, Ctx: ScriptContext&gt;(
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">pub fn make_multi&lt;
+</span><span class="token prefix inserted">+</span><span class="token line">    Pk: IntoDescriptorKey&lt;Ctx&gt;,
+</span><span class="token prefix inserted">+</span><span class="token line">    Ctx: ScriptContext,
+</span><span class="token prefix inserted">+</span><span class="token line">    V: Fn(usize, Vec&lt;DescriptorPublicKey&gt;) -&gt; Terminal&lt;DescriptorPublicKey, Ctx&gt;,
+</span><span class="token prefix inserted">+</span><span class="token line">&gt;(
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    thresh: usize,
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    variant: V,
+</span></span><span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    pks: Vec&lt;Pk&gt;,
+</span><span class="token prefix unchanged"> </span><span class="token line">    secp: &amp;SecpCtx,
+</span><span class="token prefix unchanged"> </span><span class="token line">) -&gt; Result&lt;(Miniscript&lt;DescriptorPublicKey, Ctx&gt;, KeyMap, ValidNetworks), DescriptorError&gt; {
+</span><span class="token prefix unchanged"> </span><span class="token line">    let (pks, key_map, valid_networks) = expand_multi_keys(pks, secp)?;
+</span></span><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">    let minisc = Miniscript::from_ast(Terminal::Multi(thresh, pks))?;
+</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">    let minisc = Miniscript::from_ast(variant(thresh, pks))?;
+</span></span>
+<span class="token unchanged"><span class="token prefix unchanged"> </span><span class="token line">    minisc.check_minsicript()?;
+</span></span></code></pre></div><p>And this concludes our journey into the deep technical details of taproot and BDK!</p> <p>With this changes all it took to make <a href="https://mempool.space/tx/2eb8dbaa346d4be4e82fe444c2f0be00654d8cfd8c4a9a61b11aeaab8c00b272" target="_blank" rel="noopener noreferrer">our taproot transaction was<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>:</p> <div class="language-rust extra-class"><pre class="language-rust"><code><span class="token keyword">let</span> unspendable_key <span class="token operator">=</span> <span class="token namespace">bitcoin<span class="token punctuation">::</span></span><span class="token class-name">PublicKey</span><span class="token punctuation">::</span><span class="token function">from_str</span><span class="token punctuation">(</span><span class="token string">&quot;020000000000000000000000000000000000000000000000000000000000000001&quot;</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">unwrap</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> taproot_key <span class="token operator">=</span> <span class="token namespace">bitcoin<span class="token punctuation">::</span></span><span class="token class-name">PrivateKey</span><span class="token punctuation">::</span><span class="token function">from_str</span><span class="token punctuation">(</span><span class="token string">&quot;&lt;redacted&gt;&quot;</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">unwrap</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> taproot_key_2 <span class="token operator">=</span> <span class="token namespace">bitcoin<span class="token punctuation">::</span></span><span class="token class-name">PrivateKey</span><span class="token punctuation">::</span><span class="token function">from_str</span><span class="token punctuation">(</span><span class="token string">&quot;&lt;redacted&gt;&quot;</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">unwrap</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">let</span> wallet <span class="token operator">=</span> <span class="token class-name">Wallet</span><span class="token punctuation">::</span><span class="token function">new</span><span class="token punctuation">(</span>
+    <span class="token namespace">bdk<span class="token punctuation">::</span></span><span class="token macro property">descriptor!</span><span class="token punctuation">(</span><span class="token function">tr</span><span class="token punctuation">(</span>unspendable_key<span class="token punctuation">,</span><span class="token function">multi_a</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span>taproot_key<span class="token punctuation">,</span>taproot_key_2<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">,</span>
+    <span class="token class-name">None</span><span class="token punctuation">,</span>
+    <span class="token class-name">Network</span><span class="token punctuation">::</span><span class="token class-name">Bitcoin</span><span class="token punctuation">,</span>
+    <span class="token class-name">MemoryDatabase</span><span class="token punctuation">::</span><span class="token function">new</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token class-name">Arc</span><span class="token punctuation">::</span><span class="token function">clone</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>blockchain<span class="token punctuation">)</span><span class="token punctuation">,</span>
+<span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">;</span>
+
+wallet<span class="token punctuation">.</span><span class="token function">sync</span><span class="token punctuation">(</span><span class="token function">noop_progress</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">None</span><span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">;</span>
+<span class="token macro property">println!</span><span class="token punctuation">(</span><span class="token string">&quot;wallet balance: {}&quot;</span><span class="token punctuation">,</span> wallet<span class="token punctuation">.</span><span class="token function">get_balance</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> <span class="token punctuation">(</span><span class="token keyword">mut</span> psbt<span class="token punctuation">,</span> details<span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token keyword">let</span> <span class="token keyword">mut</span> builder <span class="token operator">=</span> wallet<span class="token punctuation">.</span><span class="token function">build_tx</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    builder
+        <span class="token punctuation">.</span><span class="token function">drain_to</span><span class="token punctuation">(</span>p2pkh_addr<span class="token punctuation">.</span><span class="token function">script_pubkey</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token punctuation">.</span><span class="token function">add_data</span><span class="token punctuation">(</span><span class="token string">&quot;gm taproot \u{1F955} https://bitcoindevkit.org&quot;</span><span class="token punctuation">.</span><span class="token function">as_bytes</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token punctuation">.</span><span class="token function">ordering</span><span class="token punctuation">(</span><span class="token class-name">TxOrdering</span><span class="token punctuation">::</span><span class="token class-name">Untouched</span><span class="token punctuation">)</span>
+        <span class="token punctuation">.</span><span class="token function">drain_wallet</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token punctuation">.</span><span class="token function">enable_rbf</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token punctuation">.</span><span class="token function">fee_rate</span><span class="token punctuation">(</span>fee_rate<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    builder<span class="token punctuation">.</span><span class="token function">finish</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">?</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token macro property">assert!</span><span class="token punctuation">(</span>wallet<span class="token punctuation">.</span><span class="token function">sign</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token keyword">mut</span> psbt<span class="token punctuation">,</span> <span class="token class-name">SignOptions</span><span class="token punctuation">::</span><span class="token function">default</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+wallet<span class="token punctuation">.</span><span class="token function">broadcast</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>psbt<span class="token punctuation">.</span><span class="token function">extract_tx</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">?</span><span class="token punctuation">;</span>
+</code></pre></div></div> <footer class="page-edit"><div class="edit-link"><a href="https://github.com/bitcoindevkit/bitcoindevkit.org/edit/master/docs/_blog/first_bdk_taproot_tx_part_2.md" target="_blank" rel="noopener noreferrer">Edit this page</a> <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></div> <div class="last-updated"><span class="prefix">Last Updated:</span> <span class="time">12/11/2021, 12:55:01 AM</span></div></footer> <!----> </main></div></div> <footer class="footer" data-v-9ca807bc><div class="wrap"><div class="wrap-border"><div class="inner"><div class="footer-content"><div class="footer-block"><h4>Docs</h4> <div><a href="/getting-started/" class="nav-link">
+  Getting Started
+</a></div><div><a href="/bdk-cli/installation/" class="nav-link">
+  BDK-CLI
+</a></div><div><a href="/descriptors/" class="nav-link">
+  Descriptors
+</a></div></div><div class="footer-block"><h4>Community</h4> <div><a href="https://github.com/bitcoindevkit" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div><a href="https://twitter.com/intent/follow?screen_name=bitcoindevkit" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Twitter
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div><a href="https://discord.gg/dstn4dQ" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Chat on Discord
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div></div><div class="footer-block"><h4>More</h4> <div><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div><div><a href="/supporters/" class="nav-link">
+  Supporters
+</a></div></div></div> <p class="copyright">Copyright © 2021 BDK Developers</p></div></div></div></footer></div><div class="global-ui"></div></div>
+    <script src="/assets/js/app.2556ec59.js" defer></script><script src="/assets/js/8.cbf41989.js" defer></script><script src="/assets/js/1.e424882b.js" defer></script><script src="/assets/js/24.dd41f47c.js" defer></script>
+  </body>
+</html>
