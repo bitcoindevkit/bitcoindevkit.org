@@ -632,7 +632,9 @@ rust-miniscript was pushing them in reverse order, so script validation was alwa
 
 And that was it! We now have a fully working [rust-bitcoin] and [rust-miniscript] ready for Taproot.
 
-In Part 2 I will go over the code changes in BDK, but I think it's now time for you and I to take a break :)
+In [Part 2] I will go over the code changes in BDK, but I think it's now time for you and I to take a break :)
+
+[Part 2]: /blog/2021/12/first-bdk-taproot-tx-look-at-the-code-part-2
 
 [first-mainnet-tx]: https://twitter.com/afilini/status/1459763243556163584
 [first-ever-use-checksigadd]: https://twitter.com/afilini/status/1459774394054725634
