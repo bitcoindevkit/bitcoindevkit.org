@@ -34,7 +34,7 @@ const docsSidebar = [
     collapsable: false,
     children: [
       ['https://docs.rs/bdk/', 'Stable Docs'],
-      ['https://bitcoindevkit.org/docs-rs/bdk/nightly/latest/bdk/', 'Nightliy Docs']
+      ['https://bitcoindevkit.org/docs-rs/bdk/nightly/latest/bdk/', 'Nightly Docs']
     ],
   }
 ]
