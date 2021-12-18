@@ -50,7 +50,7 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 | Operator | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
 | `pk()` | ✓ | ✓ | ✓ |
-| `pk_h()` | ✓ | ✓ | ✓ - as `pkh()` |
+| `pkh()` | ✓ | ✓ | ✓ |
 | `older()` | ✓ | ✓ | ✗  |
 | `after()` | ✓ | ✓ | ✗  |
 | `sha256()` | ✓ | ✓ | ✗  |
