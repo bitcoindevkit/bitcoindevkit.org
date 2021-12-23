@@ -26,8 +26,11 @@ Once Cargo is installed, you can proceed to install the interactive `bdk-cli` to
 the GitHub repository, by running:
 
 ```bash
-# all features
-cargo install --git https://github.com/bitcoindevkit/bdk-cli --features=esplora,compiler
+# all features with the blocking esplora client 
+cargo install --git https://github.com/bitcoindevkit/bdk-cli --features=esplora-ureq,compiler
+
+# all features with the async esplora client 
+cargo install --git https://github.com/bitcoindevkit/bdk-cli --features=esplora-reqwest,compiler
 
 # minimal install
 cargo install --git https://github.com/bitcoindevkit/bdk-cli
