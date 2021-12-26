@@ -14,7 +14,7 @@ Just like before, this command will probably take a while to finish.
 Once it's done, assuming you have a regtest bitcoind running in background, you can launch a new terminal and run the following command to actually start electrs:
 
 ```bash
-electrs -vv --timestamp --db-dir /tmp/electrs-db --electrum-rpc-addr="127.0.0.1:50001" --network=regtest --cookie-file=$HOME/.bitcoin/regtest/.cookie
+electrs --log-filters INFO --timestamp --db-dir /tmp/electrs-db --electrum-rpc-addr="127.0.0.1:50001" --network=regtest --cookie-file=$HOME/.bitcoin/regtest/.cookie
 ```
 
 on macOS you should change the cookie-file to `$HOME/Library/Application Support/Bitcoin/regtest/.cookie`.
