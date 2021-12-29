@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;database&#x2F;keyvalue.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>keyvalue.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../bdk/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;database&#x2F;keyvalue.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>keyvalue.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a class="sidebar-logo" href="../../../bdk/index.html"><div class="logo-container"><img src="https:&#x2F;&#x2F;github.com&#x2F;bitcoindevkit&#x2F;bdk&#x2F;raw&#x2F;master&#x2F;static&#x2F;bdk.png" alt="logo"></div>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../bdk/index.html"><img src="https:&#x2F;&#x2F;github.com&#x2F;bitcoindevkit&#x2F;bdk&#x2F;raw&#x2F;master&#x2F;static&#x2F;bdk.png" alt="logo"></a><nav class="sub"><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -471,6 +473,34 @@
 <span id="471">471</span>
 <span id="472">472</span>
 <span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -491,13 +521,13 @@
 <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">OutPoint</span>, <span class="ident">Script</span>, <span class="ident">Transaction</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::memory::MapKey</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">Database</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">Database</span>, <span class="ident">SyncTime</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::Error</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::types</span>::<span class="kw-2">*</span>;
 
 <span class="macro">macro_rules!</span> <span class="ident">impl_batch_operations</span> {
-    ( { $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">after_insert</span>:<span class="ident">tt</span>)<span class="op">*</span> }, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">process_delete</span>:<span class="ident">ident</span> ) <span class="op">=</span><span class="op">&gt;</span> {
-        <span class="kw">fn</span> <span class="ident">set_script_pubkey</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>, <span class="ident">path</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    ( { $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">after_insert</span>:<span class="ident">tt</span>)<span class="op">*</span> }, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">process_delete</span>:<span class="ident">ident</span> ) =&gt; {
+        <span class="kw">fn</span> <span class="ident">set_script_pubkey</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>, <span class="ident">path</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Path</span>((<span class="prelude-val">Some</span>(<span class="ident">keychain</span>), <span class="prelude-val">Some</span>(<span class="ident">path</span>))).<span class="ident">as_map_key</span>();
             <span class="self">self</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">serialize</span>(<span class="ident">script</span>))$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">after_insert</span>)<span class="kw-2">*</span>;
 
@@ -511,7 +541,7 @@
             <span class="prelude-val">Ok</span>(())
         }
 
-        <span class="kw">fn</span> <span class="ident">set_utxo</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">utxo</span>: <span class="kw-2">&amp;</span><span class="ident">LocalUtxo</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">set_utxo</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">utxo</span>: <span class="kw-2">&amp;</span><span class="ident">LocalUtxo</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Utxo</span>(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">utxo</span>.<span class="ident">outpoint</span>)).<span class="ident">as_map_key</span>();
             <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="macro">json!</span>({
                 <span class="string">&quot;t&quot;</span>: <span class="ident">utxo</span>.<span class="ident">txout</span>,
@@ -522,7 +552,7 @@
             <span class="prelude-val">Ok</span>(())
         }
 
-        <span class="kw">fn</span> <span class="ident">set_raw_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">Transaction</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">set_raw_tx</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">Transaction</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::RawTx</span>(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">transaction</span>.<span class="ident">txid</span>())).<span class="ident">as_map_key</span>();
             <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">serialize</span>(<span class="ident">transaction</span>);
             <span class="self">self</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">value</span>)$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">after_insert</span>)<span class="kw-2">*</span>;
@@ -530,7 +560,7 @@
             <span class="prelude-val">Ok</span>(())
         }
 
-        <span class="kw">fn</span> <span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">TransactionDetails</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">set_tx</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">transaction</span>: <span class="kw-2">&amp;</span><span class="ident">TransactionDetails</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Transaction</span>(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">transaction</span>.<span class="ident">txid</span>)).<span class="ident">as_map_key</span>();
 
             <span class="comment">// remove the raw tx from the serialized version</span>
@@ -548,14 +578,21 @@
             <span class="prelude-val">Ok</span>(())
         }
 
-        <span class="kw">fn</span> <span class="ident">set_last_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>, <span class="ident">value</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">set_last_index</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>, <span class="ident">value</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::LastIndex</span>(<span class="ident">keychain</span>).<span class="ident">as_map_key</span>();
             <span class="self">self</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="kw-2">&amp;</span><span class="ident">value</span>.<span class="ident">to_be_bytes</span>())$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">after_insert</span>)<span class="kw-2">*</span>;
 
             <span class="prelude-val">Ok</span>(())
         }
 
-        <span class="kw">fn</span> <span class="ident">del_script_pubkey_from_path</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>, <span class="ident">path</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">set_sync_time</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="ident">SyncTime</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::SyncTime</span>.<span class="ident">as_map_key</span>();
+            <span class="self">self</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">serde_json::to_vec</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>)<span class="question-mark">?</span>)$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">after_insert</span>)<span class="kw-2">*</span>;
+
+            <span class="prelude-val">Ok</span>(())
+        }
+
+        <span class="kw">fn</span> <span class="ident">del_script_pubkey_from_path</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>, <span class="ident">path</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Path</span>((<span class="prelude-val">Some</span>(<span class="ident">keychain</span>), <span class="prelude-val">Some</span>(<span class="ident">path</span>))).<span class="ident">as_map_key</span>();
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">remove</span>(<span class="ident">key</span>);
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro">process_delete!</span>(<span class="macro-nonterminal">res</span>);
@@ -563,14 +600,14 @@
             <span class="prelude-val">Ok</span>(<span class="ident">res</span>.<span class="ident">map_or</span>(<span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>), <span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">x</span>)).<span class="ident">transpose</span>())<span class="question-mark">?</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">del_path_from_script_pubkey</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">KeychainKind</span>, <span class="ident">u32</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">del_path_from_script_pubkey</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">KeychainKind</span>, <span class="ident">u32</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Script</span>(<span class="prelude-val">Some</span>(<span class="ident">script</span>)).<span class="ident">as_map_key</span>();
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">remove</span>(<span class="ident">key</span>);
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro">process_delete!</span>(<span class="macro-nonterminal">res</span>);
 
             <span class="kw">match</span> <span class="ident">res</span> {
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-                <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+                <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; {
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">val</span>: <span class="ident">serde_json::Value</span> <span class="op">=</span> <span class="ident">serde_json::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>)<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">st</span> <span class="op">=</span> <span class="ident">serde_json::from_value</span>(<span class="ident">val</span>[<span class="string">&quot;t&quot;</span>].<span class="ident">take</span>())<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">serde_json::from_value</span>(<span class="ident">val</span>[<span class="string">&quot;p&quot;</span>].<span class="ident">take</span>())<span class="question-mark">?</span>;
@@ -580,14 +617,14 @@
             }
         }
 
-        <span class="kw">fn</span> <span class="ident">del_utxo</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">outpoint</span>: <span class="kw-2">&amp;</span><span class="ident">OutPoint</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">del_utxo</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">outpoint</span>: <span class="kw-2">&amp;</span><span class="ident">OutPoint</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Utxo</span>(<span class="prelude-val">Some</span>(<span class="ident">outpoint</span>)).<span class="ident">as_map_key</span>();
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">remove</span>(<span class="ident">key</span>);
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro">process_delete!</span>(<span class="macro-nonterminal">res</span>);
 
             <span class="kw">match</span> <span class="ident">res</span> {
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-                <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+                <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; {
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">val</span>: <span class="ident">serde_json::Value</span> <span class="op">=</span> <span class="ident">serde_json::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>)<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">txout</span> <span class="op">=</span> <span class="ident">serde_json::from_value</span>(<span class="ident">val</span>[<span class="string">&quot;t&quot;</span>].<span class="ident">take</span>())<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">keychain</span> <span class="op">=</span> <span class="ident">serde_json::from_value</span>(<span class="ident">val</span>[<span class="string">&quot;i&quot;</span>].<span class="ident">take</span>())<span class="question-mark">?</span>;
@@ -597,7 +634,7 @@
             }
         }
 
-        <span class="kw">fn</span> <span class="ident">del_raw_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">del_raw_tx</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::RawTx</span>(<span class="prelude-val">Some</span>(<span class="ident">txid</span>)).<span class="ident">as_map_key</span>();
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">remove</span>(<span class="ident">key</span>);
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro">process_delete!</span>(<span class="macro-nonterminal">res</span>);
@@ -605,7 +642,7 @@
             <span class="prelude-val">Ok</span>(<span class="ident">res</span>.<span class="ident">map_or</span>(<span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>), <span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">x</span>)).<span class="ident">transpose</span>())<span class="question-mark">?</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">del_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>, <span class="ident">include_raw</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">del_tx</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>, <span class="ident">include_raw</span>: <span class="ident">bool</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">raw_tx</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">include_raw</span> {
                 <span class="self">self</span>.<span class="ident">del_raw_tx</span>(<span class="ident">txid</span>)<span class="question-mark">?</span>
             } <span class="kw">else</span> {
@@ -617,8 +654,8 @@
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro">process_delete!</span>(<span class="macro-nonterminal">res</span>);
 
             <span class="kw">match</span> <span class="ident">res</span> {
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-                <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+                <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; {
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">val</span>: <span class="ident">TransactionDetails</span> <span class="op">=</span> <span class="ident">serde_json::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>)<span class="question-mark">?</span>;
                     <span class="ident">val</span>.<span class="ident">transaction</span> <span class="op">=</span> <span class="ident">raw_tx</span>;
 
@@ -627,25 +664,33 @@
             }
         }
 
-        <span class="kw">fn</span> <span class="ident">del_last_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">del_last_index</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::LastIndex</span>(<span class="ident">keychain</span>).<span class="ident">as_map_key</span>();
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">remove</span>(<span class="ident">key</span>);
             <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro">process_delete!</span>(<span class="macro-nonterminal">res</span>);
 
             <span class="kw">match</span> <span class="ident">res</span> {
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-                <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+                <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">array</span>: [<span class="ident">u8</span>; <span class="number">4</span>] <span class="op">=</span> <span class="ident">b</span>.<span class="ident">as_ref</span>().<span class="ident">try_into</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Error::InvalidU32Bytes</span>(<span class="ident">b</span>.<span class="ident">to_vec</span>()))<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident">u32::from_be_bytes</span>(<span class="ident">array</span>);
                     <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">val</span>))
                 }
             }
         }
+
+        <span class="kw">fn</span> <span class="ident">del_sync_time</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SyncTime</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::SyncTime</span>.<span class="ident">as_map_key</span>();
+            <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">remove</span>(<span class="ident">key</span>);
+            <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro">process_delete!</span>(<span class="macro-nonterminal">res</span>);
+
+            <span class="prelude-val">Ok</span>(<span class="ident">res</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">serde_json::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>)).<span class="ident">transpose</span>()<span class="question-mark">?</span>)
+        }
     }
 }
 
 <span class="macro">macro_rules!</span> <span class="ident">process_delete_tree</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">res</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">res</span>:<span class="ident">expr</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro-nonterminal">res</span><span class="question-mark">?</span>
     };
 }
@@ -654,7 +699,7 @@
 }
 
 <span class="macro">macro_rules!</span> <span class="ident">process_delete_batch</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">res</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">res</span>:<span class="ident">expr</span>) =&gt; {
         <span class="prelude-val">None</span> <span class="kw">as</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">sled::IVec</span><span class="op">&gt;</span>
     };
 }
@@ -665,15 +710,15 @@
 
 <span class="kw">impl</span> <span class="ident">Database</span> <span class="kw">for</span> <span class="ident">Tree</span> {
     <span class="kw">fn</span> <span class="ident">check_descriptor_checksum</span><span class="op">&lt;</span><span class="ident">B</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span><span class="op">&gt;</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
         <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
         <span class="ident">bytes</span>: <span class="ident">B</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::DescriptorChecksum</span>(<span class="ident">keychain</span>).<span class="ident">as_map_key</span>();
 
         <span class="kw">let</span> <span class="ident">prev</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>)<span class="question-mark">?</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">to_vec</span>());
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">prev</span> {
-            <span class="kw">if</span> <span class="ident">val</span> <span class="op">=</span><span class="op">=</span> <span class="ident">bytes</span>.<span class="ident">as_ref</span>() {
+            <span class="kw">if</span> <span class="ident">val</span> <span class="op">==</span> <span class="ident">bytes</span>.<span class="ident">as_ref</span>() {
                 <span class="prelude-val">Ok</span>(())
             } <span class="kw">else</span> {
                 <span class="prelude-val">Err</span>(<span class="ident">Error::ChecksumMismatch</span>)
@@ -684,20 +729,20 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">iter_script_pubkeys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">KeychainKind</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">iter_script_pubkeys</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">KeychainKind</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Path</span>((<span class="ident">keychain</span>, <span class="prelude-val">None</span>)).<span class="ident">as_map_key</span>();
         <span class="self">self</span>.<span class="ident">scan_prefix</span>(<span class="ident">key</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">v</span>) <span class="op">=</span> <span class="ident">x</span><span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>)<span class="question-mark">?</span>)
             })
             .<span class="ident">collect</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">iter_utxos</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">iter_utxos</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Utxo</span>(<span class="prelude-val">None</span>).<span class="ident">as_map_key</span>();
         <span class="self">self</span>.<span class="ident">scan_prefix</span>(<span class="ident">key</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> (<span class="ident">k</span>, <span class="ident">v</span>) <span class="op">=</span> <span class="ident">x</span><span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">outpoint</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">k</span>[<span class="number">1</span>..])<span class="question-mark">?</span>;
 
@@ -714,20 +759,20 @@
             .<span class="ident">collect</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">iter_raw_txs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">iter_raw_txs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::RawTx</span>(<span class="prelude-val">None</span>).<span class="ident">as_map_key</span>();
         <span class="self">self</span>.<span class="ident">scan_prefix</span>(<span class="ident">key</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">v</span>) <span class="op">=</span> <span class="ident">x</span><span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>)<span class="question-mark">?</span>)
             })
             .<span class="ident">collect</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">iter_txs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">include_raw</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">iter_txs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">include_raw</span>: <span class="ident">bool</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Transaction</span>(<span class="prelude-val">None</span>).<span class="ident">as_map_key</span>();
         <span class="self">self</span>.<span class="ident">scan_prefix</span>(<span class="ident">key</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> (<span class="ident">k</span>, <span class="ident">v</span>) <span class="op">=</span> <span class="ident">x</span><span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">txdetails</span>: <span class="ident">TransactionDetails</span> <span class="op">=</span> <span class="ident">serde_json::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>)<span class="question-mark">?</span>;
                 <span class="kw">if</span> <span class="ident">include_raw</span> {
@@ -744,7 +789,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
         <span class="ident">path</span>: <span class="ident">u32</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Script</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Path</span>((<span class="prelude-val">Some</span>(<span class="ident">keychain</span>), <span class="prelude-val">Some</span>(<span class="ident">path</span>))).<span class="ident">as_map_key</span>();
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">get</span>(<span class="ident">key</span>)<span class="question-mark">?</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>)).<span class="ident">transpose</span>()<span class="question-mark">?</span>)
     }
@@ -752,10 +797,10 @@
     <span class="kw">fn</span> <span class="ident">get_path_from_script_pubkey</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">KeychainKind</span>, <span class="ident">u32</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">KeychainKind</span>, <span class="ident">u32</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Script</span>(<span class="prelude-val">Some</span>(<span class="ident">script</span>)).<span class="ident">as_map_key</span>();
         <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">key</span>)<span class="question-mark">?</span>
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">val</span>: <span class="ident">serde_json::Value</span> <span class="op">=</span> <span class="ident">serde_json::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">st</span> <span class="op">=</span> <span class="ident">serde_json::from_value</span>(<span class="ident">val</span>[<span class="string">&quot;t&quot;</span>].<span class="ident">take</span>())<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">serde_json::from_value</span>(<span class="ident">val</span>[<span class="string">&quot;p&quot;</span>].<span class="ident">take</span>())<span class="question-mark">?</span>;
@@ -765,10 +810,10 @@
             .<span class="ident">transpose</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">get_utxo</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">outpoint</span>: <span class="kw-2">&amp;</span><span class="ident">OutPoint</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_utxo</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">outpoint</span>: <span class="kw-2">&amp;</span><span class="ident">OutPoint</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Utxo</span>(<span class="prelude-val">Some</span>(<span class="ident">outpoint</span>)).<span class="ident">as_map_key</span>();
         <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">key</span>)<span class="question-mark">?</span>
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">val</span>: <span class="ident">serde_json::Value</span> <span class="op">=</span> <span class="ident">serde_json::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>)<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">txout</span> <span class="op">=</span> <span class="ident">serde_json::from_value</span>(<span class="ident">val</span>[<span class="string">&quot;t&quot;</span>].<span class="ident">take</span>())<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">keychain</span> <span class="op">=</span> <span class="ident">serde_json::from_value</span>(<span class="ident">val</span>[<span class="string">&quot;i&quot;</span>].<span class="ident">take</span>())<span class="question-mark">?</span>;
@@ -782,15 +827,15 @@
             .<span class="ident">transpose</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">get_raw_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_raw_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Transaction</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::RawTx</span>(<span class="prelude-val">Some</span>(<span class="ident">txid</span>)).<span class="ident">as_map_key</span>();
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">get</span>(<span class="ident">key</span>)<span class="question-mark">?</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>)).<span class="ident">transpose</span>()<span class="question-mark">?</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>, <span class="ident">include_raw</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="kw-2">&amp;</span><span class="ident">Txid</span>, <span class="ident">include_raw</span>: <span class="ident">bool</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TransactionDetails</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::Transaction</span>(<span class="prelude-val">Some</span>(<span class="ident">txid</span>)).<span class="ident">as_map_key</span>();
         <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">key</span>)<span class="question-mark">?</span>
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">txdetails</span>: <span class="ident">TransactionDetails</span> <span class="op">=</span> <span class="ident">serde_json::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>)<span class="question-mark">?</span>;
                 <span class="kw">if</span> <span class="ident">include_raw</span> {
                     <span class="ident">txdetails</span>.<span class="ident">transaction</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_raw_tx</span>(<span class="ident">txid</span>)<span class="question-mark">?</span>;
@@ -801,10 +846,10 @@
             .<span class="ident">transpose</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">get_last_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_last_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::LastIndex</span>(<span class="ident">keychain</span>).<span class="ident">as_map_key</span>();
         <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">key</span>)<span class="question-mark">?</span>
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">array</span>: [<span class="ident">u8</span>; <span class="number">4</span>] <span class="op">=</span> <span class="ident">b</span>
                     .<span class="ident">as_ref</span>()
                     .<span class="ident">try_into</span>()
@@ -815,23 +860,31 @@
             .<span class="ident">transpose</span>()
     }
 
+    <span class="kw">fn</span> <span class="ident">get_sync_time</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SyncTime</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::SyncTime</span>.<span class="ident">as_map_key</span>();
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>
+            .<span class="ident">get</span>(<span class="ident">key</span>)<span class="question-mark">?</span>
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">serde_json::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>))
+            .<span class="ident">transpose</span>()<span class="question-mark">?</span>)
+    }
+
     <span class="comment">// inserts 0 if not present</span>
-    <span class="kw">fn</span> <span class="ident">increment_last_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">increment_last_index</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">MapKey::LastIndex</span>(<span class="ident">keychain</span>).<span class="ident">as_map_key</span>();
         <span class="self">self</span>.<span class="ident">update_and_fetch</span>(<span class="ident">key</span>, <span class="op">|</span><span class="ident">prev</span><span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">new</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">prev</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">b</span>) =&gt; {
                     <span class="kw">let</span> <span class="ident">array</span>: [<span class="ident">u8</span>; <span class="number">4</span>] <span class="op">=</span> <span class="ident">b</span>.<span class="ident">try_into</span>().<span class="ident">unwrap_or</span>([<span class="number">0</span>; <span class="number">4</span>]);
                     <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident">u32::from_be_bytes</span>(<span class="ident">array</span>);
 
                     <span class="ident">val</span> <span class="op">+</span> <span class="number">1</span>
                 }
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
+                <span class="prelude-val">None</span> =&gt; <span class="number">0</span>,
             };
 
             <span class="prelude-val">Some</span>(<span class="ident">new</span>.<span class="ident">to_be_bytes</span>().<span class="ident">to_vec</span>())
         })<span class="question-mark">?</span>
-        .<span class="ident">map_or</span>(<span class="prelude-val">Ok</span>(<span class="number">0</span>), <span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        .<span class="ident">map_or</span>(<span class="prelude-val">Ok</span>(<span class="number">0</span>), <span class="op">|</span><span class="ident">b</span><span class="op">|</span> -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">array</span>: [<span class="ident">u8</span>; <span class="number">4</span>] <span class="op">=</span> <span class="ident">b</span>
                 .<span class="ident">as_ref</span>()
                 .<span class="ident">try_into</span>()
@@ -841,7 +894,7 @@
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">Tree::flush</span>(<span class="self">self</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ())<span class="question-mark">?</span>)
     }
 }
@@ -849,11 +902,11 @@
 <span class="kw">impl</span> <span class="ident">BatchDatabase</span> <span class="kw">for</span> <span class="ident">Tree</span> {
     <span class="kw">type</span> <span class="ident">Batch</span> <span class="op">=</span> <span class="ident">sled::Batch</span>;
 
-    <span class="kw">fn</span> <span class="ident">begin_batch</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident"><span class="self">Self</span>::Batch</span> {
+    <span class="kw">fn</span> <span class="ident">begin_batch</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Batch</span> {
         <span class="ident">sled::Batch::default</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">commit_batch</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">batch</span>: <span class="ident"><span class="self">Self</span>::Batch</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">commit_batch</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">batch</span>: <span class="ident"><span class="self">Self</span>::Batch</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">apply_batch</span>(<span class="ident">batch</span>)<span class="question-mark">?</span>)
     }
 }
@@ -874,7 +927,7 @@
         <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">INIT</span>: <span class="ident">Once</span> <span class="op">=</span> <span class="ident">Once::new</span>();
     }
 
-    <span class="kw">fn</span> <span class="ident">get_tree</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Tree</span> {
+    <span class="kw">fn</span> <span class="ident">get_tree</span>() -&gt; <span class="ident">Tree</span> {
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="ident">cloned</span> <span class="op">=</span> <span class="ident">DB</span>.<span class="ident">clone</span>();
             <span class="kw">let</span> (<span class="ident">mutex</span>, <span class="ident">cvar</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">cloned</span>;
@@ -943,8 +996,12 @@
     <span class="kw">fn</span> <span class="ident">test_last_index</span>() {
         <span class="ident"><span class="kw">crate</span>::database::test::test_last_index</span>(<span class="ident">get_tree</span>());
     }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_sync_time</span>() {
+        <span class="ident"><span class="kw">crate</span>::database::test::test_sync_time</span>(<span class="ident">get_tree</span>());
+    }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="bdk" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
-    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="bdk" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0-nightly (83b15bfe1 2021-12-28)" ></div>
 </body></html>
