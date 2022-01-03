@@ -10,7 +10,7 @@ draft: false
 ---
 
 ### Introduction
-BDK wallet developer library can be used to easily deploy wallets with various kinds of blockchain backend support, like `electrum`, `explora`, `compact-filters` ([BIP157](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki)) etc. With the latest release of BDK [`v0.10.0`](https://github.com/bitcoindevkit/bdk/releases/tag/v0.10.0), BDK now supports Bitcoin Core as a blockchain backend. BDK talks with Bitcoin Core using rust-bitcoin's [bitcoincore-rpc](https://github.com/rust-bitcoin/rust-bitcoincore-rpc) library.
+BDK wallet developer library can be used to easily deploy wallets with various kinds of blockchain backend support, like [`electrum`](https://github.com/romanz/electrs), [`esplora`](https://github.com/Blockstream/esplora), `compact-filters` ([BIP157](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki)) etc. With the latest release of BDK [`v0.10.0`](https://github.com/bitcoindevkit/bdk/releases/tag/v0.10.0), BDK now supports Bitcoin Core as a blockchain backend. BDK talks with Bitcoin Core using rust-bitcoin's [bitcoincore-rpc](https://github.com/rust-bitcoin/rust-bitcoincore-rpc) library.
 
 This allows wallet devs to quickly deploy their wallet that can talk to a bitcoin full node (home raspi nodes) out of the box. Wallet devs don't need to worry about connecting to a full node with correct RPC calls, all of that is handled by BDK under the hood. All they need is to identify the full node's RPC IP address and the correct RPC credentials.
 
@@ -83,7 +83,7 @@ edition = "2018"
 ### Setting dependencies
 Once the rust binary is compiled and running, we now need to specify the dependencies we need to work on our library.
 
-Remember that BDK provided almost everything we would need to build a wallet out of box. So we don't need any more dependencies apart from BDK. We will use another small rust crate called `dirs_next` to find our home directory and store wallet files in subfolder.
+Remember that BDK provides almost everything we would need to build a wallet out of the box. So we don't need any more dependencies apart from BDK. We will use another small rust crate called [`dirs_next`](https://crates.io/crates/dirs-next) to find our home directory and store wallet files in a subfolder there.
 
 Add the dependencies into `Cargo.toml` like below
 ```toml
@@ -136,7 +136,7 @@ With this we are now ready to add our wallet code.
 BDK is a descriptor based wallet library. That means when we specify our wallet key-chain we need to tell BDK about it in the format of a descriptor. You can read up on descriptors more [here](https://bitcoindevkit.org/descriptors/). A descriptor string looks like this
 `"wpkh([b8b575c2/84'/1'/0'/0]tprv8icWtRzy9CWgFxpGMLSdAeE4wWyz39XGc6SwykeTo13tYm14JkVVQAf7jz8WDDarCgNJrG3aEPJEqchDWeJdiaWpS3FwbLB9SzsN57V7qxB/*)"`.
 
-This describes a SegwitV0 descriptor of a key derived at path `m/84'/1'/0'/0`. If you already have a descriptor from other sources, you can use that. Otherwise, BDK is there to hold you back. BDK can be used to generate a fresh master key with mnemonic, and then derive child keys from it given a specific path. Putting the key in a descriptor is as simple as wrapping it with a `wpkh()` string.
+This describes a SegwitV0 descriptor of a key derived at path `m/84'/1'/0'/0`. If you already have a descriptor from other sources, you can use that. Otherwise, BDK has your back. BDK can be used to generate a fresh master key with mnemonic, and then derive child keys from it given a specific path. Putting the key in a descriptor is as simple as wrapping it with a `wpkh()` string.
 
 We will use a dedicated function that will create fresh receive and change descriptors from BDK for our purpose. It will also generate the mnemonic word list for later regenerating the wallet. But we will ignore that for our scope.
 
@@ -162,7 +162,7 @@ fn get_descriptors() -> (String, String) {
     let xprv = xkey.into_xprv(Network::Regtest).unwrap();
 
     // Create derived privkey from the above master privkey
-    // We use the following derivation paths for recieve and change keys
+    // We use the following derivation paths for receive and change keys
     // receive: "m/84h/1h/0h/0"
     // change: "m/84h/1h/0h/1" 
     let mut keys = Vec::new();
