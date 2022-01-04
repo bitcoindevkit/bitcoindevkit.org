@@ -3,7 +3,7 @@
 ## Introduction
 
 This article should serve as a "getting started" guide for developers who are considering integrating BDK in their projects: it tries to introduce the reader to the basic concepts behind the library and some of its
-modules and components that can be used to build a very simple functioning Bitcoin wallet. All the information written in this article are valid for the current `master` git branch and latest version `bdk = 0.12.0`.
+modules and components that can be used to build a very simple functioning Bitcoin wallet. All the information written in this article are valid for the latest [published version](https://docs.rs/bdk/latest/bdk/).
 
 ## Design Goals
 
@@ -171,7 +171,7 @@ And then broadcast it:
 // ...
 
 let raw_transaction = psbt.extract_tx();
-let txid = wallet.broadcast(raw_transaction)?;
+let txid = wallet.broadcast(&raw_transaction)?;
 println!(
     "Transaction sent! TXID: {txid}.\nExplorer URL: https://blockstream.info/testnet/tx/{txid}",
     txid = txid
