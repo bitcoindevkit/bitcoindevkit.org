@@ -11,7 +11,9 @@ permalink: "/blog/2020/12/hello-world/"
 ## Introduction
 
 This article should serve as a "getting started" guide for developers who are considering integrating BDK in their projects: it tries to introduce the reader to the basic concepts behind the library and some of its
-modules and components that can be used to build a very simple functioning Bitcoin wallet. All the information written in this article are valid for the current `master` git branch and `bdk = 0.12.0`.
+modules and components that can be used to build a very simple functioning Bitcoin wallet. All the information written in this article are valid for `bdk = 0.12.0`.
+
+NOTE: See the ["Hello World"](/tutorials/hello-world/) tutorial for a version of this post updated to work with the latest BDK version.
 
 ## Design Goals
 
