@@ -41,15 +41,13 @@ A few tools to quickly generate, restore and derive HD keys.
 
 | Command | Description |
 | ------- | ----------- |
-| [generate](#generate)         | Generates new random seed mnemonic phrase and corresponding master extended key |
-| [restore](#restore)         | Restore a master extended key from seed backup mnemonic words |
-| [derive](#derive)      | Derive a child key pair from a master extended key and a derivation path string (eg. "m/84'/1'/0'/0"
-                or "m/84h/1h/0h/0") |
-
+| [generate](#generate)  | Generates new random seed mnemonic phrase and corresponding master extended key |
+| [restore](#restore)    | Restore a master extended key from seed backup mnemonic words |
+| [derive](#derive)      | Derive a child key pair from a master extended key and a derivation path string (eg. "m/84'/1'/0'/0" or "m/84h/1h/0h/0") |
 
 ### generate
 
-```text
+```bash
 OPTIONS:
     -p, --password <PASSWORD>     Seed password
     -e, --entropy <WORD_COUNT>    Entropy level based on number of random seed mnemonic words [default: 24]  [possible
@@ -61,7 +59,7 @@ Creates a BIP32 HD wallet seed and output BIP39 mnemonic words. Outputs an xprv 
 
 ### restore 
 
-```text
+```bash
 
 OPTIONS:
     -m, --mnemonic <MNEMONIC>    Seed mnemonic words, must be quoted (eg. "word1 word2 ...")
@@ -74,7 +72,7 @@ Recovers a BIP32 HD wallet seed from BIP39 mnemonic words. Same output as genera
 
 ### derive 
 
-```text
+```bash
 
 OPTIONS:
     -p, --path <PATH>    Path to use to derive extended public key from extended private key
@@ -110,7 +108,7 @@ These are the main "functions" of the wallet. Most of them are pretty self expla
 
 ### Options
 
-```text
+```bash
 OPTIONS:
     -c, --change_descriptor <CHANGE_DESCRIPTOR>        Sets the descriptor to use for internal addresses
     -d, --descriptor <DESCRIPTOR>                      Sets the descriptor to use for the external addresses

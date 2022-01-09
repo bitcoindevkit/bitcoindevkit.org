@@ -9,7 +9,7 @@ follow their instructions, after which you can test if everything went fine by r
 `cargo version`, which should print something like:
 
 ```
-cargo 1.53.0 (53cb7b09b 2021-06-17)
+cargo 1.56.0 (4ed5d137b 2021-10-04)
 ```
 
 If you really don't want to pipe the output of `curl` into `sh`, you can also try using a
@@ -41,7 +41,7 @@ This command may take a while to finish, since it will fetch and compile all the
 Once it's done, you can check if everything went fine by running `bdk-cli --help` which should print something like this:
 
 ```bash
-BDK CLI 0.2.1-dev
+BDK CLI 0.3.1-dev
 Alekos Filini <alekos.filini@gmail.com>:Riccardo Casatta <riccardo@casatta.it>:Steve Myers <steve@notmandatory.org>
 Top level options and command modes
 
