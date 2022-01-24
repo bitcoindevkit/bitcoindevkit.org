@@ -14,9 +14,9 @@ The Bitcoin Dev Kit project is proudly supported by:
     </a>
   </div>
   <div class="row">
-    <a href="https://squarecrypto.org/" target="_blank" rel="nofollow noopener">
-        <img src="/img/squarecrypto.svg" alt="Sponsor Square Crypto">
-        Square Crypto
+    <a href="https://spiral.xyz/" target="_blank" rel="nofollow noopener">
+        <img src="/img/spiral.svg" alt="Sponsor Spiral">
+        Spiral
     </a>
   </div>
   <div class="row">
