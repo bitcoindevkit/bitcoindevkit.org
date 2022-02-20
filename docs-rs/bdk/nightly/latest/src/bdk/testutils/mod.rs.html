@@ -236,6 +236,44 @@
 <span id="229">229</span>
 <span id="230">230</span>
 <span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -253,10 +291,36 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">blockchain_tests</span>;
 
 <span class="kw">use</span> <span class="ident">bitcoin::secp256k1</span>::{<span class="ident">Secp256k1</span>, <span class="ident">Verification</span>};
-<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">Address</span>, <span class="ident">PublicKey</span>};
+<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">Address</span>, <span class="ident">PublicKey</span>, <span class="ident">Txid</span>};
 
 <span class="kw">use</span> <span class="ident">miniscript::descriptor::DescriptorPublicKey</span>;
 <span class="kw">use</span> <span class="ident">miniscript</span>::{<span class="ident">Descriptor</span>, <span class="ident">MiniscriptKey</span>, <span class="ident">TranslatePk</span>};
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TestIncomingInput</span> {
+    <span class="kw">pub</span> <span class="ident">txid</span>: <span class="ident">Txid</span>,
+    <span class="kw">pub</span> <span class="ident">vout</span>: <span class="ident">u32</span>,
+    <span class="kw">pub</span> <span class="ident">sequence</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">TestIncomingInput</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">txid</span>: <span class="ident">Txid</span>, <span class="ident">vout</span>: <span class="ident">u32</span>, <span class="ident">sequence</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
+        <span class="self">Self</span> {
+            <span class="ident">txid</span>,
+            <span class="ident">vout</span>,
+            <span class="ident">sequence</span>,
+        }
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-blockchains&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_raw_tx_input</span>(<span class="self">self</span>) -&gt; <span class="ident">bitcoincore_rpc::json::CreateRawTransactionInput</span> {
+        <span class="ident">bitcoincore_rpc::json::CreateRawTransactionInput</span> {
+            <span class="ident">txid</span>: <span class="self">self</span>.<span class="ident">txid</span>,
+            <span class="ident">vout</span>: <span class="self">self</span>.<span class="ident">vout</span>,
+            <span class="ident">sequence</span>: <span class="self">self</span>.<span class="ident">sequence</span>,
+        }
+    }
+}
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TestIncomingOutput</span> {
@@ -275,6 +339,7 @@
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TestIncomingTx</span> {
+    <span class="kw">pub</span> <span class="ident">input</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TestIncomingInput</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">output</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TestIncomingOutput</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">min_confirmations</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">locktime</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>,
@@ -283,17 +348,23 @@
 
 <span class="kw">impl</span> <span class="ident">TestIncomingTx</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
+        <span class="ident">input</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TestIncomingInput</span><span class="op">&gt;</span>,
         <span class="ident">output</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TestIncomingOutput</span><span class="op">&gt;</span>,
         <span class="ident">min_confirmations</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
         <span class="ident">locktime</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>,
         <span class="ident">replaceable</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
     ) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
+            <span class="ident">input</span>,
             <span class="ident">output</span>,
             <span class="ident">min_confirmations</span>,
             <span class="ident">locktime</span>,
             <span class="ident">replaceable</span>,
         }
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_input</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="ident">TestIncomingInput</span>) {
+        <span class="self">self</span>.<span class="ident">input</span>.<span class="ident">push</span>(<span class="ident">input</span>);
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_output</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">output</span>: <span class="ident">TestIncomingOutput</span>) {
@@ -361,16 +432,21 @@
     });
     ( @<span class="ident">e</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">descriptors</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>:<span class="ident">expr</span> ) =&gt; ({ <span class="macro">testutils!</span>(@<span class="ident">external</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">descriptors</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>) });
     ( @<span class="ident">i</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">descriptors</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>:<span class="ident">expr</span> ) =&gt; ({ <span class="macro">testutils!</span>(@<span class="ident">internal</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">descriptors</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>) });
+    ( @<span class="ident">addr</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">addr</span>:<span class="ident">expr</span> ) =&gt; ({ <span class="macro-nonterminal">$</span><span class="macro-nonterminal">addr</span> });
 
-    ( @<span class="ident">tx</span> ( $( ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">addr</span>:<span class="ident">tt</span> )<span class="op">*</span> ) =&gt; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">amount</span>:<span class="ident">expr</span> ),<span class="op">+</span> ) $( ( @<span class="ident">locktime</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">locktime</span>:<span class="ident">expr</span> ) )<span class="question-mark">?</span> $( ( @<span class="ident">confirmations</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">confirmations</span>:<span class="ident">expr</span> ) )<span class="question-mark">?</span> $( ( @<span class="ident">replaceable</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">replaceable</span>:<span class="ident">expr</span> ) )<span class="question-mark">?</span> ) =&gt; ({
+    ( @<span class="ident">tx</span> ( $( ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">addr</span>:<span class="ident">tt</span> )<span class="op">*</span> ) =&gt; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">amount</span>:<span class="ident">expr</span> ),<span class="op">+</span> ) $( ( @<span class="ident">inputs</span> $( (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">txid</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">vout</span>:<span class="ident">expr</span>) ),<span class="op">+</span> ) )<span class="question-mark">?</span> $( ( @<span class="ident">locktime</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">locktime</span>:<span class="ident">expr</span> ) )<span class="question-mark">?</span> $( ( @<span class="ident">confirmations</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">confirmations</span>:<span class="ident">expr</span> ) )<span class="question-mark">?</span> $( ( @<span class="ident">replaceable</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">replaceable</span>:<span class="ident">expr</span> ) )<span class="question-mark">?</span> ) =&gt; ({
         <span class="kw">let</span> <span class="ident">outs</span> <span class="op">=</span> <span class="macro">vec!</span>[$( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::testutils::TestIncomingOutput::new</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">amount</span>, <span class="macro">testutils!</span>( $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">addr</span>)<span class="op">*</span> ))),<span class="op">+</span>];
+        <span class="kw">let</span> <span class="ident">_ins</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::testutils::TestIncomingInput</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+        $(
+            <span class="kw">let</span> <span class="ident">_ins</span> <span class="op">=</span> <span class="macro">vec!</span>[$( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::testutils::TestIncomingInput</span> { <span class="ident">txid</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">txid</span>, <span class="ident">vout</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">vout</span>, <span class="ident">sequence</span>: <span class="prelude-val">None</span> }),<span class="op">+</span>];
+        )<span class="question-mark">?</span>
 
         <span class="kw">let</span> <span class="ident">locktime</span> <span class="op">=</span> <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>$(.<span class="ident">or</span>(<span class="prelude-val">Some</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">locktime</span>)))<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">min_confirmations</span> <span class="op">=</span> <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>$(.<span class="ident">or</span>(<span class="prelude-val">Some</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">confirmations</span>)))<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">replaceable</span> <span class="op">=</span> <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>$(.<span class="ident">or</span>(<span class="prelude-val">Some</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">replaceable</span>)))<span class="question-mark">?</span>;
 
-        <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::testutils::TestIncomingTx::new</span>(<span class="ident">outs</span>, <span class="ident">min_confirmations</span>, <span class="ident">locktime</span>, <span class="ident">replaceable</span>)
+        <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::testutils::TestIncomingTx::new</span>(<span class="ident">_ins</span>, <span class="ident">outs</span>, <span class="ident">min_confirmations</span>, <span class="ident">locktime</span>, <span class="ident">replaceable</span>)
     });
 
     ( @<span class="ident">literal</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">expr</span> ) =&gt; ({
