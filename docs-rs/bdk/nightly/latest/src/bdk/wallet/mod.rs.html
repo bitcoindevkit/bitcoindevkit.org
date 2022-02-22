@@ -4024,24 +4024,6 @@
 <span id="4017">4017</span>
 <span id="4018">4018</span>
 <span id="4019">4019</span>
-<span id="4020">4020</span>
-<span id="4021">4021</span>
-<span id="4022">4022</span>
-<span id="4023">4023</span>
-<span id="4024">4024</span>
-<span id="4025">4025</span>
-<span id="4026">4026</span>
-<span id="4027">4027</span>
-<span id="4028">4028</span>
-<span id="4029">4029</span>
-<span id="4030">4030</span>
-<span id="4031">4031</span>
-<span id="4032">4032</span>
-<span id="4033">4033</span>
-<span id="4034">4034</span>
-<span id="4035">4035</span>
-<span id="4036">4036</span>
-<span id="4037">4037</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -4756,7 +4738,6 @@
             <span class="ident">received</span>,
             <span class="ident">sent</span>,
             <span class="ident">fee</span>: <span class="prelude-val">Some</span>(<span class="ident">fee_amount</span>),
-            <span class="ident">verified</span>: <span class="bool-val">true</span>,
         };
 
         <span class="prelude-val">Ok</span>((<span class="ident">psbt</span>, <span class="ident">transaction_details</span>))
@@ -5579,23 +5560,6 @@
             <span class="macro">maybe_await!</span>(<span class="self">self</span>
                 .<span class="ident">client</span>
                 .<span class="ident">sync</span>(<span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>().<span class="ident">deref_mut</span>(), <span class="ident">progress_update</span>,))<span class="question-mark">?</span>;
-        }
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;verify&quot;</span>)]</span>
-        {
-            <span class="macro">debug!</span>(<span class="string">&quot;Verifying transactions...&quot;</span>);
-            <span class="kw">for</span> <span class="kw-2">mut</span> <span class="ident">tx</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow</span>().<span class="ident">iter_txs</span>(<span class="bool-val">true</span>)<span class="question-mark">?</span> {
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">tx</span>.<span class="ident">verified</span> {
-                    <span class="ident">verify::verify_tx</span>(
-                        <span class="ident">tx</span>.<span class="ident">transaction</span>.<span class="ident">as_ref</span>().<span class="ident">ok_or</span>(<span class="ident">Error::TransactionNotFound</span>)<span class="question-mark">?</span>,
-                        <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow</span>().<span class="ident">deref</span>(),
-                        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">client</span>,
-                    )<span class="question-mark">?</span>;
-
-                    <span class="ident">tx</span>.<span class="ident">verified</span> <span class="op">=</span> <span class="bool-val">true</span>;
-                    <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>().<span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="ident">tx</span>)<span class="question-mark">?</span>;
-                }
-            }
         }
 
         <span class="kw">let</span> <span class="ident">sync_time</span> <span class="op">=</span> <span class="ident">SyncTime</span> {
