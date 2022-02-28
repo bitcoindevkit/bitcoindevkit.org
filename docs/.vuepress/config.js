@@ -15,6 +15,13 @@ const docsSidebar = [
     children: [
       ['/getting-started', 'Getting Started'],
       {
+        title: "What can you do with BDK?",
+        collapsable: true,
+        children: [
+          '/features/bdk-kotlin',
+        ]
+      },
+      {
         title: "BDK-CLI",
         collapsable: true,
         children: [
