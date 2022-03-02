@@ -4024,6 +4024,65 @@
 <span id="4017">4017</span>
 <span id="4018">4018</span>
 <span id="4019">4019</span>
+<span id="4020">4020</span>
+<span id="4021">4021</span>
+<span id="4022">4022</span>
+<span id="4023">4023</span>
+<span id="4024">4024</span>
+<span id="4025">4025</span>
+<span id="4026">4026</span>
+<span id="4027">4027</span>
+<span id="4028">4028</span>
+<span id="4029">4029</span>
+<span id="4030">4030</span>
+<span id="4031">4031</span>
+<span id="4032">4032</span>
+<span id="4033">4033</span>
+<span id="4034">4034</span>
+<span id="4035">4035</span>
+<span id="4036">4036</span>
+<span id="4037">4037</span>
+<span id="4038">4038</span>
+<span id="4039">4039</span>
+<span id="4040">4040</span>
+<span id="4041">4041</span>
+<span id="4042">4042</span>
+<span id="4043">4043</span>
+<span id="4044">4044</span>
+<span id="4045">4045</span>
+<span id="4046">4046</span>
+<span id="4047">4047</span>
+<span id="4048">4048</span>
+<span id="4049">4049</span>
+<span id="4050">4050</span>
+<span id="4051">4051</span>
+<span id="4052">4052</span>
+<span id="4053">4053</span>
+<span id="4054">4054</span>
+<span id="4055">4055</span>
+<span id="4056">4056</span>
+<span id="4057">4057</span>
+<span id="4058">4058</span>
+<span id="4059">4059</span>
+<span id="4060">4060</span>
+<span id="4061">4061</span>
+<span id="4062">4062</span>
+<span id="4063">4063</span>
+<span id="4064">4064</span>
+<span id="4065">4065</span>
+<span id="4066">4066</span>
+<span id="4067">4067</span>
+<span id="4068">4068</span>
+<span id="4069">4069</span>
+<span id="4070">4070</span>
+<span id="4071">4071</span>
+<span id="4072">4072</span>
+<span id="4073">4073</span>
+<span id="4074">4074</span>
+<span id="4075">4075</span>
+<span id="4076">4076</span>
+<span id="4077">4077</span>
+<span id="4078">4078</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -4263,12 +4322,12 @@
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">BatchDatabase</span>,
 {
-    <span class="comment">// Return a newly derived address using the external descriptor</span>
-    <span class="kw">fn</span> <span class="ident">get_new_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AddressInfo</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">incremented_index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">fetch_and_increment_index</span>(<span class="ident">KeychainKind::External</span>)<span class="question-mark">?</span>;
+    <span class="comment">// Return a newly derived address for the specified `keychain`.</span>
+    <span class="kw">fn</span> <span class="ident">get_new_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AddressInfo</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">incremented_index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">fetch_and_increment_index</span>(<span class="ident">keychain</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">address_result</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">descriptor</span>
+            .<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>)
             .<span class="ident">as_derived</span>(<span class="ident">incremented_index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)
             .<span class="ident">address</span>(<span class="self">self</span>.<span class="ident">network</span>);
 
@@ -4280,12 +4339,14 @@
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Error::ScriptDoesntHaveAddressForm</span>)
     }
 
-    <span class="comment">// Return the the last previously derived address if it has not been used in a received</span>
-    <span class="comment">// transaction. Otherwise return a new address using [`Wallet::get_new_address`].</span>
-    <span class="kw">fn</span> <span class="ident">get_unused_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AddressInfo</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">current_index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">fetch_index</span>(<span class="ident">KeychainKind::External</span>)<span class="question-mark">?</span>;
+    <span class="comment">// Return the the last previously derived address for `keychain` if it has not been used in a</span>
+    <span class="comment">// received transaction. Otherwise return a new address using [`Wallet::get_new_address`].</span>
+    <span class="kw">fn</span> <span class="ident">get_unused_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AddressInfo</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">current_index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">fetch_index</span>(<span class="ident">keychain</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">derived_key</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">descriptor</span>.<span class="ident">as_derived</span>(<span class="ident">current_index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>);
+        <span class="kw">let</span> <span class="ident">derived_key</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>)
+            .<span class="ident">as_derived</span>(<span class="ident">current_index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>);
 
         <span class="kw">let</span> <span class="ident">script_pubkey</span> <span class="op">=</span> <span class="ident">derived_key</span>.<span class="ident">script_pubkey</span>();
 
@@ -4297,7 +4358,7 @@
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">o</span><span class="op">|</span> <span class="ident">o</span>.<span class="ident">script_pubkey</span> <span class="op">==</span> <span class="ident">script_pubkey</span>);
 
         <span class="kw">if</span> <span class="ident">found_used</span> {
-            <span class="self">self</span>.<span class="ident">get_new_address</span>()
+            <span class="self">self</span>.<span class="ident">get_new_address</span>(<span class="ident">keychain</span>)
         } <span class="kw">else</span> {
             <span class="ident">derived_key</span>
                 .<span class="ident">address</span>(<span class="self">self</span>.<span class="ident">network</span>)
@@ -4309,21 +4370,21 @@
         }
     }
 
-    <span class="comment">// Return derived address for the external descriptor at a specific index</span>
-    <span class="kw">fn</span> <span class="ident">peek_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AddressInfo</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">descriptor</span>
+    <span class="comment">// Return derived address for the descriptor of given [`KeychainKind`] at a specific index</span>
+    <span class="kw">fn</span> <span class="ident">peek_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AddressInfo</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>)
             .<span class="ident">as_derived</span>(<span class="ident">index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)
             .<span class="ident">address</span>(<span class="self">self</span>.<span class="ident">network</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">address</span><span class="op">|</span> <span class="ident">AddressInfo</span> { <span class="ident">index</span>, <span class="ident">address</span> })
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Error::ScriptDoesntHaveAddressForm</span>)
     }
 
-    <span class="comment">// Return derived address for the external descriptor at a specific index and reset current</span>
+    <span class="comment">// Return derived address for `keychain` at a specific index and reset current</span>
     <span class="comment">// address index</span>
-    <span class="kw">fn</span> <span class="ident">reset_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AddressInfo</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">set_index</span>(<span class="ident">KeychainKind::External</span>, <span class="ident">index</span>)<span class="question-mark">?</span>;
+    <span class="kw">fn</span> <span class="ident">reset_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AddressInfo</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">set_index</span>(<span class="ident">keychain</span>, <span class="ident">index</span>)<span class="question-mark">?</span>;
 
-        <span class="self">self</span>.<span class="ident">descriptor</span>
+        <span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>)
             .<span class="ident">as_derived</span>(<span class="ident">index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)
             .<span class="ident">address</span>(<span class="self">self</span>.<span class="ident">network</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">address</span><span class="op">|</span> <span class="ident">AddressInfo</span> { <span class="ident">index</span>, <span class="ident">address</span> })
@@ -4334,11 +4395,30 @@
     <span class="doccomment">/// available address index selection strategies. If none of the keys in the descriptor are derivable</span>
     <span class="doccomment">/// (ie. does not end with /*) then the same address will always be returned for any [`AddressIndex`].</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">address_index</span>: <span class="ident">AddressIndex</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AddressInfo</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">_get_address</span>(<span class="ident">address_index</span>, <span class="ident">KeychainKind::External</span>)
+    }
+
+    <span class="doccomment">/// Return a derived address using the internal (change) descriptor.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the wallet doesn&#39;t have an internal descriptor it will use the external descriptor.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// see [`AddressIndex`] for available address index selection strategies. If none of the keys</span>
+    <span class="doccomment">/// in the descriptor are derivable (ie. does not end with /*) then the same address will always</span>
+    <span class="doccomment">/// be returned for any [`AddressIndex`].</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_internal_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">address_index</span>: <span class="ident">AddressIndex</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AddressInfo</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">_get_address</span>(<span class="ident">address_index</span>, <span class="ident">KeychainKind::Internal</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">_get_address</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">address_index</span>: <span class="ident">AddressIndex</span>,
+        <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AddressInfo</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">address_index</span> {
-            <span class="ident">AddressIndex::New</span> =&gt; <span class="self">self</span>.<span class="ident">get_new_address</span>(),
-            <span class="ident">AddressIndex::LastUnused</span> =&gt; <span class="self">self</span>.<span class="ident">get_unused_address</span>(),
-            <span class="ident">AddressIndex::Peek</span>(<span class="ident">index</span>) =&gt; <span class="self">self</span>.<span class="ident">peek_address</span>(<span class="ident">index</span>),
-            <span class="ident">AddressIndex::Reset</span>(<span class="ident">index</span>) =&gt; <span class="self">self</span>.<span class="ident">reset_address</span>(<span class="ident">index</span>),
+            <span class="ident">AddressIndex::New</span> =&gt; <span class="self">self</span>.<span class="ident">get_new_address</span>(<span class="ident">keychain</span>),
+            <span class="ident">AddressIndex::LastUnused</span> =&gt; <span class="self">self</span>.<span class="ident">get_unused_address</span>(<span class="ident">keychain</span>),
+            <span class="ident">AddressIndex::Peek</span>(<span class="ident">index</span>) =&gt; <span class="self">self</span>.<span class="ident">peek_address</span>(<span class="ident">index</span>, <span class="ident">keychain</span>),
+            <span class="ident">AddressIndex::Reset</span>(<span class="ident">index</span>) =&gt; <span class="self">self</span>.<span class="ident">reset_address</span>(<span class="ident">index</span>, <span class="ident">keychain</span>),
         }
     }
 
@@ -4688,7 +4768,10 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">drain_output</span> <span class="op">=</span> {
             <span class="kw">let</span> <span class="ident">script_pubkey</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">params</span>.<span class="ident">drain_to</span> {
                 <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">drain_recipient</span>) =&gt; <span class="ident">drain_recipient</span>.<span class="ident">clone</span>(),
-                <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">get_change_address</span>()<span class="question-mark">?</span>,
+                <span class="prelude-val">None</span> =&gt; <span class="self">self</span>
+                    .<span class="ident">get_internal_address</span>(<span class="ident">AddressIndex::New</span>)<span class="question-mark">?</span>
+                    .<span class="ident">address</span>
+                    .<span class="ident">script_pubkey</span>(),
             };
 
             <span class="ident">TxOut</span> {
@@ -5115,13 +5198,6 @@
             .<span class="ident">get_path_from_script_pubkey</span>(<span class="kw-2">&amp;</span><span class="ident">txout</span>.<span class="ident">script_pubkey</span>)<span class="question-mark">?</span>
             .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">keychain</span>, <span class="ident">child</span>)<span class="op">|</span> (<span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>), <span class="ident">child</span>))
             .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">desc</span>, <span class="ident">child</span>)<span class="op">|</span> <span class="ident">desc</span>.<span class="ident">as_derived</span>(<span class="ident">child</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)))
-    }
-
-    <span class="kw">fn</span> <span class="ident">get_change_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Script</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">desc</span>, <span class="ident">keychain</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">_get_descriptor_for_keychain</span>(<span class="ident">KeychainKind::Internal</span>);
-        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">fetch_and_increment_index</span>(<span class="ident">keychain</span>)<span class="question-mark">?</span>;
-
-        <span class="prelude-val">Ok</span>(<span class="ident">desc</span>.<span class="ident">as_derived</span>(<span class="ident">index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>).<span class="ident">script_pubkey</span>())
     }
 
     <span class="kw">fn</span> <span class="ident">fetch_and_increment_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
@@ -8012,6 +8088,48 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">45_000</span>);
         <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_get_address</span>() {
+        <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::template::Bip84</span>;
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">bitcoin::util::bip32::ExtendedPrivKey::from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet::new_offline</span>(
+            <span class="ident">Bip84</span>(<span class="ident">key</span>, <span class="ident">KeychainKind::External</span>),
+            <span class="prelude-val">Some</span>(<span class="ident">Bip84</span>(<span class="ident">key</span>, <span class="ident">KeychainKind::Internal</span>)),
+            <span class="ident">Network::Regtest</span>,
+            <span class="ident">MemoryDatabase::default</span>(),
+        )
+        .<span class="ident">unwrap</span>();
+
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">AddressIndex::New</span>).<span class="ident">unwrap</span>().<span class="ident">address</span>,
+            <span class="ident">Address::from_str</span>(<span class="string">&quot;bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s&quot;</span>).<span class="ident">unwrap</span>()
+        );
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">wallet</span>
+                .<span class="ident">get_internal_address</span>(<span class="ident">AddressIndex::New</span>)
+                .<span class="ident">unwrap</span>()
+                .<span class="ident">address</span>,
+            <span class="ident">Address::from_str</span>(<span class="string">&quot;bcrt1qtrwtz00wxl69e5xex7amy4xzlxkaefg3gfdkxa&quot;</span>).<span class="ident">unwrap</span>()
+        );
+
+        <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet::new_offline</span>(
+            <span class="ident">Bip84</span>(<span class="ident">key</span>, <span class="ident">KeychainKind::External</span>),
+            <span class="prelude-val">None</span>,
+            <span class="ident">Network::Regtest</span>,
+            <span class="ident">MemoryDatabase::default</span>(),
+        )
+        .<span class="ident">unwrap</span>();
+
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">wallet</span>
+                .<span class="ident">get_internal_address</span>(<span class="ident">AddressIndex::New</span>)
+                .<span class="ident">unwrap</span>()
+                .<span class="ident">address</span>,
+            <span class="ident">Address::from_str</span>(<span class="string">&quot;bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s&quot;</span>).<span class="ident">unwrap</span>(),
+            <span class="string">&quot;when there&#39;s no internal descriptor it should just use external&quot;</span>
+        );
     }
 }
 
