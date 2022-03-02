@@ -4083,6 +4083,17 @@
 <span id="4076">4076</span>
 <span id="4077">4077</span>
 <span id="4078">4078</span>
+<span id="4079">4079</span>
+<span id="4080">4080</span>
+<span id="4081">4081</span>
+<span id="4082">4082</span>
+<span id="4083">4083</span>
+<span id="4084">4084</span>
+<span id="4085">4085</span>
+<span id="4086">4086</span>
+<span id="4087">4087</span>
+<span id="4088">4088</span>
+<span id="4089">4089</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -4420,6 +4431,50 @@
             <span class="ident">AddressIndex::Peek</span>(<span class="ident">index</span>) =&gt; <span class="self">self</span>.<span class="ident">peek_address</span>(<span class="ident">index</span>, <span class="ident">keychain</span>),
             <span class="ident">AddressIndex::Reset</span>(<span class="ident">index</span>) =&gt; <span class="self">self</span>.<span class="ident">reset_address</span>(<span class="ident">index</span>, <span class="ident">keychain</span>),
         }
+    }
+
+    <span class="doccomment">/// Ensures that there are at least `max_addresses` addresses cached in the database if the</span>
+    <span class="doccomment">/// descriptor is derivable, or 1 address if it is not.</span>
+    <span class="doccomment">/// Will return `Ok(true)` if there are new addresses generated (either external or internal),</span>
+    <span class="doccomment">/// and `Ok(false)` if all the required addresses are already cached. This function is useful to</span>
+    <span class="doccomment">/// explicitly cache addresses in a wallet to do things like check [`Wallet::is_mine`] on</span>
+    <span class="doccomment">/// transaction output scripts.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ensure_addresses_cached</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">max_addresses</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_addresses_cached</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="kw">let</span> <span class="ident">max_address</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">descriptor</span>.<span class="ident">is_deriveable</span>() {
+            <span class="bool-val">false</span> =&gt; <span class="number">0</span>,
+            <span class="bool-val">true</span> =&gt; <span class="ident">max_addresses</span>,
+        };
+        <span class="macro">debug!</span>(<span class="string">&quot;max_address {}&quot;</span>, <span class="ident">max_address</span>);
+        <span class="kw">if</span> <span class="self">self</span>
+            .<span class="ident">database</span>
+            .<span class="ident">borrow</span>()
+            .<span class="ident">get_script_pubkey_from_path</span>(<span class="ident">KeychainKind::External</span>, <span class="ident">max_address</span>.<span class="ident">saturating_sub</span>(<span class="number">1</span>))<span class="question-mark">?</span>
+            .<span class="ident">is_none</span>()
+        {
+            <span class="macro">debug!</span>(<span class="string">&quot;caching external addresses&quot;</span>);
+            <span class="ident">new_addresses_cached</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            <span class="self">self</span>.<span class="ident">cache_addresses</span>(<span class="ident">KeychainKind::External</span>, <span class="number">0</span>, <span class="ident">max_address</span>)<span class="question-mark">?</span>;
+        }
+
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">change_descriptor</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">change_descriptor</span> {
+            <span class="kw">let</span> <span class="ident">max_address</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">change_descriptor</span>.<span class="ident">is_deriveable</span>() {
+                <span class="bool-val">false</span> =&gt; <span class="number">0</span>,
+                <span class="bool-val">true</span> =&gt; <span class="ident">max_addresses</span>,
+            };
+
+            <span class="kw">if</span> <span class="self">self</span>
+                .<span class="ident">database</span>
+                .<span class="ident">borrow</span>()
+                .<span class="ident">get_script_pubkey_from_path</span>(<span class="ident">KeychainKind::Internal</span>, <span class="ident">max_address</span>.<span class="ident">saturating_sub</span>(<span class="number">1</span>))<span class="question-mark">?</span>
+                .<span class="ident">is_none</span>()
+            {
+                <span class="macro">debug!</span>(<span class="string">&quot;caching internal addresses&quot;</span>);
+                <span class="ident">new_addresses_cached</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                <span class="self">self</span>.<span class="ident">cache_addresses</span>(<span class="ident">KeychainKind::Internal</span>, <span class="number">0</span>, <span class="ident">max_address</span>)<span class="question-mark">?</span>;
+            }
+        }
+        <span class="prelude-val">Ok</span>(<span class="ident">new_addresses_cached</span>)
     }
 
     <span class="doccomment">/// Return whether or not a `script` is part of this wallet (either internal or external)</span>
@@ -5589,41 +5644,8 @@
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="macro">debug!</span>(<span class="string">&quot;Begin sync...&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">run_setup</span> <span class="op">=</span> <span class="bool-val">false</span>;
-
-        <span class="kw">let</span> <span class="ident">max_address</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">descriptor</span>.<span class="ident">is_deriveable</span>() {
-            <span class="bool-val">false</span> =&gt; <span class="number">0</span>,
-            <span class="bool-val">true</span> =&gt; <span class="ident">max_address_param</span>.<span class="ident">unwrap_or</span>(<span class="ident">CACHE_ADDR_BATCH_SIZE</span>),
-        };
-        <span class="macro">debug!</span>(<span class="string">&quot;max_address {}&quot;</span>, <span class="ident">max_address</span>);
-        <span class="kw">if</span> <span class="self">self</span>
-            .<span class="ident">database</span>
-            .<span class="ident">borrow</span>()
-            .<span class="ident">get_script_pubkey_from_path</span>(<span class="ident">KeychainKind::External</span>, <span class="ident">max_address</span>.<span class="ident">saturating_sub</span>(<span class="number">1</span>))<span class="question-mark">?</span>
-            .<span class="ident">is_none</span>()
-        {
-            <span class="macro">debug!</span>(<span class="string">&quot;caching external addresses&quot;</span>);
-            <span class="ident">run_setup</span> <span class="op">=</span> <span class="bool-val">true</span>;
-            <span class="self">self</span>.<span class="ident">cache_addresses</span>(<span class="ident">KeychainKind::External</span>, <span class="number">0</span>, <span class="ident">max_address</span>)<span class="question-mark">?</span>;
-        }
-
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">change_descriptor</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">change_descriptor</span> {
-            <span class="kw">let</span> <span class="ident">max_address</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">change_descriptor</span>.<span class="ident">is_deriveable</span>() {
-                <span class="bool-val">false</span> =&gt; <span class="number">0</span>,
-                <span class="bool-val">true</span> =&gt; <span class="ident">max_address_param</span>.<span class="ident">unwrap_or</span>(<span class="ident">CACHE_ADDR_BATCH_SIZE</span>),
-            };
-
-            <span class="kw">if</span> <span class="self">self</span>
-                .<span class="ident">database</span>
-                .<span class="ident">borrow</span>()
-                .<span class="ident">get_script_pubkey_from_path</span>(<span class="ident">KeychainKind::Internal</span>, <span class="ident">max_address</span>.<span class="ident">saturating_sub</span>(<span class="number">1</span>))<span class="question-mark">?</span>
-                .<span class="ident">is_none</span>()
-            {
-                <span class="macro">debug!</span>(<span class="string">&quot;caching internal addresses&quot;</span>);
-                <span class="ident">run_setup</span> <span class="op">=</span> <span class="bool-val">true</span>;
-                <span class="self">self</span>.<span class="ident">cache_addresses</span>(<span class="ident">KeychainKind::Internal</span>, <span class="number">0</span>, <span class="ident">max_address</span>)<span class="question-mark">?</span>;
-            }
-        }
+        <span class="kw">let</span> <span class="ident">run_setup</span> <span class="op">=</span>
+            <span class="self">self</span>.<span class="ident">ensure_addresses_cached</span>(<span class="ident">max_address_param</span>.<span class="ident">unwrap_or</span>(<span class="ident">CACHE_ADDR_BATCH_SIZE</span>))<span class="question-mark">?</span>;
 
         <span class="macro">debug!</span>(<span class="string">&quot;run_setup: {}&quot;</span>, <span class="ident">run_setup</span>);
         <span class="comment">// TODO: what if i generate an address first and cache some addresses?</span>
