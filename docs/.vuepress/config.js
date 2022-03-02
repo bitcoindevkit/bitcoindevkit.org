@@ -18,7 +18,10 @@ const docsSidebar = [
         title: "What can you do with BDK?",
         collapsable: true,
         children: [
-          '/features/bdk-kotlin',
+          '/features/bdk-android',
+          '/features/bdk-jvm',
+          '/features/bdk-python',
+          '/features/bdk-swift',
         ]
       },
       {

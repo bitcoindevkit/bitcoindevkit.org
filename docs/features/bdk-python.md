@@ -1,5 +1,5 @@
-# bdk-kotlin `0.3.0`
-Bdk-kotlin is one of the language bindings libraries derived from the bitcoindevkit. It exposes a subset of the API of the bitcoindevkit. Below are high-level explanations of what you can do with the library as of version `0.3.0`. 
+# bdk-python `0.0.5`
+[Bdk-python](https://github.com/bitcoindevkit/bdk-python) is one of the language bindings libraries derived from the bitcoindevkit. It exposes a subset of the API of the bitcoindevkit. Below are high-level explanations of what you can do with the library as of version `0.0.5`. 
 
 ### Keys
 - Generate a BIP32 Root Key, with or without a passphrase, choosing from 12, 15, 18, 21, or 24 words.
