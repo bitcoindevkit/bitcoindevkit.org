@@ -171,7 +171,7 @@ And then broadcast it:
 // ...
 
 let raw_transaction = psbt.extract_tx();
-let txid = wallet.broadcast(&raw_transaction)?;
+let txid = wallet.broadcast(raw_transaction)?;
 println!(
     "Transaction sent! TXID: {txid}.\nExplorer URL: https://blockstream.info/testnet/tx/{txid}",
     txid = txid
