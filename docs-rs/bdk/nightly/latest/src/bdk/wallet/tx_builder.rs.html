@@ -1020,8 +1020,8 @@
 <span class="doccomment">/// [`finish`]: Self::finish</span>
 <span class="doccomment">/// [`coin_selection`]: Self::coin_selection</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">wallet</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Wallet</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">D</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">wallet</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Wallet</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">params</span>: <span class="ident">TxParams</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">coin_selection</span>: <span class="ident">Cs</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">phantom</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>,
@@ -1070,7 +1070,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Cs</span>: <span class="ident">Clone</span>, <span class="ident">Ctx</span>, <span class="ident">B</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Cs</span>: <span class="ident">Clone</span>, <span class="ident">Ctx</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">TxBuilder</span> {
             <span class="ident">wallet</span>: <span class="self">self</span>.<span class="ident">wallet</span>,
@@ -1082,8 +1082,8 @@
 }
 
 <span class="comment">// methods supported by both contexts, for any CoinSelectionAlgorithm</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">Ctx</span>: <span class="ident">TxBuilderContext</span><span class="op">&gt;</span>
-    <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">Ctx</span>: <span class="ident">TxBuilderContext</span><span class="op">&gt;</span>
+    <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span>
 {
     <span class="doccomment">/// Set a custom fee rate</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fee_rate</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fee_rate</span>: <span class="ident">FeeRate</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
@@ -1408,7 +1408,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">coin_selection</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">coin_selection</span>: <span class="ident">P</span>,
-    ) -&gt; <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">P</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>, <span class="ident">P</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
         <span class="ident">TxBuilder</span> {
             <span class="ident">wallet</span>: <span class="self">self</span>.<span class="ident">wallet</span>,
             <span class="ident">params</span>: <span class="self">self</span>.<span class="ident">params</span>,
@@ -1447,7 +1447,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">CreateTx</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">CreateTx</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Replace the recipients already added with a new list</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_recipients</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">recipients</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Script</span>, <span class="ident">u64</span>)<span class="op">&gt;</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">recipients</span> <span class="op">=</span> <span class="ident">recipients</span>;
@@ -1514,7 +1514,7 @@
 }
 
 <span class="comment">// methods supported only by bump_fee</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">DefaultCoinSelectionAlgorithm</span>, <span class="ident">BumpFee</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>, <span class="ident">DefaultCoinSelectionAlgorithm</span>, <span class="ident">BumpFee</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Explicitly tells the wallet that it is allowed to reduce the fee of the output matching this</span>
     <span class="doccomment">/// `script_pubkey` in order to bump the transaction fee. Without specifying this the wallet</span>
     <span class="doccomment">/// will attempt to find a change output to shrink instead.</span>
