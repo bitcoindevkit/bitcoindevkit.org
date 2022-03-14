@@ -412,6 +412,14 @@
 <span id="405">405</span>
 <span id="406">406</span>
 <span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
 </pre><pre class="rust"><code><span class="doccomment">/*!
 This models a how a sync happens where you have a server that you send your script pubkeys to and it
 returns associated transactions i.e. electrum.
@@ -746,7 +754,23 @@ returns associated transactions i.e. electrum.
             <span class="ident">batch</span>.<span class="ident">del_tx</span>(<span class="ident">txid</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// Set every tx we observed</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">spent_utxos</span> <span class="op">=</span> <span class="ident">HashSet::new</span>();
+
+        <span class="comment">// track all the spent utxos</span>
+        <span class="kw">for</span> <span class="ident">finished_tx</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">finished_txs</span> {
+            <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">finished_tx</span>
+                .<span class="ident">transaction</span>
+                .<span class="ident">as_ref</span>()
+                .<span class="ident">expect</span>(<span class="string">&quot;transaction will always be present here&quot;</span>);
+            <span class="kw">for</span> <span class="ident">input</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">input</span> {
+                <span class="ident">spent_utxos</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">previous_output</span>);
+            }
+        }
+
+        <span class="comment">// set every utxo we observed, unless it&#39;s already spent</span>
+        <span class="comment">// we don&#39;t do this in the loop above as we want to know all the spent outputs before</span>
+        <span class="comment">// adding the non-spent to the batch in case there are new tranasactions</span>
+        <span class="comment">// that spend form each other.</span>
         <span class="kw">for</span> <span class="ident">finished_tx</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">finished_txs</span> {
             <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">finished_tx</span>
                 .<span class="ident">transaction</span>
@@ -757,30 +781,22 @@ returns associated transactions i.e. electrum.
                     <span class="self">self</span>.<span class="ident">db</span>.<span class="ident">get_path_from_script_pubkey</span>(<span class="kw-2">&amp;</span><span class="ident">output</span>.<span class="ident">script_pubkey</span>)<span class="question-mark">?</span>
                 {
                     <span class="comment">// add utxos we own from the new transactions we&#39;ve seen.</span>
+                    <span class="kw">let</span> <span class="ident">outpoint</span> <span class="op">=</span> <span class="ident">OutPoint</span> {
+                        <span class="ident">txid</span>: <span class="ident">finished_tx</span>.<span class="ident">txid</span>,
+                        <span class="ident">vout</span>: <span class="ident">i</span> <span class="kw">as</span> <span class="ident">u32</span>,
+                    };
+
                     <span class="ident">batch</span>.<span class="ident">set_utxo</span>(<span class="kw-2">&amp;</span><span class="ident">LocalUtxo</span> {
-                        <span class="ident">outpoint</span>: <span class="ident">OutPoint</span> {
-                            <span class="ident">txid</span>: <span class="ident">finished_tx</span>.<span class="ident">txid</span>,
-                            <span class="ident">vout</span>: <span class="ident">i</span> <span class="kw">as</span> <span class="ident">u32</span>,
-                        },
+                        <span class="ident">outpoint</span>,
                         <span class="ident">txout</span>: <span class="ident">output</span>.<span class="ident">clone</span>(),
                         <span class="ident">keychain</span>,
+                        <span class="comment">// Is this UTXO in the spent_utxos set?</span>
+                        <span class="ident">is_spent</span>: <span class="ident">spent_utxos</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">outpoint</span>).<span class="ident">is_some</span>(),
                     })<span class="question-mark">?</span>;
                 }
             }
-            <span class="ident">batch</span>.<span class="ident">set_tx</span>(<span class="ident">finished_tx</span>)<span class="question-mark">?</span>;
-        }
 
-        <span class="comment">// we don&#39;t do this in the loop above since we may want to delete some of the utxos we</span>
-        <span class="comment">// just added in case there are new tranasactions that spend form each other.</span>
-        <span class="kw">for</span> <span class="ident">finished_tx</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">finished_txs</span> {
-            <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">finished_tx</span>
-                .<span class="ident">transaction</span>
-                .<span class="ident">as_ref</span>()
-                .<span class="ident">expect</span>(<span class="string">&quot;transaction will always be present here&quot;</span>);
-            <span class="kw">for</span> <span class="ident">input</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">input</span> {
-                <span class="comment">// Delete any spent utxos</span>
-                <span class="ident">batch</span>.<span class="ident">del_utxo</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>.<span class="ident">previous_output</span>)<span class="question-mark">?</span>;
-            }
+            <span class="ident">batch</span>.<span class="ident">set_tx</span>(<span class="ident">finished_tx</span>)<span class="question-mark">?</span>;
         }
 
         <span class="kw">for</span> (<span class="ident">keychain</span>, <span class="ident">last_active_index</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">last_active_index</span> {

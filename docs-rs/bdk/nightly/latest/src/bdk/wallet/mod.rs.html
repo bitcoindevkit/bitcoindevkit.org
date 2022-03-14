@@ -4055,6 +4055,13 @@
 <span id="4048">4048</span>
 <span id="4049">4049</span>
 <span id="4050">4050</span>
+<span id="4051">4051</span>
+<span id="4052">4052</span>
+<span id="4053">4053</span>
+<span id="4054">4054</span>
+<span id="4055">4055</span>
+<span id="4056">4056</span>
+<span id="4057">4057</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -4444,7 +4451,13 @@
     <span class="doccomment">/// Note that this method only operates on the internal database, which first needs to be</span>
     <span class="doccomment">/// [`Wallet::sync`] manually.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list_unspent</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow</span>().<span class="ident">iter_utxos</span>()
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>
+            .<span class="ident">database</span>
+            .<span class="ident">borrow</span>()
+            .<span class="ident">iter_utxos</span>()<span class="question-mark">?</span>
+            .<span class="ident">into_iter</span>()
+            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">l</span><span class="op">|</span> <span class="op">!</span><span class="ident">l</span>.<span class="ident">is_spent</span>)
+            .<span class="ident">collect</span>())
     }
 
     <span class="doccomment">/// Returns the `UTXO` owned by this wallet corresponding to `outpoint` if it exists in the</span>
@@ -4936,6 +4949,7 @@
                     <span class="ident">outpoint</span>: <span class="ident">txin</span>.<span class="ident">previous_output</span>,
                     <span class="ident">txout</span>,
                     <span class="ident">keychain</span>,
+                    <span class="ident">is_spent</span>: <span class="bool-val">true</span>,
                 };
 
                 <span class="prelude-val">Ok</span>(<span class="ident">WeightedUtxo</span> {
