@@ -3,7 +3,7 @@ title: "Spending Policy Demo"
 description: "Demonstrate how to use a descriptor wallet with different spending policies"
 authors:
     - Steve Myers
-    - Thunderbiscuit
+    - thunderbiscuit
 date: "2021-02-23"
 tags: ["guide", "descriptor"]
 permalink: "/blog/2021/02/spending-policy-demo/"
@@ -31,11 +31,11 @@ In a real-world wallet a longer relative time-lock would probably be used, but w
 ### Step 0: Install a recent version `bdk-cli`
 
 ```bash
-cargo install bdk-cli --features repl,electrum,esplora
+cargo install bdk-cli --features electrum
 
 # confirm bdk-cli is installed
 bdk-cli --version
-BDK CLI 0.2.0
+BDK CLI 0.4.0
 
 # bdk-cli usage can be explored with the `help` sub-command
 bdk-cli help
