@@ -32,7 +32,7 @@ cargo install --git https://github.com/bitcoindevkit/bdk-cli --features=esplora-
 # all features with the async esplora client 
 cargo install --git https://github.com/bitcoindevkit/bdk-cli --features=esplora-reqwest,compiler
 
-# minimal install
+# minimal install (repl and electrum features are default)
 cargo install --git https://github.com/bitcoindevkit/bdk-cli
 ```
 
