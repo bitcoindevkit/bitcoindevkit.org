@@ -4087,6 +4087,46 @@
 <span id="4080">4080</span>
 <span id="4081">4081</span>
 <span id="4082">4082</span>
+<span id="4083">4083</span>
+<span id="4084">4084</span>
+<span id="4085">4085</span>
+<span id="4086">4086</span>
+<span id="4087">4087</span>
+<span id="4088">4088</span>
+<span id="4089">4089</span>
+<span id="4090">4090</span>
+<span id="4091">4091</span>
+<span id="4092">4092</span>
+<span id="4093">4093</span>
+<span id="4094">4094</span>
+<span id="4095">4095</span>
+<span id="4096">4096</span>
+<span id="4097">4097</span>
+<span id="4098">4098</span>
+<span id="4099">4099</span>
+<span id="4100">4100</span>
+<span id="4101">4101</span>
+<span id="4102">4102</span>
+<span id="4103">4103</span>
+<span id="4104">4104</span>
+<span id="4105">4105</span>
+<span id="4106">4106</span>
+<span id="4107">4107</span>
+<span id="4108">4108</span>
+<span id="4109">4109</span>
+<span id="4110">4110</span>
+<span id="4111">4111</span>
+<span id="4112">4112</span>
+<span id="4113">4113</span>
+<span id="4114">4114</span>
+<span id="4115">4115</span>
+<span id="4116">4116</span>
+<span id="4117">4117</span>
+<span id="4118">4118</span>
+<span id="4119">4119</span>
+<span id="4120">4120</span>
+<span id="4121">4121</span>
+<span id="4122">4122</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -4557,11 +4597,39 @@
         <span class="ident">signers</span>.<span class="ident">add_external</span>(<span class="ident">signer</span>.<span class="ident">id</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>), <span class="ident">ordering</span>, <span class="ident">signer</span>);
     }
 
+    <span class="doccomment">/// Get the signers</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ## Example</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use bdk::{Wallet, KeychainKind};</span>
+    <span class="doccomment">/// # use bdk::bitcoin::Network;</span>
+    <span class="doccomment">/// # use bdk::database::MemoryDatabase;</span>
+    <span class="doccomment">/// let wallet = Wallet::new(&quot;wpkh(tprv8ZgxMBicQKsPe73PBRSmNbTfbcsZnwWhz5eVmhHpi31HW29Z7mc9B4cWGRQzopNUzZUT391DeDJxL2PefNunWyLgqCKRMDkU1s2s8bAfoSk/84&#39;/0&#39;/0&#39;/0/*)&quot;, None, Network::Testnet, MemoryDatabase::new())?;</span>
+    <span class="doccomment">/// for secret_key in wallet.get_signers(KeychainKind::External).signers().iter().filter_map(|s| s.descriptor_secret_key()) {</span>
+    <span class="doccomment">///     // secret_key: tprv8ZgxMBicQKsPe73PBRSmNbTfbcsZnwWhz5eVmhHpi31HW29Z7mc9B4cWGRQzopNUzZUT391DeDJxL2PefNunWyLgqCKRMDkU1s2s8bAfoSk/84&#39;/0&#39;/0&#39;/0/*</span>
+    <span class="doccomment">///     println!(&quot;secret_key: {}&quot;, secret_key);</span>
+    <span class="doccomment">/// }</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Ok::&lt;(), Box&lt;dyn std::error::Error&gt;&gt;(())</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_signers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">SignersContainer</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="ident">keychain</span> {
+            <span class="ident">KeychainKind::External</span> =&gt; <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">signers</span>),
+            <span class="ident">KeychainKind::Internal</span> =&gt; <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">change_signers</span>),
+        }
+    }
+
     <span class="doccomment">/// Add an address validator</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// See [the `address_validator` module](address_validator) for an example.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_address_validator</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">validator</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">AddressValidator</span><span class="op">&gt;</span>) {
         <span class="self">self</span>.<span class="ident">address_validators</span>.<span class="ident">push</span>(<span class="ident">validator</span>);
+    }
+
+    <span class="doccomment">/// Get the address validators</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_address_validators</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">AddressValidator</span><span class="op">&gt;</span>] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">address_validators</span>
     }
 
     <span class="doccomment">/// Start building a transaction.</span>
@@ -5656,6 +5724,18 @@
         <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>().<span class="ident">set_sync_time</span>(<span class="ident">sync_time</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="doccomment">/// Return the checksum of the public descriptor associated to `keychain`</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Internally calls [`Self::get_descriptor_for_keychain`] to fetch the right descriptor</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">descriptor_checksum</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="ident">String</span> {
+        <span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>)
+            .<span class="ident">to_string</span>()
+            .<span class="ident">splitn</span>(<span class="number">2</span>, <span class="string">&#39;#&#39;</span>)
+            .<span class="ident">next</span>()
+            .<span class="ident">unwrap</span>()
+            .<span class="ident">to_string</span>()
     }
 }
 
