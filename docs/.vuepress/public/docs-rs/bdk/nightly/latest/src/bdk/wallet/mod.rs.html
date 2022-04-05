@@ -4062,6 +4062,31 @@
 <span id="4055">4055</span>
 <span id="4056">4056</span>
 <span id="4057">4057</span>
+<span id="4058">4058</span>
+<span id="4059">4059</span>
+<span id="4060">4060</span>
+<span id="4061">4061</span>
+<span id="4062">4062</span>
+<span id="4063">4063</span>
+<span id="4064">4064</span>
+<span id="4065">4065</span>
+<span id="4066">4066</span>
+<span id="4067">4067</span>
+<span id="4068">4068</span>
+<span id="4069">4069</span>
+<span id="4070">4070</span>
+<span id="4071">4071</span>
+<span id="4072">4072</span>
+<span id="4073">4073</span>
+<span id="4074">4074</span>
+<span id="4075">4075</span>
+<span id="4076">4076</span>
+<span id="4077">4077</span>
+<span id="4078">4078</span>
+<span id="4079">4079</span>
+<span id="4080">4080</span>
+<span id="4081">4081</span>
+<span id="4082">4082</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -4204,6 +4229,8 @@
     <span class="kw">pub</span> <span class="ident">index</span>: <span class="ident">u32</span>,
     <span class="doccomment">/// Address</span>
     <span class="kw">pub</span> <span class="ident">address</span>: <span class="ident">Address</span>,
+    <span class="doccomment">/// Type of keychain</span>
+    <span class="kw">pub</span> <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">AddressInfo</span> {
@@ -4310,6 +4337,7 @@
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">address</span><span class="op">|</span> <span class="ident">AddressInfo</span> {
                 <span class="ident">address</span>,
                 <span class="ident">index</span>: <span class="ident">incremented_index</span>,
+                <span class="ident">keychain</span>,
             })
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Error::ScriptDoesntHaveAddressForm</span>)
     }
@@ -4340,6 +4368,7 @@
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">address</span><span class="op">|</span> <span class="ident">AddressInfo</span> {
                     <span class="ident">address</span>,
                     <span class="ident">index</span>: <span class="ident">current_index</span>,
+                    <span class="ident">keychain</span>,
                 })
                 .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Error::ScriptDoesntHaveAddressForm</span>)
         }
@@ -4350,7 +4379,11 @@
         <span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>)
             .<span class="ident">as_derived</span>(<span class="ident">index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)
             .<span class="ident">address</span>(<span class="self">self</span>.<span class="ident">network</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">address</span><span class="op">|</span> <span class="ident">AddressInfo</span> { <span class="ident">index</span>, <span class="ident">address</span> })
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">address</span><span class="op">|</span> <span class="ident">AddressInfo</span> {
+                <span class="ident">index</span>,
+                <span class="ident">address</span>,
+                <span class="ident">keychain</span>,
+            })
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Error::ScriptDoesntHaveAddressForm</span>)
     }
 
@@ -4362,7 +4395,11 @@
         <span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>)
             .<span class="ident">as_derived</span>(<span class="ident">index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)
             .<span class="ident">address</span>(<span class="self">self</span>.<span class="ident">network</span>)
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">address</span><span class="op">|</span> <span class="ident">AddressInfo</span> { <span class="ident">index</span>, <span class="ident">address</span> })
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">address</span><span class="op">|</span> <span class="ident">AddressInfo</span> {
+                <span class="ident">index</span>,
+                <span class="ident">address</span>,
+                <span class="ident">keychain</span>,
+            })
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Error::ScriptDoesntHaveAddressForm</span>)
     }
 
@@ -7988,6 +8025,7 @@
             <span class="ident">AddressInfo</span> {
                 <span class="ident">index</span>: <span class="number">0</span>,
                 <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;tb1q6yn66vajcctph75pvylgkksgpp6nq04ppwct9a&quot;</span>).<span class="ident">unwrap</span>(),
+                <span class="ident">keychain</span>: <span class="ident">KeychainKind::External</span>,
             }
         );
 
@@ -7996,7 +8034,8 @@
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>(),
             <span class="ident">AddressInfo</span> {
                 <span class="ident">index</span>: <span class="number">1</span>,
-                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>).<span class="ident">unwrap</span>()
+                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>).<span class="ident">unwrap</span>(),
+                <span class="ident">keychain</span>: <span class="ident">KeychainKind::External</span>,
             }
         );
 
@@ -8005,7 +8044,8 @@
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">Peek</span>(<span class="number">25</span>)).<span class="ident">unwrap</span>(),
             <span class="ident">AddressInfo</span> {
                 <span class="ident">index</span>: <span class="number">25</span>,
-                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;tb1qsp7qu0knx3sl6536dzs0703u2w2ag6ppl9d0c2&quot;</span>).<span class="ident">unwrap</span>()
+                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;tb1qsp7qu0knx3sl6536dzs0703u2w2ag6ppl9d0c2&quot;</span>).<span class="ident">unwrap</span>(),
+                <span class="ident">keychain</span>: <span class="ident">KeychainKind::External</span>,
             }
         );
 
@@ -8014,7 +8054,8 @@
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>(),
             <span class="ident">AddressInfo</span> {
                 <span class="ident">index</span>: <span class="number">2</span>,
-                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;tb1qzntf2mqex4ehwkjlfdyy3ewdlk08qkvkvrz7x2&quot;</span>).<span class="ident">unwrap</span>()
+                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;tb1qzntf2mqex4ehwkjlfdyy3ewdlk08qkvkvrz7x2&quot;</span>).<span class="ident">unwrap</span>(),
+                <span class="ident">keychain</span>: <span class="ident">KeychainKind::External</span>,
             }
         );
 
@@ -8023,7 +8064,8 @@
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">Reset</span>(<span class="number">1</span>)).<span class="ident">unwrap</span>(),
             <span class="ident">AddressInfo</span> {
                 <span class="ident">index</span>: <span class="number">1</span>,
-                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>).<span class="ident">unwrap</span>()
+                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;tb1q4er7kxx6sssz3q7qp7zsqsdx4erceahhax77d7&quot;</span>).<span class="ident">unwrap</span>(),
+                <span class="ident">keychain</span>: <span class="ident">KeychainKind::External</span>,
             }
         );
 
@@ -8032,7 +8074,8 @@
             <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>(),
             <span class="ident">AddressInfo</span> {
                 <span class="ident">index</span>: <span class="number">2</span>,
-                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;tb1qzntf2mqex4ehwkjlfdyy3ewdlk08qkvkvrz7x2&quot;</span>).<span class="ident">unwrap</span>()
+                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;tb1qzntf2mqex4ehwkjlfdyy3ewdlk08qkvkvrz7x2&quot;</span>).<span class="ident">unwrap</span>(),
+                <span class="ident">keychain</span>: <span class="ident">KeychainKind::External</span>,
             }
         );
     }
@@ -8061,15 +8104,21 @@
         .<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">AddressIndex::New</span>).<span class="ident">unwrap</span>().<span class="ident">address</span>,
-            <span class="ident">Address::from_str</span>(<span class="string">&quot;bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s&quot;</span>).<span class="ident">unwrap</span>()
+            <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">AddressIndex::New</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">AddressInfo</span> {
+                <span class="ident">index</span>: <span class="number">0</span>,
+                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s&quot;</span>).<span class="ident">unwrap</span>(),
+                <span class="ident">keychain</span>: <span class="ident">KeychainKind::External</span>,
+            }
         );
+
         <span class="macro">assert_eq!</span>(
-            <span class="ident">wallet</span>
-                .<span class="ident">get_internal_address</span>(<span class="ident">AddressIndex::New</span>)
-                .<span class="ident">unwrap</span>()
-                .<span class="ident">address</span>,
-            <span class="ident">Address::from_str</span>(<span class="string">&quot;bcrt1qtrwtz00wxl69e5xex7amy4xzlxkaefg3gfdkxa&quot;</span>).<span class="ident">unwrap</span>()
+            <span class="ident">wallet</span>.<span class="ident">get_internal_address</span>(<span class="ident">AddressIndex::New</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">AddressInfo</span> {
+                <span class="ident">index</span>: <span class="number">0</span>,
+                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;bcrt1qtrwtz00wxl69e5xex7amy4xzlxkaefg3gfdkxa&quot;</span>).<span class="ident">unwrap</span>(),
+                <span class="ident">keychain</span>: <span class="ident">KeychainKind::Internal</span>,
+            }
         );
 
         <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet::new</span>(
@@ -8081,11 +8130,12 @@
         .<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">wallet</span>
-                .<span class="ident">get_internal_address</span>(<span class="ident">AddressIndex::New</span>)
-                .<span class="ident">unwrap</span>()
-                .<span class="ident">address</span>,
-            <span class="ident">Address::from_str</span>(<span class="string">&quot;bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s&quot;</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">wallet</span>.<span class="ident">get_internal_address</span>(<span class="ident">AddressIndex::New</span>).<span class="ident">unwrap</span>(),
+            <span class="ident">AddressInfo</span> {
+                <span class="ident">index</span>: <span class="number">0</span>,
+                <span class="ident">address</span>: <span class="ident">Address::from_str</span>(<span class="string">&quot;bcrt1qkmvk2nadgplmd57ztld8nf8v2yxkzmdvwtjf8s&quot;</span>).<span class="ident">unwrap</span>(),
+                <span class="ident">keychain</span>: <span class="ident">KeychainKind::Internal</span>,
+            },
             <span class="string">&quot;when there&#39;s no internal descriptor it should just use external&quot;</span>
         );
     }
