@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["DerivedDescriptorKey","Extended [`DescriptorPublicKey`] that has been derived"]],"trait":[["AsDerived","Utilities to derive descriptors"]]});
