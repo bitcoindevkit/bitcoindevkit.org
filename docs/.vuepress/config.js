@@ -33,8 +33,10 @@ const docsSidebar = [
     title: 'API Reference',
     collapsable: false,
     children: [
-      ['https://docs.rs/bdk/', 'Stable Docs'],
-      ['https://bitcoindevkit.org/docs-rs/bdk/nightly/latest/bdk/', 'Nightly Docs']
+      ['https://docs.rs/bdk/', 'Rust Stable Docs'],
+      ['https://bitcoindevkit.org/docs-rs/bdk/nightly/latest/bdk/', 'Rust Nightly Docs'],
+      ['https://bitcoindevkit.org/bdk-android/', 'Android Docs'],
+      ['https://bitcoindevkit.org/bdk-jvm/', 'Kotlin/JVM Docs'],
     ],
   }
 ]
