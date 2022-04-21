@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["WalletExport","Structure that contains the export of a wallet"]]});
+initSidebarItems({"struct":[["FullyNodedExport","Structure that contains the export of a wallet"]],"type":[["WalletExport","Alias for [`FullyNodedExport`]"]]});
