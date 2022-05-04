@@ -236,6 +236,14 @@
 <span id="229">229</span>
 <span id="230">230</span>
 <span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -272,6 +280,14 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
 <span class="macro">macro_rules!</span> <span class="ident">impl_from</span> {
+    ( <span class="ident">boxed</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">from</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">to</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>, $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">cfg</span>:<span class="ident">tt</span> )<span class="op">*</span> ) =&gt; {
+        $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">cfg</span> )<span class="op">*</span>
+        <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">from</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">to</span> {
+            <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">inner</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">from</span>) -&gt; <span class="self">Self</span> {
+                <span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">to</span><span class="op">&gt;</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">Box::new</span>(<span class="ident">inner</span>))
+            }
+        }
+    };
     ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">from</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">to</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>, $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">cfg</span>:<span class="ident">tt</span> )<span class="op">*</span> ) =&gt; {
         $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">cfg</span> )<span class="op">*</span>
         <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">from</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">to</span> {
@@ -306,19 +322,19 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)))]</span>
     <span class="doccomment">/// Electrum client</span>
-    <span class="ident">Electrum</span>(<span class="ident">electrum::ElectrumBlockchain</span>),
+    <span class="ident">Electrum</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">electrum::ElectrumBlockchain</span><span class="op">&gt;</span>),
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;esplora&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;esplora&quot;</span>)))]</span>
     <span class="doccomment">/// Esplora client</span>
-    <span class="ident">Esplora</span>(<span class="ident">esplora::EsploraBlockchain</span>),
+    <span class="ident">Esplora</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">esplora::EsploraBlockchain</span><span class="op">&gt;</span>),
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;compact_filters&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;compact_filters&quot;</span>)))]</span>
     <span class="doccomment">/// Compact filters client</span>
-    <span class="ident">CompactFilters</span>(<span class="ident">compact_filters::CompactFiltersBlockchain</span>),
+    <span class="ident">CompactFilters</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">compact_filters::CompactFiltersBlockchain</span><span class="op">&gt;</span>),
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rpc&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rpc&quot;</span>)))]</span>
     <span class="doccomment">/// RPC client</span>
-    <span class="ident">Rpc</span>(<span class="ident">rpc::RpcBlockchain</span>),
+    <span class="ident">Rpc</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">rpc::RpcBlockchain</span><span class="op">&gt;</span>),
 }
 
 <span class="attribute">#[<span class="ident">maybe_async</span>]</span>
@@ -379,10 +395,10 @@
     }
 }
 
-<span class="macro">impl_from!</span>(<span class="ident">electrum::ElectrumBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">Electrum</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)]</span>);
-<span class="macro">impl_from!</span>(<span class="ident">esplora::EsploraBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">Esplora</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;esplora&quot;</span>)]</span>);
-<span class="macro">impl_from!</span>(<span class="ident">compact_filters::CompactFiltersBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">CompactFilters</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;compact_filters&quot;</span>)]</span>);
-<span class="macro">impl_from!</span>(<span class="ident">rpc::RpcBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">Rpc</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rpc&quot;</span>)]</span>);
+<span class="macro">impl_from!</span>(<span class="ident">boxed</span> <span class="ident">electrum::ElectrumBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">Electrum</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)]</span>);
+<span class="macro">impl_from!</span>(<span class="ident">boxed</span> <span class="ident">esplora::EsploraBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">Esplora</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;esplora&quot;</span>)]</span>);
+<span class="macro">impl_from!</span>(<span class="ident">boxed</span> <span class="ident">compact_filters::CompactFiltersBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">CompactFilters</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;compact_filters&quot;</span>)]</span>);
+<span class="macro">impl_from!</span>(<span class="ident">boxed</span> <span class="ident">rpc::RpcBlockchain</span>, <span class="ident">AnyBlockchain</span>, <span class="ident">Rpc</span>, <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rpc&quot;</span>)]</span>);
 
 <span class="doccomment">/// Type that can contain any of the blockchain configurations defined by the library</span>
 <span class="doccomment">///</span>
@@ -445,19 +461,19 @@
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">config</span> {
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)]</span>
             <span class="ident">AnyBlockchainConfig::Electrum</span>(<span class="ident">inner</span>) =&gt; {
-                <span class="ident">AnyBlockchain::Electrum</span>(<span class="ident">electrum::ElectrumBlockchain::from_config</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>)
+                <span class="ident">AnyBlockchain::Electrum</span>(<span class="ident">Box::new</span>(<span class="ident">electrum::ElectrumBlockchain::from_config</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>))
             }
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;esplora&quot;</span>)]</span>
             <span class="ident">AnyBlockchainConfig::Esplora</span>(<span class="ident">inner</span>) =&gt; {
-                <span class="ident">AnyBlockchain::Esplora</span>(<span class="ident">esplora::EsploraBlockchain::from_config</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>)
+                <span class="ident">AnyBlockchain::Esplora</span>(<span class="ident">Box::new</span>(<span class="ident">esplora::EsploraBlockchain::from_config</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>))
             }
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;compact_filters&quot;</span>)]</span>
-            <span class="ident">AnyBlockchainConfig::CompactFilters</span>(<span class="ident">inner</span>) =&gt; <span class="ident">AnyBlockchain::CompactFilters</span>(
+            <span class="ident">AnyBlockchainConfig::CompactFilters</span>(<span class="ident">inner</span>) =&gt; <span class="ident">AnyBlockchain::CompactFilters</span>(<span class="ident">Box::new</span>(
                 <span class="ident">compact_filters::CompactFiltersBlockchain::from_config</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>,
-            ),
+            )),
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rpc&quot;</span>)]</span>
             <span class="ident">AnyBlockchainConfig::Rpc</span>(<span class="ident">inner</span>) =&gt; {
-                <span class="ident">AnyBlockchain::Rpc</span>(<span class="ident">rpc::RpcBlockchain::from_config</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>)
+                <span class="ident">AnyBlockchain::Rpc</span>(<span class="ident">Box::new</span>(<span class="ident">rpc::RpcBlockchain::from_config</span>(<span class="ident">inner</span>)<span class="question-mark">?</span>))
             }
         })
     }
