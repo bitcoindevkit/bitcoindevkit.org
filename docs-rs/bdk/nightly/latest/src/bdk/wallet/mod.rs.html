@@ -4123,10 +4123,6 @@
 <span id="4116">4116</span>
 <span id="4117">4117</span>
 <span id="4118">4118</span>
-<span id="4119">4119</span>
-<span id="4120">4120</span>
-<span id="4121">4121</span>
-<span id="4122">4122</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -4186,7 +4182,7 @@
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::blockchain</span>::{<span class="ident">GetHeight</span>, <span class="ident">NoopProgress</span>, <span class="ident">Progress</span>, <span class="ident">WalletSync</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::memory::MemoryDatabase</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database</span>::{<span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>, <span class="ident">SyncTime</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database</span>::{<span class="ident">AnyDatabase</span>, <span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>, <span class="ident">SyncTime</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::derived::AsDerived</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::policy::BuildSatisfaction</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor</span>::{
@@ -5742,17 +5738,13 @@
 <span class="doccomment">/// Return a fake wallet that appears to be funded for testing.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_funded_wallet</span>(
     <span class="ident">descriptor</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) -&gt; (
-    <span class="ident">Wallet</span><span class="op">&lt;</span><span class="ident">MemoryDatabase</span><span class="op">&gt;</span>,
-    (<span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>),
-    <span class="ident">bitcoin::Txid</span>,
-) {
+) -&gt; (<span class="ident">Wallet</span><span class="op">&lt;</span><span class="ident">AnyDatabase</span><span class="op">&gt;</span>, (<span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>), <span class="ident">bitcoin::Txid</span>) {
     <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="macro">testutils!</span>(@<span class="ident">descriptors</span> (<span class="ident">descriptor</span>));
     <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet::new</span>(
         <span class="kw-2">&amp;</span><span class="ident">descriptors</span>.<span class="number">0</span>,
         <span class="prelude-val">None</span>,
         <span class="ident">Network::Regtest</span>,
-        <span class="ident">MemoryDatabase::new</span>(),
+        <span class="ident">AnyDatabase::Memory</span>(<span class="ident">MemoryDatabase::new</span>()),
     )
     .<span class="ident">unwrap</span>();
 
