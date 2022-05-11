@@ -107,7 +107,7 @@ think it has to do regardless of where the blockchain data comes from or how it'
 
 1. Generate and store addresses.
 2. Index transaction data. e.g. transaction outputs we own, when/if they were spent etc.
-3. Keep track of witch addresses have been given out and which have been used.
+3. Keep track of which addresses have been given out and which have been used.
 4. Be able to "roll back" our view of the above data if a re-org makes some of it stale.
 5. Keeping track of transactions related our addresses in our mempool.
 
@@ -275,27 +275,25 @@ let mut tracker = DescriptorTracker::new("tr([73c5da0a/86'/0'/0']xpub6BgBgsespWv
 
 let blockchain_events = { /* get a Stream of blockchain block connected/disconnected events */ };
 
-
 loop {
-    while Some(blockchain_event) =  blockchain_events.next() {
-       match blockchain_event {
-           BlockChainEvent::Connected(new_block) => {
-               match tracker.apply_block(new_block) {
-                   Ok(modified) => if modified {
-                       // update persistent storage from tracker
-                   }
-                   Err(ApplyBlockError::OutOfOrder) => {
-                       // the block event we got was not the next block we expected.
-                       // How to recover from this will depend on the application and block source
-                   }
-               }
-           }
+    let blockchain_event =  blockchain_events.next().await;
+    match blockchain_event {
+        BlockChainEvent::Connected(new_block) => {
+            match tracker.apply_block(new_block) => {
+                Ok(modified) => if modified {
+                    // update persistent storage from tracker
+                }
+                Err(ApplyBlockError::OutOfOrder) => {
+                    // the block event we got was not the next block we expected.
+                    // How to recover from this will depend on the application and block source
+                }
+           },
            BlockchainEvent::Disconnected((disconnected_height, disconnected_hash)) => {
               // this might invalidate a checkpoint
               tracker.disconnect_block(disconnected_height, disconnected_hash);
               // Now apply to persistent storage
            }
-       }
+        }
     }
 }
 ```
