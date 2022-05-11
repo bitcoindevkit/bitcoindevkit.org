@@ -10,10 +10,15 @@ draft: false
 ---
 
 The Bitcoin Developer Kit (BDK) lets you do a lot of useful things through convenient high level
-abstractions. When these abstractions map nicely to your application components your life is will be
-very easy but when they don't it can be become frustrating. My rather ambitious plan is start
-developing a new `bdk_core` library that exposes all the useful *mechanisms* that BDK has inside it
-without them being tied to any particular usage *policy* and with very minimal dependencies.
+abstractions. When these abstractions map nicely to your application components your life will be
+easy but when they don't it will be frustrating. My rather ambitious plan is start developing a new
+`bdk_core` library that exposes all the useful *mechanisms* that BDK has inside it without them
+being tied to any particular usage *policy* and with very minimal dependencies.
+
+The `bdk_core` idea is still "in the lab". We're not sure yet whether `bdk_core` will just be what's
+left of `bdk` once we spin off all the components that have extra dependencies into their own crates
+and refine it a bit. In that case `bdk_core` will just be called `bdk v1.0.0` or something. It might
+be that `bdk` lives on with its current APIs and uses stuff `bdk_core` to implement it internally.
 
 ## The separation of policy and mechanism
 
@@ -300,8 +305,9 @@ loop {
 
 ## Feedback
 
-The best way to give feedback on this would be contact me [BDK discord server](https://discord.gg/dstn4dQ).
-Expect to see a draft release of `bdk_core` towards the end of May. 
+The best way to give feedback on this would be to comment on the [pull request](https://github.com/bitcoindevkit/bitcoindevkit.org/pull/100) for this blog post.
+Thanks in advance.
+
 
 
 [X window system]: https://en.wikipedia.org/wiki/X_Window_System
