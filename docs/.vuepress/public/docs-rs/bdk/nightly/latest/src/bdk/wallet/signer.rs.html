@@ -772,6 +772,31 @@
 <span id="765">765</span>
 <span id="766">766</span>
 <span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -865,10 +890,11 @@
 <span class="kw">use</span> <span class="ident">bitcoin::blockdata::opcodes</span>;
 <span class="kw">use</span> <span class="ident">bitcoin::blockdata::script::Builder</span> <span class="kw">as</span> <span class="ident">ScriptBuilder</span>;
 <span class="kw">use</span> <span class="ident">bitcoin::hashes</span>::{<span class="ident">hash160</span>, <span class="ident">Hash</span>};
+<span class="kw">use</span> <span class="ident">bitcoin::secp256k1</span>;
 <span class="kw">use</span> <span class="ident">bitcoin::secp256k1</span>::{<span class="ident">Message</span>, <span class="ident">Secp256k1</span>};
 <span class="kw">use</span> <span class="ident">bitcoin::util::bip32</span>::{<span class="ident">ChildNumber</span>, <span class="ident">DerivationPath</span>, <span class="ident">ExtendedPrivKey</span>, <span class="ident">Fingerprint</span>};
-<span class="kw">use</span> <span class="ident">bitcoin::util</span>::{<span class="ident">bip143</span>, <span class="ident">psbt</span>};
-<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">PrivateKey</span>, <span class="ident">Script</span>, <span class="ident">SigHash</span>, <span class="ident">SigHashType</span>};
+<span class="kw">use</span> <span class="ident">bitcoin::util</span>::{<span class="ident">ecdsa</span>, <span class="ident">psbt</span>, <span class="ident">sighash</span>};
+<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">EcdsaSighashType</span>, <span class="ident">PrivateKey</span>, <span class="ident">PublicKey</span>, <span class="ident">Script</span>, <span class="ident">Sighash</span>};
 
 <span class="kw">use</span> <span class="ident">miniscript::descriptor</span>::{<span class="ident">DescriptorSecretKey</span>, <span class="ident">DescriptorSinglePriv</span>, <span class="ident">DescriptorXKey</span>, <span class="ident">KeyMap</span>};
 <span class="kw">use</span> <span class="ident">miniscript</span>::{<span class="ident">Legacy</span>, <span class="ident">MiniscriptKey</span>, <span class="ident">Segwitv0</span>};
@@ -927,6 +953,16 @@
     <span class="doccomment">/// To enable signing transactions with non-standard sighashes set</span>
     <span class="doccomment">/// [`SignOptions::allow_all_sighashes`] to `true`.</span>
     <span class="ident">NonStandardSighash</span>,
+    <span class="doccomment">/// Invalid SIGHASH for the signing context in use</span>
+    <span class="ident">InvalidSighash</span>,
+    <span class="doccomment">/// Error while computing the hash to sign</span>
+    <span class="ident">SighashError</span>(<span class="ident">sighash::Error</span>),
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">sighash::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SignerError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">e</span>: <span class="ident">sighash::Error</span>) -&gt; <span class="self">Self</span> {
+        <span class="ident">SignerError::SighashError</span>(<span class="ident">e</span>)
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">SignerError</span> {
@@ -1019,10 +1055,16 @@
             <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">xkey</span>.<span class="ident">derive_priv</span>(<span class="ident">secp</span>, <span class="kw-2">&amp;</span><span class="ident">full_path</span>).<span class="ident">unwrap</span>(),
         };
 
-        <span class="kw">if</span> <span class="kw-2">&amp;</span><span class="ident">derived_key</span>.<span class="ident">private_key</span>.<span class="ident">public_key</span>(<span class="ident">secp</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">public_key</span> {
+        <span class="kw">if</span> <span class="kw-2">&amp;</span><span class="ident">secp256k1::PublicKey::from_secret_key</span>(<span class="ident">secp</span>, <span class="kw-2">&amp;</span><span class="ident">derived_key</span>.<span class="ident">private_key</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">public_key</span> {
             <span class="prelude-val">Err</span>(<span class="ident">SignerError::InvalidKey</span>)
         } <span class="kw">else</span> {
-            <span class="ident">derived_key</span>.<span class="ident">private_key</span>.<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">Some</span>(<span class="ident">input_index</span>), <span class="ident">secp</span>)
+            <span class="comment">// HD wallets imply compressed keys</span>
+            <span class="ident">PrivateKey</span> {
+                <span class="ident">compressed</span>: <span class="bool-val">true</span>,
+                <span class="ident">network</span>: <span class="self">self</span>.<span class="ident">xkey</span>.<span class="ident">network</span>,
+                <span class="ident">inner</span>: <span class="ident">derived_key</span>.<span class="ident">private_key</span>,
+            }
+            .<span class="ident">sign</span>(<span class="ident">psbt</span>, <span class="prelude-val">Some</span>(<span class="ident">input_index</span>), <span class="ident">secp</span>)
         }
     }
 
@@ -1047,7 +1089,7 @@
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">input_index</span> <span class="op">=</span> <span class="ident">input_index</span>.<span class="ident">unwrap</span>();
-        <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">len</span>() {
+        <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">len</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError::InputIndexOutOfRange</span>);
         }
 
@@ -1057,7 +1099,7 @@
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
         }
 
-        <span class="kw">let</span> <span class="ident">pubkey</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">public_key</span>(<span class="ident">secp</span>);
+        <span class="kw">let</span> <span class="ident">pubkey</span> <span class="op">=</span> <span class="ident">PublicKey::from_private_key</span>(<span class="ident">secp</span>, <span class="self">self</span>);
         <span class="kw">if</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>].<span class="ident">partial_sigs</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">pubkey</span>) {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
         }
@@ -1071,15 +1113,15 @@
             <span class="prelude-val">None</span> =&gt; <span class="ident">Legacy::sighash</span>(<span class="ident">psbt</span>, <span class="ident">input_index</span>)<span class="question-mark">?</span>,
         };
 
-        <span class="kw">let</span> <span class="ident">signature</span> <span class="op">=</span> <span class="ident">secp</span>.<span class="ident">sign</span>(
+        <span class="kw">let</span> <span class="ident">sig</span> <span class="op">=</span> <span class="ident">secp</span>.<span class="ident">sign_ecdsa</span>(
             <span class="kw-2">&amp;</span><span class="ident">Message::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">hash</span>.<span class="ident">into_inner</span>()[..]).<span class="ident">unwrap</span>(),
-            <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">key</span>,
+            <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>,
         );
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">final_signature</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="number">75</span>);
-        <span class="ident">final_signature</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">signature</span>.<span class="ident">serialize_der</span>());
-        <span class="ident">final_signature</span>.<span class="ident">push</span>(<span class="ident">sighash</span>.<span class="ident">as_u32</span>() <span class="kw">as</span> <span class="ident">u8</span>);
-
+        <span class="kw">let</span> <span class="ident">final_signature</span> <span class="op">=</span> <span class="ident">ecdsa::EcdsaSig</span> {
+            <span class="ident">sig</span>,
+            <span class="ident">hash_ty</span>: <span class="ident">sighash</span>.<span class="ident">ecdsa_hash_ty</span>().<span class="ident">unwrap</span>(), <span class="comment">// FIXME</span>
+        };
         <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>]
             .<span class="ident">partial_sigs</span>
             .<span class="ident">insert</span>(<span class="ident">pubkey</span>, <span class="ident">final_signature</span>);
@@ -1268,22 +1310,24 @@
     <span class="kw">fn</span> <span class="ident">sighash</span>(
         <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="ident">usize</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">SigHash</span>, <span class="ident">SigHashType</span>), <span class="ident">SignerError</span><span class="op">&gt;</span>;
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Sighash</span>, <span class="ident">psbt::PsbtSighashType</span>), <span class="ident">SignerError</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">ComputeSighash</span> <span class="kw">for</span> <span class="ident">Legacy</span> {
     <span class="kw">fn</span> <span class="ident">sighash</span>(
         <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="ident">usize</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">SigHash</span>, <span class="ident">SigHashType</span>), <span class="ident">SignerError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">len</span>() {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Sighash</span>, <span class="ident">psbt::PsbtSighashType</span>), <span class="ident">SignerError</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">len</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError::InputIndexOutOfRange</span>);
         }
 
         <span class="kw">let</span> <span class="ident">psbt_input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>];
-        <span class="kw">let</span> <span class="ident">tx_input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="ident">input_index</span>];
+        <span class="kw">let</span> <span class="ident">tx_input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="ident">input_index</span>];
 
-        <span class="kw">let</span> <span class="ident">sighash</span> <span class="op">=</span> <span class="ident">psbt_input</span>.<span class="ident">sighash_type</span>.<span class="ident">unwrap_or</span>(<span class="ident">SigHashType::All</span>);
+        <span class="kw">let</span> <span class="ident">sighash</span> <span class="op">=</span> <span class="ident">psbt_input</span>
+            .<span class="ident">sighash_type</span>
+            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">EcdsaSighashType::All</span>.<span class="ident">into</span>());
         <span class="kw">let</span> <span class="ident">script</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">psbt_input</span>.<span class="ident">redeem_script</span> {
             <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">redeem_script</span>) =&gt; <span class="ident">redeem_script</span>.<span class="ident">clone</span>(),
             <span class="prelude-val">None</span> =&gt; {
@@ -1301,9 +1345,11 @@
         };
 
         <span class="prelude-val">Ok</span>((
-            <span class="ident">psbt</span>.<span class="ident">global</span>
-                .<span class="ident">unsigned_tx</span>
-                .<span class="ident">signature_hash</span>(<span class="ident">input_index</span>, <span class="kw-2">&amp;</span><span class="ident">script</span>, <span class="ident">sighash</span>.<span class="ident">as_u32</span>()),
+            <span class="ident">sighash::SighashCache::new</span>(<span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>).<span class="ident">legacy_signature_hash</span>(
+                <span class="ident">input_index</span>,
+                <span class="kw-2">&amp;</span><span class="ident">script</span>,
+                <span class="ident">sighash</span>.<span class="ident">to_u32</span>(),
+            )<span class="question-mark">?</span>,
             <span class="ident">sighash</span>,
         ))
     }
@@ -1323,15 +1369,19 @@
     <span class="kw">fn</span> <span class="ident">sighash</span>(
         <span class="ident">psbt</span>: <span class="kw-2">&amp;</span><span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="ident">usize</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">SigHash</span>, <span class="ident">SigHashType</span>), <span class="ident">SignerError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">len</span>() {
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Sighash</span>, <span class="ident">psbt::PsbtSighashType</span>), <span class="ident">SignerError</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">len</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SignerError::InputIndexOutOfRange</span>);
         }
 
         <span class="kw">let</span> <span class="ident">psbt_input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>];
-        <span class="kw">let</span> <span class="ident">tx_input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="ident">input_index</span>];
+        <span class="kw">let</span> <span class="ident">tx_input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="ident">input_index</span>];
 
-        <span class="kw">let</span> <span class="ident">sighash</span> <span class="op">=</span> <span class="ident">psbt_input</span>.<span class="ident">sighash_type</span>.<span class="ident">unwrap_or</span>(<span class="ident">SigHashType::All</span>);
+        <span class="kw">let</span> <span class="ident">sighash</span> <span class="op">=</span> <span class="ident">psbt_input</span>
+            .<span class="ident">sighash_type</span>
+            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">EcdsaSighashType::All</span>.<span class="ident">into</span>())
+            .<span class="ident">ecdsa_hash_ty</span>()
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">SignerError::InvalidSighash</span>)<span class="question-mark">?</span>;
 
         <span class="comment">// Always try first with the non-witness utxo</span>
         <span class="kw">let</span> <span class="ident">utxo</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">prev_tx</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">psbt_input</span>.<span class="ident">non_witness_utxo</span> {
@@ -1374,13 +1424,13 @@
         };
 
         <span class="prelude-val">Ok</span>((
-            <span class="ident">bip143::SigHashCache::new</span>(<span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">global</span>.<span class="ident">unsigned_tx</span>).<span class="ident">signature_hash</span>(
+            <span class="ident">sighash::SighashCache::new</span>(<span class="kw-2">&amp;</span><span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>).<span class="ident">segwit_signature_hash</span>(
                 <span class="ident">input_index</span>,
                 <span class="kw-2">&amp;</span><span class="ident">script</span>,
                 <span class="ident">value</span>,
                 <span class="ident">sighash</span>,
-            ),
-            <span class="ident">sighash</span>,
+            )<span class="question-mark">?</span>,
+            <span class="ident">sighash</span>.<span class="ident">into</span>(),
         ))
     }
 }
@@ -1531,7 +1581,7 @@
         <span class="kw">let</span> <span class="ident">secp</span>: <span class="ident">Secp256k1</span><span class="op">&lt;</span><span class="ident">All</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Secp256k1::new</span>();
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">bip32::DerivationPath::from_str</span>(<span class="ident">PATH</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">tprv</span> <span class="op">=</span> <span class="ident">bip32::ExtendedPrivKey::from_str</span>(<span class="ident">tprv</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">tpub</span> <span class="op">=</span> <span class="ident">bip32::ExtendedPubKey::from_private</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="kw-2">&amp;</span><span class="ident">tprv</span>);
+        <span class="kw">let</span> <span class="ident">tpub</span> <span class="op">=</span> <span class="ident">bip32::ExtendedPubKey::from_priv</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="kw-2">&amp;</span><span class="ident">tprv</span>);
         <span class="kw">let</span> <span class="ident">fingerprint</span> <span class="op">=</span> <span class="ident">tprv</span>.<span class="ident">fingerprint</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>);
         <span class="kw">let</span> <span class="ident">prvkey</span> <span class="op">=</span> (<span class="ident">tprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">pubkey</span> <span class="op">=</span> (<span class="ident">tpub</span>, <span class="ident">path</span>).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
