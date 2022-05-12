@@ -987,8 +987,6 @@
 <span id="980">980</span>
 <span id="981">981</span>
 <span id="982">982</span>
-<span id="983">983</span>
-<span id="984">984</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -1011,12 +1009,12 @@
 <span class="kw">use</span> <span class="ident">bitcoin::secp256k1</span>::{<span class="self">self</span>, <span class="ident">Secp256k1</span>, <span class="ident">Signing</span>};
 
 <span class="kw">use</span> <span class="ident">bitcoin::util::bip32</span>;
-<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">Network</span>, <span class="ident">PrivateKey</span>, <span class="ident">PublicKey</span>};
+<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">Network</span>, <span class="ident">PrivateKey</span>, <span class="ident">PublicKey</span>, <span class="ident">XOnlyPublicKey</span>};
 
 <span class="kw">use</span> <span class="ident">miniscript::descriptor</span>::{<span class="ident">Descriptor</span>, <span class="ident">DescriptorXKey</span>, <span class="ident">Wildcard</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">miniscript::descriptor</span>::{
     <span class="ident">DescriptorPublicKey</span>, <span class="ident">DescriptorSecretKey</span>, <span class="ident">DescriptorSinglePriv</span>, <span class="ident">DescriptorSinglePub</span>, <span class="ident">KeyMap</span>,
-    <span class="ident">SortedMultiVec</span>,
+    <span class="ident">SinglePubKey</span>, <span class="ident">SortedMultiVec</span>,
 };
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">miniscript::ScriptContext</span>;
 <span class="kw">use</span> <span class="ident">miniscript</span>::{<span class="ident">Miniscript</span>, <span class="ident">Terminal</span>};
@@ -1118,6 +1116,8 @@
     <span class="ident">Legacy</span>,
     <span class="doccomment">/// Segwitv0 scripts</span>
     <span class="ident">Segwitv0</span>,
+    <span class="doccomment">/// Taproot scripts</span>
+    <span class="ident">Tap</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">ScriptContextEnum</span> {
@@ -1129,6 +1129,11 @@
     <span class="doccomment">/// Returns whether the script context is [`ScriptContextEnum::Segwitv0`]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_segwit_v0</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">ScriptContextEnum::Segwitv0</span>
+    }
+
+    <span class="doccomment">/// Returns whether the script context is [`ScriptContextEnum::Tap`]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_taproot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="self">self</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">ScriptContextEnum::Tap</span>
     }
 }
 
@@ -1146,6 +1151,11 @@
     <span class="kw">fn</span> <span class="ident">is_segwit_v0</span>() -&gt; <span class="ident">bool</span> {
         <span class="ident"><span class="self">Self</span>::as_enum</span>().<span class="ident">is_segwit_v0</span>()
     }
+
+    <span class="doccomment">/// Returns whether the script context is [`Tap`](miniscript::Tap), aka Taproot or Segwit V1</span>
+    <span class="kw">fn</span> <span class="ident">is_taproot</span>() -&gt; <span class="ident">bool</span> {
+        <span class="ident"><span class="self">Self</span>::as_enum</span>().<span class="ident">is_taproot</span>()
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">ScriptContext</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span> <span class="ident">ExtScriptContext</span> <span class="kw">for</span> <span class="ident">Ctx</span> {
@@ -1153,6 +1163,7 @@
         <span class="kw">match</span> <span class="ident">TypeId::of</span>::<span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>() {
             <span class="ident">t</span> <span class="kw">if</span> <span class="ident">t</span> <span class="op">==</span> <span class="ident">TypeId::of</span>::<span class="op">&lt;</span><span class="ident">miniscript::Legacy</span><span class="op">&gt;</span>() =&gt; <span class="ident">ScriptContextEnum::Legacy</span>,
             <span class="ident">t</span> <span class="kw">if</span> <span class="ident">t</span> <span class="op">==</span> <span class="ident">TypeId::of</span>::<span class="op">&lt;</span><span class="ident">miniscript::Segwitv0</span><span class="op">&gt;</span>() =&gt; <span class="ident">ScriptContextEnum::Segwitv0</span>,
+            <span class="ident">t</span> <span class="kw">if</span> <span class="ident">t</span> <span class="op">==</span> <span class="ident">TypeId::of</span>::<span class="op">&lt;</span><span class="ident">miniscript::Tap</span><span class="op">&gt;</span>() =&gt; <span class="ident">ScriptContextEnum::Tap</span>,
             <span class="kw">_</span> =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;Unknown ScriptContext type&quot;</span>),
         }
     }
@@ -1203,7 +1214,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// use bdk::keys::{</span>
 <span class="doccomment">///     mainnet_network, DescriptorKey, DescriptorPublicKey, DescriptorSinglePub,</span>
-<span class="doccomment">///     IntoDescriptorKey, KeyError, ScriptContext,</span>
+<span class="doccomment">///     IntoDescriptorKey, KeyError, ScriptContext, SinglePubKey,</span>
 <span class="doccomment">/// };</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// pub struct MyKeyType {</span>
@@ -1215,7 +1226,7 @@
 <span class="doccomment">///         Ok(DescriptorKey::from_public(</span>
 <span class="doccomment">///             DescriptorPublicKey::SinglePub(DescriptorSinglePub {</span>
 <span class="doccomment">///                 origin: None,</span>
-<span class="doccomment">///                 key: self.pubkey,</span>
+<span class="doccomment">///                 key: SinglePubKey::FullKey(self.pubkey),</span>
 <span class="doccomment">///             }),</span>
 <span class="doccomment">///             mainnet_network(),</span>
 <span class="doccomment">///         ))</span>
@@ -1310,7 +1321,6 @@
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">ExtendedKey::Private</span>((<span class="kw-2">mut</span> <span class="ident">xprv</span>, <span class="kw">_</span>)) =&gt; {
                 <span class="ident">xprv</span>.<span class="ident">network</span> <span class="op">=</span> <span class="ident">network</span>;
-                <span class="ident">xprv</span>.<span class="ident">private_key</span>.<span class="ident">network</span> <span class="op">=</span> <span class="ident">network</span>;
                 <span class="prelude-val">Some</span>(<span class="ident">xprv</span>)
             }
             <span class="ident">ExtendedKey::Public</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
@@ -1325,7 +1335,7 @@
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">Secp256k1</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
     ) -&gt; <span class="ident">bip32::ExtendedPubKey</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">xpub</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ExtendedKey::Private</span>((<span class="ident">xprv</span>, <span class="kw">_</span>)) =&gt; <span class="ident">bip32::ExtendedPubKey::from_private</span>(<span class="ident">secp</span>, <span class="kw-2">&amp;</span><span class="ident">xprv</span>),
+            <span class="ident">ExtendedKey::Private</span>((<span class="ident">xprv</span>, <span class="kw">_</span>)) =&gt; <span class="ident">bip32::ExtendedPubKey::from_priv</span>(<span class="ident">secp</span>, <span class="kw-2">&amp;</span><span class="ident">xprv</span>),
             <span class="ident">ExtendedKey::Public</span>((<span class="ident">xpub</span>, <span class="kw">_</span>)) =&gt; <span class="ident">xpub</span>,
         };
 
@@ -1379,7 +1389,7 @@
 <span class="doccomment">///             network: self.network,</span>
 <span class="doccomment">///             depth: 0,</span>
 <span class="doccomment">///             parent_fingerprint: bip32::Fingerprint::default(),</span>
-<span class="doccomment">///             private_key: self.key_data,</span>
+<span class="doccomment">///             private_key: self.key_data.inner,</span>
 <span class="doccomment">///             chain_code: bip32::ChainCode::from(self.chain_code.as_ref()),</span>
 <span class="doccomment">///             child_number: bip32::ChildNumber::Normal { index: 0 },</span>
 <span class="doccomment">///         };</span>
@@ -1411,7 +1421,7 @@
 <span class="doccomment">///             network: bitcoin::Network::Bitcoin, // pick an arbitrary network here</span>
 <span class="doccomment">///             depth: 0,</span>
 <span class="doccomment">///             parent_fingerprint: bip32::Fingerprint::default(),</span>
-<span class="doccomment">///             private_key: self.key_data,</span>
+<span class="doccomment">///             private_key: self.key_data.inner,</span>
 <span class="doccomment">///             chain_code: bip32::ChainCode::from(self.chain_code.as_ref()),</span>
 <span class="doccomment">///             child_number: bip32::ChildNumber::Normal { index: 0 },</span>
 <span class="doccomment">///         };</span>
@@ -1689,11 +1699,11 @@ let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
         <span class="ident">entropy</span>: <span class="ident"><span class="self">Self</span>::Entropy</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">GeneratedKey</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Ctx</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
         <span class="comment">// pick a arbitrary network here, but say that we support all of them</span>
-        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">secp256k1::SecretKey::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">entropy</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">secp256k1::SecretKey::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">entropy</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">private_key</span> <span class="op">=</span> <span class="ident">PrivateKey</span> {
             <span class="ident">compressed</span>: <span class="ident">options</span>.<span class="ident">compressed</span>,
             <span class="ident">network</span>: <span class="ident">Network::Bitcoin</span>,
-            <span class="ident">key</span>,
+            <span class="ident">inner</span>,
         };
 
         <span class="prelude-val">Ok</span>(<span class="ident">GeneratedKey::new</span>(<span class="ident">private_key</span>, <span class="ident">any_network</span>()))
@@ -1832,7 +1842,17 @@ let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">ScriptContext</span><span class="op">&gt;</span> <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">PublicKey</span> {
     <span class="kw">fn</span> <span class="ident">into_descriptor_key</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
         <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="ident">DescriptorSinglePub</span> {
-            <span class="ident">key</span>: <span class="self">self</span>,
+            <span class="ident">key</span>: <span class="ident">SinglePubKey::FullKey</span>(<span class="self">self</span>),
+            <span class="ident">origin</span>: <span class="prelude-val">None</span>,
+        })
+        .<span class="ident">into_descriptor_key</span>()
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Ctx</span>: <span class="ident">ScriptContext</span><span class="op">&gt;</span> <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">XOnlyPublicKey</span> {
+    <span class="kw">fn</span> <span class="ident">into_descriptor_key</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorKey</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>, <span class="ident">KeyError</span><span class="op">&gt;</span> {
+        <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="ident">DescriptorSinglePub</span> {
+            <span class="ident">key</span>: <span class="ident">SinglePubKey::XOnly</span>(<span class="self">self</span>),
             <span class="ident">origin</span>: <span class="prelude-val">None</span>,
         })
         .<span class="ident">into_descriptor_key</span>()
@@ -1934,29 +1954,6 @@ let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_keys_wif_network</span>() {
-        <span class="comment">// test mainnet wif</span>
-        <span class="kw">let</span> <span class="ident">generated_xprv</span>: <span class="ident">GeneratedKey</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">miniscript::Segwitv0</span><span class="op">&gt;</span> <span class="op">=</span>
-            <span class="ident">bip32::ExtendedPrivKey::generate_with_entropy_default</span>(<span class="ident">TEST_ENTROPY</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">xkey</span> <span class="op">=</span> <span class="ident">generated_xprv</span>.<span class="ident">into_extended_key</span>().<span class="ident">unwrap</span>();
-
-        <span class="kw">let</span> <span class="ident">network</span> <span class="op">=</span> <span class="ident">Network::Bitcoin</span>;
-        <span class="kw">let</span> <span class="ident">xprv</span> <span class="op">=</span> <span class="ident">xkey</span>.<span class="ident">into_xprv</span>(<span class="ident">network</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">wif</span> <span class="op">=</span> <span class="ident">PrivateKey::from_wif</span>(<span class="kw-2">&amp;</span><span class="ident">xprv</span>.<span class="ident">private_key</span>.<span class="ident">to_wif</span>()).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">wif</span>.<span class="ident">network</span>, <span class="ident">network</span>);
-
-        <span class="comment">// test testnet wif</span>
-        <span class="kw">let</span> <span class="ident">generated_xprv</span>: <span class="ident">GeneratedKey</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">miniscript::Segwitv0</span><span class="op">&gt;</span> <span class="op">=</span>
-            <span class="ident">bip32::ExtendedPrivKey::generate_with_entropy_default</span>(<span class="ident">TEST_ENTROPY</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">xkey</span> <span class="op">=</span> <span class="ident">generated_xprv</span>.<span class="ident">into_extended_key</span>().<span class="ident">unwrap</span>();
-
-        <span class="kw">let</span> <span class="ident">network</span> <span class="op">=</span> <span class="ident">Network::Testnet</span>;
-        <span class="kw">let</span> <span class="ident">xprv</span> <span class="op">=</span> <span class="ident">xkey</span>.<span class="ident">into_xprv</span>(<span class="ident">network</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">wif</span> <span class="op">=</span> <span class="ident">PrivateKey::from_wif</span>(<span class="kw-2">&amp;</span><span class="ident">xprv</span>.<span class="ident">private_key</span>.<span class="ident">to_wif</span>()).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">wif</span>.<span class="ident">network</span>, <span class="ident">network</span>);
-    }
-
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;keys-bip39&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_keys_wif_network_bip39</span>() {
@@ -1968,9 +1965,8 @@ let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
         .<span class="ident">into_extended_key</span>()
         .<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">xprv</span> <span class="op">=</span> <span class="ident">xkey</span>.<span class="ident">into_xprv</span>(<span class="ident">Network::Testnet</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">wif</span> <span class="op">=</span> <span class="ident">PrivateKey::from_wif</span>(<span class="kw-2">&amp;</span><span class="ident">xprv</span>.<span class="ident">private_key</span>.<span class="ident">to_wif</span>()).<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">wif</span>.<span class="ident">network</span>, <span class="ident">Network::Testnet</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">xprv</span>.<span class="ident">network</span>, <span class="ident">Network::Testnet</span>);
     }
 }
 </code></pre></div>

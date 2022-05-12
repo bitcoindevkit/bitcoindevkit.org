@@ -897,9 +897,6 @@
 <span id="890">890</span>
 <span id="891">891</span>
 <span id="892">892</span>
-<span id="893">893</span>
-<span id="894">894</span>
-<span id="895">895</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -944,7 +941,7 @@
 <span class="kw">use</span> <span class="ident">std::marker::PhantomData</span>;
 
 <span class="kw">use</span> <span class="ident">bitcoin::util::psbt</span>::{<span class="self">self</span>, <span class="ident">PartiallySignedTransaction</span> <span class="kw">as</span> <span class="ident">Psbt</span>};
-<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">OutPoint</span>, <span class="ident">Script</span>, <span class="ident">SigHashType</span>, <span class="ident">Transaction</span>};
+<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">OutPoint</span>, <span class="ident">Script</span>, <span class="ident">Transaction</span>};
 
 <span class="kw">use</span> <span class="ident">miniscript::descriptor::DescriptorTrait</span>;
 
@@ -1005,10 +1002,7 @@
 <span class="doccomment">///     builder.finish()?</span>
 <span class="doccomment">/// };</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(</span>
-<span class="doccomment">///     psbt1.global.unsigned_tx.output[..2],</span>
-<span class="doccomment">///     psbt2.global.unsigned_tx.output[..2]</span>
-<span class="doccomment">/// );</span>
+<span class="doccomment">/// assert_eq!(psbt1.unsigned_tx.output[..2], psbt2.unsigned_tx.output[..2]);</span>
 <span class="doccomment">/// # Ok::&lt;(), bdk::Error&gt;(())</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
@@ -1042,7 +1036,7 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">unspendable</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">OutPoint</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">manually_selected_only</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">sighash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SigHashType</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">sighash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">psbt::PsbtSighashType</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">ordering</span>: <span class="ident">TxOrdering</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">locktime</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">rbf</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RbfValue</span><span class="op">&gt;</span>,
@@ -1314,7 +1308,7 @@
     <span class="doccomment">/// Sign with a specific sig hash</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **Use this option very carefully**</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sighash</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">sighash</span>: <span class="ident">SigHashType</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sighash</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">sighash</span>: <span class="ident">psbt::PsbtSighashType</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">sighash</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">sighash</span>);
         <span class="self">self</span>
     }

@@ -192,6 +192,29 @@
 <span id="185">185</span>
 <span id="186">186</span>
 <span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -246,10 +269,10 @@
 <span class="kw">use</span> <span class="ident">std::ops::Deref</span>;
 
 <span class="kw">use</span> <span class="ident">bitcoin::hashes::hash160</span>;
-<span class="kw">use</span> <span class="ident">bitcoin::PublicKey</span>;
+<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">PublicKey</span>, <span class="ident">XOnlyPublicKey</span>};
 
-<span class="kw">use</span> <span class="ident">miniscript</span>::{<span class="ident">descriptor::Wildcard</span>, <span class="ident">Descriptor</span>, <span class="ident">DescriptorPublicKey</span>};
-<span class="kw">use</span> <span class="ident">miniscript</span>::{<span class="ident">MiniscriptKey</span>, <span class="ident">ToPublicKey</span>, <span class="ident">TranslatePk</span>};
+<span class="kw">use</span> <span class="ident">miniscript::descriptor</span>::{<span class="ident">DescriptorSinglePub</span>, <span class="ident">SinglePubKey</span>, <span class="ident">Wildcard</span>};
+<span class="kw">use</span> <span class="ident">miniscript</span>::{<span class="ident">Descriptor</span>, <span class="ident">DescriptorPublicKey</span>, <span class="ident">MiniscriptKey</span>, <span class="ident">ToPublicKey</span>, <span class="ident">TranslatePk</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet::utils::SecpCtx</span>;
 
@@ -322,21 +345,44 @@
     <span class="kw">fn</span> <span class="ident">is_uncompressed</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">is_uncompressed</span>()
     }
-    <span class="kw">fn</span> <span class="ident">serialized_len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">serialized_len</span>()
-    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span> <span class="ident">ToPublicKey</span> <span class="kw">for</span> <span class="ident">DerivedDescriptorKey</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">to_public_key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">PublicKey</span> {
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span> {
-            <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="kw-2">ref</span> <span class="ident">spub</span>) =&gt; <span class="ident">spub</span>.<span class="ident">key</span>.<span class="ident">to_public_key</span>(),
-            <span class="ident">DescriptorPublicKey::XPub</span>(<span class="kw-2">ref</span> <span class="ident">xpub</span>) =&gt; {
+            <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="ident">DescriptorSinglePub</span> {
+                <span class="ident">key</span>: <span class="ident">SinglePubKey::XOnly</span>(<span class="kw">_</span>),
+                ..
+            }) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Found x-only public key in non-tr descriptor&quot;</span>),
+            <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="ident">DescriptorSinglePub</span> {
+                <span class="ident">key</span>: <span class="ident">SinglePubKey::FullKey</span>(<span class="kw-2">ref</span> <span class="ident">pk</span>),
+                ..
+            }) =&gt; <span class="kw-2">*</span><span class="ident">pk</span>,
+            <span class="ident">DescriptorPublicKey::XPub</span>(<span class="kw-2">ref</span> <span class="ident">xpub</span>) =&gt; <span class="ident">PublicKey::new</span>(
                 <span class="ident">xpub</span>.<span class="ident">xkey</span>
                     .<span class="ident">derive_pub</span>(<span class="self">self</span>.<span class="number">1</span>, <span class="kw-2">&amp;</span><span class="ident">xpub</span>.<span class="ident">derivation_path</span>)
                     .<span class="ident">expect</span>(<span class="string">&quot;Shouldn&#39;t fail, only normal derivations&quot;</span>)
-                    .<span class="ident">public_key</span>
-            }
+                    .<span class="ident">public_key</span>,
+            ),
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">to_x_only_pubkey</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">XOnlyPublicKey</span> {
+        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span> {
+            <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="ident">DescriptorSinglePub</span> {
+                <span class="ident">key</span>: <span class="ident">SinglePubKey::XOnly</span>(<span class="kw-2">ref</span> <span class="ident">pk</span>),
+                ..
+            }) =&gt; <span class="kw-2">*</span><span class="ident">pk</span>,
+            <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="ident">DescriptorSinglePub</span> {
+                <span class="ident">key</span>: <span class="ident">SinglePubKey::FullKey</span>(<span class="kw-2">ref</span> <span class="ident">pk</span>),
+                ..
+            }) =&gt; <span class="ident">XOnlyPublicKey::from</span>(<span class="ident">pk</span>.<span class="ident">inner</span>),
+            <span class="ident">DescriptorPublicKey::XPub</span>(<span class="kw-2">ref</span> <span class="ident">xpub</span>) =&gt; <span class="ident">XOnlyPublicKey::from</span>(
+                <span class="ident">xpub</span>.<span class="ident">xkey</span>
+                    .<span class="ident">derive_pub</span>(<span class="self">self</span>.<span class="number">1</span>, <span class="kw-2">&amp;</span><span class="ident">xpub</span>.<span class="ident">derivation_path</span>)
+                    .<span class="ident">expect</span>(<span class="string">&quot;Shouldn&#39;t fail, only normal derivations&quot;</span>)
+                    .<span class="ident">public_key</span>,
+            ),
         }
     }
 
