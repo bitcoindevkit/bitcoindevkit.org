@@ -9,7 +9,7 @@ hidden: true
 draft: false
 ---
 
-The Bitcoin Developer Kit (BDK) lets you do a lot of useful things through convenient high level
+The Bitcoin Devkit (BDK) lets you do a lot of useful things through convenient high level
 abstractions. When these abstractions map nicely to your application components your life will be
 easy but when they don't it will be frustrating. My rather ambitious plan is to start developing a new
 `bdk_core` library that exposes all the useful *mechanisms* that BDK has inside it without them
@@ -82,7 +82,7 @@ Here are some examples:
    ask them to sign. This is not always appropriate. In `bdk_core` I hope we can just provide
    ways of populating the correct PSBT fields with signatures.
 
-## A Syncing mechansim without the policy
+## A syncing mechansim without the policy
 
 The rest of this post goes into detail about how to expose useful mechanisms for syncing without
 imposing a policy either on how blockchain data is fetched or how it is stored.
@@ -155,7 +155,7 @@ other components.
 ### Rolling back, rolling forward and syncing to disk
 
 State changes in blockchains are clearly delineated. They all happen in blocks! Every view of the
-blockchain whether you're getting it through compact block filters, an electrum server or something
+blockchain, whether you're getting it through compact block filters, an electrum server or something
 wacky like a utreexo bridge will have a concept of blocks and transactions in them. For a wallet we
 only need a very sparse view of the blockchain that includes at which block a set of transactions
 existed. That way, if a block disappears we know that all those transactions might disappear too.
@@ -266,7 +266,6 @@ match update {
 }
 ```
 
-
 ### Updating state when you get the data in real time
 
 If you have an event based view of the blockchain that feeds you block connected or block
@@ -308,8 +307,6 @@ loop {
 The best way to give feedback on this would be to comment on the [pull request](https://github.com/bitcoindevkit/bitcoindevkit.org/pull/100) for this blog post.
 Thanks in advance.
 
-
-
 [X window system]: https://en.wikipedia.org/wiki/X_Window_System
 [The Art of UNIX Programming]: https://en.wikipedia.org/wiki/The_Art_of_Unix_Programming
 [`Wallet`]: https://docs.rs/bdk/latest/bdk/wallet/struct.Wallet.html
@@ -318,5 +315,3 @@ Thanks in advance.
 [`WalletSync`]: https://docs.rs/bdk/latest/bdk/blockchain/trait.walletsync.html
 [Sensei]: https://l2.technology/sensei
 [`Database`]: https://docs.rs/bdk/latest/bdk/database/trait.Database.html
-
-
