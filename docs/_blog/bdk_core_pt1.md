@@ -11,13 +11,13 @@ draft: false
 
 The Bitcoin Developer Kit (BDK) lets you do a lot of useful things through convenient high level
 abstractions. When these abstractions map nicely to your application components your life will be
-easy but when they don't it will be frustrating. My rather ambitious plan is start developing a new
+easy but when they don't it will be frustrating. My rather ambitious plan is to start developing a new
 `bdk_core` library that exposes all the useful *mechanisms* that BDK has inside it without them
 being tied to any particular usage *policy* and with very minimal dependencies.
 
 The `bdk_core` idea is still "in the lab". We're not sure yet whether `bdk_core` will just be what's
 left of `bdk` once we spin off all the components that have extra dependencies into their own crates
-and refine it a bit. In that case `bdk_core` will just be called `bdk v1.0.0` or something. It might
+and refine it a bit. In that case `bdk_core` will just be called `bdk v1.0.0` or something. Or it might
 be that `bdk` lives on with its current APIs and uses stuff `bdk_core` to implement it internally.
 
 ## The separation of policy and mechanism
@@ -26,7 +26,7 @@ My guiding principle for `bdk_core` is going to be the *separation of policy and
 what I mean by these terms:
 
 - *mechanism*: How you do a particular thing. Mechanism code is functional and doesn't change much.
-- *policy*: What you want to do. Policy code composes mechanisms to a achieve something in
+- *policy*: What you want to do. Policy code composes mechanisms to achieve something in
   an application.
 
 Here's a nice passage about why the designers of the [X window system] applied this principle. X has
@@ -52,7 +52,7 @@ From *[The Art of UNIX Programming]*:
 > should look for ways to separate interfaces from engines.
 
 You'll notice we have a similar situation in Bitcoin engineering. We have mechanism code like
-signing algorithms, key derivation, transaction construction logic etc that don't change much. But
+signing algorithms, key derivation, transaction construction logic, etc., that don't change much. But
 how these compose together in applications changes quickly over time and between applications.
 
 The main culprit of policy and mechanism conflation in `bdk` is the main [`Wallet`] type.
@@ -67,7 +67,7 @@ Wallets do all of the following:
 
 All of that is very useful but it is bound together with the particular policies and opinions of `Wallet`.
 If `Wallet`'s policy is not your policy it's going to be tricky to get it to do what you want.
-Here's some examples:
+Here are some examples:
 
 1. In order to control how the `Wallet` will select coins for a transaction internally you have to
    pass in something implementing the [`CoinSelectionAlgorithm`] trait. A coin selection algorithm
@@ -77,9 +77,9 @@ Here's some examples:
    purely provide the coin selection mechanisms for figuring out whether you need to select more
    UTXOs or whether you need a change output etc. How you use that mechanism will be up to you.
 2. Another trait that has a similar structure is the [`Signer`] trait. You have to pass in signers
-   so your wallet can sign PSBTs but you have little control on how the wallet chooses which signers
-   to use any given situation. Right now the wallet will just iterate through all the signers and
-   ask them to sign. This is not always the appropriate. In `bdk_core` I hope we can just provide
+   so your wallet can sign PSBTs but you have little control over how the wallet chooses which signers
+   to use in any given situation. Right now the wallet will just iterate through all the signers and
+   ask them to sign. This is not always appropriate. In `bdk_core` I hope we can just provide
    ways of populating the correct PSBT fields with signatures.
 
 ## A Syncing mechansim without the policy
@@ -91,9 +91,9 @@ imposing a policy either on how blockchain data is fetched or how it is stored.
 
 Syncing in `bdk` is the place where the design of `Wallet` is most restrictive. The [`WalletSync`]
 trait forces you to sync all addresses in a wallet in one big batch. But this is not always what you
-want to do. I spoke to a developer who wanted to create a new tor connection to an electrum server
+want to do. I spoke to a developer who wanted to create a new Tor connection to an electrum server
 for each address so the addresses couldn't be easily linked and to run this slowly in the
-background. It would be really difficult to to implement `WalletSync` with such a strategy. Another
+background. It would be really difficult to implement `WalletSync` with such a strategy. Another
 example where `WalletSync` isn't the right fit is the [Sensei] project which uses BDK but
 incrementally updates the database whenever new information comes in from the blockchain.
 
@@ -102,7 +102,7 @@ gets in the way since it defines whether you do it synchronously or asynchrononu
 can control this through `bdk`'s `async-interface` feature flag which internally changes the trait
 definition through macros. Another annoyance is that when using `async-interface` the future that
 gets returned from `WalletSync` [cannot be `Send`](https://github.com/bitcoindevkit/bdk/issues/165)
-because of how `Wallet` handles database mutability internally meaning you can't spawn the future
+because of how `Wallet` handles database mutability internally, meaning you can't spawn the future
 into a new thread.
 
 ### A general syncing mechanism
@@ -111,7 +111,7 @@ So what is the most general syncing mechanism that solves these problems? These 
 think it has to do regardless of where the blockchain data comes from or how it's stored:
 
 1. Generate and store addresses.
-2. Index transaction data. e.g. transaction outputs we own, when/if they were spent etc.
+2. Index transaction data, e.g. transaction outputs we own, when/if they were spent, etc.
 3. Keep track of which addresses have been given out and which have been used.
 4. Be able to "roll back" our view of the above data if a re-org makes some of it stale.
 5. Keeping track of transactions related our addresses in our mempool.
@@ -121,10 +121,10 @@ Let's talk about how to implement a mechanism that does all that.
 ### How to store and index transactions
 
 Different persistent storage backends have different APIs and their own indexing strategies. That's
-why the [`Database`] trait exists in BDK to make a clean API to the different storage engines. It's
+why the [`Database`] trait exists in BDK, to make a clean API to the different storage engines. It's
 important to note that the database in BDK only holds public data that could always be retrieved
-from the chain. It's just a cache. Despite this we support different backends. Right now it is a a
-lot of work to add a new index to the data since you have add it to every backend and you might have
+from the chain. It's just a cache. Despite this we support different backends. Right now it is a
+lot of work to add a new index to the data since you have to add it to every backend and you might have
 to apply schema changes (we still [don't have a standard approach to
 this](https://github.com/bitcoindevkit/bdk/issues/359)).
 
@@ -146,13 +146,13 @@ transactions. They're usually just signing devices. Perhaps one day someone will
 constrained device that needs to do this work but until then I think this is a fine approach to
 take.
 
-For now I'm calling this thing that does the in memory indexing of transactions related to a single
+For now I'm calling this thing that does the in-memory indexing of transactions related to a single
 descriptor a `DescriptorTracker`. Here's a diagram that communicates how I imagine it relates to the
 other components.
 
 ![](./bdk_core_pt1/descriptor-tracker.jpg)
 
-### Rolling back, rolling forward and sycning to disk
+### Rolling back, rolling forward and syncing to disk
 
 State changes in blockchains are clearly delineated. They all happen in blocks! Every view of the
 blockchain whether you're getting it through compact block filters, an electrum server or something
@@ -160,19 +160,19 @@ wacky like a utreexo bridge will have a concept of blocks and transactions in th
 only need a very sparse view of the blockchain that includes at which block a set of transactions
 existed. That way, if a block disappears we know that all those transactions might disappear too.
 
-With `bdk_core` I want introduce the concept of a *checkpoint* which is a block height and hash and
+With `bdk_core` I want to introduce the concept of a *checkpoint*, which is a block height and hash and
 a set of txids that were present at that height **but not present in the previous checkpoint**. In
-this way we create an append only data structure that can easily be rolled back to a previous height
+this way we create an append-only data structure that can easily be rolled back to a previous height
 if there is a re-org. After rolling back we can then roll forward and apply the new blocks.
 
 Here's an example of how this idea works:
 
 ![](./bdk_core_pt1/checkpoints.jpg)
 
-There's a few edge cases I'd like to cover:
+There are a few edge cases I'd like to cover:
 
 1. What if when gathering new data from the chain to update a `DescriptorTracker` we find an old transaction that belongs to an earlier checkpoint that we had missed form our earlier syncs?
-2. What if when we go to write to persistent storage from a `DescriptorTracker` we find that it has some transactions the tracker doesn't. Should we try and reconcile the two sets of transactions?
+2. What if when we go to write to persistent storage from a `DescriptorTracker` we find that it has some transactions the tracker doesn't? Should we try and reconcile the two sets of transactions?
 
 I think the correct approach is to treat the chain data as the source of truth for the
 `DescriptorTracker` and the `DescriptorTracker` as the source of truth for persistent storage. That
@@ -186,13 +186,13 @@ update persistent storage by first applying the changes to the tracker.
 
 Here are some examples of what I think this may end up looking like in code. Keep in mind that if
 this looks complicated it will probably be more complicated in practice! This doesn't mean that we
-can't create simplifying abstractions and tools around this primitives to cover common policies. I hope we can implement `Wallet` with `DescriptorTracker`s internally.
+can't create simplifying abstractions and tools around these primitives to cover common policies. I hope we can implement `Wallet` with `DescriptorTracker`s internally.
 
 ### Doing an initial sync of a descriptor that may already contain coins
 
 When we first sync a descriptor that may already contain coins we want to iterate over all the
 scripts of the wallet and then stop if there's a big enough gap (e.g. 20). In this example we use an
-stateless [esplora like API](https://mempool.space/docs/api/rest).
+stateless [esplora-like API](https://mempool.space/docs/api/rest).
 
 ```rust
 // create a descriptor tracker the external addresses of a BIP86 key
