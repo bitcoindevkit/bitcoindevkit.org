@@ -787,6 +787,36 @@
 <span id="780">780</span>
 <span id="781">781</span>
 <span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -1124,7 +1154,12 @@
             <span class="ident">DescriptorType::Sh</span> =&gt; <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>().<span class="ident">unwrap</span>()),
             <span class="ident">DescriptorType::Bare</span> =&gt; <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>().<span class="ident">unwrap</span>()),
             <span class="ident">DescriptorType::ShSortedMulti</span> =&gt; <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>().<span class="ident">unwrap</span>()),
-            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+            <span class="ident">DescriptorType::ShWshSortedMulti</span> =&gt; <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>().<span class="ident">unwrap</span>().<span class="ident">to_v0_p2wsh</span>()),
+            <span class="ident">DescriptorType::Pkh</span>
+            <span class="op">|</span> <span class="ident">DescriptorType::Wpkh</span>
+            <span class="op">|</span> <span class="ident">DescriptorType::Tr</span>
+            <span class="op">|</span> <span class="ident">DescriptorType::Wsh</span>
+            <span class="op">|</span> <span class="ident">DescriptorType::WshSortedMulti</span> =&gt; <span class="prelude-val">None</span>,
         }
     }
 
@@ -1135,7 +1170,13 @@
             <span class="ident">DescriptorType::WshSortedMulti</span> <span class="op">|</span> <span class="ident">DescriptorType::ShWshSortedMulti</span> =&gt; {
                 <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">explicit_script</span>().<span class="ident">unwrap</span>())
             }
-            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+            <span class="ident">DescriptorType::Bare</span>
+            <span class="op">|</span> <span class="ident">DescriptorType::Sh</span>
+            <span class="op">|</span> <span class="ident">DescriptorType::Pkh</span>
+            <span class="op">|</span> <span class="ident">DescriptorType::Wpkh</span>
+            <span class="op">|</span> <span class="ident">DescriptorType::ShSortedMulti</span>
+            <span class="op">|</span> <span class="ident">DescriptorType::Tr</span>
+            <span class="op">|</span> <span class="ident">DescriptorType::ShWpkh</span> =&gt; <span class="prelude-val">None</span>,
         }
     }
 }
@@ -1305,6 +1346,7 @@
     <span class="kw">use</span> <span class="ident">bitcoin::hashes::hex::FromHex</span>;
     <span class="kw">use</span> <span class="ident">bitcoin::secp256k1::Secp256k1</span>;
     <span class="kw">use</span> <span class="ident">bitcoin::util</span>::{<span class="ident">bip32</span>, <span class="ident">psbt</span>};
+    <span class="kw">use</span> <span class="ident">bitcoin::Script</span>;
 
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::psbt::PsbtUtils</span>;
@@ -1567,6 +1609,24 @@
             <span class="ident">result</span>.<span class="ident">unwrap_err</span>(),
             <span class="ident">DescriptorError::DuplicatedKeys</span>
         ));
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_sh_wsh_sortedmulti_redeemscript</span>() {
+        <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">AsDerived</span>, <span class="ident">DescriptorScripts</span>};
+
+        <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1::new</span>();
+
+        <span class="kw">let</span> <span class="ident">descriptor</span> <span class="op">=</span> <span class="string">&quot;sh(wsh(sortedmulti(3,tpubDEsqS36T4DVsKJd9UH8pAKzrkGBYPLEt9jZMwpKtzh1G6mgYehfHt9WCgk7MJG5QGSFWf176KaBNoXbcuFcuadAFKxDpUdMDKGBha7bY3QM/0/*,tpubDF3cpwfs7fMvXXuoQbohXtLjNM6ehwYT287LWtmLsd4r77YLg6MZg4vTETx5MSJ2zkfigbYWu31VA2Z2Vc1cZugCYXgS7FQu6pE8V6TriEH/0/*,tpubDE1SKfcW76Tb2AASv5bQWMuScYNAdoqLHoexw13sNDXwmUhQDBbCD3QAedKGLhxMrWQdMDKENzYtnXPDRvexQPNuDrLj52wAjHhNEm8sJ4p/0/*,tpubDFLc6oXwJmhm3FGGzXkfJNTh2KitoY3WhmmQvuAjMhD8YbyWn5mAqckbxXfm2etM3p5J6JoTpSrMqRSTfMLtNW46poDaEZJ1kjd3csRSjwH/0/*,tpubDEWD9NBeWP59xXmdqSNt4VYdtTGwbpyP8WS962BuqpQeMZmX9Pur14dhXdZT5a7wR1pK6dPtZ9fP5WR493hPzemnBvkfLLYxnUjAKj1JCQV/0/*,tpubDEHyZkkwd7gZWCTgQuYQ9C4myF2hMEmyHsBCCmLssGqoqUxeT3gzohF5uEVURkf9TtmeepJgkSUmteac38FwZqirjApzNX59XSHLcwaTZCH/0/*,tpubDEqLouCekwnMUWN486kxGzD44qVgeyuqHyxUypNEiQt5RnUZNJe386TKPK99fqRV1vRkZjYAjtXGTECz98MCsdLcnkM67U6KdYRzVubeCgZ/0/*)))&quot;</span>;
+        <span class="kw">let</span> (<span class="ident">descriptor</span>, <span class="kw">_</span>) <span class="op">=</span>
+            <span class="ident">into_wallet_descriptor_checked</span>(<span class="ident">descriptor</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network::Testnet</span>).<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">descriptor</span> <span class="op">=</span> <span class="ident">descriptor</span>.<span class="ident">as_derived</span>(<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>);
+
+        <span class="kw">let</span> <span class="ident">script</span> <span class="op">=</span> <span class="ident">Script::from_str</span>(<span class="string">&quot;5321022f533b667e2ea3b36e21961c9fe9dca340fbe0af5210173a83ae0337ab20a57621026bb53a98e810bd0ee61a0ed1164ba6c024786d76554e793e202dc6ce9c78c4ea2102d5b8a7d66a41ffdb6f4c53d61994022e886b4f45001fb158b95c9164d45f8ca3210324b75eead2c1f9c60e8adeb5e7009fec7a29afcdb30d829d82d09562fe8bae8521032d34f8932200833487bd294aa219dcbe000b9f9b3d824799541430009f0fa55121037468f8ea99b6c64788398b5ad25480cad08f4b0d65be54ce3a55fd206b5ae4722103f72d3d96663b0ea99b0aeb0d7f273cab11a8de37885f1dddc8d9112adb87169357ae&quot;</span>).<span class="ident">unwrap</span>();
+
+        <span class="macro">assert_eq!</span>(<span class="ident">descriptor</span>.<span class="ident">psbt_redeem_script</span>(), <span class="prelude-val">Some</span>(<span class="ident">script</span>.<span class="ident">to_v0_p2wsh</span>()));
+        <span class="macro">assert_eq!</span>(<span class="ident">descriptor</span>.<span class="ident">psbt_witness_script</span>(), <span class="prelude-val">Some</span>(<span class="ident">script</span>));
     }
 }
 </code></pre></div>
