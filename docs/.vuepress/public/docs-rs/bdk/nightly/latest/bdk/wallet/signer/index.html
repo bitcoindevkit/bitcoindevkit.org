@@ -6,7 +6,7 @@
                     <img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></div>
         </a><h2 class="location"><a href="#">Module signer</a></h2><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li></ul></div><div id="sidebar-vars" data-name="signer" data-ty="mod" data-relpath="./"></div><script defer src="./sidebar-items.js"></script></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../bdk/index.html">
                         <img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="main-heading">
-    <h1 class="fqn"><span class="in-band">Module <a href="../../index.html">bdk</a>::<wbr><a href="../index.html">wallet</a>::<wbr><a class="mod" href="#">signer</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../../../src/bdk/wallet/signer.rs.html#12-792" title="goto source code">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Generalized signers</p>
+    <h1 class="fqn"><span class="in-band">Module <a href="../../index.html">bdk</a>::<wbr><a href="../index.html">wallet</a>::<wbr><a class="mod" href="#">signer</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../../../src/bdk/wallet/signer.rs.html#12-1033" title="goto source code">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Generalized signers</p>
 <p>This module provides the ability to add customized signers to a <a href="../struct.Wallet.html"><code>Wallet</code></a>
 through the <a href="../struct.Wallet.html#method.add_signer"><code>Wallet::add_signer</code></a> function.</p>
 
@@ -21,25 +21,22 @@ through the <a href="../struct.Wallet.html#method.add_signer"><code>Wallet::add_
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Signer</span> <span class="kw">for</span> <span class="ident">CustomSigner</span> {
-    <span class="kw">fn</span> <span class="ident">sign</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">psbt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
-        <span class="ident">input_index</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
-        <span class="ident">_secp</span>: <span class="kw-2">&amp;</span><span class="ident">Secp256k1</span><span class="op">&lt;</span><span class="ident">All</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">input_index</span> <span class="op">=</span> <span class="ident">input_index</span>.<span class="ident">ok_or</span>(<span class="ident">SignerError::InputIndexOutOfRange</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">device</span>.<span class="ident">sign_input</span>(<span class="ident">psbt</span>, <span class="ident">input_index</span>)<span class="question-mark">?</span>;
-
-        <span class="prelude-val">Ok</span>(())
-    }
-
+<span class="kw">impl</span> <span class="ident">SignerCommon</span> <span class="kw">for</span> <span class="ident">CustomSigner</span> {
     <span class="kw">fn</span> <span class="ident">id</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_secp</span>: <span class="kw-2">&amp;</span><span class="ident">Secp256k1</span><span class="op">&lt;</span><span class="ident">All</span><span class="op">&gt;</span>) -&gt; <span class="ident">SignerId</span> {
         <span class="self">self</span>.<span class="ident">device</span>.<span class="ident">get_id</span>()
     }
+}
 
-    <span class="kw">fn</span> <span class="ident">sign_whole_tx</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="bool-val">false</span>
+<span class="kw">impl</span> <span class="ident">InputSigner</span> <span class="kw">for</span> <span class="ident">CustomSigner</span> {
+    <span class="kw">fn</span> <span class="ident">sign_input</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">psbt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
+        <span class="ident">input_index</span>: <span class="ident">usize</span>,
+        <span class="ident">_secp</span>: <span class="kw-2">&amp;</span><span class="ident">Secp256k1</span><span class="op">&lt;</span><span class="ident">All</span><span class="op">&gt;</span>,
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">device</span>.<span class="ident">hsm_sign_input</span>(<span class="ident">psbt</span>, <span class="ident">input_index</span>)<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(())
     }
 }
 
@@ -56,12 +53,16 @@ through the <a href="../struct.Wallet.html#method.add_signer"><code>Wallet::add_
 </div></details><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2>
 <div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SignOptions.html" title="bdk::wallet::signer::SignOptions struct">SignOptions</a></div><div class="item-right docblock-short"><p>Options for a software signer</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SignerOrdering.html" title="bdk::wallet::signer::SignerOrdering struct">SignerOrdering</a></div><div class="item-right docblock-short"><p>Defines the order in which signers are called</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SignerWrapper.html" title="bdk::wallet::signer::SignerWrapper struct">SignerWrapper</a></div><div class="item-right docblock-short"><p>Wrapper structure to pair a signer with its context</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SignersContainer.html" title="bdk::wallet::signer::SignersContainer struct">SignersContainer</a></div><div class="item-right docblock-short"><p>Container for multiple signers</p>
 </div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2>
-<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.SignerError.html" title="bdk::wallet::signer::SignerError enum">SignerError</a></div><div class="item-right docblock-short"><p>Signing error</p>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.SignerContext.html" title="bdk::wallet::signer::SignerContext enum">SignerContext</a></div><div class="item-right docblock-short"><p>Signing context</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.SignerError.html" title="bdk::wallet::signer::SignerError enum">SignerError</a></div><div class="item-right docblock-short"><p>Signing error</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.SignerId.html" title="bdk::wallet::signer::SignerId enum">SignerId</a></div><div class="item-right docblock-short"><p>Identifier of a signer in the <code>SignersContainers</code>. Used as a key to find the right signer among
 multiple of them</p>
 </div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2>
-<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.Signer.html" title="bdk::wallet::signer::Signer trait">Signer</a></div><div class="item-right docblock-short"><p>Trait for signers</p>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.InputSigner.html" title="bdk::wallet::signer::InputSigner trait">InputSigner</a></div><div class="item-right docblock-short"><p>PSBT Input signer</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.SignerCommon.html" title="bdk::wallet::signer::SignerCommon trait">SignerCommon</a></div><div class="item-right docblock-short"><p>Common signer methods</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.TransactionSigner.html" title="bdk::wallet::signer::TransactionSigner trait">TransactionSigner</a></div><div class="item-right docblock-short"><p>PSBT signer</p>
 </div></div></div></section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="bdk" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (51126be1b 2022-01-24)" ></div>
 </body></html>
