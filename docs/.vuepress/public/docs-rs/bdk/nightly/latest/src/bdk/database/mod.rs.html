@@ -429,6 +429,34 @@
 <span id="422">422</span>
 <span id="423">423</span>
 <span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -805,6 +833,34 @@
             <span class="ident">tree</span>.<span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="ident">tx_details</span>.<span class="ident">txid</span>, <span class="bool-val">false</span>).<span class="ident">unwrap</span>(),
             <span class="prelude-val">Some</span>(<span class="ident">tx_details</span>)
         );
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">test_list_transaction</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Database</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">tree</span>: <span class="ident">D</span>) {
+        <span class="kw">let</span> <span class="ident">hex_tx</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="ident">::from_hex</span>(<span class="string">&quot;0100000001a15d57094aa7a21a28cb20b59aab8fc7d1149a3bdbcddba9c622e4f5f6a99ece010000006c493046022100f93bb0e7d8db7bd46e40132d1f8242026e045f03a0efe71bbb8e3f475e970d790221009337cd7f1f929f00cc6ff01f03729b069a7c21b59b1736ddfee5db5946c5da8c0121033b9b137ee87d5a812d6f506efdd37f0affa7ffc310711c06c7f3e097c9447c52ffffffff0100e1f505000000001976a9140389035a9225b3839e2bbf32d826a1e222031fd888ac00000000&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">tx</span>: <span class="ident">Transaction</span> <span class="op">=</span> <span class="ident">deserialize</span>(<span class="kw-2">&amp;</span><span class="ident">hex_tx</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">txid</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tx_details</span> <span class="op">=</span> <span class="ident">TransactionDetails</span> {
+            <span class="ident">transaction</span>: <span class="prelude-val">Some</span>(<span class="ident">tx</span>),
+            <span class="ident">txid</span>,
+            <span class="ident">received</span>: <span class="number">1337</span>,
+            <span class="ident">sent</span>: <span class="number">420420</span>,
+            <span class="ident">fee</span>: <span class="prelude-val">Some</span>(<span class="number">140</span>),
+            <span class="ident">confirmation_time</span>: <span class="prelude-val">Some</span>(<span class="ident">BlockTime</span> {
+                <span class="ident">timestamp</span>: <span class="number">123456</span>,
+                <span class="ident">height</span>: <span class="number">1000</span>,
+            }),
+        };
+
+        <span class="ident">tree</span>.<span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="ident">tx_details</span>).<span class="ident">unwrap</span>();
+
+        <span class="comment">// get raw tx</span>
+        <span class="macro">assert_eq!</span>(<span class="ident">tree</span>.<span class="ident">iter_txs</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>(), <span class="macro">vec!</span>[<span class="ident">tx_details</span>.<span class="ident">clone</span>()]);
+
+        <span class="comment">// now get without raw tx</span>
+        <span class="ident">tx_details</span>.<span class="ident">transaction</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+
+        <span class="comment">// get not raw tx</span>
+        <span class="macro">assert_eq!</span>(<span class="ident">tree</span>.<span class="ident">iter_txs</span>(<span class="bool-val">false</span>).<span class="ident">unwrap</span>(), <span class="macro">vec!</span>[<span class="ident">tx_details</span>.<span class="ident">clone</span>()]);
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">test_last_index</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Database</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">tree</span>: <span class="ident">D</span>) {
