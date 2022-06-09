@@ -5,15 +5,14 @@ authors:
     - Lloyd Fournier
 date: "2022-05-09"
 tags: ["architecture"]
-hidden: true
 draft: false
 ---
 
 The Bitcoin Devkit (BDK) lets you do a lot of useful things through convenient high level
-abstractions. When these abstractions map nicely to your application components your life will be
-easy but when they don't it will be frustrating. My rather ambitious plan is to start developing a new
-`bdk_core` library that exposes all the useful *mechanisms* that BDK has inside it without them
-being tied to any particular usage *policy* and with very minimal dependencies.
+abstractions. It works great when these abstractions map nicely onto what you are trying to do. My
+goal is to develop a new `bdk_core` library for when they don't. I want `bdk_core` to expose all the
+useful *mechanisms* that BDK has inside it without them being tied to any particular usage *policy*
+and with very minimal dependencies.
 
 The `bdk_core` idea is still "in the lab". We're not sure yet whether `bdk_core` will just be what's
 left of `bdk` once we spin off all the components that have extra dependencies into their own crates
@@ -22,7 +21,7 @@ be that `bdk` lives on with its current APIs and uses stuff `bdk_core` to implem
 
 ## The separation of policy and mechanism
 
-My guiding principle for `bdk_core` is going to be the *separation of policy and mechanism*. This is
+My guiding principle for `bdk_core` is the *separation of policy and mechanism*. This is
 what I mean by these terms:
 
 - *mechanism*: How you do a particular thing. Mechanism code is functional and doesn't change much.
@@ -48,7 +47,7 @@ From *[The Art of UNIX Programming]*:
 > write good tests for the mechanism (policy, because it ages so quickly, often does not justify the
 > investment).
 
-> This design rule has wide application outside the GUI context. In general, it implies that we
+  * [ ] > This design rule has wide application outside the GUI context. In general, it implies that we
 > should look for ways to separate interfaces from engines.
 
 You'll notice we have a similar situation in Bitcoin engineering. We have mechanism code like
@@ -77,25 +76,21 @@ Here are some examples:
    purely provide the coin selection mechanisms for figuring out whether you need to select more
    UTXOs or whether you need a change output etc. How you use that mechanism will be up to you.
 2. Another trait that has a similar structure is the [`Signer`] trait. You have to pass in signers
-   so your wallet can sign PSBTs but you have little control over how the wallet chooses which signers
-   to use in any given situation. Right now the wallet will just iterate through all the signers and
-   ask them to sign. This is not always appropriate. In `bdk_core` I hope we can just provide
-   ways of populating the correct PSBT fields with signatures.
+   so your wallet can sign PSBTs but you have little control over how the wallet chooses which
+   signers to use in any given situation. Right now the wallet will just iterate through all the
+   signers and ask them to sign. This is not always appropriate. In `bdk_core` I want to provide
+   functions for populating PSBTs given something that can sign. You'll be in control of when they
+   get called.
 
 ## A syncing mechansim without the policy
 
-The rest of this post goes into detail about how to expose useful mechanisms for syncing without
-imposing a policy either on how blockchain data is fetched or how it is stored.
-
-### The problems with the policy
-
 Syncing in `bdk` is the place where the design of `Wallet` is most restrictive. The [`WalletSync`]
 trait forces you to sync all addresses in a wallet in one big batch. But this is not always what you
-want to do. I spoke to a developer who wanted to create a new Tor connection to an electrum server
-for each address so the addresses couldn't be easily linked and to run this slowly in the
-background. It would be really difficult to implement `WalletSync` with such a strategy. Another
-example where `WalletSync` isn't the right fit is the [Sensei] project which uses BDK but
-incrementally updates the database whenever new information comes in from the blockchain.
+want to do. I spoke to a developer who wanted to sync his wallet slowly over time with each address
+being queried over a different Tor connection. It would be really difficult to implement
+`WalletSync` with such a strategy. Another example where `WalletSync` isn't the right fit is the
+[Sensei] project which uses BDK but incrementally updates the database whenever new information
+comes in from the blockchain.
 
 Even if syncing all addresses at the same time is roughly what you want to do `WalletSync` still
 gets in the way since it defines whether you do it synchronously or asynchrononusly. Applications
@@ -113,8 +108,8 @@ think it has to do regardless of where the blockchain data comes from or how it'
 1. Generate and store addresses.
 2. Index transaction data, e.g. transaction outputs we own, when/if they were spent, etc.
 3. Keep track of which addresses have been given out and which have been used.
-4. Be able to "roll back" our view of the above data if a re-org makes some of it stale.
-5. Keeping track of transactions related our addresses in our mempool.
+4. Be able to "roll back" our view of the above data if a reorg makes some of it stale.
+5. Keep track of transactions related our addresses in our mempool.
 
 Let's talk about how to implement a mechanism that does all that.
 
@@ -163,7 +158,7 @@ existed. That way, if a block disappears we know that all those transactions mig
 With `bdk_core` I want to introduce the concept of a *checkpoint*, which is a block height and hash and
 a set of txids that were present at that height **but not present in the previous checkpoint**. In
 this way we create an append-only data structure that can easily be rolled back to a previous height
-if there is a re-org. After rolling back we can then roll forward and apply the new blocks.
+if there is a reorg. After rolling back we can then roll forward and apply the new blocks.
 
 Here's an example of how this idea works:
 
