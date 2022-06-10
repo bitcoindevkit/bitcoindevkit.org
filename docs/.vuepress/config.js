@@ -47,6 +47,12 @@ const tutorialSidebar = [
     collapsable: false,
     children: [
       '/tutorials/hello-world',
+      '/tutorials/Bitcoin_Core_RPC_Demo',
+      '/tutorials/compact_filters_demo',
+      '/tutorials/descriptors_in_the_wild',
+      '/tutorials/hidden-power-of-bitcoin',
+      '/tutorials/descriptor_based_paper_wallet',
+      '/tutorials/spending_policy_demo'
     ],
   }
 ]

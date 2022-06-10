@@ -1,5 +1,5 @@
 ---
-title: "Descriptor-based paper wallets"
+title: "Making Descriptor-based paper wallets"
 description: "Demonstrate how to create descriptor-based paper wallet and how to spend them with bdk"
 authors:
     - Riccardo Casatta
