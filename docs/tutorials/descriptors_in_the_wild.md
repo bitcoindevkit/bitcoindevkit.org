@@ -1,5 +1,5 @@
 ---
-title: "Descriptors in the wild"
+title: "A Multisig between BDK and Core"
 description: "Guide to setup a 2-of-2 multisig using Bitcoin Core and BDK"
 authors:
     - Gabriele Domenichini

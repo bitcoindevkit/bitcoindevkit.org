@@ -1,5 +1,5 @@
 ---
-title: "Using BDK to create BIP157 SPV wallet (aka Neutrino)"
+title: "BDK wallet as a BIP157 SPV light client"
 description: "Tutorial showing usage of compact filters (BIP157) using bdk-cli command line tools"
 authors:
     - Rajarshi Maitra

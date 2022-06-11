@@ -1,5 +1,5 @@
 ---
-title: "Using BDK to build a wallet backed by a Bitcoin Core full node"
+title: "BDK wallet with Bitcoin core RPC "
 description: "Tutorial showing usage of Bitcoin core backend with BDK wallet"
 authors:
     - Rajarshi Maitra
