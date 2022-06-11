@@ -1,5 +1,5 @@
 ---
-title: "Spending Policy Demo"
+title: "Spending Policy Decoded"
 description: "Demonstrate how to use a descriptor wallet with different spending policies"
 authors:
     - Steve Myers

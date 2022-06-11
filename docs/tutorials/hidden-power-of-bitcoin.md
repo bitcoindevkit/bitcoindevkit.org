@@ -1,5 +1,5 @@
 ---
-title: "Miniscript Policy & Descriptors - Hidden Powers of Bitcoin"
+title: "Hidden Powers of Miniscript Policy & Descriptors"
 description: "Introduction to Descriptor and Miniscript, making a Multisig Wallet and Testing Miniscript Policies"
 authors:
     - Sandipan Dey
