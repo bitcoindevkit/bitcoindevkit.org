@@ -5,7 +5,6 @@ authors:
     - Gabriele Domenichini
 date: "2020-11-18"
 tags: ["guide", "descriptor"]
-permalink: "/blog/2020/11/descriptors-in-the-wild/"
 ---
 
 I have tried to setup a 2 of 2 multi signature infrastructure with two

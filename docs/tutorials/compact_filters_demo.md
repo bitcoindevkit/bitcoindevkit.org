@@ -5,7 +5,6 @@ authors:
     - Rajarshi Maitra
 date: "2021-06-20"
 tags: ["tutorial", "BDK", "bdk-cli", "compact_filters", "BIP157", "Neutrino"]
-permalink: "/blog/2021/06/using-bdk-to-create-bip157-spv-wallet-aka-neutrino/"
 ---
 
 ## Introduction
