@@ -7,6 +7,8 @@ date: "2020-11-18"
 tags: ["guide", "descriptor"]
 ---
 
+## Introduction
+
 I have tried to setup a 2 of 2 multi signature infrastructure with two
 different wallets, which know nothing about each other, but are compliant with
 two very important protocols: [Output Descriptors] and [Partially Signed

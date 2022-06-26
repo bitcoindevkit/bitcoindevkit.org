@@ -10,12 +10,14 @@ hidden: true
 draft: false
 ---
 
+## Introduction
+
 To send people BTC - we simply scan a QR Code *(or paste an address)*, enter some amount and *whoosh* - sent!
 Users might think, just like traditional currency, we can only exchange money using Bitcoin.
 As it so happens, the underlying technology Bitcoin supports specify outputs not as addresses, but as programming scripts.
 This opens us to a world of possibilities using Bitcoin.
 
-### Script
+## Script
 
 Bitcoin supports [Script](https://en.bitcoin.it/wiki/Script), a **stack-based** lightweight programming language.
 Any script written in **Script** *(pun intended)* contains `OP_*` codes and raw byte arrays that Bitcoin Full Nodes understand and process.
@@ -35,14 +37,14 @@ scriptPubKey: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
 scriptSig: <sig> <pubKey>
 ```
 
-##### Examples of things achievable using Bitcoin Script:
+#### Examples of things achievable using Bitcoin Script:
 
 1. `Pay Someone (p2pkh/p2wpkh)` - A specific public key must sign to spend the coins.
 2. `Escrow (2-of-3-multisig)` - Two parties need to sign together to spend the coins.
 3. `Vault (locked)` - A specific key will not be able to spend the coins until a timeout but another master key will always be able to spend them.
 4. `HTLC` - The receiver needs disclose a secret before a timeout, else the coins are transferred back to the payee.
 
-##### Motivation for Policies
+#### Motivation for Policies
 
 Unfortunately, due to its low-level and unusual stack-based nature, Script is pretty hard to reason about and use.
 Despite being around since Bitcoin's creation, writing and understanding Script is not trivial.
@@ -52,7 +54,7 @@ When writing a script, we would want to know that if the logic we wrote is **cor
 The community wanted an easy alternative way of writing Script that would create the most optimized Script code.
 This gave rise to **Miniscript**.
 
-### Miniscript
+## Miniscript
 
 [Miniscript](http://bitcoin.sipa.be/miniscript/) tackles the above problems head-on.
 It is an expressive way to create policies on Bitcoin Scripts in a structured and simple fashion.
@@ -67,7 +69,7 @@ Miniscript compiler compiles a **spending policy** down to Miniscript.
 It doesn't contain any signature, it's mainly a combinator language for designing spending conditions.
 You can try out the compiler online by using [this link](http://bitcoin.sipa.be/miniscript/#:~:text=Policy%20to%20Miniscript%20compiler).
 
-##### Fragments
+#### Fragments
 
 Here are some fragments which can be combined to create powerful expressions.
 
@@ -81,7 +83,7 @@ Here are some fragments which can be combined to create powerful expressions.
 Bitcoin Script allows us to use another alternate stack. The combinator functions use this second stack to evaluate expressions of `thresh`, `and`, `aor` and `or`.
 The complete Miniscript Reference can be found [here](http://bitcoin.sipa.be/miniscript/#:~:text=Miniscript%20reference).
 
-##### Example Policies
+#### Example Policies
 
 Here are the Miniscript Policies for the examples we looked at earlier. 
 Note `A`, `B`, `C` are placeholders for keys *(`xpub`/`xprv`)* involved in the tx.
@@ -113,7 +115,7 @@ The Miniscript Policy Compiler is written in Rust and is present in [this reposi
 In this blog, we will later use the same using [bitcoindevkit/bdk](https://github.com/bitcoindevkit/bdk), a lightweight descriptor-based wallet library
 with a [cli](https://github.com/bitcoindevkit/bdk-cli). 
 
-### Descriptors
+## Descriptors
 
 The Bitcoin scriptpubkey supports various schemes like P2PKH, P2SH, P2WPKH, P2TR (Segwit v1) etc.
 A Descriptor is a simple "description" of what scriptpubkey to be used for a given policy.
@@ -166,20 +168,20 @@ Of course we cannot use `pk(multi(...))`, `pkh(multi(...))` or `wpkh(multi(...))
 For example a descriptor like `wsh(multi(2, PKA, PKB, PKC))` describes a P2WSH type address created by a `2-of-3` multisig
 script using `PKA`, `PKB` and `PKC` pubkeys.
 
-### Where it all comes together...
+## Where it all comes together...
 
 In this section, we are going to make a descriptor-based wallet and derive addresses from `bitcoin-cli` and then use `bdk-cli` to confirm that the addresses generated for descriptor wallets are deterministic for a given descriptor.
 
 We will also try to create a vault miniscript policy and push funds to the vault with a lock time of 2 months. 
 During this time, we will try to break our vault and see our transactions failing.
 
-##### Tools and Armor
+#### Tools and Armor
 
 - [docker](https://docs.docker.com/engine/install/)
 - [bdk-cli](https://github.com/bitcoindevkit/bdk-cli)
 - [miniscriptc](https://bitcoindevkit.org/bdk-cli/compiler/#installation)
 
-##### Setting Up
+#### Setting Up
 
 We require `bitcoind` to run in `regtest` mode. Use the following config file, or any other config
 that you are familiar with.
@@ -198,7 +200,7 @@ rpcpassword=password
 bitcoind
 ```
 
-#### Keys and Generating Addresses
+### Keys and Generating Addresses
 
 Quick installation for `bdk-cli` and `miniscriptc`:
 ```bash
@@ -262,7 +264,7 @@ Notes:
 
 Note that both `bdk-cli` and `bitcoin-cli` produced the exact same addresses. So now we have definitive proof that descriptors can make wallets portable. That single string will be able to make any wallet generate the same set of addresses and hence they can sync and broadcast transactions in the same manner!
 
-#### Making a MultiSig Descriptor for Funds
+### Making a MultiSig Descriptor for Funds
 
 In the real-life, most of us hold two kinds of savings accounts - one to store huge funds saved throughout our lifetime *(probably without internet banking functionalities)* 
 and another for regular expenses.
@@ -418,7 +420,7 @@ one wallet know whats the next address to create without talking to other wallet
 If all the wallet shares the correct descriptor string they will always create the exact sequence of addresses and
 by passing around PSBTs they would know how to sign them, without talking to each other. This solves a major problem of multisig interoperability. And BDK makes this process as seamless as possible.
 
-### Retention Bonus - Smart Contract with Bitcoin
+## Retention Bonus - Smart Contract with Bitcoin
 
 Let us consider that a company wants to give its employees a retention bonus for two months.
 If an employee stays with that company for over 2 months, the employee would get 1 BTC as a reward.
@@ -563,7 +565,7 @@ So this time it worked, because we have simulated 2 months passing by generating
 and Employe wallet gets updated.
 Hence, we saw that we can generate some smart contracts using Bitcoin.
 
-### Inspirations
+## Inspirations
 
 1. [Descriptors from Bitcoin Core](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md)
 1. [Miniscript](http://bitcoin.sipa.be/miniscript)

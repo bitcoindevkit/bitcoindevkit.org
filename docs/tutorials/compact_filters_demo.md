@@ -9,7 +9,7 @@ tags: ["tutorial", "BDK", "bdk-cli", "compact_filters", "BIP157", "Neutrino"]
 
 ## Introduction
 
-#### Compact Filters:
+### Compact Filters:
 Compact filters are the latest specification of Bitcoin SPV node implementation as per [BIP157](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki) and [BIP158](https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki). Such light clients were envisioned by Satoshi himself in  his original white paper, but due to lack of robust privacy and trust guarantees using conventional [bloomfilters](https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki), these type of nodes never got popular.
 
 Enters [BIP157](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki), which described a new type of filters for Bitcoin Blockchain data, known as `compact_filters`. The [Neutrino](https://github.com/lightninglabs/neutrino) project pioneered the use of compact filter based light client nodes for using with Lightning Network wallets. Using compact filters, a light-node can talk to one or more full nodes, and fetch relevant information from the blockchain, with much more robust privacy and security guarantees than previously possible. Compact filter based nodes are best suitable to be used with mobile wallets, to create more trustless mobile applications on Bitcoin. Any wallet application that needs to have an "eye on the blockchain" has an use for such light clients.
@@ -20,7 +20,7 @@ Example of such `compact_filters` wallets in wild is [Breeze](https://github.com
 
 Bitcoin core supports serving `BIP157` type filters from `v0.21.0`.
 
-#### BDK and Compact filters
+### BDK and Compact filters
 BDK is a bitcoin wallet development library that can be used to create bitcoin wallets with custom `Database` and `Blockchain` backends. BDK is a [descriptor](https://bitcoindevkit.org/descriptors/) based wallet, i.e. the wallet keychain is described by a set of descriptors.
 
 Using BDK one can instantiate wallets of various kinds as per requirement. BDK abstracts away all the heavy lifting works, and allow wallet devs to concentrate on logic that they care about, i.e. writing wallet codes. For more detailed documentation on BDK capabilities check these [blog](https://bitcoindevkit.org/blog/2020/12/hello-world/), [bog](https://bitcoindevkit.org/blog/2020/11/descriptors-in-the-wild/) and [docs](https://docs.rs/bdk/).
@@ -36,7 +36,7 @@ BDK also supports [BIP158](https://github.com/bitcoin/bips/blob/master/bip-0158.
 
 This capability can be unlocked by compiling BDK with the `compact_filters` feature. Once enabled, BDK will be able to create wallets with the `compact_filters` type `Blockchain` backend. (The default backend is electrum server)
 
-#### bdk-cli
+### bdk-cli
 `bdk-cli` is a lightweight [REPL](https://codewith.mu/en/tutorials/1.0/repl) wrapper over the BDK library to facilitate quick and easy demonstration of BDK capabilities in command-line. Wallet devs can use this tool to quickly try out different possibilities with BDK.
 
 In this tutorial, We will use `bdk-cli` to demonstrate some basic wallet functionalities using `compact_filters` backend.
@@ -64,7 +64,7 @@ Following things are required to start with the tutorial.
 
 If you already have these two setup and working, you can skip this and jump to the [Tutorial](#tutorial) section.
 
-#### Install and run `bitcoind`
+### Install and run `bitcoind`
 You can definitely do it with your own `bitcoind` installation. `BIP157` support has been included in Bitcoin Core `v0.21.0`. So anything above that will work.
 
 You also need to ensure proper configuration settings for signalling `compact_filters` support.
@@ -102,7 +102,7 @@ For ease of testing, the BDK project hosts docker images that can be used to spa
   ```
   In the output, the `version` should show `210000`. `localservicesnames` should contain `"COMPACT_FILTERS"`. If you see this, then Bitcoin Core is correctly configured.
 
-#### Install and run bdk-cli
+### Install and run bdk-cli
 - Install `bdk-cli` with `compact_filters` feature
 
   ```shell

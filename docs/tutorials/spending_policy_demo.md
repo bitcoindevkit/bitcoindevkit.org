@@ -8,6 +8,8 @@ date: "2021-02-23"
 tags: ["guide", "descriptor"]
 ---
 
+## Introduction
+
 In this post we will use the [bdk-cli](https://github.com/bitcoindevkit/bdk-cli) tool to demonstrate how to use the [bdk](https://github.com/bitcoindevkit/bdk) library to:
 
 1. generate *testnet* public and private keys
@@ -322,7 +324,7 @@ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR get_balance
 }
 ```
 
-### DONE!
+#### DONE!
 
 ## Policy B. Two signatures after a relative time lock
 
@@ -435,6 +437,6 @@ bdk-cli wallet -w alice -d $ALICE_DESCRIPTOR get_balance
 }
 ```
 
-### Done again!
+#### Done again!
 
 In this demo we showed how to receive and spend bitcoin using two different descriptor wallet policies using the `bdk` library and `bdk-cli` wallet tool.

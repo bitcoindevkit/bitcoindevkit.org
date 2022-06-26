@@ -9,7 +9,7 @@ hidden: true
 draft: false
 ---
 
-### Introduction
+## Introduction
 BDK wallet developer library can be used to easily deploy wallets with various kinds of blockchain backend support, like [`electrum`](https://github.com/romanz/electrs), [`esplora`](https://github.com/Blockstream/esplora), `compact-filters` ([BIP157](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki)) etc. With the latest release of BDK [`v0.10.0`](https://github.com/bitcoindevkit/bdk/releases/tag/v0.10.0), BDK now supports Bitcoin Core as a blockchain backend. BDK talks with Bitcoin Core using rust-bitcoin's [bitcoincore-rpc](https://github.com/rust-bitcoin/rust-bitcoincore-rpc) library.
 
 This allows wallet devs to quickly deploy their wallet that can talk to a bitcoin full node (home raspi nodes) out of the box. Wallet devs don't need to worry about connecting to a full node with correct RPC calls, all of that is handled by BDK under the hood. All they need is to identify the full node's RPC IP address and the correct RPC credentials.
@@ -18,7 +18,7 @@ In this tutorial we will see how to write a very simplistic wallet code that can
 
 Unlike other tutorials, we will not use `bdk-cli` tools, but instead write rust code directly using `BDK` devkit. In the end we will end up with our own simple bitcoin wallet.
 
-### Prerequisite
+## Prerequisite
 To run with this tutorial you would need to have a bitcoin core node running in regtest mode. Get the bitcoin core binary either from the [bitcoin core repo](https://bitcoincore.org/bin/bitcoin-core-0.21.1/) or [build from source](https://github.com/bitcoin/bitcoin/blob/v0.21.1/doc/build-unix.md).
 
 Then configure the node with a following `bitcoin.conf` file
@@ -33,7 +33,7 @@ rpcpassword=password
 
 Apart from that, you would need to install rust in your system. Grab the installation one-liner from [here](https://www.rust-lang.org/tools/install). 
 
-### Setting Up
+## Setting Up
 Create a new cargo binary repository.
 ```shell
 mkdir ~/tutorial
@@ -80,7 +80,7 @@ edition = "2018"
 [dependencies]
 ```
 
-### Setting dependencies
+## Setting dependencies
 Once the rust binary is compiled and running, we now need to specify the dependencies we need to work on our library.
 
 Remember that BDK provides almost everything we would need to build a wallet out of the box. So we don't need any more dependencies apart from BDK. We will use another small rust crate called [`dirs_next`](https://crates.io/crates/dirs-next) to find our home directory and store wallet files in a subfolder there.
@@ -131,7 +131,7 @@ use std::str::FromStr;
 ```
 With this we are now ready to add our wallet code.
 
-### Getting Descriptors
+## Getting Descriptors
 
 BDK is a descriptor based wallet library. That means when we specify our wallet key-chain we need to tell BDK about it in the format of a descriptor. You can read up on descriptors more [here](https://bitcoindevkit.org/descriptors/). A descriptor string looks like this
 `"wpkh([b8b575c2/84'/1'/0'/0]tprv8icWtRzy9CWgFxpGMLSdAeE4wWyz39XGc6SwykeTo13tYm14JkVVQAf7jz8WDDarCgNJrG3aEPJEqchDWeJdiaWpS3FwbLB9SzsN57V7qxB/*)"`.
@@ -209,7 +209,7 @@ chng: "wpkh([89df6a67/84'/1'/0'/1]tprv8iSRXyLtTKJNCECQxBJ19cgx2ueS7mC7GNq7VqTWY3
 ```
 Voila! Now we have nice descriptors strings handy to use for our BDK wallet construction.
 
-### Talking to Bitcoin Core Programmatically
+## Talking to Bitcoin Core Programmatically
 Like all other tutorials we will use two wallets to send coins back and forth. A Bitcoin Core wallet accessible via `bitcoin-cli` command line tools, and a BDK wallet maintained by BDK library.    
 
 But unlike other tutorials, we won't be using `bitcoin-cli` to talk to the Core wallet (we can, but let's spice things up). Instead, we will use the `bitcoin-rpc` library, to talk with our core node listening at `127.0.0.1:18443`, from inside our main function. This will allow us to write code, that will handle both the core and BDK wallet, from inside of the same function, and we won't have to switch terminals!
@@ -257,7 +257,7 @@ GetBlockchainInfoResult {
 ```
 Thats it. Now we can programmatically talk to our core node.
 
-### Get some balance in core wallet.
+## Get some balance in core wallet.
 We have told our rpc client that we would use a wallet named `test`. But currently, our core node doesn't have such a wallet. So let's create the wallet and fund it with some test coins.
 ```rust
 fn main() {
@@ -288,7 +288,7 @@ core balance: Amount(50.00000000 BTC)
 ```
 Great! We now have 50 regtest BTC to play with.
 
-### Setup the BDK wallet
+## Setup the BDK wallet
 Now that we are done setting up the core wallet. The last remaining step is to setup the BDK wallet. For this we will use the previous descriptor generation function and write code as below.
 
 **Note**: You might want to comment out the previous code in `main()`, as running them again will create more coins in core, which isn't an issue, but might be confusing.
@@ -366,7 +366,7 @@ cargo run
 bdk address: bcrt1q9vkmujggvzs0rd4z6069v3v0jucje7ua7ap308
 ```
 
-### Sending Sats Around
+## Sending Sats Around
 
 Now that we have covered all the groundwork, we have all we need to send coins back and forth between core and BDK wallet.
 
@@ -637,7 +637,7 @@ fn get_descriptors() -> (String, String) {
 }
 ```
 
-### Conclusion
+## Conclusion
 In this tutorial we saw some very basic BDK wallet functionality with a bitcoin core backend as the source and sync of blockchain data. This is just tip of the iceberg of BDK capabilities. BDK allows flexibility in all the dimensions of a bitcoin wallet, that is key chain, blockchain backend and database management. With all that power, we just implemented a trustless, non-custodial, private bitcoin wallet, backed by a bitcoin full node, with less than 200 lines of code (including lots of comments).
 
 BDK thus allows wallet devs, to only focus on stuff that they care about, writing wallet logic. All the backend stuff like blockchain, key management, and databases are abstracted away under the hood.
