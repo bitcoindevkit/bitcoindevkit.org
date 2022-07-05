@@ -393,6 +393,26 @@
 <span id="386">386</span>
 <span id="387">387</span>
 <span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -503,7 +523,10 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">block_times</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">u32</span><span class="op">&gt;</span><span class="ident">::new</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">txid_to_height</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="op">&lt;</span><span class="ident">Txid</span>, <span class="ident">u32</span><span class="op">&gt;</span><span class="ident">::new</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tx_cache</span> <span class="op">=</span> <span class="ident">TxCache::new</span>(<span class="ident">database</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">client</span>);
-        <span class="kw">let</span> <span class="ident">chunk_size</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stop_gap</span>;
+
+        <span class="comment">// Set chunk_size to the smallest value capable of finding a gap greater than stop_gap.</span>
+        <span class="kw">let</span> <span class="ident">chunk_size</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stop_gap</span> <span class="op">+</span> <span class="number">1</span>;
+
         <span class="comment">// The electrum server has been inconsistent somehow in its responses during sync. For</span>
         <span class="comment">// example, we do a batch request of transactions and the response contains less</span>
         <span class="comment">// tranascations than in the request. This should never happen but we don&#39;t want to panic.</span>
@@ -539,21 +562,12 @@
 
                 <span class="ident">Request::Conftime</span>(<span class="ident">conftime_req</span>) =&gt; {
                     <span class="comment">// collect up to chunk_size heights to fetch from electrum</span>
-                    <span class="kw">let</span> <span class="ident">needs_block_height</span> <span class="op">=</span> {
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">needs_block_height_iter</span> <span class="op">=</span> <span class="ident">conftime_req</span>
-                            .<span class="ident">request</span>()
-                            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">txid</span><span class="op">|</span> <span class="ident">txid_to_height</span>.<span class="ident">get</span>(<span class="ident">txid</span>).<span class="ident">cloned</span>())
-                            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">height</span><span class="op">|</span> <span class="ident">block_times</span>.<span class="ident">get</span>(<span class="ident">height</span>).<span class="ident">is_none</span>());
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">needs_block_height</span> <span class="op">=</span> <span class="ident">HashSet::new</span>();
-
-                        <span class="kw">while</span> <span class="ident">needs_block_height</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">chunk_size</span> {
-                            <span class="kw">match</span> <span class="ident">needs_block_height_iter</span>.<span class="ident">next</span>() {
-                                <span class="prelude-val">Some</span>(<span class="ident">height</span>) =&gt; <span class="ident">needs_block_height</span>.<span class="ident">insert</span>(<span class="ident">height</span>),
-                                <span class="prelude-val">None</span> =&gt; <span class="kw">break</span>,
-                            };
-                        }
-                        <span class="ident">needs_block_height</span>
-                    };
+                    <span class="kw">let</span> <span class="ident">needs_block_height</span> <span class="op">=</span> <span class="ident">conftime_req</span>
+                        .<span class="ident">request</span>()
+                        .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">txid</span><span class="op">|</span> <span class="ident">txid_to_height</span>.<span class="ident">get</span>(<span class="ident">txid</span>).<span class="ident">cloned</span>())
+                        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">height</span><span class="op">|</span> <span class="ident">block_times</span>.<span class="ident">get</span>(<span class="ident">height</span>).<span class="ident">is_none</span>())
+                        .<span class="ident">take</span>(<span class="ident">chunk_size</span>)
+                        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
                     <span class="kw">let</span> <span class="ident">new_block_headers</span> <span class="op">=</span> <span class="self">self</span>
                         .<span class="ident">client</span>
@@ -723,6 +737,7 @@
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::MemoryDatabase</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutils::blockchain_tests::TestClient</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutils::configurable_blockchain_tests::ConfigurableBlockchainTester</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet</span>::{<span class="ident">AddressIndex</span>, <span class="ident">Wallet</span>};
 
     <span class="macro">crate::bdk_blockchain_tests!</span> {
@@ -779,6 +794,31 @@
             .<span class="ident">unwrap</span>();
 
         <span class="macro">assert_eq!</span>(<span class="ident">wallet</span>.<span class="ident">get_balance</span>().<span class="ident">unwrap</span>(), <span class="number">50_000</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_electrum_with_variable_configs</span>() {
+        <span class="kw">struct</span> <span class="ident">ElectrumTester</span>;
+
+        <span class="kw">impl</span> <span class="ident">ConfigurableBlockchainTester</span><span class="op">&lt;</span><span class="ident">ElectrumBlockchain</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ElectrumTester</span> {
+            <span class="kw">const</span> <span class="ident">BLOCKCHAIN_NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Electrum&quot;</span>;
+
+            <span class="kw">fn</span> <span class="ident">config_with_stop_gap</span>(
+                <span class="kw-2">&amp;</span><span class="self">self</span>,
+                <span class="ident">test_client</span>: <span class="kw-2">&amp;mut</span> <span class="ident">TestClient</span>,
+                <span class="ident">stop_gap</span>: <span class="ident">usize</span>,
+            ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ElectrumBlockchainConfig</span><span class="op">&gt;</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">ElectrumBlockchainConfig</span> {
+                    <span class="ident">url</span>: <span class="ident">test_client</span>.<span class="ident">electrsd</span>.<span class="ident">electrum_url</span>.<span class="ident">clone</span>(),
+                    <span class="ident">socks5</span>: <span class="prelude-val">None</span>,
+                    <span class="ident">retry</span>: <span class="number">0</span>,
+                    <span class="ident">timeout</span>: <span class="prelude-val">None</span>,
+                    <span class="ident">stop_gap</span>: <span class="ident">stop_gap</span>,
+                })
+            }
+        }
+
+        <span class="ident">ElectrumTester</span>.<span class="ident">run</span>();
     }
 }
 </code></pre></div>
