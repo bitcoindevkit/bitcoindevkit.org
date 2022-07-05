@@ -4692,6 +4692,97 @@
 <span id="4685">4685</span>
 <span id="4686">4686</span>
 <span id="4687">4687</span>
+<span id="4688">4688</span>
+<span id="4689">4689</span>
+<span id="4690">4690</span>
+<span id="4691">4691</span>
+<span id="4692">4692</span>
+<span id="4693">4693</span>
+<span id="4694">4694</span>
+<span id="4695">4695</span>
+<span id="4696">4696</span>
+<span id="4697">4697</span>
+<span id="4698">4698</span>
+<span id="4699">4699</span>
+<span id="4700">4700</span>
+<span id="4701">4701</span>
+<span id="4702">4702</span>
+<span id="4703">4703</span>
+<span id="4704">4704</span>
+<span id="4705">4705</span>
+<span id="4706">4706</span>
+<span id="4707">4707</span>
+<span id="4708">4708</span>
+<span id="4709">4709</span>
+<span id="4710">4710</span>
+<span id="4711">4711</span>
+<span id="4712">4712</span>
+<span id="4713">4713</span>
+<span id="4714">4714</span>
+<span id="4715">4715</span>
+<span id="4716">4716</span>
+<span id="4717">4717</span>
+<span id="4718">4718</span>
+<span id="4719">4719</span>
+<span id="4720">4720</span>
+<span id="4721">4721</span>
+<span id="4722">4722</span>
+<span id="4723">4723</span>
+<span id="4724">4724</span>
+<span id="4725">4725</span>
+<span id="4726">4726</span>
+<span id="4727">4727</span>
+<span id="4728">4728</span>
+<span id="4729">4729</span>
+<span id="4730">4730</span>
+<span id="4731">4731</span>
+<span id="4732">4732</span>
+<span id="4733">4733</span>
+<span id="4734">4734</span>
+<span id="4735">4735</span>
+<span id="4736">4736</span>
+<span id="4737">4737</span>
+<span id="4738">4738</span>
+<span id="4739">4739</span>
+<span id="4740">4740</span>
+<span id="4741">4741</span>
+<span id="4742">4742</span>
+<span id="4743">4743</span>
+<span id="4744">4744</span>
+<span id="4745">4745</span>
+<span id="4746">4746</span>
+<span id="4747">4747</span>
+<span id="4748">4748</span>
+<span id="4749">4749</span>
+<span id="4750">4750</span>
+<span id="4751">4751</span>
+<span id="4752">4752</span>
+<span id="4753">4753</span>
+<span id="4754">4754</span>
+<span id="4755">4755</span>
+<span id="4756">4756</span>
+<span id="4757">4757</span>
+<span id="4758">4758</span>
+<span id="4759">4759</span>
+<span id="4760">4760</span>
+<span id="4761">4761</span>
+<span id="4762">4762</span>
+<span id="4763">4763</span>
+<span id="4764">4764</span>
+<span id="4765">4765</span>
+<span id="4766">4766</span>
+<span id="4767">4767</span>
+<span id="4768">4768</span>
+<span id="4769">4769</span>
+<span id="4770">4770</span>
+<span id="4771">4771</span>
+<span id="4772">4772</span>
+<span id="4773">4773</span>
+<span id="4774">4774</span>
+<span id="4775">4775</span>
+<span id="4776">4776</span>
+<span id="4777">4777</span>
+<span id="4778">4778</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -4767,6 +4858,7 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::types</span>::<span class="kw-2">*</span>;
 
 <span class="kw">const</span> <span class="ident">CACHE_ADDR_BATCH_SIZE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">100</span>;
+<span class="kw">const</span> <span class="ident">COINBASE_MATURITY</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">100</span>;
 
 <span class="doccomment">/// A Bitcoin wallet</span>
 <span class="doccomment">///</span>
@@ -5459,6 +5551,7 @@
             <span class="ident">params</span>.<span class="ident">drain_wallet</span>,
             <span class="ident">params</span>.<span class="ident">manually_selected_only</span>,
             <span class="ident">params</span>.<span class="ident">bumping_fee</span>.<span class="ident">is_some</span>(), <span class="comment">// we mandate confirmed transactions if we&#39;re bumping the fee</span>
+            <span class="ident">current_height</span>,
         )<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">coin_selection</span> <span class="op">=</span> <span class="ident">coin_selection</span>.<span class="ident">coin_select</span>(
@@ -6036,6 +6129,7 @@
     <span class="doccomment">/// Given the options returns the list of utxos that must be used to form the</span>
     <span class="doccomment">/// transaction and any further that may be used if needed.</span>
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::type_complexity</span>)]</span>
+    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::too_many_arguments</span>)]</span>
     <span class="kw">fn</span> <span class="ident">preselect_utxos</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">change_policy</span>: <span class="ident">tx_builder::ChangeSpendPolicy</span>,
@@ -6044,6 +6138,7 @@
         <span class="ident">must_use_all_available</span>: <span class="ident">bool</span>,
         <span class="ident">manual_only</span>: <span class="ident">bool</span>,
         <span class="ident">must_only_use_confirmed_tx</span>: <span class="ident">bool</span>,
+        <span class="ident">current_height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="comment">//    must_spend &lt;- manually selected utxos</span>
         <span class="comment">//    may_spend  &lt;- all other available utxos</span>
@@ -6062,23 +6157,44 @@
             <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">must_spend</span>, <span class="macro">vec!</span>[]));
         }
 
-        <span class="kw">let</span> <span class="ident">satisfies_confirmed</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">must_only_use_confirmed_tx</span> {
-            <span class="bool-val">true</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">database</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow</span>();
-                <span class="ident">may_spend</span>
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> {
-                        <span class="ident">database</span>
-                            .<span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="ident">u</span>.<span class="number">0</span>.<span class="ident">outpoint</span>.<span class="ident">txid</span>, <span class="bool-val">true</span>)
-                            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">tx</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">tx</span> {
-                                <span class="prelude-val">None</span> =&gt; <span class="bool-val">false</span>,
-                                <span class="prelude-val">Some</span>(<span class="ident">tx</span>) =&gt; <span class="ident">tx</span>.<span class="ident">confirmation_time</span>.<span class="ident">is_some</span>(),
-                            })
+        <span class="kw">let</span> <span class="ident">database</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow</span>();
+        <span class="kw">let</span> <span class="ident">satisfies_confirmed</span> <span class="op">=</span> <span class="ident">may_spend</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> {
+                <span class="ident">database</span>
+                    .<span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="ident">u</span>.<span class="number">0</span>.<span class="ident">outpoint</span>.<span class="ident">txid</span>, <span class="bool-val">true</span>)
+                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">tx</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">tx</span> {
+                        <span class="comment">// We don&#39;t have the tx in the db for some reason,</span>
+                        <span class="comment">// so we can&#39;t know for sure if it&#39;s mature or not.</span>
+                        <span class="comment">// We prefer not to spend it.</span>
+                        <span class="prelude-val">None</span> =&gt; <span class="bool-val">false</span>,
+                        <span class="prelude-val">Some</span>(<span class="ident">tx</span>) =&gt; {
+                            <span class="comment">// Whether the UTXO is mature and, if needed, confirmed</span>
+                            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">spendable</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                            <span class="kw">if</span> <span class="ident">must_only_use_confirmed_tx</span> <span class="op">&amp;&amp;</span> <span class="ident">tx</span>.<span class="ident">confirmation_time</span>.<span class="ident">is_none</span>() {
+                                <span class="kw">return</span> <span class="bool-val">false</span>;
+                            }
+                            <span class="kw">if</span> <span class="ident">tx</span>
+                                .<span class="ident">transaction</span>
+                                .<span class="ident">expect</span>(<span class="string">&quot;We specifically ask for the transaction above&quot;</span>)
+                                .<span class="ident">is_coin_base</span>()
+                            {
+                                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">current_height</span>) <span class="op">=</span> <span class="ident">current_height</span> {
+                                    <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">confirmation_time</span> {
+                                        <span class="prelude-val">Some</span>(<span class="ident">t</span>) =&gt; {
+                                            <span class="comment">// https://github.com/bitcoin/bitcoin/blob/c5e67be03bb06a5d7885c55db1f016fbf2333fe3/src/validation.cpp#L373-L375</span>
+                                            <span class="ident">spendable</span> <span class="op">&amp;=</span> (<span class="ident">current_height</span>.<span class="ident">saturating_sub</span>(<span class="ident">t</span>.<span class="ident">height</span>))
+                                                <span class="op">&gt;</span><span class="op">=</span> <span class="ident">COINBASE_MATURITY</span>;
+                                        }
+                                        <span class="prelude-val">None</span> =&gt; <span class="ident">spendable</span> <span class="op">=</span> <span class="bool-val">false</span>,
+                                    }
+                                }
+                            }
+                            <span class="ident">spendable</span>
+                        }
                     })
-                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>
-            }
-            <span class="bool-val">false</span> =&gt; <span class="macro">vec!</span>[<span class="bool-val">true</span>; <span class="ident">may_spend</span>.<span class="ident">len</span>()],
-        };
+            })
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="ident">may_spend</span>.<span class="ident">retain</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> {
@@ -9377,6 +9493,72 @@
             <span class="ident">sighash</span> <span class="kw">as</span> <span class="ident">u8</span>,
             <span class="string">&quot;The signature should have been made with the right sighash&quot;</span>
         );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_spend_coinbase</span>() {
+        <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="macro">testutils!</span>(@<span class="ident">descriptors</span> (<span class="ident">get_test_wpkh</span>()));
+        <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">descriptors</span>.<span class="number">0</span>,
+            <span class="prelude-val">None</span>,
+            <span class="ident">Network::Regtest</span>,
+            <span class="ident">AnyDatabase::Memory</span>(<span class="ident">MemoryDatabase::new</span>()),
+        )
+        .<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">confirmation_time</span> <span class="op">=</span> <span class="number">5</span>;
+
+        <span class="macro">crate::populate_test_db!</span>(
+            <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(),
+            <span class="macro">testutils!</span> (@<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) =&gt; <span class="number">25_000</span> ) (@<span class="ident">confirmations</span> <span class="number">0</span>)),
+            <span class="prelude-val">Some</span>(<span class="ident">confirmation_time</span>),
+            (@<span class="ident">coinbase</span> <span class="bool-val">true</span>)
+        );
+
+        <span class="kw">let</span> <span class="ident">not_yet_mature_time</span> <span class="op">=</span> <span class="ident">confirmation_time</span> <span class="op">+</span> <span class="ident">COINBASE_MATURITY</span> <span class="op">-</span> <span class="number">1</span>;
+        <span class="kw">let</span> <span class="ident">maturity_time</span> <span class="op">=</span> <span class="ident">confirmation_time</span> <span class="op">+</span> <span class="ident">COINBASE_MATURITY</span>;
+
+        <span class="comment">// The balance is nonzero, even if we can&#39;t spend anything</span>
+        <span class="comment">// FIXME: we should differentiate the balance between immature,</span>
+        <span class="comment">// trusted, untrusted_pending</span>
+        <span class="comment">// See https://github.com/bitcoindevkit/bdk/issues/238</span>
+        <span class="kw">let</span> <span class="ident">balance</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_balance</span>().<span class="ident">unwrap</span>();
+        <span class="macro">assert!</span>(<span class="ident">balance</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>);
+
+        <span class="comment">// We try to create a transaction, only to notice that all</span>
+        <span class="comment">// our funds are unspendable</span>
+        <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">Address::from_str</span>(<span class="string">&quot;2N1Ffz3WaNzbeLFBb51xyFMHYSEUXcbiSoX&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
+        <span class="ident">builder</span>
+            .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="ident">balance</span> <span class="op">/</span> <span class="number">2</span>)
+            .<span class="ident">set_current_height</span>(<span class="ident">confirmation_time</span>);
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
+            <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap_err</span>(),
+            <span class="ident">Error::InsufficientFunds</span> {
+                <span class="ident">needed</span>: <span class="kw">_</span>,
+                <span class="ident">available</span>: <span class="number">0</span>
+            }
+        ));
+
+        <span class="comment">// Still unspendable...</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
+        <span class="ident">builder</span>
+            .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="ident">balance</span> <span class="op">/</span> <span class="number">2</span>)
+            .<span class="ident">set_current_height</span>(<span class="ident">not_yet_mature_time</span>);
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
+            <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap_err</span>(),
+            <span class="ident">Error::InsufficientFunds</span> {
+                <span class="ident">needed</span>: <span class="kw">_</span>,
+                <span class="ident">available</span>: <span class="number">0</span>
+            }
+        ));
+
+        <span class="comment">// ...Now the coinbase is mature :)</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
+        <span class="ident">builder</span>
+            .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="ident">balance</span> <span class="op">/</span> <span class="number">2</span>)
+            .<span class="ident">set_current_height</span>(<span class="ident">maturity_time</span>);
+        <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
     }
 }
 </code></pre></div>
