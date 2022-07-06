@@ -731,6 +731,50 @@
 <span id="724">724</span>
 <span id="725">725</span>
 <span id="726">726</span>
+<span id="727">727</span>
+<span id="728">728</span>
+<span id="729">729</span>
+<span id="730">730</span>
+<span id="731">731</span>
+<span id="732">732</span>
+<span id="733">733</span>
+<span id="734">734</span>
+<span id="735">735</span>
+<span id="736">736</span>
+<span id="737">737</span>
+<span id="738">738</span>
+<span id="739">739</span>
+<span id="740">740</span>
+<span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
+<span id="747">747</span>
+<span id="748">748</span>
+<span id="749">749</span>
+<span id="750">750</span>
+<span id="751">751</span>
+<span id="752">752</span>
+<span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -773,18 +817,19 @@
 <span class="doccomment">/// use bdk::keys::{IntoDescriptorKey, KeyError};</span>
 <span class="doccomment">/// use bdk::miniscript::Legacy;</span>
 <span class="doccomment">/// use bdk::template::{DescriptorTemplate, DescriptorTemplateOut};</span>
+<span class="doccomment">/// use bitcoin::Network;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// struct MyP2PKH&lt;K: IntoDescriptorKey&lt;Legacy&gt;&gt;(K);</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// impl&lt;K: IntoDescriptorKey&lt;Legacy&gt;&gt; DescriptorTemplate for MyP2PKH&lt;K&gt; {</span>
-<span class="doccomment">///     fn build(self) -&gt; Result&lt;DescriptorTemplateOut, DescriptorError&gt; {</span>
+<span class="doccomment">///     fn build(self, network: Network) -&gt; Result&lt;DescriptorTemplateOut, DescriptorError&gt; {</span>
 <span class="doccomment">///         Ok(bdk::descriptor!(pkh(self.0))?)</span>
 <span class="doccomment">///     }</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">DescriptorTemplate</span> {
     <span class="doccomment">/// Build the complete descriptor</span>
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>, <span class="ident">network</span>: <span class="ident">Network</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// Turns a [`DescriptorTemplate`] into a valid wallet descriptor by calling its</span>
@@ -795,7 +840,7 @@
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         <span class="ident">network</span>: <span class="ident">Network</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExtendedDescriptor</span>, <span class="ident">KeyMap</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">build</span>()<span class="question-mark">?</span>.<span class="ident">into_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)
+        <span class="self">self</span>.<span class="ident">build</span>(<span class="ident">network</span>)<span class="question-mark">?</span>.<span class="ident">into_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)
     }
 }
 
@@ -828,7 +873,7 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">P2Pkh</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">P2Pkh</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>, <span class="ident">_network</span>: <span class="ident">Network</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="macro">descriptor!</span>(<span class="ident">pkh</span>(<span class="self">self</span>.<span class="number">0</span>))
     }
 }
@@ -863,7 +908,7 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">P2Wpkh_P2Sh</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">P2Wpkh_P2Sh</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>, <span class="ident">_network</span>: <span class="ident">Network</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="macro">descriptor!</span>(<span class="ident">sh</span>(<span class="ident">wpkh</span>(<span class="self">self</span>.<span class="number">0</span>)))
     }
 }
@@ -897,12 +942,12 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">P2Wpkh</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">P2Wpkh</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>, <span class="ident">_network</span>: <span class="ident">Network</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
         <span class="macro">descriptor!</span>(<span class="ident">wpkh</span>(<span class="self">self</span>.<span class="number">0</span>))
     }
 }
 
-<span class="doccomment">/// BIP44 template. Expands to `pkh(key/44&#39;/0&#39;/0&#39;/{0,1}/*)`</span>
+<span class="doccomment">/// BIP44 template. Expands to `pkh(key/44&#39;/{0,1}&#39;/0&#39;/{0,1}/*)`</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Since there are hardened derivation steps, this template requires a private derivable key (generally a `xprv`/`tprv`).</span>
 <span class="doccomment">///</span>
@@ -926,21 +971,21 @@
 <span class="doccomment">///     MemoryDatabase::default()</span>
 <span class="doccomment">/// )?;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(wallet.get_address(New)?.to_string(), &quot;miNG7dJTzJqNbFS19svRdTCisC65dsubtR&quot;);</span>
-<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;pkh([c55b303f/44&#39;/0&#39;/0&#39;]tpubDDDzQ31JkZB7VxUr9bjvBivDdqoFLrDPyLWtLapArAi51ftfmCb2DPxwLQzX65iNcXz1DGaVvyvo6JQ6rTU73r2gqdEo8uov9QKRb7nKCSU/0/*)#xgaaevjx&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.get_address(New)?.to_string(), &quot;mmogjc7HJEZkrLqyQYqJmxUqFaC7i4uf89&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;pkh([c55b303f/44&#39;/1&#39;/0&#39;]tpubDCuorCpzvYS2LCD75BR46KHE8GdDeg1wsAgNZeNr6DaB5gQK1o14uErKwKLuFmeemkQ6N2m3rNgvctdJLyr7nwu2yia7413Hhg8WWE44cgT/0/*)#5wrnv0xt&quot;);</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Bip44</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">KeychainKind</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">Bip44</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
-        <span class="ident">P2Pkh</span>(<span class="ident">legacy::make_bipxx_private</span>(<span class="number">44</span>, <span class="self">self</span>.<span class="number">0</span>, <span class="self">self</span>.<span class="number">1</span>)<span class="question-mark">?</span>).<span class="ident">build</span>()
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>, <span class="ident">network</span>: <span class="ident">Network</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+        <span class="ident">P2Pkh</span>(<span class="ident">legacy::make_bipxx_private</span>(<span class="number">44</span>, <span class="self">self</span>.<span class="number">0</span>, <span class="self">self</span>.<span class="number">1</span>, <span class="ident">network</span>)<span class="question-mark">?</span>).<span class="ident">build</span>(<span class="ident">network</span>)
     }
 }
 
 <span class="doccomment">/// BIP44 public template. Expands to `pkh(key/{0,1}/*)`</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// This assumes that the key used has already been derived with `m/44&#39;/0&#39;/0&#39;`.</span>
+<span class="doccomment">/// This assumes that the key used has already been derived with `m/44&#39;/0&#39;/0&#39;` for Mainnet or `m/44&#39;/1&#39;/0&#39;` for Testnet.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This template requires the parent fingerprint to populate correctly the metadata of PSBTs.</span>
 <span class="doccomment">///</span>
@@ -973,12 +1018,12 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Bip44Public</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">bip32::Fingerprint</span>, <span class="kw">pub</span> <span class="ident">KeychainKind</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Legacy</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">Bip44Public</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
-        <span class="ident">P2Pkh</span>(<span class="ident">legacy::make_bipxx_public</span>(<span class="number">44</span>, <span class="self">self</span>.<span class="number">0</span>, <span class="self">self</span>.<span class="number">1</span>, <span class="self">self</span>.<span class="number">2</span>)<span class="question-mark">?</span>).<span class="ident">build</span>()
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>, <span class="ident">network</span>: <span class="ident">Network</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+        <span class="ident">P2Pkh</span>(<span class="ident">legacy::make_bipxx_public</span>(<span class="number">44</span>, <span class="self">self</span>.<span class="number">0</span>, <span class="self">self</span>.<span class="number">1</span>, <span class="self">self</span>.<span class="number">2</span>)<span class="question-mark">?</span>).<span class="ident">build</span>(<span class="ident">network</span>)
     }
 }
 
-<span class="doccomment">/// BIP49 template. Expands to `sh(wpkh(key/49&#39;/0&#39;/0&#39;/{0,1}/*))`</span>
+<span class="doccomment">/// BIP49 template. Expands to `sh(wpkh(key/49&#39;/{0,1}&#39;/0&#39;/{0,1}/*))`</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Since there are hardened derivation steps, this template requires a private derivable key (generally a `xprv`/`tprv`).</span>
 <span class="doccomment">///</span>
@@ -1002,15 +1047,15 @@
 <span class="doccomment">///     MemoryDatabase::default()</span>
 <span class="doccomment">/// )?;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(wallet.get_address(New)?.to_string(), &quot;2N3K4xbVAHoiTQSwxkZjWDfKoNC27pLkYnt&quot;);</span>
-<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;sh(wpkh([c55b303f/49\&#39;/0\&#39;/0\&#39;]tpubDC49r947KGK52X5rBWS4BLs5m9SRY3pYHnvRrm7HcybZ3BfdEsGFyzCMzayi1u58eT82ZeyFZwH7DD6Q83E3fM9CpfMtmnTygnLfP59jL9L/0/*))#gsmdv4xr&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.get_address(New)?.to_string(), &quot;2N4zkWAoGdUv4NXhSsU8DvS5MB36T8nKHEB&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;sh(wpkh([c55b303f/49&#39;/1&#39;/0&#39;]tpubDDYr4kdnZgjjShzYNjZUZXUUtpXaofdkMaipyS8ThEh45qFmhT4hKYways7UXmg6V7het1QiFo9kf4kYUXyDvV4rHEyvSpys9pjCB3pukxi/0/*))#s9vxlc8e&quot;);</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Bip49</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">KeychainKind</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">Bip49</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
-        <span class="ident">P2Wpkh_P2Sh</span>(<span class="ident">segwit_v0::make_bipxx_private</span>(<span class="number">49</span>, <span class="self">self</span>.<span class="number">0</span>, <span class="self">self</span>.<span class="number">1</span>)<span class="question-mark">?</span>).<span class="ident">build</span>()
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>, <span class="ident">network</span>: <span class="ident">Network</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+        <span class="ident">P2Wpkh_P2Sh</span>(<span class="ident">segwit_v0::make_bipxx_private</span>(<span class="number">49</span>, <span class="self">self</span>.<span class="number">0</span>, <span class="self">self</span>.<span class="number">1</span>, <span class="ident">network</span>)<span class="question-mark">?</span>).<span class="ident">build</span>(<span class="ident">network</span>)
     }
 }
 
@@ -1043,18 +1088,18 @@
 <span class="doccomment">/// )?;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(wallet.get_address(New)?.to_string(), &quot;2N3K4xbVAHoiTQSwxkZjWDfKoNC27pLkYnt&quot;);</span>
-<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;sh(wpkh([c55b303f/49\&#39;/0\&#39;/0\&#39;]tpubDC49r947KGK52X5rBWS4BLs5m9SRY3pYHnvRrm7HcybZ3BfdEsGFyzCMzayi1u58eT82ZeyFZwH7DD6Q83E3fM9CpfMtmnTygnLfP59jL9L/0/*))#gsmdv4xr&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;sh(wpkh([c55b303f/49&#39;/0&#39;/0&#39;]tpubDC49r947KGK52X5rBWS4BLs5m9SRY3pYHnvRrm7HcybZ3BfdEsGFyzCMzayi1u58eT82ZeyFZwH7DD6Q83E3fM9CpfMtmnTygnLfP59jL9L/0/*))#gsmdv4xr&quot;);</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Bip49Public</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">bip32::Fingerprint</span>, <span class="kw">pub</span> <span class="ident">KeychainKind</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">Bip49Public</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
-        <span class="ident">P2Wpkh_P2Sh</span>(<span class="ident">segwit_v0::make_bipxx_public</span>(<span class="number">49</span>, <span class="self">self</span>.<span class="number">0</span>, <span class="self">self</span>.<span class="number">1</span>, <span class="self">self</span>.<span class="number">2</span>)<span class="question-mark">?</span>).<span class="ident">build</span>()
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>, <span class="ident">network</span>: <span class="ident">Network</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+        <span class="ident">P2Wpkh_P2Sh</span>(<span class="ident">segwit_v0::make_bipxx_public</span>(<span class="number">49</span>, <span class="self">self</span>.<span class="number">0</span>, <span class="self">self</span>.<span class="number">1</span>, <span class="self">self</span>.<span class="number">2</span>)<span class="question-mark">?</span>).<span class="ident">build</span>(<span class="ident">network</span>)
     }
 }
 
-<span class="doccomment">/// BIP84 template. Expands to `wpkh(key/84&#39;/0&#39;/0&#39;/{0,1}/*)`</span>
+<span class="doccomment">/// BIP84 template. Expands to `wpkh(key/84&#39;/{0,1}&#39;/0&#39;/{0,1}/*)`</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Since there are hardened derivation steps, this template requires a private derivable key (generally a `xprv`/`tprv`).</span>
 <span class="doccomment">///</span>
@@ -1078,15 +1123,15 @@
 <span class="doccomment">///     MemoryDatabase::default()</span>
 <span class="doccomment">/// )?;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(wallet.get_address(New)?.to_string(), &quot;tb1qedg9fdlf8cnnqfd5mks6uz5w4kgpk2pr6y4qc7&quot;);</span>
-<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;wpkh([c55b303f/84\&#39;/0\&#39;/0\&#39;]tpubDC2Qwo2TFsaNC4ju8nrUJ9mqVT3eSgdmy1yPqhgkjwmke3PRXutNGRYAUo6RCHTcVQaDR3ohNU9we59brGHuEKPvH1ags2nevW5opEE9Z5Q/0/*)#nkk5dtkg&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.get_address(New)?.to_string(), &quot;tb1qhl85z42h7r4su5u37rvvw0gk8j2t3n9y7zsg4n&quot;);</span>
+<span class="doccomment">/// assert_eq!(wallet.public_descriptor(KeychainKind::External)?.unwrap().to_string(), &quot;wpkh([c55b303f/84&#39;/1&#39;/0&#39;]tpubDDc5mum24DekpNw92t6fHGp8Gr2JjF9J7i4TZBtN6Vp8xpAULG5CFaKsfugWa5imhrQQUZKXe261asP5koDHo5bs3qNTmf3U3o4v9SaB8gg/0/*)#6kfecsmr&quot;);</span>
 <span class="doccomment">/// # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Bip84</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">KeychainKind</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">Bip84</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
-        <span class="ident">P2Wpkh</span>(<span class="ident">segwit_v0::make_bipxx_private</span>(<span class="number">84</span>, <span class="self">self</span>.<span class="number">0</span>, <span class="self">self</span>.<span class="number">1</span>)<span class="question-mark">?</span>).<span class="ident">build</span>()
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>, <span class="ident">network</span>: <span class="ident">Network</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+        <span class="ident">P2Wpkh</span>(<span class="ident">segwit_v0::make_bipxx_private</span>(<span class="number">84</span>, <span class="self">self</span>.<span class="number">0</span>, <span class="self">self</span>.<span class="number">1</span>, <span class="ident">network</span>)<span class="question-mark">?</span>).<span class="ident">build</span>(<span class="ident">network</span>)
     }
 }
 
@@ -1125,8 +1170,8 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Bip84Public</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">K</span>, <span class="kw">pub</span> <span class="ident">bip32::Fingerprint</span>, <span class="kw">pub</span> <span class="ident">KeychainKind</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">DerivableKey</span><span class="op">&lt;</span><span class="ident">Segwitv0</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">DescriptorTemplate</span> <span class="kw">for</span> <span class="ident">Bip84Public</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
-        <span class="ident">P2Wpkh</span>(<span class="ident">segwit_v0::make_bipxx_public</span>(<span class="number">84</span>, <span class="self">self</span>.<span class="number">0</span>, <span class="self">self</span>.<span class="number">1</span>, <span class="self">self</span>.<span class="number">2</span>)<span class="question-mark">?</span>).<span class="ident">build</span>()
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>, <span class="ident">network</span>: <span class="ident">Network</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DescriptorTemplateOut</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+        <span class="ident">P2Wpkh</span>(<span class="ident">segwit_v0::make_bipxx_public</span>(<span class="number">84</span>, <span class="self">self</span>.<span class="number">0</span>, <span class="self">self</span>.<span class="number">1</span>, <span class="self">self</span>.<span class="number">2</span>)<span class="question-mark">?</span>).<span class="ident">build</span>(<span class="ident">network</span>)
     }
 }
 
@@ -1139,10 +1184,19 @@
                 <span class="ident">bip</span>: <span class="ident">u32</span>,
                 <span class="ident">key</span>: <span class="ident">K</span>,
                 <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>,
+                <span class="ident">network</span>: <span class="ident">Network</span>,
             ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">IntoDescriptorKey</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ctx</span><span class="op">&gt;</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">derivation_path</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="number">4</span>);
                 <span class="ident">derivation_path</span>.<span class="ident">push</span>(<span class="ident">bip32::ChildNumber::from_hardened_idx</span>(<span class="ident">bip</span>)<span class="question-mark">?</span>);
-                <span class="ident">derivation_path</span>.<span class="ident">push</span>(<span class="ident">bip32::ChildNumber::from_hardened_idx</span>(<span class="number">0</span>)<span class="question-mark">?</span>);
+
+                <span class="kw">match</span> <span class="ident">network</span> {
+                    <span class="ident">Network::Bitcoin</span> =&gt; {
+                        <span class="ident">derivation_path</span>.<span class="ident">push</span>(<span class="ident">bip32::ChildNumber::from_hardened_idx</span>(<span class="number">0</span>)<span class="question-mark">?</span>);
+                    }
+                    <span class="kw">_</span> =&gt; {
+                        <span class="ident">derivation_path</span>.<span class="ident">push</span>(<span class="ident">bip32::ChildNumber::from_hardened_idx</span>(<span class="number">1</span>)<span class="question-mark">?</span>);
+                    }
+                }
                 <span class="ident">derivation_path</span>.<span class="ident">push</span>(<span class="ident">bip32::ChildNumber::from_hardened_idx</span>(<span class="number">0</span>)<span class="question-mark">?</span>);
 
                 <span class="kw">match</span> <span class="ident">keychain</span> {
@@ -1199,6 +1253,40 @@
     <span class="kw">use</span> <span class="ident">miniscript::descriptor</span>::{<span class="ident">DescriptorPublicKey</span>, <span class="ident">DescriptorTrait</span>, <span class="ident">KeyMap</span>};
     <span class="kw">use</span> <span class="ident">miniscript::Descriptor</span>;
 
+    <span class="comment">// BIP44 `pkh(key/44&#39;/{0,1}&#39;/0&#39;/{0,1}/*)`</span>
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_bip44_template_cointype</span>() {
+        <span class="kw">use</span> <span class="ident">bitcoin::util::bip32::ChildNumber</span>::{<span class="self">self</span>, <span class="ident">Hardened</span>};
+
+        <span class="kw">let</span> <span class="ident">xprvkey</span> <span class="op">=</span> <span class="ident">bitcoin::util::bip32::ExtendedPrivKey::from_str</span>(<span class="string">&quot;xprv9s21ZrQH143K2fpbqApQL69a4oKdGVnVN52R82Ft7d1pSqgKmajF62acJo3aMszZb6qQ22QsVECSFxvf9uyxFUvFYQMq3QbtwtRSMjLAhMf&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">Network::Bitcoin</span>, <span class="ident">xprvkey</span>.<span class="ident">network</span>);
+        <span class="kw">let</span> <span class="ident">xdesc</span> <span class="op">=</span> <span class="ident">Bip44</span>(<span class="ident">xprvkey</span>, <span class="ident">KeychainKind::Internal</span>)
+            .<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>)
+            .<span class="ident">unwrap</span>();
+
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">ExtendedDescriptor::Pkh</span>(<span class="ident">pkh</span>) <span class="op">=</span> <span class="ident">xdesc</span>.<span class="number">0</span> {
+            <span class="kw">let</span> <span class="ident">path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ChildNumber</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">pkh</span>.<span class="ident">into_inner</span>().<span class="ident">full_derivation_path</span>().<span class="ident">into</span>();
+            <span class="kw">let</span> <span class="ident">purpose</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
+            <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">purpose</span>, <span class="ident">Hardened</span> { <span class="ident">index</span>: <span class="number">44</span> }));
+            <span class="kw">let</span> <span class="ident">coin_type</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">get</span>(<span class="number">1</span>).<span class="ident">unwrap</span>();
+            <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">coin_type</span>, <span class="ident">Hardened</span> { <span class="ident">index</span>: <span class="number">0</span> }));
+        }
+
+        <span class="kw">let</span> <span class="ident">tprvkey</span> <span class="op">=</span> <span class="ident">bitcoin::util::bip32::ExtendedPrivKey::from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">Network::Testnet</span>, <span class="ident">tprvkey</span>.<span class="ident">network</span>);
+        <span class="kw">let</span> <span class="ident">tdesc</span> <span class="op">=</span> <span class="ident">Bip44</span>(<span class="ident">tprvkey</span>, <span class="ident">KeychainKind::Internal</span>)
+            .<span class="ident">build</span>(<span class="ident">Network::Testnet</span>)
+            .<span class="ident">unwrap</span>();
+
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">ExtendedDescriptor::Pkh</span>(<span class="ident">pkh</span>) <span class="op">=</span> <span class="ident">tdesc</span>.<span class="number">0</span> {
+            <span class="kw">let</span> <span class="ident">path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ChildNumber</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">pkh</span>.<span class="ident">into_inner</span>().<span class="ident">full_derivation_path</span>().<span class="ident">into</span>();
+            <span class="kw">let</span> <span class="ident">purpose</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
+            <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">purpose</span>, <span class="ident">Hardened</span> { <span class="ident">index</span>: <span class="number">44</span> }));
+            <span class="kw">let</span> <span class="ident">coin_type</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">get</span>(<span class="number">1</span>).<span class="ident">unwrap</span>();
+            <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">coin_type</span>, <span class="ident">Hardened</span> { <span class="ident">index</span>: <span class="number">1</span> }));
+        }
+    }
+
     <span class="comment">// verify template descriptor generates expected address(es)</span>
     <span class="kw">fn</span> <span class="ident">check</span>(
         <span class="ident">desc</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Descriptor</span><span class="op">&lt;</span><span class="ident">DescriptorPublicKey</span><span class="op">&gt;</span>, <span class="ident">KeyMap</span>, <span class="ident">ValidNetworks</span>), <span class="ident">DescriptorError</span><span class="op">&gt;</span>,
@@ -1230,7 +1318,7 @@
             <span class="ident">bitcoin::PrivateKey::from_wif</span>(<span class="string">&quot;cTc4vURSzdx6QE6KVynWGomDbLaA75dNALMNyfjh3p8DRRar84Um&quot;</span>)
                 .<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">P2Pkh</span>(<span class="ident">prvkey</span>).<span class="ident">build</span>(),
+            <span class="ident">P2Pkh</span>(<span class="ident">prvkey</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">false</span>,
             <span class="bool-val">true</span>,
             <span class="kw-2">&amp;</span>[<span class="string">&quot;mwJ8hxFYW19JLuc65RCTaP4v1rzVU8cVMT&quot;</span>],
@@ -1241,7 +1329,7 @@
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">P2Pkh</span>(<span class="ident">pubkey</span>).<span class="ident">build</span>(),
+            <span class="ident">P2Pkh</span>(<span class="ident">pubkey</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">false</span>,
             <span class="bool-val">true</span>,
             <span class="kw-2">&amp;</span>[<span class="string">&quot;muZpTpBYhxmRFuCjLc7C6BBDF32C8XVJUi&quot;</span>],
@@ -1255,7 +1343,7 @@
             <span class="ident">bitcoin::PrivateKey::from_wif</span>(<span class="string">&quot;cTc4vURSzdx6QE6KVynWGomDbLaA75dNALMNyfjh3p8DRRar84Um&quot;</span>)
                 .<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">P2Wpkh_P2Sh</span>(<span class="ident">prvkey</span>).<span class="ident">build</span>(),
+            <span class="ident">P2Wpkh_P2Sh</span>(<span class="ident">prvkey</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">true</span>,
             <span class="bool-val">true</span>,
             <span class="kw-2">&amp;</span>[<span class="string">&quot;2NB4ox5VDRw1ecUv6SnT3VQHPXveYztRqk5&quot;</span>],
@@ -1266,7 +1354,7 @@
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">P2Wpkh_P2Sh</span>(<span class="ident">pubkey</span>).<span class="ident">build</span>(),
+            <span class="ident">P2Wpkh_P2Sh</span>(<span class="ident">pubkey</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">true</span>,
             <span class="bool-val">true</span>,
             <span class="kw-2">&amp;</span>[<span class="string">&quot;2N5LiC3CqzxDamRTPG1kiNv1FpNJQ7x28sb&quot;</span>],
@@ -1280,7 +1368,7 @@
             <span class="ident">bitcoin::PrivateKey::from_wif</span>(<span class="string">&quot;cTc4vURSzdx6QE6KVynWGomDbLaA75dNALMNyfjh3p8DRRar84Um&quot;</span>)
                 .<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">P2Wpkh</span>(<span class="ident">prvkey</span>).<span class="ident">build</span>(),
+            <span class="ident">P2Wpkh</span>(<span class="ident">prvkey</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">true</span>,
             <span class="bool-val">true</span>,
             <span class="kw-2">&amp;</span>[<span class="string">&quot;bcrt1q4525hmgw265tl3drrl8jjta7ayffu6jfcwxx9y&quot;</span>],
@@ -1291,7 +1379,7 @@
         )
         .<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">P2Wpkh</span>(<span class="ident">pubkey</span>).<span class="ident">build</span>(),
+            <span class="ident">P2Wpkh</span>(<span class="ident">pubkey</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">true</span>,
             <span class="bool-val">true</span>,
             <span class="kw-2">&amp;</span>[<span class="string">&quot;bcrt1qngw83fg8dz0k749cg7k3emc7v98wy0c7azaa6h&quot;</span>],
@@ -1303,7 +1391,7 @@
     <span class="kw">fn</span> <span class="ident">test_bip44_template</span>() {
         <span class="kw">let</span> <span class="ident">prvkey</span> <span class="op">=</span> <span class="ident">bitcoin::util::bip32::ExtendedPrivKey::from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">Bip44</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind::External</span>).<span class="ident">build</span>(),
+            <span class="ident">Bip44</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind::External</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">false</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1313,7 +1401,7 @@
             ],
         );
         <span class="ident">check</span>(
-            <span class="ident">Bip44</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind::Internal</span>).<span class="ident">build</span>(),
+            <span class="ident">Bip44</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind::Internal</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">false</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1330,7 +1418,7 @@
         <span class="kw">let</span> <span class="ident">pubkey</span> <span class="op">=</span> <span class="ident">bitcoin::util::bip32::ExtendedPubKey::from_str</span>(<span class="string">&quot;tpubDDDzQ31JkZB7VxUr9bjvBivDdqoFLrDPyLWtLapArAi51ftfmCb2DPxwLQzX65iNcXz1DGaVvyvo6JQ6rTU73r2gqdEo8uov9QKRb7nKCSU&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">fingerprint</span> <span class="op">=</span> <span class="ident">bitcoin::util::bip32::Fingerprint::from_str</span>(<span class="string">&quot;c55b303f&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">Bip44Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind::External</span>).<span class="ident">build</span>(),
+            <span class="ident">Bip44Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind::External</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">false</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1340,7 +1428,7 @@
             ],
         );
         <span class="ident">check</span>(
-            <span class="ident">Bip44Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind::Internal</span>).<span class="ident">build</span>(),
+            <span class="ident">Bip44Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind::Internal</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">false</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1356,7 +1444,7 @@
     <span class="kw">fn</span> <span class="ident">test_bip49_template</span>() {
         <span class="kw">let</span> <span class="ident">prvkey</span> <span class="op">=</span> <span class="ident">bitcoin::util::bip32::ExtendedPrivKey::from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">Bip49</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind::External</span>).<span class="ident">build</span>(),
+            <span class="ident">Bip49</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind::External</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1366,7 +1454,7 @@
             ],
         );
         <span class="ident">check</span>(
-            <span class="ident">Bip49</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind::Internal</span>).<span class="ident">build</span>(),
+            <span class="ident">Bip49</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind::Internal</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1383,7 +1471,7 @@
         <span class="kw">let</span> <span class="ident">pubkey</span> <span class="op">=</span> <span class="ident">bitcoin::util::bip32::ExtendedPubKey::from_str</span>(<span class="string">&quot;tpubDC49r947KGK52X5rBWS4BLs5m9SRY3pYHnvRrm7HcybZ3BfdEsGFyzCMzayi1u58eT82ZeyFZwH7DD6Q83E3fM9CpfMtmnTygnLfP59jL9L&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">fingerprint</span> <span class="op">=</span> <span class="ident">bitcoin::util::bip32::Fingerprint::from_str</span>(<span class="string">&quot;c55b303f&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">Bip49Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind::External</span>).<span class="ident">build</span>(),
+            <span class="ident">Bip49Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind::External</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1393,7 +1481,7 @@
             ],
         );
         <span class="ident">check</span>(
-            <span class="ident">Bip49Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind::Internal</span>).<span class="ident">build</span>(),
+            <span class="ident">Bip49Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind::Internal</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1409,7 +1497,7 @@
     <span class="kw">fn</span> <span class="ident">test_bip84_template</span>() {
         <span class="kw">let</span> <span class="ident">prvkey</span> <span class="op">=</span> <span class="ident">bitcoin::util::bip32::ExtendedPrivKey::from_str</span>(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">Bip84</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind::External</span>).<span class="ident">build</span>(),
+            <span class="ident">Bip84</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind::External</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1419,7 +1507,7 @@
             ],
         );
         <span class="ident">check</span>(
-            <span class="ident">Bip84</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind::Internal</span>).<span class="ident">build</span>(),
+            <span class="ident">Bip84</span>(<span class="ident">prvkey</span>, <span class="ident">KeychainKind::Internal</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1436,7 +1524,7 @@
         <span class="kw">let</span> <span class="ident">pubkey</span> <span class="op">=</span> <span class="ident">bitcoin::util::bip32::ExtendedPubKey::from_str</span>(<span class="string">&quot;tpubDC2Qwo2TFsaNC4ju8nrUJ9mqVT3eSgdmy1yPqhgkjwmke3PRXutNGRYAUo6RCHTcVQaDR3ohNU9we59brGHuEKPvH1ags2nevW5opEE9Z5Q&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">fingerprint</span> <span class="op">=</span> <span class="ident">bitcoin::util::bip32::Fingerprint::from_str</span>(<span class="string">&quot;c55b303f&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">check</span>(
-            <span class="ident">Bip84Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind::External</span>).<span class="ident">build</span>(),
+            <span class="ident">Bip84Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind::External</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
@@ -1446,7 +1534,7 @@
             ],
         );
         <span class="ident">check</span>(
-            <span class="ident">Bip84Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind::Internal</span>).<span class="ident">build</span>(),
+            <span class="ident">Bip84Public</span>(<span class="ident">pubkey</span>, <span class="ident">fingerprint</span>, <span class="ident">KeychainKind::Internal</span>).<span class="ident">build</span>(<span class="ident">Network::Bitcoin</span>),
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span>[
