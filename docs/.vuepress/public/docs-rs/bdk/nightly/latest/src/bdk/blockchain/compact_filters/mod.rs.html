@@ -587,6 +587,18 @@
 <span id="580">580</span>
 <span id="581">581</span>
 <span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -846,6 +858,16 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">peers</span>[<span class="number">0</span>]
             .<span class="ident">get_mempool</span>()
             .<span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="ident">Inventory::Transaction</span>(<span class="kw-2">*</span><span class="ident">txid</span>)))
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">GetBlockHash</span> <span class="kw">for</span> <span class="ident">CompactFiltersBlockchain</span> {
+    <span class="kw">fn</span> <span class="ident">get_block_hash</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">height</span>: <span class="ident">u64</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BlockHash</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">headers</span>
+            .<span class="ident">get_block_hash</span>(<span class="ident">height</span> <span class="kw">as</span> <span class="ident">usize</span>)<span class="question-mark">?</span>
+            .<span class="ident">ok_or</span>(<span class="ident">Error::CompactFilters</span>(
+                <span class="ident">CompactFiltersError::BlockHashNotFound</span>,
+            ))
     }
 }
 
@@ -1125,6 +1147,8 @@
     <span class="ident">InvalidFilter</span>,
     <span class="doccomment">/// The peer is missing a block in the valid chain</span>
     <span class="ident">MissingBlock</span>,
+    <span class="doccomment">/// Block hash at specified height not found</span>
+    <span class="ident">BlockHashNotFound</span>,
     <span class="doccomment">/// The data stored in the block filters storage are corrupted</span>
     <span class="ident">DataCorruption</span>,
 
