@@ -4873,6 +4873,77 @@
 <span id="4866">4866</span>
 <span id="4867">4867</span>
 <span id="4868">4868</span>
+<span id="4869">4869</span>
+<span id="4870">4870</span>
+<span id="4871">4871</span>
+<span id="4872">4872</span>
+<span id="4873">4873</span>
+<span id="4874">4874</span>
+<span id="4875">4875</span>
+<span id="4876">4876</span>
+<span id="4877">4877</span>
+<span id="4878">4878</span>
+<span id="4879">4879</span>
+<span id="4880">4880</span>
+<span id="4881">4881</span>
+<span id="4882">4882</span>
+<span id="4883">4883</span>
+<span id="4884">4884</span>
+<span id="4885">4885</span>
+<span id="4886">4886</span>
+<span id="4887">4887</span>
+<span id="4888">4888</span>
+<span id="4889">4889</span>
+<span id="4890">4890</span>
+<span id="4891">4891</span>
+<span id="4892">4892</span>
+<span id="4893">4893</span>
+<span id="4894">4894</span>
+<span id="4895">4895</span>
+<span id="4896">4896</span>
+<span id="4897">4897</span>
+<span id="4898">4898</span>
+<span id="4899">4899</span>
+<span id="4900">4900</span>
+<span id="4901">4901</span>
+<span id="4902">4902</span>
+<span id="4903">4903</span>
+<span id="4904">4904</span>
+<span id="4905">4905</span>
+<span id="4906">4906</span>
+<span id="4907">4907</span>
+<span id="4908">4908</span>
+<span id="4909">4909</span>
+<span id="4910">4910</span>
+<span id="4911">4911</span>
+<span id="4912">4912</span>
+<span id="4913">4913</span>
+<span id="4914">4914</span>
+<span id="4915">4915</span>
+<span id="4916">4916</span>
+<span id="4917">4917</span>
+<span id="4918">4918</span>
+<span id="4919">4919</span>
+<span id="4920">4920</span>
+<span id="4921">4921</span>
+<span id="4922">4922</span>
+<span id="4923">4923</span>
+<span id="4924">4924</span>
+<span id="4925">4925</span>
+<span id="4926">4926</span>
+<span id="4927">4927</span>
+<span id="4928">4928</span>
+<span id="4929">4929</span>
+<span id="4930">4930</span>
+<span id="4931">4931</span>
+<span id="4932">4932</span>
+<span id="4933">4933</span>
+<span id="4934">4934</span>
+<span id="4935">4935</span>
+<span id="4936">4936</span>
+<span id="4937">4937</span>
+<span id="4938">4938</span>
+<span id="4939">4939</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -5950,7 +6021,11 @@
         }
 
         <span class="comment">// attempt to finalize</span>
-        <span class="self">self</span>.<span class="ident">finalize_psbt</span>(<span class="ident">psbt</span>, <span class="ident">sign_options</span>)
+        <span class="kw">if</span> <span class="ident">sign_options</span>.<span class="ident">try_finalize</span> {
+            <span class="self">self</span>.<span class="ident">finalize_psbt</span>(<span class="ident">psbt</span>, <span class="ident">sign_options</span>)
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>)
+        }
     }
 
     <span class="doccomment">/// Return the spending policies for the wallet&#39;s descriptor</span>
@@ -6061,6 +6136,9 @@
                             <span class="kw">let</span> <span class="ident">psbt_input</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">n</span>];
                             <span class="ident">psbt_input</span>.<span class="ident">final_script_sig</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">tmp_input</span>.<span class="ident">script_sig</span>);
                             <span class="ident">psbt_input</span>.<span class="ident">final_script_witness</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">tmp_input</span>.<span class="ident">witness</span>);
+                            <span class="kw">if</span> <span class="ident">sign_options</span>.<span class="ident">remove_partial_sigs</span> {
+                                <span class="ident">psbt_input</span>.<span class="ident">partial_sigs</span>.<span class="ident">clear</span>();
+                            }
                         }
                         <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
                             <span class="macro">debug!</span>(<span class="string">&quot;satisfy error {:?} for input {}&quot;</span>, <span class="ident">e</span>, <span class="ident">n</span>);
@@ -8979,6 +9057,70 @@
             <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">final_script_witness</span>.<span class="ident">is_some</span>(),
             <span class="string">&quot;should finalized input it signed&quot;</span>
         )
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_remove_partial_sigs_after_finalize_sign_option</span>() {
+        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="string">&quot;wpkh(tprv8ZgxMBicQKsPd3EupYiPRhaMooHKUHJxNsTfYuScep13go8QFfHdtkG9nRkFGb7busX4isf6X9dURGCoKgitaApQ6MupRhZMcELAxTBRJgS/*)&quot;</span>);
+
+        <span class="kw">for</span> <span class="ident">remove_partial_sigs</span> <span class="kw">in</span> <span class="kw-2">&amp;</span>[<span class="bool-val">true</span>, <span class="bool-val">false</span>] {
+            <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
+            <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">psbt</span> <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>().<span class="number">0</span>;
+
+            <span class="macro">assert!</span>(<span class="ident">wallet</span>
+                .<span class="ident">sign</span>(
+                    <span class="kw-2">&amp;mut</span> <span class="ident">psbt</span>,
+                    <span class="ident">SignOptions</span> {
+                        <span class="ident">remove_partial_sigs</span>: <span class="kw-2">*</span><span class="ident">remove_partial_sigs</span>,
+                        ..<span class="ident">Default::default</span>()
+                    },
+                )
+                .<span class="ident">unwrap</span>());
+
+            <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">iter</span>().<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">input</span><span class="op">|</span> {
+                <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">remove_partial_sigs</span> {
+                    <span class="macro">assert!</span>(<span class="ident">input</span>.<span class="ident">partial_sigs</span>.<span class="ident">is_empty</span>())
+                } <span class="kw">else</span> {
+                    <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">input</span>.<span class="ident">partial_sigs</span>.<span class="ident">is_empty</span>())
+                }
+            });
+        }
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_try_finalize_sign_option</span>() {
+        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="string">&quot;wpkh(tprv8ZgxMBicQKsPd3EupYiPRhaMooHKUHJxNsTfYuScep13go8QFfHdtkG9nRkFGb7busX4isf6X9dURGCoKgitaApQ6MupRhZMcELAxTBRJgS/*)&quot;</span>);
+
+        <span class="kw">for</span> <span class="ident">try_finalize</span> <span class="kw">in</span> <span class="kw-2">&amp;</span>[<span class="bool-val">true</span>, <span class="bool-val">false</span>] {
+            <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
+            <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">psbt</span> <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>().<span class="number">0</span>;
+
+            <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>
+                .<span class="ident">sign</span>(
+                    <span class="kw-2">&amp;mut</span> <span class="ident">psbt</span>,
+                    <span class="ident">SignOptions</span> {
+                        <span class="ident">try_finalize</span>: <span class="kw-2">*</span><span class="ident">try_finalize</span>,
+                        ..<span class="ident">Default::default</span>()
+                    },
+                )
+                .<span class="ident">unwrap</span>();
+
+            <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">iter</span>().<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">input</span><span class="op">|</span> {
+                <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">try_finalize</span> {
+                    <span class="macro">assert!</span>(<span class="ident">finalized</span>);
+                    <span class="macro">assert!</span>(<span class="ident">input</span>.<span class="ident">final_script_sig</span>.<span class="ident">is_some</span>());
+                    <span class="macro">assert!</span>(<span class="ident">input</span>.<span class="ident">final_script_witness</span>.<span class="ident">is_some</span>());
+                } <span class="kw">else</span> {
+                    <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">finalized</span>);
+                    <span class="macro">assert!</span>(<span class="ident">input</span>.<span class="ident">final_script_sig</span>.<span class="ident">is_none</span>());
+                    <span class="macro">assert!</span>(<span class="ident">input</span>.<span class="ident">final_script_witness</span>.<span class="ident">is_none</span>());
+                }
+            });
+        }
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
