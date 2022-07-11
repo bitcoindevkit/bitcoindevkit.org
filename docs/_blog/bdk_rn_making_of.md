@@ -1,6 +1,6 @@
 ---
 title: "`bdk-rn`: How bdk-rn was developed"
-description: "bdk-rn: React Native version of bitcoin Devkit.  Insight into how bdk-rn was developed"
+description: "bdk-rn: React Native version of BitcoinDevKit.  Insight into how bdk-rn was developed"
 authors:
     - Bitcoin Zavior
 date: "2022-07-10"
@@ -14,7 +14,7 @@ This article is **NOT a guide on how to use bdk-rn** to build a bitcoin Applicat
 
 ## React Native Architecture
 
-At a high level, RN consists of the UI front which is essentally JavaScript which interacts with the native IOS and Android platforms over a bridge. When communicating over the bridge values from JS are converted to native and vice versa.
+At a high level, RN consists of the UI front which is essentially JavaScript which interacts with the native IOS and Android platforms over a bridge. When communicating over the bridge values from JS are converted to native and vice versa.
 
 The native part of RN  consists of Android as well as IOS modules and components. The Android and IOS sections are full fledged native projects which interact with the JS side over the native bridge. A RN project has all the build configuraiton required to build both Android and IOS projects.
 
@@ -108,7 +108,7 @@ fun createWallet(result: Promise) {
 }
 ```
 
-We need one more file to complete our basic native framework. A new kotlin file, `BdkRnPackage.kt` is required to package all our native code into a new android module. This can be done by adding the following code:
+We need one more file to complete our basic native framework. A new Kotlin file, `BdkRnPackage.kt` is required to package all our native code into a new android module. This can be done by adding the following code:
 
 ```kotlin
 // File: BdkRnPackage.kt
@@ -162,7 +162,7 @@ val descriptor: String = "wpkh(" + keys.xprv + "/84'/1'/0'/0/*)"
 val changeDescriptor: String = descriptor.replace("/84'/1'/0'/0/*","/84'/1'/0'/1/*")
 ```
 
-To create a wallet with bdk we need to specify wallet descriptor, network, a database config, blockchaincofig. We intend to use bitcoin testnet and want to use default memory for data. For bitcoin node we will use a public electrum server. We will need to define these parameters to create a wallet.
+To create a wallet with bdk we need to specify wallet descriptor, network, a database config, blockchain config. We intend to use bitcoin testnet and want to use default memory for data. For bitcoin node we will use a public electrum server. We will need to define these parameters to create a wallet.
 
 ```kotlin
 val network = `Network.TESTNET`
@@ -195,7 +195,7 @@ wallet.getNewAddress()
 wallet.getBalance().toLong()
 ```
 
-To return a value from the native android code to React Native’s Javascript side over the JS Native bridge we will use `com.facebook.react.bridge.Promise`. To return balance information to JS, the folloiwng code can be used
+To return a value from the native android code to React Native’s Javascript side over the JS Native bridge we will use `com.facebook.react.bridge.Promise`. To return balance information to JS, the following code can be used
 
 ```kotlin
 val balance: String = wallet.getBalance().toLong()
@@ -234,5 +234,5 @@ BDK-RN: [https://github.com/LtbLightning/bdk-rn](https://github.com/LtbLightning
 
 ## Feedback
 
-The best way to give feedback on this would be to comment on the [pull request](https://github.com/bitcoindevkit/bitcoindevkit.org/pull/106) for this blog post.
+The best way to give feedback on this would be to comment on the [pull request](https://github.com/bitcoindevkit/bitcoindevkit.org/pull/107) for this blog post.
 Thanks in advance.
