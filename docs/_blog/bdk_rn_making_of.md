@@ -1,6 +1,6 @@
 ---
-title: "`bdk-rn`: Making of the module"
-description: "bdk-rn: React Native version of Bitcoin Devkit. Insight into how bdk-rn was made"
+title: "`bdk-rn`: How bdk-rn was developed"
+description: "bdk-rn: React Native version of bitcoin Devkit.  Insight into how bdk-rn was developed"
 authors:
     - Bitcoin Zavior
 date: "2022-07-10"
@@ -8,30 +8,34 @@ tags: ["BDK-RN","Development","Architecture"]
 hidden: true
 draft: false
 ---
-The **Bitcoin Devkit**'s **React Native** version (`bdk-rn`) makes it easy to develop Bitcoin applications for both Android and IOS mobile platforms. Using `bdk-rn` knowledge of the underlying bitcoin and bdk api or rust is not required and using `bdk-rn` is similar to using any other RN module. Objective is to enable app developers to simply install using using `yarn add` and start using it in a React Native Project. The native code, rust lang implementation and confugurations any other details are all taken care of by bdk-rn.
+The **BitcoinDevkit**'s **React Native** version (`bdk-rn`) makes it easy to develop bitcoin applications for both Android and IOS mobile platforms. Using `bdk-rn` knowledge of the underlying bitcoin and bdk api or rust is not required and using `bdk-rn` is similar to using any other RN module. The goal is **Rapid Bitcoin Application Development** by doing the heavy lifting in advance and providing a reusable package for other developers to use. Developers simply install using using `yarn add` and start using it in a React Native Project. The native code, rust lang implementation, confugurations any other details are all taken care of by `bdk-rn`.
 
-This article is **NOT a guide on how to use bdk-rn** to build a Bitcoin Wallet or Application, rather this is an insight into how `bdk-rn` was developed. For help on how to use `bdk-rn` to develop a Bitcoin application please refer to the user guide in the readme on github. There will be `how to guides` published shortly on getting started with `bdk-rn`. This article will help answer queries from curious minds out there who have asked for this information in the past.
+This article is **NOT a guide on how to use bdk-rn** to build a bitcoin Application, rather this is an insight into how `bdk-rn` was developed. For help on how to use `bdk-rn` to develop a bitcoin Wallet or Application please refer to the user guide in the readme on github: https://github.com/LtbLightning/bdk-rn#usage. There will be `how to guides` published shortly on getting started with `bdk-rn`.
 
 ## React Native Architecture
 
-At a high level, RN consists of the UI front end part fo the code which is JavaScript which interacts with the native IOS and Android platforms over a bridge. When communicating over the bridge values from JS are converted to native and vice versa.
+At a high level, RN consists of the UI front which is essentally JavaScript which interacts with the native IOS and Android platforms over a bridge. When communicating over the bridge values from JS are converted to native and vice versa.
 
-The native part of a RN project consists of Android as well as IOS components. The Android and IOS parts are full fledged native projects which interact with the JS side. A RN project has all the build configuraiton required to build both Android and IOS projects.
+The native part of RN  consists of Android as well as IOS modules and components. The Android and IOS sections are full fledged native projects which interact with the JS side over the native bridge. A RN project has all the build configuraiton required to build both Android and IOS projects.
 
-For the purpose of making `bdk-rn`, `bdk-kotlin` is used as the native Android module and `bdk-swift` as IOS nativemodule. These are configured and wrapped in a RN Project such that they are part of the platform specific native modules within the RN Project. This is then built to be a reusable React Native module so that it can be added to RN projects.
+For the purpose of making `bdk-rn`, `bdk-kotlin` is used as the native Android module and `bdk-swift` as native IOS module. These are configured and wrapped in a RN Project as part of the platform specific native modules within the RN Project. This RN Project is then built to be a reusable React Native module.
 
 ![](./bdk_rn_making_of/BDK-RN-Architecture.png)
 
-## Android Native Integration
+## Native Integration
 
-We will go into the details of Android Native integration, similar steps are done for IOS as well.
-In order to talk to native modules on Android and IOS, React Native provides a React Context API for both Java/Kotlin as well as Swift. These serve as the interface to the native bridge allowing communication from JS to native modules.
 
-bdk-rn uses React Context API plus some native code to wrap and enhance bdk APIs. The native code calls and interacts wit the Android and IOS native modules whic in turn interface with the underlying mobile platform.
+In order to communicate to native modules on Android and IOS, React Native provides React Context API for Java/Kotlin as well as Swift. React Context API are used to build the interface to the native bridge allowing communication from JS to native modules.
+
+bdk-rn uses React Context API plus some native code to wrap and enhance bdk-kotlin and bdk-swift APIs. The native code calls and interacts with the Android and IOS native modules which interface with the underlying mobile platform.
 
 <img src="./bdk_rn_making_of/BDK-RN.png" style="display: block; margin: 0 auto; zoom: 20%" />
 
-Starting off with a basic RN project. This project will be enhanced with bdk-kotlin and bdk-swift binaries and native code. For now lets go into the details for Android, IOS has similar steps to be done for the IOS project.
+## Android Module
+
+We will go into the details of how the BDK Android Module is integrated, similar steps are done for IOS as well.
+
+Starting off with a basic RN project. This project will be enhanced with bdk-kotlin and bdk-swift binaries and native code. For now lets go into the details for Android, IOS has similar steps to be done.
 
 The Android native project is located under the root project folder.
 
@@ -39,9 +43,11 @@ The Android native project is located under the root project folder.
 
 
 
-We need to add a dependency in `build.gradle` for bdk-kotlin's android native package. This will enable the bdk-kotlin to be downloaded and available in the Android project.
+Here we need to add a dependency in `build.gradle` for bdk-kotlin's android native binary. This will enable bdk-kotlin to be downloaded and available as one of the native modules.
 
 ```javascript
+// File: build.gradle
+
 repositories {
     mavenCentral()
 }
@@ -55,44 +61,103 @@ dependencies {
 }
 ```
 
-We will create an Android native module for `bdk-rn`. Create a new Kotlin file named `bdk.kt` inside `android/app/src/main/java/com/bdkrn/` folder
+We will create an Android native module which will interact with `bdk-android`. 
+This is done by adding a new Kotlin file named `BdkRnModule.kt` inside `android/app/src/main/java/com/bdkrn/` folder
 
-This will be the native code file for bdk-rn module and here a new class will be created to encapsulate the interaction with the bitcoindevkit's kotlin native binary file.
-
-Lets start with adding the nativ code, starting withimports:
+This will be the native code file for bdk-rn module.Here a new class will be created to encapsulate the interaction with  bitcoindevkit's android native binary.
 
 ```kotlin
+// File: BdkRnModule.kt
+
 import android.annotation.SuppressLint
-
 import android.util.Log
-
 import com.facebook.react.bridge.Arguments
-
 import com.facebook.react.bridge.Promise as Result
-
 ```
 
-Here we can create a class to invoke the bdk android binary so lets also add an import for `import org.bitcoindevkit.Wallet`
+`org.bitcoindevkit` will also need to be imported here
 
 ```kotlin
 import org.bitcoindevkit.Wallet as BdkWallet
 ```
 
-Once done lets write some code to generate Bitcoin Key information, which will be used to create a wallet.
- First we will need to create a ExtendedKeyInfo which will hold the mnemonic seed phrase as well as an extended private key.
+To use React Context API `com.facebook.react.bridge.*` also needs to be imported
 
 ```kotlin
-val keys: ExtendedKeyInfo = generateExtendedKey(
-        Network.TESTNET,
-        WordCount.WORDS12,
-        “”
-)
+import com.facebook.react.bridge.*
 ```
 
-And then use it to create a wallet descriptor and change descriptor:
+A new class needs to be defined here which will implement the React Context API
 
 ```kotlin
-val descriptor: String = wpkh(" + keys.xprv + "/84'/1'/0'/0/*)
+class BdkRnModule(reactContext: ReactApplicationContext) :
+	ReactContextBaseJavaModule(reactContext) {
+      override fun getName() = "BdkRnModule"
+  }
+```
+
+With the base imports and class defined, we can start writing methods.
+This will demonstrate how bdk native module will be called and how values will be returned to JS over the native bridge
+
+Lets create a method that can be called from JaveScript, to do so we use the `@ReactMethod` directive which is part of the React Context API. This will expose the method so that it can be called from JavaScript.
+
+```kotlin
+@ReactMethod
+fun createWallet(result: Promise) {
+  
+}
+```
+
+We need one more file to complete our basic native framework. A new kotlin file, `BdkRnPackage.kt` is required to package all our native code into a new android module. This can be done by adding the following code:
+
+```kotlin
+// File: BdkRnPackage.kt
+
+import com.facebook.react.ReactPackage
+import com.facebook.react.bridge.NativeModule
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.uimanager.ViewManager
+
+class BdkRnPackage : ReactPackage {
+
+    override fun createNativeModules(reactContext: ReactApplicationContext):
+            MutableList<NativeModule> {
+        return mutableListOf(BdkRnModule(reactContext))
+    }
+}
+
+```
+
+Now lets add code for creating a wallet in BdkRnModule.kt
+
+The methods used here are for bdk-kotlin and available in the bdk-kotlin documentation.
+
+We first create a key info object
+
+```kotlin
+// File: BdkRnModule.kt
+
+@ReactMethod
+fun createWallet(result: Promise) {
+  // Create key info with a new mnemonic
+  val keys: ExtendedKeyInfo = generateExtendedKey(
+        Network.TESTNET,
+        WordCount.WORDS12,
+        ""
+  )
+  
+  // more code to follow...
+  // create descriptor and change descriptor
+  // create databaseConfig and blockchainconfig
+  // create wallet
+  
+}
+```
+
+Then key info used to create a wallet descriptor and change descriptor:
+
+```kotlin
+val descriptor: String = "wpkh(" + keys.xprv + "/84'/1'/0'/0/*)"
 
 val changeDescriptor: String = descriptor.replace("/84'/1'/0'/0/*","/84'/1'/0'/1/*")
 ```
@@ -120,70 +185,54 @@ var wallet: BdkWallet = BdkWallet(
 )
 ```
 
-Once we hae a wallet initialised, we we call methods on it like, `sync` 
+Once we have a wallet initialised, we can call methods on it to sync, generate a new address and to get balance 
 
 ```kotlin
 wallet.sync(ProgressLog, maxAddress)
-```
 
-We can generate a new address
-
-```kotlin
 wallet.getNewAddress()
-```
 
-And we can fetch the balance
-
-```kotlin
 wallet.getBalance().toLong()
 ```
 
-To pass a value from the native android code to React Native’s Javascript side over the JS <>Native bridge we will use `com.facebook.react.bridge.Promise`
-
-At this point you we have an Android native module and invoked its native method from JavaScript in your React Native application. You can read on to learn more about things like argument types available to a native module method and how to setup callbacks and promises.
-
-
-
-Native modules can also fulfill a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise), which can simplify your JavaScript, especially when using ES2016's [async/await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) syntax. When the last parameter of a native module Java/Kotlin method is a Promise, its corresponding JS method will return a JS Promise object.
-
-Refactoring the above code to use a promise instead of callbacks looks like this:
-
-
-
-val balance: String = BdkFunctions.getBalance()
-
-​      result.resolve(balance)
-
-We can define a method like this:
+To return a value from the native android code to React Native’s Javascript side over the JS Native bridge we will use `com.facebook.react.bridge.Promise`. To return balance information to JS, the folloiwng code can be used
 
 ```kotlin
-
-// Other methods here
-// to create wallet
-
-
-fun getBalance(result: Result) {
-  val balance: String = BdkFunctions.getBalance()
-  result.resolve(balance)
-}
+val balance: String = wallet.getBalance().toLong()
+result.resolve(balance)
 ```
 
+At this point  we have an Android native module and it can be invoked from JS by calling createWallet. if the wallet is created correctly it will return the balance.
 
+This project can be imported into any RN project to reuse the defined methods without the need to carry out the setup described above.
+
+```javascript
+// any js file in React Native
+import BdkRn from 'bdk-rn';
+
+// create a wallet and retrieve balance
+const balance = await BdkRn.createWallet();
+console.log({ balance })
+
+```
+
+The actual bdk-rn module has organised the native code into granular methods for different stages of creating a wallet and for different interactions with the wallet, like generating seeds, creating wallet for different network, creating descriptors, creating or restoring wallet, fetching balance, fetching transactions  and many other methods. Please refer: https://github.com/LtbLightning/bdk-rn#library-api The set of APIs available will grow in the near future as more APIs will get added. This article can also be used as a guide to add new methods to the existing bdk-rn project.
+
+The objective of `bdk-rn` is to enable React Native developers to quickly start developing applications without the need to package BDK as described above. This article can also be used as a guide to add new methods to the existing bdk-rn project.
+
+Be on the lookout for user guides and tutorials on how to build bitcoin applications using `bdk-rn` and `bdk-flutter`.
+
+## References
+
+Creating native modules for Android and IOS: https://reactnative.dev/docs/native-modules-intro
+
+React Native Architecture: https://formidable.com/blog/2019/react-codegen-part-1/
+
+BDK-Android API: https://bitcoindevkit.org/bdk-jvm/bdk-jvm/org.bitcoindevkit/index.html
+
+BDK-RN: https://github.com/LtbLightning/bdk-rn
 
 ## Feedback
 
-The best way to give feedback on this would be to comment on the [pull request](https://github.com/bitcoindevkit/bitcoindevkit.org/pull/100) for this blog post.
+The best way to give feedback on this would be to comment on the [pull request](https://github.com/bitcoindevkit/bitcoindevkit.org/pull/106) for this blog post.
 Thanks in advance.
-
-References: https://formidable.com/blog/2019/react-codegen-part-1/
-
-
-
-[X window system]: https://en.wikipedia.org/wiki/X_Window_System
-[The Art of UNIX Programming]: https://en.wikipedia.org/wiki/The_Art_of_Unix_Programming
-[`Wallet`]: https://docs.rs/bdk/latest/bdk/wallet/struct.Wallet.html
-[`CoinSelectionAlgorithm`]: https://docs.rs/bdk/latest/bdk/wallet/coin_selection/trait.CoinSelectionAlgorithm.html
-[`Signer`]: https://docs.rs/bdk/latest/bdk/wallet/signer/trait.Signer.html
-[`WalletSync`]: https://docs.rs/bdk/latest/bdk/blockchain/trait.walletsync.html
-[Sensei]: https://l2.technology/sensei
-[`Database`]: https://docs.rs/bdk/latest/bdk/database/trait.Database.html
