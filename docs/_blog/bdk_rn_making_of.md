@@ -216,7 +216,7 @@ console.log({ balance })
 
 ```
 
-The actual bdk-rn module has organised the native code into granular methods for different stages of creating a wallet and for different interactions with the wallet, like generating seeds, creating wallet for different network, creating descriptors, creating or restoring wallet, fetching balance, fetching transactions  and many other methods. Please refer: https://github.com/LtbLightning/bdk-rn#library-api The set of APIs available will grow in the near future as more APIs will get added. This article can also be used as a guide to add new methods to the existing bdk-rn project.
+The actual bdk-rn module has organised the native code into granular methods for different stages of creating a wallet and for different interactions with the wallet, like generating seeds, creating wallet for different network, creating descriptors, creating or restoring wallet, fetching balance, fetching transactions  and many other methods. Please refer:[https://github.com/LtbLightning/bdk-rn#library-api](https://github.com/LtbLightning/bdk-rn#library-api) The set of APIs available will grow in the near future as more APIs will get added. This article can also be used as a guide to add new methods to the existing bdk-rn project.
 
 The objective of `bdk-rn` is to enable React Native developers to quickly start developing applications without the need to package BDK as described above. This article can also be used as a guide to add new methods to the existing bdk-rn project.
 
@@ -224,13 +224,13 @@ Be on the lookout for user guides and tutorials on how to build bitcoin applicat
 
 ## References
 
-Creating native modules for Android and IOS: https://reactnative.dev/docs/native-modules-intro
+Creating native modules for Android and IOS: [https://reactnative.dev/docs/native-modules-intro](https://reactnative.dev/docs/native-modules-intro)
 
-React Native Architecture: https://formidable.com/blog/2019/react-codegen-part-1/
+React Native Architecture: [https://formidable.com/blog/2019/react-codegen-part-1/](https://formidable.com/blog/2019/react-codegen-part-1/)
 
-BDK-Android API: https://bitcoindevkit.org/bdk-jvm/bdk-jvm/org.bitcoindevkit/index.html
+BDK-Android API: [https://bitcoindevkit.org/bdk-jvm/bdk-jvm/org.bitcoindevkit/index.html](https://bitcoindevkit.org/bdk-jvm/bdk-jvm/org.bitcoindevkit/index.html)
 
-BDK-RN: https://github.com/LtbLightning/bdk-rn
+BDK-RN: [https://github.com/LtbLightning/bdk-rn](https://github.com/LtbLightning/bdk-rn)
 
 ## Feedback
 
