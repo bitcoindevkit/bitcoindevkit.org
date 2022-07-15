@@ -12,12 +12,12 @@ follow their instructions, after which you can test if everything went fine by r
 cargo 1.56.0 (4ed5d137b 2021-10-04)
 ```
 
-If you really don't want to pipe the output of `curl` into `sh`, you can also try using a
+As an alternative to installing the Rust toolchain, you can try using a
 [Docker image](https://hub.docker.com/_/rust) and working inside of it, but that's meant for more
 advanced users and won't be covered in this guide.
 
 ::: tip Note
-At the time of writing, the project requires cargo >= 1.46.0, which is our minimum supported rust version (MSRV) as of July 2021. If you have an older version installed with rustup.rs, you can upgrade it with `rustup update`.
+At the time of writing, the project requires cargo >= 1.56.0, which is our minimum supported rust version (MSRV) as of May 2022. If you have an older version installed with rustup.rs, you can upgrade it with `rustup update`.
 :::
 
 ## Installing the `bdk-cli` tool
@@ -40,27 +40,40 @@ This command may take a while to finish, since it will fetch and compile all the
 
 Once it's done, you can check if everything went fine by running `bdk-cli --help` which should print something like this:
 
-```bash
-BDK CLI 0.3.1-dev
+```
+bdk-cli 0.5.0
 Alekos Filini <alekos.filini@gmail.com>:Riccardo Casatta <riccardo@casatta.it>:Steve Myers <steve@notmandatory.org>
-Top level options and command modes
+The BDK Command Line Wallet App
+
+bdk-cli is a light weight command line bitcoin wallet, powered by BDK. This app can be used as a playground as well as
+testing environment to simulate various wallet testing situations. If you are planning to use BDK in your wallet, bdk-
+cli is also a great intro tool to get familiar with the BDK API.
+
+But this is not just any toy. bdk-cli is also a fully functioning Bitcoin wallet with taproot support!
+
 
 USAGE:
     bdk-cli [OPTIONS] <SUBCOMMAND>
 
 FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+    -h, --help       
+            Prints help information
+
+    -V, --version    
+            Prints version information
+
 
 OPTIONS:
-    -n, --network <NETWORK>    Sets the network [default: testnet]
+    -n, --network <NETWORK>    
+            Sets the network [default: testnet]
+
 
 SUBCOMMANDS:
     compile    Compile a miniscript policy to an output descriptor
     help       Prints this message or the help of the given subcommand(s)
-    key        Key management sub-commands
-    repl       Enter REPL command loop mode
-    wallet     Wallet options and sub-commands
+    key        Key Management Operations
+    repl       REPL command loop mode
+    wallet     Wallet Operations
 
 ```
 
