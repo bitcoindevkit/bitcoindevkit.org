@@ -18,6 +18,7 @@ const docsSidebar = [
         title: "BDK-CLI",
         collapsable: true,
         children: [
+          '/bdk-cli/introduction',
           '/bdk-cli/installation',
           '/bdk-cli/concept',
           '/bdk-cli/interface',
