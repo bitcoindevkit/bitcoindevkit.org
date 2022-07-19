@@ -1,6 +1,11 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;wallet&#x2F;tx_builder.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>tx_builder.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a class="sidebar-logo" href="../../../bdk/index.html"><div class="logo-container"><img src="https:&#x2F;&#x2F;github.com&#x2F;bitcoindevkit&#x2F;bdk&#x2F;raw&#x2F;master&#x2F;static&#x2F;bdk.png" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../bdk/index.html"><img src="https:&#x2F;&#x2F;github.com&#x2F;bitcoindevkit&#x2F;bdk&#x2F;raw&#x2F;master&#x2F;static&#x2F;bdk.png" alt="logo"></a><nav class="sub"><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/wallet/tx_builder.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>tx_builder.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../bdk/index.html"><div class="logo-container"><img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></div>
+        </a><h2 class="location"></h2>
+    </nav>
+    <nav class="sidebar"><a class="sidebar-logo" href="../../../bdk/index.html"><div class="logo-container">
+                    <img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></div>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../bdk/index.html">
+                        <img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -893,6 +898,27 @@
 <span id="891">891</span>
 <span id="892">892</span>
 <span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -937,7 +963,7 @@
 <span class="kw">use</span> <span class="ident">std::marker::PhantomData</span>;
 
 <span class="kw">use</span> <span class="ident">bitcoin::util::psbt</span>::{<span class="self">self</span>, <span class="ident">PartiallySignedTransaction</span> <span class="kw">as</span> <span class="ident">Psbt</span>};
-<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">OutPoint</span>, <span class="ident">Script</span>, <span class="ident">SigHashType</span>, <span class="ident">Transaction</span>};
+<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">OutPoint</span>, <span class="ident">Script</span>, <span class="ident">Transaction</span>};
 
 <span class="kw">use</span> <span class="ident">miniscript::descriptor::DescriptorTrait</span>;
 
@@ -998,10 +1024,7 @@
 <span class="doccomment">///     builder.finish()?</span>
 <span class="doccomment">/// };</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(</span>
-<span class="doccomment">///     psbt1.global.unsigned_tx.output[..2],</span>
-<span class="doccomment">///     psbt2.global.unsigned_tx.output[..2]</span>
-<span class="doccomment">/// );</span>
+<span class="doccomment">/// assert_eq!(psbt1.unsigned_tx.output[..2], psbt2.unsigned_tx.output[..2]);</span>
 <span class="doccomment">/// # Ok::&lt;(), bdk::Error&gt;(())</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">///</span>
@@ -1015,8 +1038,8 @@
 <span class="doccomment">/// [`finish`]: Self::finish</span>
 <span class="doccomment">/// [`coin_selection`]: Self::coin_selection</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">wallet</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Wallet</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">D</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">wallet</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Wallet</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">params</span>: <span class="ident">TxParams</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">coin_selection</span>: <span class="ident">Cs</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">phantom</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">Ctx</span><span class="op">&gt;</span>,
@@ -1035,7 +1058,7 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">unspendable</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">OutPoint</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">manually_selected_only</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">sighash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SigHashType</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">sighash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">psbt::PsbtSighashType</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">ordering</span>: <span class="ident">TxOrdering</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">locktime</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">rbf</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RbfValue</span><span class="op">&gt;</span>,
@@ -1045,6 +1068,7 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">add_global_xpubs</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">include_output_redeem_witness_script</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">bumping_fee</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PreviousFee</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">current_height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>)]</span>
@@ -1065,7 +1089,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Cs</span>: <span class="ident">Clone</span>, <span class="ident">Ctx</span>, <span class="ident">B</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Cs</span>: <span class="ident">Clone</span>, <span class="ident">Ctx</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">TxBuilder</span> {
             <span class="ident">wallet</span>: <span class="self">self</span>.<span class="ident">wallet</span>,
@@ -1077,8 +1101,8 @@
 }
 
 <span class="comment">// methods supported by both contexts, for any CoinSelectionAlgorithm</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">Ctx</span>: <span class="ident">TxBuilderContext</span><span class="op">&gt;</span>
-    <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">Ctx</span>: <span class="ident">TxBuilderContext</span><span class="op">&gt;</span>
+    <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">Ctx</span><span class="op">&gt;</span>
 {
     <span class="doccomment">/// Set a custom fee rate</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fee_rate</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fee_rate</span>: <span class="ident">FeeRate</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
@@ -1232,8 +1256,9 @@
     <span class="doccomment">/// 1. The `psbt_input` does not contain a `witness_utxo` or `non_witness_utxo`.</span>
     <span class="doccomment">/// 2. The data in `non_witness_utxo` does not match what is in `outpoint`.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Note unless you set [`only_witness_utxo`] any `psbt_input` you pass to this method must</span>
-    <span class="doccomment">/// have `non_witness_utxo` set otherwise you will get an error when [`finish`] is called.</span>
+    <span class="doccomment">/// Note unless you set [`only_witness_utxo`] any non-taproot `psbt_input` you pass to this</span>
+    <span class="doccomment">/// method must have `non_witness_utxo` set otherwise you will get an error when [`finish`]</span>
+    <span class="doccomment">/// is called.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`only_witness_utxo`]: Self::only_witness_utxo</span>
     <span class="doccomment">/// [`finish`]: Self::finish</span>
@@ -1307,7 +1332,7 @@
     <span class="doccomment">/// Sign with a specific sig hash</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **Use this option very carefully**</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sighash</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">sighash</span>: <span class="ident">SigHashType</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sighash</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">sighash</span>: <span class="ident">psbt::PsbtSighashType</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">sighash</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">sighash</span>);
         <span class="self">self</span>
     }
@@ -1403,7 +1428,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">coin_selection</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">coin_selection</span>: <span class="ident">P</span>,
-    ) -&gt; <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">P</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>, <span class="ident">P</span>, <span class="ident">Ctx</span><span class="op">&gt;</span> {
         <span class="ident">TxBuilder</span> {
             <span class="ident">wallet</span>: <span class="self">self</span>.<span class="ident">wallet</span>,
             <span class="ident">params</span>: <span class="self">self</span>.<span class="ident">params</span>,
@@ -1440,9 +1465,25 @@
         <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">rbf</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">RbfValue::Value</span>(<span class="ident">nsequence</span>));
         <span class="self">self</span>
     }
+
+    <span class="doccomment">/// Set the current blockchain height.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This will be used to:</span>
+    <span class="doccomment">/// 1. Set the nLockTime for preventing fee sniping.</span>
+    <span class="doccomment">/// **Note**: This will be ignored if you manually specify a nlocktime using [`TxBuilder::nlocktime`].</span>
+    <span class="doccomment">/// 2. Decide whether coinbase outputs are mature or not. If the coinbase outputs are not</span>
+    <span class="doccomment">///    mature at `current_height`, we ignore them in the coin selection.</span>
+    <span class="doccomment">///    If you want to create a transaction that spends immature coinbase inputs, manually</span>
+    <span class="doccomment">///    add them using [`TxBuilder::add_utxos`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In both cases, if you don&#39;t provide a current height, we use the last sync height.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">current_height</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">height</span>: <span class="ident">u32</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">current_height</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">height</span>);
+        <span class="self">self</span>
+    }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">CreateTx</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span>, <span class="ident">Cs</span>: <span class="ident">CoinSelectionAlgorithm</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>, <span class="ident">Cs</span>, <span class="ident">CreateTx</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Replace the recipients already added with a new list</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_recipients</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">recipients</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Script</span>, <span class="ident">u64</span>)<span class="op">&gt;</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">recipients</span> <span class="op">=</span> <span class="ident">recipients</span>;
@@ -1470,6 +1511,9 @@
     <span class="doccomment">/// coins are too small) it will not be included in the resulting transaction. The only</span>
     <span class="doccomment">/// difference is that it is valid to use `drain_to` without setting any ordinary recipients</span>
     <span class="doccomment">/// with [`add_recipient`] (but it is perfectly fine to add recipients as well).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If you choose not to set any recipients, you should either provide the utxos that the</span>
+    <span class="doccomment">/// transaction should spend via [`add_utxos`], or set [`drain_wallet`] to spend all of them.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// When bumping the fees of a transaction made with this option, you probably want to</span>
     <span class="doccomment">/// use [`allow_shrinking`] to allow this output to be reduced to pay for the extra fees.</span>
@@ -1501,6 +1545,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`allow_shrinking`]: Self::allow_shrinking</span>
     <span class="doccomment">/// [`add_recipient`]: Self::add_recipient</span>
+    <span class="doccomment">/// [`add_utxos`]: Self::add_utxos</span>
     <span class="doccomment">/// [`drain_wallet`]: Self::drain_wallet</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">drain_to</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">script_pubkey</span>: <span class="ident">Script</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">drain_to</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">script_pubkey</span>);
@@ -1509,8 +1554,8 @@
 }
 
 <span class="comment">// methods supported only by bump_fee</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>, <span class="ident">D</span>, <span class="ident">DefaultCoinSelectionAlgorithm</span>, <span class="ident">BumpFee</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Explicitly tells the wallet that it is allowed to reduce the fee of the output matching this</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>: <span class="ident">BatchDatabase</span><span class="op">&gt;</span> <span class="ident">TxBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span>, <span class="ident">DefaultCoinSelectionAlgorithm</span>, <span class="ident">BumpFee</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Explicitly tells the wallet that it is allowed to reduce the amount of the output matching this</span>
     <span class="doccomment">/// `script_pubkey` in order to bump the transaction fee. Without specifying this the wallet</span>
     <span class="doccomment">/// will attempt to find a change output to shrink instead.</span>
     <span class="doccomment">///</span>
@@ -1733,6 +1778,7 @@
                 },
                 <span class="ident">txout</span>: <span class="ident">Default::default</span>(),
                 <span class="ident">keychain</span>: <span class="ident">KeychainKind::External</span>,
+                <span class="ident">is_spent</span>: <span class="bool-val">false</span>,
             },
             <span class="ident">LocalUtxo</span> {
                 <span class="ident">outpoint</span>: <span class="ident">OutPoint</span> {
@@ -1741,6 +1787,7 @@
                 },
                 <span class="ident">txout</span>: <span class="ident">Default::default</span>(),
                 <span class="ident">keychain</span>: <span class="ident">KeychainKind::Internal</span>,
+                <span class="ident">is_spent</span>: <span class="bool-val">false</span>,
             },
         ]
     }
@@ -1787,5 +1834,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="bdk" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.59.0-nightly (83b15bfe1 2021-12-28)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="bdk" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (51126be1b 2022-01-24)" ></div>
 </body></html>

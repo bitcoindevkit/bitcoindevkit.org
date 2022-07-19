@@ -11,8 +11,9 @@ permalink: "/blog/2020/12/hello-world/"
 ## Introduction
 
 This article should serve as a "getting started" guide for developers who are considering integrating BDK in their projects: it tries to introduce the reader to the basic concepts behind the library and some of its
-modules and components that can be used to build a very simple functioning Bitcoin wallet. All the information written in this article are valid for the current `master` git branch, and should remain valid for the upcoming [`v0.2.0` release](https://github.com/bitcoindevkit/bdk/projects/1)
-which is planned to be tagged pretty soon.
+modules and components that can be used to build a very simple functioning Bitcoin wallet. All the information written in this article are valid for `bdk = 0.12.0`.
+
+NOTE: See the ["Hello World"](/tutorials/hello-world/) tutorial for a version of this post updated to work with the latest BDK version.
 
 ## Design Goals
 
@@ -47,15 +48,17 @@ sign [PSBTs][PSBT], but with a greatly reduced attack surface because a sizable 
 This is how an `OfflineWallet` can be created. Notice that we are using [`MemoryDatabase`][MemoryDatabase] as our `Database`. We'll get to that in a second.
 
 ```rust
-use bdk::{Wallet, OfflineWallet};
-use bdk::database::MemoryDatabase;
-use bdk::bitcoin::Network;
+use bdk::{
+    bitcoin::Network,
+    database::MemoryDatabase,
+    Wallet,
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let external_descriptor = "wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/0'/0'/0/*)";
     let internal_descriptor = "wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/0'/0'/1/*)";
 
-    let wallet: OfflineWallet<_> = Wallet::new_offline(
+    let wallet: Wallet<(), MemoryDatabase> = Wallet::new_offline(
         external_descriptor,
         Some(internal_descriptor),
         Network::Testnet,
@@ -71,7 +74,8 @@ Once we have our `Wallet` instance we can generate a new address and print it ou
 ```rust
 // ...
 
-println!("Generated Address: {}", wallet.get_new_address()?);
+let address = wallet.get_address(AddressIndex::New)?;
+println!("Generated Address: {}", address);
 ```
 
 Building and running this code will print out:
@@ -89,12 +93,18 @@ since that's available out of the box in BDK and is pretty fast.
 We can change our `Wallet` construction to look something like this:
 
 ```rust
-use bdk::blockchain::ElectrumBlockchain;
-use bdk::electrum_client::Client;
+use bdk::{
+    blockchain::ElectrumBlockchain,
+    bitcoin::Network,
+    database::MemoryDatabase,
+    electrum_client::Client,
+    Wallet,
+    wallet:AddressIndex
+};
 
 // ...
 
-let wallet = Wallet::new(
+let wallet: Wallet<ElectrumBlockchain, MemoryDatabase> = Wallet::new(
     external_descriptor,
     Some(internal_descriptor),
     Network::Testnet,
@@ -131,10 +141,8 @@ Right now we will not get into details of all the available options in `TxBuilde
 how to build transactions. We'll come back to this in a future article.
 
 ```rust
+use bdk::{bitcoin::Address, FeeRate};
 use std::str::FromStr;
-
-use bdk::bitcoin::Address;
-use bdk::TxBuilder;
 
 // ...
 
@@ -142,10 +150,13 @@ let balance = wallet.get_balance()?;
 println!("Wallet balance in SAT: {}", balance);
 
 let faucet_address = Address::from_str("mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt")?;
-let (unsigned_psbt, tx_details) = wallet.create_tx(
-    TxBuilder::with_recipients(vec![(faucet_address.script_pubkey(), balance / 2)])
-        .enable_rbf(),
-)?;
+
+let mut tx_builder = wallet.build_tx();
+tx_builder
+    .add_recipient(faucet_address.script_pubkey(), balance / 2)
+    .enable_rbf();
+let (mut psbt, tx_details) = tx_builder.finish()?;
+
 println!("Transaction details: {:#?}", tx_details);
 ```
 
@@ -157,8 +168,11 @@ All that's left to do once we have our unsigned PSBT is to sign it:
 ```rust
 // ...
 
-let (signed_psbt, tx_finalized) = wallet.sign(unsigned_psbt, None)?;
-assert!(tx_finalized, "Tx has not been finalized");
+use bdk::SignOptions;
+
+let finalized = wallet.sign(&mut psbt, SignOptions::default())?;
+assert!(finalized, "Tx has not been finalized");
+println!("Transaction Signed: {}", finalized);
 ```
 
 And then broadcast it:
@@ -166,7 +180,7 @@ And then broadcast it:
 ```rust
 // ...
 
-let raw_transaction = signed_psbt.extract_tx();
+let raw_transaction = psbt.extract_tx();
 let txid = wallet.broadcast(raw_transaction)?;
 println!(
     "Transaction sent! TXID: {txid}.\nExplorer URL: https://blockstream.info/testnet/tx/{txid}",

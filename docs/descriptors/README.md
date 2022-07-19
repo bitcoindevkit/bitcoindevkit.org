@@ -50,7 +50,7 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 | Operator | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
 | `pk()` | ✓ | ✓ | ✓ |
-| `pk_h()` | ✓ | ✓ | ✓ - as `pkh()` |
+| `pkh()` | ✓ | ✓ | ✓ |
 | `older()` | ✓ | ✓ | ✗  |
 | `after()` | ✓ | ✓ | ✗  |
 | `sha256()` | ✓ | ✓ | ✗  |
@@ -105,10 +105,10 @@ Some examples of valid BDK descriptors are:
 ### Implementation Details
 
 BDK extends the capabilities of [rust-miniscript](https://github.com/apoelstra/rust-miniscript) by introducing the concept of an *ExtendedDescriptor*: it represents a descriptor that contains one or more "derivable keys" like `xpubs` or `xprvs`
-and can be "derived" to a normal Descriptor by deriving every single one of its keys. It is currently called "StringDescriptor" in the code, because it's implemented as a wrapped `miniscript::Descriptor<String>`.
+and can be "derived" from a normal Descriptor by deriving every single one of its keys. It is currently called "StringDescriptor" in the code, because it's implemented as a wrapped `miniscript::Descriptor<String>`.
 
 ExtendedDescriptors are derived using a single index instead of a full derivation path: this is because normally most of the path is fixed and can be represented right after the xpub/xprv itself, and only the
-final index changes for each address. This is what's normally called a *DescriptorExtendedKey* in codebase, and it's the represented with a similar syntax to Bitcoin Core's, such as:
+final index changes for each address. This is what's normally called a *DescriptorExtendedKey* in the codebase, it is represented with a similar syntax to Bitcoin Core's, such as:
 
 ```
 [d34db33f/44'/0'/0']xpub6ERApfZwUNrhL.......rBGRjaDMzQLcgJvLJuZZvRcEL/0/*
