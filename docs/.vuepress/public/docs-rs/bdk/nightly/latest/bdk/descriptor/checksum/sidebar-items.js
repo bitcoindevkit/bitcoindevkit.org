@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["get_checksum","Compute the checksum of a descriptor"]]});
+initSidebarItems({"fn":[["get_checksum","Compute the checksum of a descriptor"],["get_checksum_bytes","Computes the checksum bytes of a descriptor"]]});
