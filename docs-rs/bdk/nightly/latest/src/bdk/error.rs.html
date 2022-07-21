@@ -233,6 +233,20 @@
 <span id="226">226</span>
 <span id="227">227</span>
 <span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -248,7 +262,7 @@
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::bitcoin::Network</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">descriptor</span>, <span class="ident">wallet</span>, <span class="ident">wallet::address_validator</span>};
-<span class="kw">use</span> <span class="ident">bitcoin::OutPoint</span>;
+<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">OutPoint</span>, <span class="ident">Txid</span>};
 
 <span class="doccomment">/// Errors that can be thrown by the [`Wallet`](crate::wallet::Wallet)</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
@@ -360,6 +374,10 @@
     <span class="comment">//DifferentDescriptorStructure,</span>
     <span class="comment">//Uncapable(crate::blockchain::Capability),</span>
     <span class="comment">//MissingCachedAddresses,</span>
+    <span class="doccomment">/// [`crate::blockchain::WalletSync`] sync attempt failed due to missing scripts in cache which</span>
+    <span class="doccomment">/// are needed to satisfy `stop_gap`.</span>
+    <span class="ident">MissingCachedScripts</span>(<span class="ident">MissingCachedScripts</span>),
+
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;electrum&quot;</span>)]</span>
     <span class="doccomment">/// Electrum client error</span>
     <span class="ident">Electrum</span>(<span class="ident">electrum_client::Error</span>),
@@ -378,6 +396,16 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;sqlite&quot;</span>)]</span>
     <span class="doccomment">/// Rusqlite client error</span>
     <span class="ident">Rusqlite</span>(<span class="ident">rusqlite::Error</span>),
+}
+
+<span class="doccomment">/// Represents the last failed [`crate::blockchain::WalletSync`] sync attempt in which we were short</span>
+<span class="doccomment">/// on cached `scriptPubKey`s.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MissingCachedScripts</span> {
+    <span class="doccomment">/// Number of scripts in which txs were requested during last request.</span>
+    <span class="kw">pub</span> <span class="ident">last_count</span>: <span class="ident">usize</span>,
+    <span class="doccomment">/// Minimum number of scripts to cache more of in order to satisfy `stop_gap`.</span>
+    <span class="kw">pub</span> <span class="ident">missing_count</span>: <span class="ident">usize</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Error</span> {
