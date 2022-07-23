@@ -114,10 +114,6 @@
 <span id="107">107</span>
 <span id="108">108</span>
 <span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -134,12 +130,10 @@
 <span class="doccomment">//! This module contains a re-implementation of the function used by Bitcoin Core to calculate the</span>
 <span class="doccomment">//! checksum of a descriptor</span>
 
-<span class="kw">use</span> <span class="ident">std::iter::FromIterator</span>;
-
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::DescriptorError</span>;
 
-<span class="kw">const</span> <span class="ident">INPUT_CHARSET</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span>  <span class="string">&quot;0123456789()[],&#39;/*abcdefgh@:$%{}IJKLMNOPQRSTUVWXYZ&amp;+-.;&lt;=&gt;?!^_|~ijklmnopqrstuvwxyzABCDEFGH`#\&quot;\\ &quot;</span>;
-<span class="kw">const</span> <span class="ident">CHECKSUM_CHARSET</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;qpzry9x8gf2tvdw0s3jn54khce6mua7l&quot;</span>;
+<span class="kw">const</span> <span class="ident">INPUT_CHARSET</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;0123456789()[],&#39;/*abcdefgh@:$%{}IJKLMNOPQRSTUVWXYZ&amp;+-.;&lt;=&gt;?!^_|~ijklmnopqrstuvwxyzABCDEFGH`#\&quot;\\ &quot;</span>;
+<span class="kw">const</span> <span class="ident">CHECKSUM_CHARSET</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;qpzry9x8gf2tvdw0s3jn54khce6mua7l&quot;</span>;
 
 <span class="kw">fn</span> <span class="ident">poly_mod</span>(<span class="kw-2">mut</span> <span class="ident">c</span>: <span class="ident">u64</span>, <span class="ident">val</span>: <span class="ident">u64</span>) -&gt; <span class="ident">u64</span> {
     <span class="kw">let</span> <span class="ident">c0</span> <span class="op">=</span> <span class="ident">c</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">35</span>;
@@ -163,15 +157,17 @@
     <span class="ident">c</span>
 }
 
-<span class="doccomment">/// Compute the checksum of a descriptor</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_checksum</span>(<span class="ident">desc</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+<span class="doccomment">/// Computes the checksum bytes of a descriptor</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_checksum_bytes</span>(<span class="ident">desc</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="number">8</span>], <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c</span> <span class="op">=</span> <span class="number">1</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cls</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">clscount</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">for</span> <span class="ident">ch</span> <span class="kw">in</span> <span class="ident">desc</span>.<span class="ident">chars</span>() {
+
+    <span class="kw">for</span> <span class="ident">ch</span> <span class="kw">in</span> <span class="ident">desc</span>.<span class="ident">as_bytes</span>() {
         <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="ident">INPUT_CHARSET</span>
-            .<span class="ident">find</span>(<span class="ident">ch</span>)
-            .<span class="ident">ok_or</span>(<span class="ident">DescriptorError::InvalidDescriptorCharacter</span>(<span class="ident">ch</span>))<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">u64</span>;
+            .<span class="ident">iter</span>()
+            .<span class="ident">position</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">b</span> <span class="op">==</span> <span class="ident">ch</span>)
+            .<span class="ident">ok_or</span>(<span class="ident">DescriptorError::InvalidDescriptorCharacter</span>(<span class="kw-2">*</span><span class="ident">ch</span>))<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">u64</span>;
         <span class="ident">c</span> <span class="op">=</span> <span class="ident">poly_mod</span>(<span class="ident">c</span>, <span class="ident">pos</span> <span class="op">&amp;</span> <span class="number">31</span>);
         <span class="ident">cls</span> <span class="op">=</span> <span class="ident">cls</span> <span class="op">*</span> <span class="number">3</span> <span class="op">+</span> (<span class="ident">pos</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">5</span>);
         <span class="ident">clscount</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
@@ -187,17 +183,18 @@
     (<span class="number">0</span>..<span class="number">8</span>).<span class="ident">for_each</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">poly_mod</span>(<span class="ident">c</span>, <span class="number">0</span>));
     <span class="ident">c</span> <span class="op">^</span><span class="op">=</span> <span class="number">1</span>;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chars</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="number">8</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">checksum</span> <span class="op">=</span> [<span class="number">0_u8</span>; <span class="number">8</span>];
     <span class="kw">for</span> <span class="ident">j</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">8</span> {
-        <span class="ident">chars</span>.<span class="ident">push</span>(
-            <span class="ident">CHECKSUM_CHARSET</span>
-                .<span class="ident">chars</span>()
-                .<span class="ident">nth</span>(((<span class="ident">c</span> <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="number">5</span> <span class="op">*</span> (<span class="number">7</span> <span class="op">-</span> <span class="ident">j</span>))) <span class="op">&amp;</span> <span class="number">31</span>) <span class="kw">as</span> <span class="ident">usize</span>)
-                .<span class="ident">unwrap</span>(),
-        );
+        <span class="ident">checksum</span>[<span class="ident">j</span>] <span class="op">=</span> <span class="ident">CHECKSUM_CHARSET</span>[((<span class="ident">c</span> <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="number">5</span> <span class="op">*</span> (<span class="number">7</span> <span class="op">-</span> <span class="ident">j</span>))) <span class="op">&amp;</span> <span class="number">31</span>) <span class="kw">as</span> <span class="ident">usize</span>];
     }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">String::from_iter</span>(<span class="ident">chars</span>))
+    <span class="prelude-val">Ok</span>(<span class="ident">checksum</span>)
+}
+
+<span class="doccomment">/// Compute the checksum of a descriptor</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_checksum</span>(<span class="ident">desc</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DescriptorError</span><span class="op">&gt;</span> {
+    <span class="comment">// unsafe is okay here as the checksum only uses bytes in `CHECKSUM_CHARSET`</span>
+    <span class="ident">get_checksum_bytes</span>(<span class="ident">desc</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="kw">unsafe</span> { <span class="ident">String::from_utf8_unchecked</span>(<span class="ident">b</span>.<span class="ident">to_vec</span>()) })
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -217,17 +214,12 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_get_checksum_invalid_character</span>() {
-        <span class="kw">let</span> <span class="ident">sparkle_heart</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">240</span>, <span class="number">159</span>, <span class="number">146</span>, <span class="number">150</span>];
-        <span class="kw">let</span> <span class="ident">sparkle_heart</span> <span class="op">=</span> <span class="ident">std::str::from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">sparkle_heart</span>)
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">chars</span>()
-            .<span class="ident">next</span>()
-            .<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">sparkle_heart</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">std::str::from_utf8_unchecked</span>(<span class="kw-2">&amp;</span>[<span class="number">240</span>, <span class="number">159</span>, <span class="number">146</span>, <span class="number">150</span>]) };
         <span class="kw">let</span> <span class="ident">invalid_desc</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcL{}fjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)&quot;</span>, <span class="ident">sparkle_heart</span>);
 
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             <span class="ident">get_checksum</span>(<span class="kw-2">&amp;</span><span class="ident">invalid_desc</span>).<span class="ident">err</span>(),
-            <span class="prelude-val">Some</span>(<span class="ident">DescriptorError::InvalidDescriptorCharacter</span>(<span class="ident">invalid_char</span>)) <span class="kw">if</span> <span class="ident">invalid_char</span> <span class="op">==</span> <span class="ident">sparkle_heart</span>
+            <span class="prelude-val">Some</span>(<span class="ident">DescriptorError::InvalidDescriptorCharacter</span>(<span class="ident">invalid_char</span>)) <span class="kw">if</span> <span class="ident">invalid_char</span> <span class="op">==</span> <span class="ident">sparkle_heart</span>.<span class="ident">as_bytes</span>()[<span class="number">0</span>]
         ));
     }
 }
