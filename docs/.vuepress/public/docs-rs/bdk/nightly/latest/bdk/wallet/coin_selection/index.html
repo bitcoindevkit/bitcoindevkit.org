@@ -4,9 +4,9 @@
     </nav>
     <nav class="sidebar"><a class="sidebar-logo" href="../../../bdk/index.html"><div class="logo-container">
                     <img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></div>
-        </a><h2 class="location"><a href="#">Module coin_selection</a></h2><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#traits">Traits</a></li><li><a href="#types">Type Definitions</a></li></ul></div><div id="sidebar-vars" data-name="coin_selection" data-ty="mod" data-relpath="./"></div><script defer src="./sidebar-items.js"></script></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../bdk/index.html">
+        </a><h2 class="location"><a href="#">Module coin_selection</a></h2><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></div><div id="sidebar-vars" data-name="coin_selection" data-ty="mod" data-relpath="./"></div><script defer src="./sidebar-items.js"></script></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../bdk/index.html">
                         <img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="main-heading">
-    <h1 class="fqn"><span class="in-band">Module <a href="../../index.html">bdk</a>::<wbr><a href="../index.html">wallet</a>::<wbr><a class="mod" href="#">coin_selection</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../../../src/bdk/wallet/coin_selection.rs.html#12-1342" title="goto source code">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Coin selection</p>
+    <h1 class="fqn"><span class="in-band">Module <a href="../../index.html">bdk</a>::<wbr><a href="../index.html">wallet</a>::<wbr><a class="mod" href="#">coin_selection</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../../../src/bdk/wallet/coin_selection.rs.html#12-1516" title="goto source code">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Coin selection</p>
 <p>This module provides the trait <a href="trait.CoinSelectionAlgorithm.html" title="CoinSelectionAlgorithm"><code>CoinSelectionAlgorithm</code></a> that can be implemented to
 define custom coin selection algorithms.</p>
 <p>You can specify a custom coin selection algorithm through the <a href="../tx_builder/struct.TxBuilder.html#method.coin_selection"><code>coin_selection</code></a> method on
@@ -25,6 +25,7 @@ be used if it is not explicitly set.</p>
         <span class="ident">fee_rate</span>: <span class="ident">FeeRate</span>,
         <span class="ident">amount_needed</span>: <span class="ident">u64</span>,
         <span class="ident">fee_amount</span>: <span class="ident">u64</span>,
+        <span class="ident">drain_script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">CoinSelectionResult</span>, <span class="ident">bdk::Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">selected_amount</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">additional_weight</span> <span class="op">=</span> <span class="number">0</span>;
@@ -42,16 +43,21 @@ be used if it is not explicitly set.</p>
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="kw">let</span> <span class="ident">additional_fees</span> <span class="op">=</span> <span class="ident">fee_rate</span>.<span class="ident">fee_wu</span>(<span class="ident">additional_weight</span>);
         <span class="kw">let</span> <span class="ident">amount_needed_with_fees</span> <span class="op">=</span> (<span class="ident">fee_amount</span> <span class="op">+</span> <span class="ident">additional_fees</span>) <span class="op">+</span> <span class="ident">amount_needed</span>;
-        <span class="kw">if</span> <span class="ident">amount_needed_with_fees</span> <span class="op">&gt;</span> <span class="ident">selected_amount</span> {
+        <span class="kw">if</span> <span class="ident">selected_amount</span> <span class="op">&lt;</span> <span class="ident">amount_needed_with_fees</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">bdk::Error::InsufficientFunds</span> {
                 <span class="ident">needed</span>: <span class="ident">amount_needed_with_fees</span>,
                 <span class="ident">available</span>: <span class="ident">selected_amount</span>,
             });
         }
 
+        <span class="kw">let</span> <span class="ident">remaining_amount</span> <span class="op">=</span> <span class="ident">selected_amount</span> <span class="op">-</span> <span class="ident">amount_needed_with_fees</span>;
+
+        <span class="kw">let</span> <span class="ident">excess</span> <span class="op">=</span> <span class="ident">decide_change</span>(<span class="ident">remaining_amount</span>, <span class="ident">fee_rate</span>, <span class="ident">drain_script</span>);
+
         <span class="prelude-val">Ok</span>(<span class="ident">CoinSelectionResult</span> {
             <span class="ident">selected</span>: <span class="ident">all_utxos_selected</span>,
             <span class="ident">fee_amount</span>: <span class="ident">fee_amount</span> <span class="op">+</span> <span class="ident">additional_fees</span>,
+            <span class="ident">excess</span>,
         })
     }
 }
@@ -72,8 +78,12 @@ be used if it is not explicitly set.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.CoinSelectionResult.html" title="bdk::wallet::coin_selection::CoinSelectionResult struct">CoinSelectionResult</a></div><div class="item-right docblock-short"><p>Result of a successful coin selection</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.LargestFirstCoinSelection.html" title="bdk::wallet::coin_selection::LargestFirstCoinSelection struct">LargestFirstCoinSelection</a></div><div class="item-right docblock-short"><p>Simple and dumb coin selection</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.OldestFirstCoinSelection.html" title="bdk::wallet::coin_selection::OldestFirstCoinSelection struct">OldestFirstCoinSelection</a></div><div class="item-right docblock-short"><p>OldestFirstCoinSelection always picks the utxo with the smallest blockheight to add to the selected coins next</p>
+</div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.Excess.html" title="bdk::wallet::coin_selection::Excess enum">Excess</a></div><div class="item-right docblock-short"><p>Remaining amount after performing coin selection</p>
 </div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2>
 <div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.CoinSelectionAlgorithm.html" title="bdk::wallet::coin_selection::CoinSelectionAlgorithm trait">CoinSelectionAlgorithm</a></div><div class="item-right docblock-short"><p>Trait for generalized coin selection algorithms</p>
+</div></div></div><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.decide_change.html" title="bdk::wallet::coin_selection::decide_change fn">decide_change</a></div><div class="item-right docblock-short"><p>Decide if change can be created</p>
 </div></div></div><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2>
 <div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.DefaultCoinSelectionAlgorithm.html" title="bdk::wallet::coin_selection::DefaultCoinSelectionAlgorithm type">DefaultCoinSelectionAlgorithm</a></div><div class="item-right docblock-short"><p>Default coin selection algorithm used by <a href="../tx_builder/struct.TxBuilder.html"><code>TxBuilder</code></a> if not
 overridden</p>
