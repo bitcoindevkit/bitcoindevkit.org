@@ -259,6 +259,54 @@
 <span id="252">252</span>
 <span id="253">253</span>
 <span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -312,14 +360,34 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FeeRate</span>(<span class="ident">f32</span>);
 
 <span class="kw">impl</span> <span class="ident">FeeRate</span> {
+    <span class="doccomment">/// Create a new instance checking the value provided</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ## Panics</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Panics if the value is not [normal](https://doc.rust-lang.org/std/primitive.f32.html#method.is_normal) (except if it&#39;s a positive zero) or negative.</span>
+    <span class="kw">fn</span> <span class="ident">new_checked</span>(<span class="ident">value</span>: <span class="ident">f32</span>) -&gt; <span class="self">Self</span> {
+        <span class="macro">assert!</span>(<span class="ident">value</span>.<span class="ident">is_normal</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">value</span> <span class="op">==</span> <span class="number">0.0</span>);
+        <span class="macro">assert!</span>(<span class="ident">value</span>.<span class="ident">is_sign_positive</span>());
+
+        <span class="ident">FeeRate</span>(<span class="ident">value</span>)
+    }
+
     <span class="doccomment">/// Create a new instance of [`FeeRate`] given a float fee rate in btc/kvbytes</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ## Panics</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Panics if the value is not [normal](https://doc.rust-lang.org/std/primitive.f32.html#method.is_normal) (except if it&#39;s a positive zero) or negative.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_btc_per_kvb</span>(<span class="ident">btc_per_kvb</span>: <span class="ident">f32</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">FeeRate</span>(<span class="ident">btc_per_kvb</span> <span class="op">*</span> <span class="number">1e5</span>)
+        <span class="ident">FeeRate::new_checked</span>(<span class="ident">btc_per_kvb</span> <span class="op">*</span> <span class="number">1e5</span>)
     }
 
     <span class="doccomment">/// Create a new instance of [`FeeRate`] given a float fee rate in satoshi/vbyte</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">from_sat_per_vb</span>(<span class="ident">sat_per_vb</span>: <span class="ident">f32</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">FeeRate</span>(<span class="ident">sat_per_vb</span>)
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ## Panics</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Panics if the value is not [normal](https://doc.rust-lang.org/std/primitive.f32.html#method.is_normal) (except if it&#39;s a positive zero) or negative.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_sat_per_vb</span>(<span class="ident">sat_per_vb</span>: <span class="ident">f32</span>) -&gt; <span class="self">Self</span> {
+        <span class="ident">FeeRate::new_checked</span>(<span class="ident">sat_per_vb</span>)
     }
 
     <span class="doccomment">/// Create a new [`FeeRate`] with the default min relay fee value</span>
@@ -509,8 +577,36 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">can_store_feerate_in_const</span>() {
-        <span class="kw">const</span> <span class="ident">_MY_RATE</span>: <span class="ident">FeeRate</span> <span class="op">=</span> <span class="ident">FeeRate::from_sat_per_vb</span>(<span class="number">10.0</span>);
         <span class="kw">const</span> <span class="ident">_MIN_RELAY</span>: <span class="ident">FeeRate</span> <span class="op">=</span> <span class="ident">FeeRate::default_min_relay_fee</span>();
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_invalid_feerate_neg_zero</span>() {
+        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">FeeRate::from_sat_per_vb</span>(<span class="op">-</span><span class="number">0.0</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_invalid_feerate_neg_value</span>() {
+        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">FeeRate::from_sat_per_vb</span>(<span class="op">-</span><span class="number">5.0</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_invalid_feerate_nan</span>() {
+        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">FeeRate::from_sat_per_vb</span>(<span class="ident">f32::NAN</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_invalid_feerate_inf</span>() {
+        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">FeeRate::from_sat_per_vb</span>(<span class="ident">f32::INFINITY</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_valid_feerate_pos_zero</span>() {
+        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">FeeRate::from_sat_per_vb</span>(<span class="number">0.0</span>);
     }
 }
 </code></pre></div>
