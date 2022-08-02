@@ -1050,6 +1050,59 @@
 <span id="1043">1043</span>
 <span id="1044">1044</span>
 <span id="1045">1045</span>
+<span id="1046">1046</span>
+<span id="1047">1047</span>
+<span id="1048">1048</span>
+<span id="1049">1049</span>
+<span id="1050">1050</span>
+<span id="1051">1051</span>
+<span id="1052">1052</span>
+<span id="1053">1053</span>
+<span id="1054">1054</span>
+<span id="1055">1055</span>
+<span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
+<span id="1060">1060</span>
+<span id="1061">1061</span>
+<span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -1110,6 +1163,7 @@
 <span class="doccomment">//!         &amp;self,</span>
 <span class="doccomment">//!         psbt: &amp;mut psbt::PartiallySignedTransaction,</span>
 <span class="doccomment">//!         input_index: usize,</span>
+<span class="doccomment">//!         _sign_options: &amp;SignOptions,</span>
 <span class="doccomment">//!         _secp: &amp;Secp256k1&lt;All&gt;,</span>
 <span class="doccomment">//!     ) -&gt; Result&lt;(), SignerError&gt; {</span>
 <span class="doccomment">//!         self.device.hsm_sign_input(psbt, input_index)?;</span>
@@ -1293,6 +1347,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">psbt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="ident">usize</span>,
+        <span class="ident">sign_options</span>: <span class="kw-2">&amp;</span><span class="ident">SignOptions</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span>;
 }
@@ -1306,6 +1361,7 @@
     <span class="kw">fn</span> <span class="ident">sign_transaction</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">psbt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
+        <span class="ident">sign_options</span>: <span class="kw-2">&amp;</span><span class="ident">SignOptions</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span>;
 }
@@ -1314,10 +1370,11 @@
     <span class="kw">fn</span> <span class="ident">sign_transaction</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">psbt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
+        <span class="ident">sign_options</span>: <span class="kw-2">&amp;</span><span class="ident">SignOptions</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span> {
         <span class="kw">for</span> <span class="ident">input_index</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() {
-            <span class="self">self</span>.<span class="ident">sign_input</span>(<span class="ident">psbt</span>, <span class="ident">input_index</span>, <span class="ident">secp</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">sign_input</span>(<span class="ident">psbt</span>, <span class="ident">input_index</span>, <span class="ident">sign_options</span>, <span class="ident">secp</span>)<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
@@ -1339,6 +1396,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">psbt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="ident">usize</span>,
+        <span class="ident">sign_options</span>: <span class="kw-2">&amp;</span><span class="ident">SignOptions</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() {
@@ -1398,7 +1456,7 @@
                 <span class="ident">inner</span>: <span class="ident">derived_key</span>.<span class="ident">private_key</span>,
             };
 
-            <span class="ident">SignerWrapper::new</span>(<span class="ident">priv_key</span>, <span class="self">self</span>.<span class="ident">ctx</span>).<span class="ident">sign_input</span>(<span class="ident">psbt</span>, <span class="ident">input_index</span>, <span class="ident">secp</span>)
+            <span class="ident">SignerWrapper::new</span>(<span class="ident">priv_key</span>, <span class="self">self</span>.<span class="ident">ctx</span>).<span class="ident">sign_input</span>(<span class="ident">psbt</span>, <span class="ident">input_index</span>, <span class="ident">sign_options</span>, <span class="ident">secp</span>)
         }
     }
 }
@@ -1421,6 +1479,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">psbt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">input_index</span>: <span class="ident">usize</span>,
+        <span class="ident">sign_options</span>: <span class="kw-2">&amp;</span><span class="ident">SignOptions</span>,
         <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input_index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>.<span class="ident">len</span>() {
@@ -1437,7 +1496,10 @@
         <span class="kw">let</span> <span class="ident">x_only_pubkey</span> <span class="op">=</span> <span class="ident">XOnlyPublicKey::from</span>(<span class="ident">pubkey</span>.<span class="ident">inner</span>);
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">SignerContext::Tap</span> { <span class="ident">is_internal_key</span> } <span class="op">=</span> <span class="self">self</span>.<span class="ident">ctx</span> {
-            <span class="kw">if</span> <span class="ident">is_internal_key</span> <span class="op">&amp;&amp;</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>].<span class="ident">tap_key_sig</span>.<span class="ident">is_none</span>() {
+            <span class="kw">if</span> <span class="ident">is_internal_key</span>
+                <span class="op">&amp;&amp;</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>].<span class="ident">tap_key_sig</span>.<span class="ident">is_none</span>()
+                <span class="op">&amp;&amp;</span> <span class="ident">sign_options</span>.<span class="ident">sign_with_tap_internal_key</span>
+            {
                 <span class="kw">let</span> (<span class="ident">hash</span>, <span class="ident">hash_ty</span>) <span class="op">=</span> <span class="ident">Tap::sighash</span>(<span class="ident">psbt</span>, <span class="ident">input_index</span>, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
                 <span class="ident">sign_psbt_schnorr</span>(
                     <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>,
@@ -1456,9 +1518,18 @@
                 <span class="kw">let</span> <span class="ident">leaf_hashes</span> <span class="op">=</span> <span class="ident">leaf_hashes</span>
                     .<span class="ident">iter</span>()
                     .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">lh</span><span class="op">|</span> {
-                        <span class="op">!</span><span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>]
-                            .<span class="ident">tap_script_sigs</span>
-                            .<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span>(<span class="ident">x_only_pubkey</span>, <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">lh</span>))
+                        <span class="comment">// Removing the leaves we shouldn&#39;t sign for</span>
+                        <span class="kw">let</span> <span class="ident">should_sign</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">sign_options</span>.<span class="ident">tap_leaves_options</span> {
+                            <span class="ident">TapLeavesOptions::All</span> =&gt; <span class="bool-val">true</span>,
+                            <span class="ident">TapLeavesOptions::Include</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>.<span class="ident">contains</span>(<span class="ident">lh</span>),
+                            <span class="ident">TapLeavesOptions::Exclude</span>(<span class="ident">v</span>) =&gt; <span class="op">!</span><span class="ident">v</span>.<span class="ident">contains</span>(<span class="ident">lh</span>),
+                            <span class="ident">TapLeavesOptions::None</span> =&gt; <span class="bool-val">false</span>,
+                        };
+                        <span class="comment">// Filtering out the leaves without our key</span>
+                        <span class="ident">should_sign</span>
+                            <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="ident">input_index</span>]
+                                .<span class="ident">tap_script_sigs</span>
+                                .<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span>(<span class="ident">x_only_pubkey</span>, <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">lh</span>))
                     })
                     .<span class="ident">cloned</span>()
                     .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
@@ -1729,6 +1800,38 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Defaults to `true` which will try fianlizing psbt after inputs are signed.</span>
     <span class="kw">pub</span> <span class="ident">try_finalize</span>: <span class="ident">bool</span>,
+
+    <span class="doccomment">/// Specifies which Taproot script-spend leaves we should sign for. This option is</span>
+    <span class="doccomment">/// ignored if we&#39;re signing a non-taproot PSBT.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Defaults to All, i.e., the wallet will sign all the leaves it has a key for.</span>
+    <span class="kw">pub</span> <span class="ident">tap_leaves_options</span>: <span class="ident">TapLeavesOptions</span>,
+
+    <span class="doccomment">/// Whether we should try to sign a taproot transaction with the taproot internal key</span>
+    <span class="doccomment">/// or not. This option is ignored if we&#39;re signing a non-taproot PSBT.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Defaults to `true`, i.e., we always try to sign with the taproot internal key.</span>
+    <span class="kw">pub</span> <span class="ident">sign_with_tap_internal_key</span>: <span class="ident">bool</span>,
+}
+
+<span class="doccomment">/// Customize which taproot script-path leaves the signer should sign.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">TapLeavesOptions</span> {
+    <span class="doccomment">/// The signer will sign all the leaves it has a key for.</span>
+    <span class="ident">All</span>,
+    <span class="doccomment">/// The signer won&#39;t sign leaves other than the ones specified. Note that it could still ignore</span>
+    <span class="doccomment">/// some of the specified leaves, if it doesn&#39;t have the right key to sign them.</span>
+    <span class="ident">Include</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">taproot::TapLeafHash</span><span class="op">&gt;</span>),
+    <span class="doccomment">/// The signer won&#39;t sign the specified leaves.</span>
+    <span class="ident">Exclude</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">taproot::TapLeafHash</span><span class="op">&gt;</span>),
+    <span class="doccomment">/// The signer won&#39;t sign any leaf.</span>
+    <span class="prelude-val">None</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">TapLeavesOptions</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident">TapLeavesOptions::All</span>
+    }
 }
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::derivable_impls</span>)]</span>
@@ -1740,6 +1843,8 @@
             <span class="ident">allow_all_sighashes</span>: <span class="bool-val">false</span>,
             <span class="ident">remove_partial_sigs</span>: <span class="bool-val">true</span>,
             <span class="ident">try_finalize</span>: <span class="bool-val">true</span>,
+            <span class="ident">tap_leaves_options</span>: <span class="ident">TapLeavesOptions::default</span>(),
+            <span class="ident">sign_with_tap_internal_key</span>: <span class="bool-val">true</span>,
         }
     }
 }
@@ -2070,6 +2175,7 @@
         <span class="kw">fn</span> <span class="ident">sign_transaction</span>(
             <span class="kw-2">&amp;</span><span class="self">self</span>,
             <span class="ident">_psbt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
+            <span class="ident">_sign_options</span>: <span class="kw-2">&amp;</span><span class="ident">SignOptions</span>,
             <span class="ident">_secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
         ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SignerError</span><span class="op">&gt;</span> {
             <span class="prelude-val">Ok</span>(())
