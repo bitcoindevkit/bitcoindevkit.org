@@ -1553,7 +1553,7 @@
 <span class="doccomment">//! # use bdk::database::Database;</span>
 <span class="doccomment">//! # use bdk::*;</span>
 <span class="doccomment">//! # use bdk::wallet::coin_selection::decide_change;</span>
-<span class="doccomment">//! # const TXIN_BASE_WEIGHT: usize = (32 + 4 + 4 + 1) * 4;</span>
+<span class="doccomment">//! # const TXIN_BASE_WEIGHT: usize = (32 + 4 + 4) * 4;</span>
 <span class="doccomment">//! #[derive(Debug)]</span>
 <span class="doccomment">//! struct AlwaysSpendEverything;</span>
 <span class="doccomment">//!</span>
@@ -1642,8 +1642,8 @@
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">DefaultCoinSelectionAlgorithm</span> <span class="op">=</span> <span class="ident">LargestFirstCoinSelection</span>; <span class="comment">// make the tests more predictable</span>
 
 <span class="comment">// Base weight of a Txin, not counting the weight needed for satisfying it.</span>
-<span class="comment">// prev_txid (32 bytes) + prev_vout (4 bytes) + sequence (4 bytes) + script_len (1 bytes)</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">TXIN_BASE_WEIGHT</span>: <span class="ident">usize</span> <span class="op">=</span> (<span class="number">32</span> <span class="op">+</span> <span class="number">4</span> <span class="op">+</span> <span class="number">4</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">*</span> <span class="number">4</span>;
+<span class="comment">// prev_txid (32 bytes) + prev_vout (4 bytes) + sequence (4 bytes)</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">TXIN_BASE_WEIGHT</span>: <span class="ident">usize</span> <span class="op">=</span> (<span class="number">32</span> <span class="op">+</span> <span class="number">4</span> <span class="op">+</span> <span class="number">4</span>) <span class="op">*</span> <span class="number">4</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="doccomment">/// Remaining amount after performing coin selection</span>
@@ -2254,7 +2254,7 @@
     <span class="kw">use</span> <span class="ident">rand::seq::SliceRandom</span>;
     <span class="kw">use</span> <span class="ident">rand</span>::{<span class="ident">Rng</span>, <span class="ident">SeedableRng</span>};
 
-    <span class="kw">const</span> <span class="ident">P2WPKH_WITNESS_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">73</span> <span class="op">+</span> <span class="number">33</span> <span class="op">+</span> <span class="number">2</span>;
+    <span class="kw">const</span> <span class="ident">P2WPKH_SATISFACTION_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">73</span> <span class="op">+</span> <span class="number">33</span> <span class="op">+</span> <span class="number">2</span> <span class="op">+</span> <span class="number">1</span>;
 
     <span class="kw">const</span> <span class="ident">FEE_AMOUNT</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">50</span>;
 
@@ -2266,7 +2266,7 @@
         ))
         .<span class="ident">unwrap</span>();
         <span class="ident">WeightedUtxo</span> {
-            <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
+            <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_SATISFACTION_SIZE</span>,
             <span class="ident">utxo</span>: <span class="ident">Utxo::Local</span>(<span class="ident">LocalUtxo</span> {
                 <span class="ident">outpoint</span>,
                 <span class="ident">txout</span>: <span class="ident">TxOut</span> {
@@ -2346,7 +2346,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">utxos_number</span> {
             <span class="ident">res</span>.<span class="ident">push</span>(<span class="ident">WeightedUtxo</span> {
-                <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
+                <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_SATISFACTION_SIZE</span>,
                 <span class="ident">utxo</span>: <span class="ident">Utxo::Local</span>(<span class="ident">LocalUtxo</span> {
                     <span class="ident">outpoint</span>: <span class="ident">OutPoint::from_str</span>(
                         <span class="string">&quot;ebd9813ecebc57ff8f30797de7c205e3c7498ca950ea4341ee51a685ff2fa30a:0&quot;</span>,
@@ -2366,7 +2366,7 @@
 
     <span class="kw">fn</span> <span class="ident">generate_same_value_utxos</span>(<span class="ident">utxos_value</span>: <span class="ident">u64</span>, <span class="ident">utxos_number</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">utxo</span> <span class="op">=</span> <span class="ident">WeightedUtxo</span> {
-            <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_WITNESS_SIZE</span>,
+            <span class="ident">satisfaction_weight</span>: <span class="ident">P2WPKH_SATISFACTION_SIZE</span>,
             <span class="ident">utxo</span>: <span class="ident">Utxo::Local</span>(<span class="ident">LocalUtxo</span> {
                 <span class="ident">outpoint</span>: <span class="ident">OutPoint::from_str</span>(
                     <span class="string">&quot;ebd9813ecebc57ff8f30797de7c205e3c7498ca950ea4341ee51a685ff2fa30a:0&quot;</span>,
@@ -2836,7 +2836,7 @@
 
         <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected</span>.<span class="ident">len</span>(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">result</span>.<span class="ident">selected_amount</span>(), <span class="number">100_000</span>);
-        <span class="kw">let</span> <span class="ident">input_size</span> <span class="op">=</span> (<span class="ident">TXIN_BASE_WEIGHT</span> <span class="op">+</span> <span class="ident">P2WPKH_WITNESS_SIZE</span>).<span class="ident">vbytes</span>();
+        <span class="kw">let</span> <span class="ident">input_size</span> <span class="op">=</span> (<span class="ident">TXIN_BASE_WEIGHT</span> <span class="op">+</span> <span class="ident">P2WPKH_SATISFACTION_SIZE</span>).<span class="ident">vbytes</span>();
         <span class="kw">let</span> <span class="ident">epsilon</span> <span class="op">=</span> <span class="number">0.5</span>;
         <span class="macro">assert!</span>((<span class="number">1.0</span> <span class="op">-</span> (<span class="ident">result</span>.<span class="ident">fee_amount</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">/</span> <span class="ident">input_size</span> <span class="kw">as</span> <span class="ident">f32</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">epsilon</span>);
     }
