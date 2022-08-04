@@ -5348,6 +5348,80 @@
 <span id="5341">5341</span>
 <span id="5342">5342</span>
 <span id="5343">5343</span>
+<span id="5344">5344</span>
+<span id="5345">5345</span>
+<span id="5346">5346</span>
+<span id="5347">5347</span>
+<span id="5348">5348</span>
+<span id="5349">5349</span>
+<span id="5350">5350</span>
+<span id="5351">5351</span>
+<span id="5352">5352</span>
+<span id="5353">5353</span>
+<span id="5354">5354</span>
+<span id="5355">5355</span>
+<span id="5356">5356</span>
+<span id="5357">5357</span>
+<span id="5358">5358</span>
+<span id="5359">5359</span>
+<span id="5360">5360</span>
+<span id="5361">5361</span>
+<span id="5362">5362</span>
+<span id="5363">5363</span>
+<span id="5364">5364</span>
+<span id="5365">5365</span>
+<span id="5366">5366</span>
+<span id="5367">5367</span>
+<span id="5368">5368</span>
+<span id="5369">5369</span>
+<span id="5370">5370</span>
+<span id="5371">5371</span>
+<span id="5372">5372</span>
+<span id="5373">5373</span>
+<span id="5374">5374</span>
+<span id="5375">5375</span>
+<span id="5376">5376</span>
+<span id="5377">5377</span>
+<span id="5378">5378</span>
+<span id="5379">5379</span>
+<span id="5380">5380</span>
+<span id="5381">5381</span>
+<span id="5382">5382</span>
+<span id="5383">5383</span>
+<span id="5384">5384</span>
+<span id="5385">5385</span>
+<span id="5386">5386</span>
+<span id="5387">5387</span>
+<span id="5388">5388</span>
+<span id="5389">5389</span>
+<span id="5390">5390</span>
+<span id="5391">5391</span>
+<span id="5392">5392</span>
+<span id="5393">5393</span>
+<span id="5394">5394</span>
+<span id="5395">5395</span>
+<span id="5396">5396</span>
+<span id="5397">5397</span>
+<span id="5398">5398</span>
+<span id="5399">5399</span>
+<span id="5400">5400</span>
+<span id="5401">5401</span>
+<span id="5402">5402</span>
+<span id="5403">5403</span>
+<span id="5404">5404</span>
+<span id="5405">5405</span>
+<span id="5406">5406</span>
+<span id="5407">5407</span>
+<span id="5408">5408</span>
+<span id="5409">5409</span>
+<span id="5410">5410</span>
+<span id="5411">5411</span>
+<span id="5412">5412</span>
+<span id="5413">5413</span>
+<span id="5414">5414</span>
+<span id="5415">5415</span>
+<span id="5416">5416</span>
+<span id="5417">5417</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -5810,15 +5884,52 @@
         <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow</span>().<span class="ident">iter_txs</span>(<span class="ident">include_raw</span>)
     }
 
-    <span class="doccomment">/// Return the balance, meaning the sum of this wallet&#39;s unspent outputs&#39; values</span>
+    <span class="doccomment">/// Return the balance, separated into available, trusted-pending, untrusted-pending and immature</span>
+    <span class="doccomment">/// values.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Note that this methods only operate on the internal database, which first needs to be</span>
     <span class="doccomment">/// [`Wallet::sync`] manually.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_balance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="self">self</span>
-            .<span class="ident">list_unspent</span>()<span class="question-mark">?</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">sum</span>, <span class="ident">i</span><span class="op">|</span> <span class="ident">sum</span> <span class="op">+</span> <span class="ident">i</span>.<span class="ident">txout</span>.<span class="ident">value</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_balance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Balance</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">immature</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trusted_pending</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">untrusted_pending</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">confirmed</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let</span> <span class="ident">utxos</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">list_unspent</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">database</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow</span>();
+        <span class="kw">let</span> <span class="ident">last_sync_height</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">database</span>
+            .<span class="ident">get_sync_time</span>()<span class="question-mark">?</span>
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">sync_time</span><span class="op">|</span> <span class="ident">sync_time</span>.<span class="ident">block_time</span>.<span class="ident">height</span>)
+        {
+            <span class="prelude-val">Some</span>(<span class="ident">height</span>) =&gt; <span class="ident">height</span>,
+            <span class="comment">// None means database was never synced</span>
+            <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">Balance::default</span>()),
+        };
+        <span class="kw">for</span> <span class="ident">u</span> <span class="kw">in</span> <span class="ident">utxos</span> {
+            <span class="comment">// Unwrap used since utxo set is created from database</span>
+            <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">database</span>
+                .<span class="ident">get_tx</span>(<span class="kw-2">&amp;</span><span class="ident">u</span>.<span class="ident">outpoint</span>.<span class="ident">txid</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>
+                .<span class="ident">expect</span>(<span class="string">&quot;Transaction not found in database&quot;</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">tx_conf_time</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">confirmation_time</span> {
+                <span class="kw">if</span> <span class="ident">tx</span>.<span class="ident">transaction</span>.<span class="ident">expect</span>(<span class="string">&quot;No transaction&quot;</span>).<span class="ident">is_coin_base</span>()
+                    <span class="op">&amp;&amp;</span> (<span class="ident">last_sync_height</span> <span class="op">-</span> <span class="ident">tx_conf_time</span>.<span class="ident">height</span>) <span class="op">&lt;</span> <span class="ident">COINBASE_MATURITY</span>
+                {
+                    <span class="ident">immature</span> <span class="op">+</span><span class="op">=</span> <span class="ident">u</span>.<span class="ident">txout</span>.<span class="ident">value</span>;
+                } <span class="kw">else</span> {
+                    <span class="ident">confirmed</span> <span class="op">+</span><span class="op">=</span> <span class="ident">u</span>.<span class="ident">txout</span>.<span class="ident">value</span>;
+                }
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">u</span>.<span class="ident">keychain</span> <span class="op">==</span> <span class="ident">KeychainKind::Internal</span> {
+                <span class="ident">trusted_pending</span> <span class="op">+</span><span class="op">=</span> <span class="ident">u</span>.<span class="ident">txout</span>.<span class="ident">value</span>;
+            } <span class="kw">else</span> {
+                <span class="ident">untrusted_pending</span> <span class="op">+</span><span class="op">=</span> <span class="ident">u</span>.<span class="ident">txout</span>.<span class="ident">value</span>;
+            }
+        }
+
+        <span class="prelude-val">Ok</span>(<span class="ident">Balance</span> {
+            <span class="ident">immature</span>,
+            <span class="ident">trusted_pending</span>,
+            <span class="ident">untrusted_pending</span>,
+            <span class="ident">confirmed</span>,
+        })
     }
 
     <span class="doccomment">/// Add an external signer</span>
@@ -10582,23 +10693,38 @@
             <span class="prelude-val">Some</span>(<span class="ident">confirmation_time</span>),
             (@<span class="ident">coinbase</span> <span class="bool-val">true</span>)
         );
+        <span class="kw">let</span> <span class="ident">sync_time</span> <span class="op">=</span> <span class="ident">SyncTime</span> {
+            <span class="ident">block_time</span>: <span class="ident">BlockTime</span> {
+                <span class="ident">height</span>: <span class="ident">confirmation_time</span>,
+                <span class="ident">timestamp</span>: <span class="number">0</span>,
+            },
+        };
+        <span class="ident">wallet</span>
+            .<span class="ident">database</span>
+            .<span class="ident">borrow_mut</span>()
+            .<span class="ident">set_sync_time</span>(<span class="ident">sync_time</span>)
+            .<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">not_yet_mature_time</span> <span class="op">=</span> <span class="ident">confirmation_time</span> <span class="op">+</span> <span class="ident">COINBASE_MATURITY</span> <span class="op">-</span> <span class="number">1</span>;
         <span class="kw">let</span> <span class="ident">maturity_time</span> <span class="op">=</span> <span class="ident">confirmation_time</span> <span class="op">+</span> <span class="ident">COINBASE_MATURITY</span>;
 
-        <span class="comment">// The balance is nonzero, even if we can&#39;t spend anything</span>
-        <span class="comment">// FIXME: we should differentiate the balance between immature,</span>
-        <span class="comment">// trusted, untrusted_pending</span>
-        <span class="comment">// See https://github.com/bitcoindevkit/bdk/issues/238</span>
         <span class="kw">let</span> <span class="ident">balance</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_balance</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="ident">balance</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">balance</span>,
+            <span class="ident">Balance</span> {
+                <span class="ident">immature</span>: <span class="number">25_000</span>,
+                <span class="ident">trusted_pending</span>: <span class="number">0</span>,
+                <span class="ident">untrusted_pending</span>: <span class="number">0</span>,
+                <span class="ident">confirmed</span>: <span class="number">0</span>
+            }
+        );
 
         <span class="comment">// We try to create a transaction, only to notice that all</span>
         <span class="comment">// our funds are unspendable</span>
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">Address::from_str</span>(<span class="string">&quot;2N1Ffz3WaNzbeLFBb51xyFMHYSEUXcbiSoX&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="ident">balance</span> <span class="op">/</span> <span class="number">2</span>)
+            .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="ident">balance</span>.<span class="ident">immature</span> <span class="op">/</span> <span class="number">2</span>)
             .<span class="ident">current_height</span>(<span class="ident">confirmation_time</span>);
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap_err</span>(),
@@ -10611,7 +10737,7 @@
         <span class="comment">// Still unspendable...</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="ident">balance</span> <span class="op">/</span> <span class="number">2</span>)
+            .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="ident">balance</span>.<span class="ident">immature</span> <span class="op">/</span> <span class="number">2</span>)
             .<span class="ident">current_height</span>(<span class="ident">not_yet_mature_time</span>);
         <span class="macro">assert!</span>(<span class="macro">matches!</span>(
             <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap_err</span>(),
@@ -10622,9 +10748,31 @@
         ));
 
         <span class="comment">// ...Now the coinbase is mature :)</span>
+        <span class="kw">let</span> <span class="ident">sync_time</span> <span class="op">=</span> <span class="ident">SyncTime</span> {
+            <span class="ident">block_time</span>: <span class="ident">BlockTime</span> {
+                <span class="ident">height</span>: <span class="ident">maturity_time</span>,
+                <span class="ident">timestamp</span>: <span class="number">0</span>,
+            },
+        };
+        <span class="ident">wallet</span>
+            .<span class="ident">database</span>
+            .<span class="ident">borrow_mut</span>()
+            .<span class="ident">set_sync_time</span>(<span class="ident">sync_time</span>)
+            .<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">balance</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_balance</span>().<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">balance</span>,
+            <span class="ident">Balance</span> {
+                <span class="ident">immature</span>: <span class="number">0</span>,
+                <span class="ident">trusted_pending</span>: <span class="number">0</span>,
+                <span class="ident">untrusted_pending</span>: <span class="number">0</span>,
+                <span class="ident">confirmed</span>: <span class="number">25_000</span>
+            }
+        );
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
-            .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="ident">balance</span> <span class="op">/</span> <span class="number">2</span>)
+            .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="ident">balance</span>.<span class="ident">confirmed</span> <span class="op">/</span> <span class="number">2</span>)
             .<span class="ident">current_height</span>(<span class="ident">maturity_time</span>);
         <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
     }
