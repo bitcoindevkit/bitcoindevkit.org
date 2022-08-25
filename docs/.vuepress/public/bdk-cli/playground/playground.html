@@ -4,6 +4,7 @@
   }
 </style>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <div class="expand">
   <div class="expand-label" style="cursor: pointer;"
     onclick="$h = $(this);$h.next('div').slideToggle(100,function () {$h.children('i').attr('class',function () {return $h.next('div').is(':visible') ? 'fas fa-chevron-down' : 'fas fa-chevron-right';});});">
@@ -11,13 +12,13 @@
     <h3 style="display: inline-block; margin-left: 5px; margin-top: 0px;">Policy Compiler</h3>
   </div>
   <div class="expand-content">
-    <div id="blocklyDiv" style="height: 50vh;"></div>
+    <div id="blocklyDiv" style="height: 500px;"></div>
 
     <form>
       <div>
-        <div style="display: flex">
-          <input type="text" id="policy" placeholder="or(10@pk(A),and(pk(B),older(1000)))" required />
-          <select id="compiler_script_type" style="margin-bottom: 0.85rem; margin-left: 5px;">
+        <div style="display: flex; margin-bottom: 0.85rem; margin-top: 0.85rem">
+          <input type="text" id="policy" placeholder="or(10@pk(A),and(pk(B),older(1000)))" style="width: 100%; height: 2.5em;" required />
+          <select id="compiler_script_type" style="margin-left: 5px;">
             <option value="sh">P2SH</option>
             <option value="wsh">P2WSH</option>
             <option value="sh-wsh">P2SH-P2WSH</option>
@@ -25,9 +26,11 @@
         </div>
       </div>
 
-      <i>Map every alias to an existing key or generate a new one. You can also specify known keys directly in the
-        visual editor or the policy input field.</i>
-      <div id="compiler_aliases">
+      <div style="margin-bottom: 0.85rem">
+          <i>Map every alias to an existing key or generate a new one. You can also specify known keys directly in the
+            visual editor or the policy input field.</i>
+      </div>
+      <div id="compiler_aliases" style="margin-bottom: 0.85rem">
       </div>
 
       <input type="submit" value="Compile" id="compile_button" style="padding: 10px; width: 100px;" />
@@ -45,15 +48,15 @@
   </div>
   <div class="expand-content">
     <form>
-      <div>
+      <div style="margin-bottom: 0.85rem">
         <label for="descriptor">Descriptor</label>
-        <input type="text" id="descriptor"
+        <input type="text" id="descriptor" style="height: 2.5em; width: 100%"
           placeholder="wpkh(tpubDBYDcH8P2PedrEN3HxWYJJJMZEdgnrqMsjeKpPNzwe7jmGwk5M3HRdSf5vudAXwrJPfUsfvUPFooKWmz79Lh111U51RNotagXiGNeJe3i6t/0/*)"
           required />
       </div>
-      <div>
+      <div style="margin-bottom: 0.85rem">
         <label for="change_descriptor">Change Descriptor (optional)</label>
-        <input type="text" id="change_descriptor" />
+        <input type="text" id="change_descriptor" style="height: 2.5em; width: 100%" />
       </div>
 
       <div style="display: flex; align-items: baseline;">
@@ -67,8 +70,8 @@
     <pre id="stdout" style="max-height: 50vh; overflow-y: scroll; word-break: break-all;"></pre>
 
     <div style="display: flex; align-items: baseline;">
-      <span>></span>
-      <input type="text" id="stdin" placeholder="help" style="margin-left: 5px;" disabled />
+      <span></span>
+      <input type="text" id="stdin" placeholder="help" style="margin-left: 5px; height: 2.5rem" disabled />
     </div>
   </div>
 </div>
@@ -94,14 +97,14 @@
     const newIndex = ++compilerKeyAliasIndex;
     const html = `
             <div style="display: flex;">
-                <input name="alias" data-index="${newIndex}" type="text" placeholder="A" style="width: 4em; margin-right: 5px;" required/>
-                <select style="margin-bottom: 0.85rem; margin-right: 5px;" name="type" onchange="updateCompilerFormAlias(this)" data-index="${newIndex}">
+            <input name="alias" data-index="${newIndex}" type="text" placeholder="${String.fromCharCode('A'.charCodeAt(0) + newIndex - 1)}" style="width: 10em; margin-right: 5px; height: 2.5em;" required/>
+                <select style="margin-right: 5px;" name="type" onchange="updateCompilerFormAlias(this)" data-index="${newIndex}">
                     <option value="gen_wif" selected="selected">Generate WIF Key</option>
                     <option value="gen_ext">Generate Extended Key</option>
                     <option value="existing">Existing Key</option>
                 </select>
                 <input type="text" name="extra" style="flex-grow: 1; margin-right: 5px; display: none;" data-index="${newIndex}"/>
-                <button style="height: 2.2em;" onclick="addCompilerKeyAlias(event)" id="add_key_alias"><i class="fas fa-plus-circle"></i></button>
+                <button onclick="addCompilerKeyAlias(event)" id="add_key_alias"><i class="fas fa-plus-circle"></i></button>
             </div>`;
 
     const prevAddBtn = document.getElementById('add_key_alias');
