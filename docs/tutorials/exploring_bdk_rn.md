@@ -15,7 +15,7 @@ The wallet we create will be a non custodial HD Wallet, the app will be able to 
 The tutorial will focus on bitcoin and bdk-rn concepts and api and will gloss over react native related aspects. 
 All the code for this tutorial is available on Github at https://github.com/LtbLightning/AwesomeBitcoinApp
 
-Figure 1. is our end goal, an app that interacts with the bitcoin network manages keys and utxos, and synchs utxos from new blocks and broadcasts tansactioins.
+Figure 1. is our end goal, an app that interacts with the bitcoin network manages keys and UTXOs, and synchs UTXOs from new blocks and broadcasts transactions.
 
 
 
@@ -34,7 +34,7 @@ The bitcoin concepts used in this blog post are detailed and explained very well
 Mastering Bitcoin(HD Wallet chapter): https://www.oreilly.com/library/view/mastering-bitcoin/9781491902639/ch04.html
 Bitcoin Output Descriptors from bitocoin GitHub: https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md
 
-Now lets jump into Bitcoin Dev Kit 🪂
+Now let's jump into Bitcoin Dev Kit 
 
 ## Bitcoin Dev Kit and bdk-rn
 
@@ -67,7 +67,7 @@ This should start building the app and then launch the app in an ios simulator. 
 
 ## Setting up styles and RN app structure
 
-Lets setup a very basic app structure and some RN scaffolding. Lets create a `src` folder in the project root and then add new folders for `assets`, `elements`, `screens` and `styles`
+Let's setup a very basic app structure and some RN scaffolding. Lets create a `src` folder in the project root and then add new folders for `assets`, `elements`, `screens` and `styles`
 
 To make this quick you can download the styles and images used in the tutorial from the repository. The image assets, `Button.tsx` and `styles.js` can be take from https://github.com/LtbLightning/AwesomeBitcoinApp/tree/master/src and moved the folders as shown. Alternatively you can write your own styles and use your own images if you intend to style the app in a different way.
 
@@ -335,13 +335,13 @@ We should now have a working" Generate Mnemonic" button which displays the new m
 <img src="./exploring_bdk_rn/bdk_rn_tutorial_screen_mnemonic.png" style="display: block; margin: 0 auto; zoom:50%;" />
 
 
-A quick recap, we added a button to trigger call to a method. We created a click handler to call bdk-rn. Set the display state variable to display the output of the call in the display section. We will follow this pattern for the remaining calls to bdk-rn.
+A quick recap, we added a button to trigger a call to a method. We created a button click event handler to call bdk-rn. Set the display state variable to display the output of the call in the display section. We will follow this pattern for the remaining calls to bdk-rn.
 
-## Wallet and balance
+## Creating a wallet
 
-Before moving on the wallet and balances lets add a section at the to display the balance of the wallet.
+Before moving on to creating a wallet, let's add a section at the to display the balance of the wallet.
 
-To display the balance we will need to state variable to store the balance and a display section to display.
+To display the balance we will need a state variable to store the balance and a display section to display it.
 
 Under the `mnemonic` and `displayText` variables, lets add one for `balance` as well
 
@@ -353,7 +353,7 @@ Under the `mnemonic` and `displayText` variables, lets add one for `balance` as 
   	const [balance, setBalance] = useState();
 ```
 
-And we will shortly need a `wallet`, a `syncResponse` and `address` as well so lets add all these:
+And we will shortly need a `wallet`  and `syncResponse` as well so lets add these too.
 
 ```jsx
 	const Home = () => {
@@ -363,12 +363,11 @@ And we will shortly need a `wallet`, a `syncResponse` and `address` as well so l
   	const [balance, setBalance] = useState();
     const [wallet, setWallet] = useState();
   	const [syncResponse, setSyncResponse] = useState();
-  	const [address, setAddress] = useState();
 ```
 
 Now we need some `jsx` code to display the balance.
 
-Just below `{/* Balance */}`  and above `{*/ method call result */}` add the following ui components
+Just below `{/* Balance */}`  and above `{*/ method call result */}` add the following ui components to display the balance. We only want to show the balance when it has a value so we will use a tertiary operate for a quick check.
 
 ```jsx
 				{/* Balance */}
@@ -381,10 +380,10 @@ Just below `{/* Balance */}`  and above `{*/ method call result */}` add the fol
 				{/* method call result */}
 ```
 
-We will next add code to create a wallet, sync utxos with bitcoin node and get balance.
+We will next add code to create a wallet.
 
 To create a wallet the simple approach is to call `createWallet()` method with `mnemonic` , `password` and `network`.
-Lets add another click hander below where we have the `getMnemonic()` method
+Lets add another click handler below where we have the `getMnemonic()` method
 We want to see the response of this call so lets use `setDisplayText()` to see the output
 
 ```javascript
@@ -402,7 +401,7 @@ We want to see the response of this call so lets use `setDisplayText()` to see t
 
 A new button will be required to trigger `createWallet` 
 
-Lets add a new button just above `{/* input boxes and send transaction button */}` 
+Let's add a new button just above `{/* input boxes and send transaction button */}` 
 
 ```jsx
 				<Button
@@ -425,13 +424,15 @@ The response returned by `createWallet` is a new address for the created wallet.
 }
 ```
 
-Our app should now be creating a wallet when we click **Create Mnemonic** followed by **Create Wallet** 
+The AwesomeBitcoinApp should now be creating a wallet when we click **Create Mnemonic** followed by **Create Wallet**.
 
 <img src="./exploring_bdk_rn/bdk_rn_tutorial_screen_createwallet.png" style="display: block; margin: 0 auto; zoom:50%;" />
 
 The wallet created is a HD wallet and the address displayed is the 0 index address for the wallet.  The path used by default is 84'/1'/0'/0/* for addresses and 84'/1'/0'/1/* for change.
 
-Using just mnemonic is a quick route to creating a wallet with bdk-rn. The `createWallet()` method in `bdk-rn` has many optional arguments to configure the wallet. In addition to mnemonic a wallet can be created with a descriptor as well. If a descriptor is passed as an argument the wallet will be created using the descriptor. When using a descriptor, arguments for network, password and mnemonic are not required. bdk-rn has a `createDescriptor()` method to create a descriptor. More about output descriptors here https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md and here https://github.com/LtbLightning/bdk-rn#createdescriptor
+As we specified `testnet` and did not specify `blockChainName` and  `blockChainConfigUrl` a default testnet electum server will be used as the bitcoin node, `ssl://electrum.blockstream.info` is the default url used for testnet.
+
+Using `mnemonic` is a quick way to create a new wallet with bdk-rn. The `createWallet()` method in `bdk-rn` has many optional arguments to configure the wallet. In addition to mnemonic a wallet can be created with a descriptor as well. If a descriptor is passed as an argument the wallet will be created using the descriptor. When using a descriptor, arguments for network, password and mnemonic are not required. bdk-rn has a `createDescriptor()` method to create a descriptor. More about output descriptors here https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md and here https://github.com/LtbLightning/bdk-rn#createdescriptor
 
 ```javascript
 // using a descriptor to create wallet 
@@ -449,21 +450,85 @@ Other arguments for create wallet are:
 
 Refer to readme for a complete list of options for `createWallet`: https://github.com/LtbLightning/bdk-rn#createwallet
 
+## UTXOs and balance
+
+With the wallet created, we can now add methods to sync UTXOs and get a balance. 
+
+`bdk-rn` has a `syncWallet` method to sync all UTXOs belonging to the wallet with the bitcoin network, the  specified `blockChainName` and `blockChainConfigUrl` is used to sync. Once the wallet sync is complete `getBalance` can fetch the balance. 
+
+Earlier we have aleady added state variables for`syncResponse`and `balance`.  Now we will add buttons to call syncWallet and getBalance. Just below the Create Wallet button lets add two buttons as follows:
+
+```jsx
+    <Button
+      title="Sync Wallet"
+      style={styles.methodButton}
+      onPress={syncWallet}
+    />
+    <Button
+      title="Get Balance"
+      style={styles.methodButton}
+      onPress={getBalance}
+    />
+  </View>
+```
+
+And two click handlers below createWallet:
+
+```javascript
+
+  const syncWallet = async () => {
+    const { data } = await BdkRn.syncWallet();
+    setSyncResponse(data);
+    setDisplayText(JSON.stringify(data));
+  };
+
+  const getBalance = async () => {
+    const { data } = await BdkRn.getBalance();
+    setBalance(data);
+    setDisplayText(data);
+  };
+
+```
+
+We should now be able to create a wallet, sync UTXOs and get balance
+
+<img src="./exploring_bdk_rn/bdk_rn_get_balance.png" style="display: block; margin: 0 auto; zoom:50%;" />
 
 
 
+We can use a public testnet faucet to send testnet coins to the wallet and check that the UTXO sync and  balance fetch is working correctly. Before we do that lets add one more method to generate a new address we can then use this address to get testnet coins from faucet.
 
+Let's add a state variable for `address`, button for **Get Address** and a click handler to call `bdk-rn` and create a new address. Let's do the following
 
+Add `address` and `setAddress` state variables below balance and setBalance:
 
+```javascript
+  const [address, setAddress] = useState();
+```
 
+A new `getAddress` Click event handler below `getBalance` click handler:
 
+```javascript
+  const getAddress = async () => {
+    const { data } = await BdkRn.getNewAddress();
+    setAddress(data);
+    setDisplayText(data);
+  };
+```
 
+And a Get Address button below the existing Get Balance button:
 
+```jsx
+<Button
+	title="Get Address"
+  style={styles.methodButton}
+  onPress={getAddress}
+/>
+```
 
+We should now have the following, and Get Address will be able to display a new address.
 
-
-
-
+<img src="./exploring_bdk_rn/bdk_rn_get_address.png" style="display: block; margin: 0px auto; zoom: 50%;" />
 
 
 
@@ -481,9 +546,9 @@ Refer to readme for a complete list of options for `createWallet`: https://githu
 
 #### References:
 
-[bdk-rn](https://github.com/LtbLightning/bdk-rn)
-[bdk](https://github.com/bitcoindevkit)
-[Awesome Bitcoin App Github Repository](:https://github.com/LtbLightning/AwesomeBitcoinApp)
-[Setup React Native Development Environment](https://reactnative.dev/docs/environment-setup)
-[Mastering Bitcoin(HD Wallet chapter)](https://www.oreilly.com/library/view/mastering-bitcoin/9781491902639/ch04.html)
-[Bitcoin Output Descriptors from bitcoin GitHub](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md)
+- [bdk](https://github.com/bitcoindevkit)
+- [bdk-rn](https://github.com/LtbLightning/bdk-rn)
+- [Awesome Bitcoin App Github Repository](https://github.com/LtbLightning/AwesomeBitcoinApp)
+- [Setup React Native Development Environment](https://reactnative.dev/docs/environment-setup)
+- [Mastering Bitcoin(HD Wallet chapter)](https://www.oreilly.com/library/view/mastering-bitcoin/9781491902639/ch04.html)
+- [Bitcoin Output Descriptors from bitcoin GitHub](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md)
