@@ -5474,6 +5474,38 @@
 <span id="5467">5467</span>
 <span id="5468">5468</span>
 <span id="5469">5469</span>
+<span id="5470">5470</span>
+<span id="5471">5471</span>
+<span id="5472">5472</span>
+<span id="5473">5473</span>
+<span id="5474">5474</span>
+<span id="5475">5475</span>
+<span id="5476">5476</span>
+<span id="5477">5477</span>
+<span id="5478">5478</span>
+<span id="5479">5479</span>
+<span id="5480">5480</span>
+<span id="5481">5481</span>
+<span id="5482">5482</span>
+<span id="5483">5483</span>
+<span id="5484">5484</span>
+<span id="5485">5485</span>
+<span id="5486">5486</span>
+<span id="5487">5487</span>
+<span id="5488">5488</span>
+<span id="5489">5489</span>
+<span id="5490">5490</span>
+<span id="5491">5491</span>
+<span id="5492">5492</span>
+<span id="5493">5493</span>
+<span id="5494">5494</span>
+<span id="5495">5495</span>
+<span id="5496">5496</span>
+<span id="5497">5497</span>
+<span id="5498">5498</span>
+<span id="5499">5499</span>
+<span id="5500">5500</span>
+<span id="5501">5501</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -5523,6 +5555,9 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;verify&quot;</span>)]</span>
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;verify&quot;</span>)))]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">verify</span>;
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;hardware-signer&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">hardwaresigner</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">utils::IsDust</span>;
 
@@ -10941,6 +10976,35 @@
             .<span class="ident">unwrap</span>();
         <span class="comment">// ...and checking that everything is fine</span>
         <span class="macro">assert_fee_rate!</span>(<span class="ident">psbt</span>, <span class="ident">details</span>.<span class="ident">fee</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>), <span class="ident">fee_rate</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-hardware-signer&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_create_signer</span>() {
+        <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet::hardwaresigner::HWISigner</span>;
+        <span class="kw">use</span> <span class="ident">hwi::types::HWIChain</span>;
+        <span class="kw">use</span> <span class="ident">hwi::HWIClient</span>;
+
+        <span class="kw">let</span> <span class="ident">devices</span> <span class="op">=</span> <span class="ident">HWIClient::enumerate</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">device</span> <span class="op">=</span> <span class="ident">devices</span>.<span class="ident">first</span>().<span class="ident">expect</span>(<span class="string">&quot;No devices found&quot;</span>);
+        <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">HWIClient::get_client</span>(<span class="ident">device</span>, <span class="bool-val">true</span>, <span class="ident">HWIChain::Regtest</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="ident">client</span>.<span class="ident">get_descriptors</span>(<span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">custom_signer</span> <span class="op">=</span> <span class="ident">HWISigner::from_device</span>(<span class="ident">device</span>, <span class="ident">HWIChain::Regtest</span>).<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="kw-2">&amp;</span><span class="ident">descriptors</span>.<span class="ident">internal</span>[<span class="number">0</span>]);
+        <span class="ident">wallet</span>.<span class="ident">add_signer</span>(
+            <span class="ident">KeychainKind::External</span>,
+            <span class="ident">SignerOrdering</span>(<span class="number">200</span>),
+            <span class="ident">Arc::new</span>(<span class="ident">custom_signer</span>),
+        );
+
+        <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">LastUnused</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;mut</span> <span class="ident">psbt</span>, <span class="ident">Default::default</span>()).<span class="ident">unwrap</span>();
+        <span class="macro">assert!</span>(<span class="ident">finalized</span>);
     }
 }
 </code></pre></div>
