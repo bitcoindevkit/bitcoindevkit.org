@@ -1603,6 +1603,7 @@
 <span id="1596">1596</span>
 <span id="1597">1597</span>
 <span id="1598">1598</span>
+<span id="1599">1599</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -2059,7 +2060,7 @@
             .<span class="ident">iter</span>()
             .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span>);
 
-        <span class="kw">let</span> <span class="ident">cost_of_change</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">size_of_change</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>();
+        <span class="kw">let</span> <span class="ident">cost_of_change</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">size_of_change</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_per_vb</span>();
 
         <span class="comment">// `curr_value` and `curr_available_value` are both the sum of *effective_values* of</span>
         <span class="comment">// the UTXOs. For the optional UTXOs (curr_available_value) we filter out UTXOs with</span>
@@ -2965,7 +2966,8 @@
         <span class="kw">let</span> <span class="ident">curr_available_value</span> <span class="op">=</span> <span class="ident">utxos</span>.<span class="ident">iter</span>().<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span>);
 
         <span class="kw">let</span> <span class="ident">size_of_change</span> <span class="op">=</span> <span class="number">31</span>;
-        <span class="kw">let</span> <span class="ident">cost_of_change</span> <span class="op">=</span> <span class="ident">size_of_change</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>();
+        <span class="kw">let</span> <span class="ident">cost_of_change</span> <span class="op">=</span> <span class="ident">size_of_change</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_per_vb</span>();
+
         <span class="kw">let</span> <span class="ident">drain_script</span> <span class="op">=</span> <span class="ident">Script::default</span>();
         <span class="kw">let</span> <span class="ident">target_amount</span> <span class="op">=</span> <span class="number">20_000</span> <span class="op">+</span> <span class="ident">FEE_AMOUNT</span>;
         <span class="ident">BranchAndBoundCoinSelection::new</span>(<span class="ident">size_of_change</span>)
@@ -2994,7 +2996,7 @@
         <span class="kw">let</span> <span class="ident">curr_available_value</span> <span class="op">=</span> <span class="ident">utxos</span>.<span class="ident">iter</span>().<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> <span class="ident">x</span>.<span class="ident">effective_value</span>);
 
         <span class="kw">let</span> <span class="ident">size_of_change</span> <span class="op">=</span> <span class="number">31</span>;
-        <span class="kw">let</span> <span class="ident">cost_of_change</span> <span class="op">=</span> <span class="ident">size_of_change</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>();
+        <span class="kw">let</span> <span class="ident">cost_of_change</span> <span class="op">=</span> <span class="ident">size_of_change</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_per_vb</span>();
         <span class="kw">let</span> <span class="ident">target_amount</span> <span class="op">=</span> <span class="number">20_000</span> <span class="op">+</span> <span class="ident">FEE_AMOUNT</span>;
 
         <span class="kw">let</span> <span class="ident">drain_script</span> <span class="op">=</span> <span class="ident">Script::default</span>();
@@ -3018,7 +3020,7 @@
     <span class="kw">fn</span> <span class="ident">test_bnb_function_almost_exact_match_with_fees</span>() {
         <span class="kw">let</span> <span class="ident">fee_rate</span> <span class="op">=</span> <span class="ident">FeeRate::from_sat_per_vb</span>(<span class="number">1.0</span>);
         <span class="kw">let</span> <span class="ident">size_of_change</span> <span class="op">=</span> <span class="number">31</span>;
-        <span class="kw">let</span> <span class="ident">cost_of_change</span> <span class="op">=</span> <span class="ident">size_of_change</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_vb</span>();
+        <span class="kw">let</span> <span class="ident">cost_of_change</span> <span class="op">=</span> <span class="ident">size_of_change</span> <span class="kw">as</span> <span class="ident">f32</span> <span class="op">*</span> <span class="ident">fee_rate</span>.<span class="ident">as_sat_per_vb</span>();
 
         <span class="kw">let</span> <span class="ident">utxos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">generate_same_value_utxos</span>(<span class="number">50_000</span>, <span class="number">10</span>)
             .<span class="ident">into_iter</span>()
