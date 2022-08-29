@@ -25,7 +25,7 @@ Figure 1. is our end goal, an app that interacts with the bitcoin network manage
 
 ### Prerequisites
 
-In order ot use bdk-rn in a React Native app a React Native development environment is required. Please refer to resources out there on the internet if you need to set this, here is one of many good resources to guide you https://reactnative.dev/docs/environment-setup
+In order to use bdk-rn in a React Native app a React Native development environment is required. Please refer to resources out there on the internet if you need to set this, here is one of many good resources to guide you https://reactnative.dev/docs/environment-setup
 
 ### Bitcoin Basics
 
@@ -34,7 +34,7 @@ The bitcoin concepts used in this blog post are detailed and explained very well
 Mastering Bitcoin(HD Wallet chapter): https://www.oreilly.com/library/view/mastering-bitcoin/9781491902639/ch04.html
 Bitcoin Output Descriptors from bitocoin GitHub: https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md
 
-Now lets jumpt into Bitcoin Dev Kit 🪂
+Now lets jump into Bitcoin Dev Kit 🪂
 
 ## Bitcoin Dev Kit and bdk-rn
 
@@ -92,7 +92,6 @@ const App = () => {
 };
 
 export default App;
-
 ```
 
 This will probably crash your app in the simulator but thats fine, it will be fixed in the next step.
@@ -136,7 +135,6 @@ const Home = () => {
 }
 
 export default Home;
-
 ```
 
 
@@ -198,7 +196,6 @@ const Home = () => {
 };
 
 export default Home;
-
 ```
 
 
@@ -295,8 +292,6 @@ return (
     </SafeAreaView>
   );
 };
-
-
 ```
 
 Now we need to add a component to display output of our method calls and this will also need a state variable to track our method call response. To achive this add the following code.
@@ -317,7 +312,6 @@ const [displayText, setDisplayText] = useState('');
     setMnemonic(JSON.stringify(data));
     setDisplayText(JSON.stringify(data));
   };
-
 ```
 
 and finally lets add the component to display the output under `{/* method call result */}`
@@ -357,7 +351,6 @@ Under the `mnemonic` and `displayText` variables, lets add one for `balance` as 
   	const [mnemonic, setMnemonic] = useState('');
   	const [displayText, setDisplayText] = useState('');
   	const [balance, setBalance] = useState();
-
 ```
 
 And we will shortly need a `wallet`, a `syncResponse` and `address` as well so lets add all these:
@@ -371,8 +364,6 @@ And we will shortly need a `wallet`, a `syncResponse` and `address` as well so l
     const [wallet, setWallet] = useState();
   	const [syncResponse, setSyncResponse] = useState();
   	const [address, setAddress] = useState();
-  
-
 ```
 
 Now we need some `jsx` code to display the balance.
@@ -407,7 +398,6 @@ We want to see the response of this call so lets use `setDisplayText()` to see t
     setWallet(data);
     setDisplayText(JSON.stringify(data));
   };
-
 ```
 
 A new button will be required to trigger `createWallet` 
@@ -422,7 +412,6 @@ Lets add a new button just above `{/* input boxes and send transaction button */
           />
         </View>
         {/* input boxes and send transaction button */}
-
 ```
 
 The response returned by `createWallet` is a new address for the created wallet.
@@ -442,7 +431,7 @@ Our app should now be creating a wallet when we click **Create Mnemonic** follow
 
 The wallet created is a HD wallet and the address displayed is the 0 index address for the wallet.  The path used by default is 84'/1'/0'/0/* for addresses and 84'/1'/0'/1/* for change.
 
-Using just mnemonic is a quick route to creating a wallet with bdk-rn. The `createWallet()` method in `bdk-rn` has many optional arguments to configure the wallet. In addition to mnemonic a wallet can be creatd with a descriptor as well. If a descriptor is passed as an argument the wallet will be created using the descriptor. When using a descriptor, arguments for network, password and menmonic are not required. bdk-rn has a `createDescriptor()` method to create a descriptor. More about output descriptors here https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md and here https://github.com/LtbLightning/bdk-rn#createdescriptor
+Using just mnemonic is a quick route to creating a wallet with bdk-rn. The `createWallet()` method in `bdk-rn` has many optional arguments to configure the wallet. In addition to mnemonic a wallet can be created with a descriptor as well. If a descriptor is passed as an argument the wallet will be created using the descriptor. When using a descriptor, arguments for network, password and mnemonic are not required. bdk-rn has a `createDescriptor()` method to create a descriptor. More about output descriptors here https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md and here https://github.com/LtbLightning/bdk-rn#createdescriptor
 
 ```javascript
 // using a descriptor to create wallet 
@@ -458,7 +447,7 @@ Other arguments for create wallet are:
 
 **blockChainConfigUrl**: This is the url of the specified bitcoin node this should match the chain and the type of blockchain specified as **blockChainName**
 
-Refer to readme for a complete list of optioins for `createWallet`: https://github.com/LtbLightning/bdk-rn#createwallet
+Refer to readme for a complete list of options for `createWallet`: https://github.com/LtbLightning/bdk-rn#createwallet
 
 
 
@@ -490,18 +479,11 @@ Refer to readme for a complete list of optioins for `createWallet`: https://gith
 
 
 
+#### References:
 
-
-
-[bdk-rn]: https://github.com/LtbLightning/bdk-rn
-[bdk]: https://github.com/bitcoindevkit
-[Awesome Bitcoin App Github Repository]:https://github.com/LtbLightning/AwesomeBitcoinApp
-[Setup React Native Development Environment]: https://reactnative.dev/docs/environment-setup
-[Mastering Bitcoin(HD Wallet chapter)]: https://www.oreilly.com/library/view/mastering-bitcoin/9781491902639/ch04.html
-[Bitcoin Output Descriptors from bitcoin GitHub]: https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md
-
-
-[^WIF]: Wallet Input Format, a string encoding a ECDSA private key  https://en.bitcoin.it/wiki/Wallet_import_format
-[^WIFcore]: Unless the user import the WIF directly into bitcoin core
-[^sweep]: Some wallets refers to sweep as the action to create a transaction taking all the funds from the paper wallet and sending those to the wallet itself.
-[^blackzone]: Ideally, the black zone should be twice as long as the secret part to cover it back and front, long descriptor may leave a shorter black zone, ensure to have you printer set with vertical layout for best results.
+[bdk-rn](https://github.com/LtbLightning/bdk-rn)
+[bdk](https://github.com/bitcoindevkit)
+[Awesome Bitcoin App Github Repository](:https://github.com/LtbLightning/AwesomeBitcoinApp)
+[Setup React Native Development Environment](https://reactnative.dev/docs/environment-setup)
+[Mastering Bitcoin(HD Wallet chapter)](https://www.oreilly.com/library/view/mastering-bitcoin/9781491902639/ch04.html)
+[Bitcoin Output Descriptors from bitcoin GitHub](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md)
