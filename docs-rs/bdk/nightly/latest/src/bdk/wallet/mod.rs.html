@@ -5422,6 +5422,58 @@
 <span id="5415">5415</span>
 <span id="5416">5416</span>
 <span id="5417">5417</span>
+<span id="5418">5418</span>
+<span id="5419">5419</span>
+<span id="5420">5420</span>
+<span id="5421">5421</span>
+<span id="5422">5422</span>
+<span id="5423">5423</span>
+<span id="5424">5424</span>
+<span id="5425">5425</span>
+<span id="5426">5426</span>
+<span id="5427">5427</span>
+<span id="5428">5428</span>
+<span id="5429">5429</span>
+<span id="5430">5430</span>
+<span id="5431">5431</span>
+<span id="5432">5432</span>
+<span id="5433">5433</span>
+<span id="5434">5434</span>
+<span id="5435">5435</span>
+<span id="5436">5436</span>
+<span id="5437">5437</span>
+<span id="5438">5438</span>
+<span id="5439">5439</span>
+<span id="5440">5440</span>
+<span id="5441">5441</span>
+<span id="5442">5442</span>
+<span id="5443">5443</span>
+<span id="5444">5444</span>
+<span id="5445">5445</span>
+<span id="5446">5446</span>
+<span id="5447">5447</span>
+<span id="5448">5448</span>
+<span id="5449">5449</span>
+<span id="5450">5450</span>
+<span id="5451">5451</span>
+<span id="5452">5452</span>
+<span id="5453">5453</span>
+<span id="5454">5454</span>
+<span id="5455">5455</span>
+<span id="5456">5456</span>
+<span id="5457">5457</span>
+<span id="5458">5458</span>
+<span id="5459">5459</span>
+<span id="5460">5460</span>
+<span id="5461">5461</span>
+<span id="5462">5462</span>
+<span id="5463">5463</span>
+<span id="5464">5464</span>
+<span id="5465">5465</span>
+<span id="5466">5466</span>
+<span id="5467">5467</span>
+<span id="5468">5468</span>
+<span id="5469">5469</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -7351,6 +7403,12 @@
     <span class="kw">const</span> <span class="ident">P2WPKH_FAKE_WITNESS_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">106</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_get_funded_wallet_balance</span>() {
+        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">wallet</span>.<span class="ident">get_balance</span>().<span class="ident">unwrap</span>().<span class="ident">confirmed</span>, <span class="number">50000</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_cache_addresses_fixed</span>() {
         <span class="kw">let</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDatabase::new</span>();
         <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet::new</span>(
@@ -7597,7 +7655,22 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_create_tx_default_locktime</span>() {
-        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
+        <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="macro">testutils!</span>(@<span class="ident">descriptors</span> (<span class="ident">get_test_wpkh</span>()));
+        <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">descriptors</span>.<span class="number">0</span>,
+            <span class="prelude-val">None</span>,
+            <span class="ident">Network::Regtest</span>,
+            <span class="ident">AnyDatabase::Memory</span>(<span class="ident">MemoryDatabase::new</span>()),
+        )
+        .<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">tx_meta</span> <span class="op">=</span> <span class="macro">testutils!</span> {
+                @<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) =&gt; <span class="number">50_000</span> )
+        };
+
+        <span class="comment">// Add the transaction to our db, but do not sync the db.</span>
+        <span class="macro">crate::populate_test_db!</span>(<span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(), <span class="ident">tx_meta</span>, <span class="prelude-val">None</span>);
+
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>);
@@ -7788,7 +7861,23 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_create_tx_default_sequence</span>() {
-        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
+        <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="macro">testutils!</span>(@<span class="ident">descriptors</span> (<span class="ident">get_test_wpkh</span>()));
+        <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">descriptors</span>.<span class="number">0</span>,
+            <span class="prelude-val">None</span>,
+            <span class="ident">Network::Regtest</span>,
+            <span class="ident">AnyDatabase::Memory</span>(<span class="ident">MemoryDatabase::new</span>()),
+        )
+        .<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">tx_meta</span> <span class="op">=</span> <span class="macro">testutils!</span> {
+                @<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) =&gt; <span class="number">50_000</span> )
+        };
+
+        <span class="comment">// Add the transaction to our db, but do not sync the db. Unsynced db</span>
+        <span class="comment">// should trigger the default sequence value for a new transaction as 0xFFFFFFFF</span>
+        <span class="macro">crate::populate_test_db!</span>(<span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(), <span class="ident">tx_meta</span>, <span class="prelude-val">None</span>);
+
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>);
@@ -8286,7 +8375,22 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_create_tx_policy_path_no_csv</span>() {
-        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_a_or_b_plus_csv</span>());
+        <span class="kw">let</span> <span class="ident">descriptors</span> <span class="op">=</span> <span class="macro">testutils!</span>(@<span class="ident">descriptors</span> (<span class="ident">get_test_wpkh</span>()));
+        <span class="kw">let</span> <span class="ident">wallet</span> <span class="op">=</span> <span class="ident">Wallet::new</span>(
+            <span class="kw-2">&amp;</span><span class="ident">descriptors</span>.<span class="number">0</span>,
+            <span class="prelude-val">None</span>,
+            <span class="ident">Network::Regtest</span>,
+            <span class="ident">AnyDatabase::Memory</span>(<span class="ident">MemoryDatabase::new</span>()),
+        )
+        .<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">tx_meta</span> <span class="op">=</span> <span class="macro">testutils!</span> {
+                @<span class="ident">tx</span> ( (@<span class="ident">external</span> <span class="ident">descriptors</span>, <span class="number">0</span>) =&gt; <span class="number">50_000</span> )
+        };
+
+        <span class="comment">// Add the transaction to our db, but do not sync the db. Unsynced db</span>
+        <span class="comment">// should trigger the default sequence value for a new transaction as 0xFFFFFFFF</span>
+        <span class="macro">crate::populate_test_db!</span>(<span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>(), <span class="ident">tx_meta</span>, <span class="prelude-val">None</span>);
 
         <span class="kw">let</span> <span class="ident">external_policy</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">policies</span>(<span class="ident">KeychainKind::External</span>).<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">root_id</span> <span class="op">=</span> <span class="ident">external_policy</span>.<span class="ident">id</span>;

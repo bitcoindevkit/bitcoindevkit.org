@@ -637,6 +637,25 @@
 <span id="630">630</span>
 <span id="631">631</span>
 <span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -1125,7 +1144,8 @@
     }};
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">db</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">tx_meta</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">current_height</span>:<span class="ident">expr</span>, (@<span class="ident">coinbase</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">is_coinbase</span>:<span class="ident">expr</span>)$(,)<span class="question-mark">?</span>) =&gt; {{
         <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
-        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::database::BatchOperations</span>;
+        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::database::SyncTime</span>;
+        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::database</span>::{<span class="ident">BatchOperations</span>, <span class="ident">Database</span>};
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">db</span>;
         <span class="kw">let</span> <span class="ident">tx_meta</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">tx_meta</span>;
         <span class="kw">let</span> <span class="ident">current_height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">current_height</span>;
@@ -1151,13 +1171,31 @@
         };
 
         <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">txid</span>();
+        <span class="comment">// Set Confirmation time only if current height is provided.</span>
+        <span class="comment">// panics if `tx_meta.min_confirmation` is Some, and current_height is None.</span>
         <span class="kw">let</span> <span class="ident">confirmation_time</span> <span class="op">=</span> <span class="ident">tx_meta</span>
             .<span class="ident">min_confirmations</span>
             .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="kw">if</span> <span class="ident">v</span> <span class="op">==</span> <span class="number">0</span> { <span class="prelude-val">None</span> } <span class="kw">else</span> { <span class="prelude-val">Some</span>(<span class="ident">v</span>) })
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">conf</span><span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::BlockTime</span> {
-                <span class="ident">height</span>: <span class="ident">current_height</span>.<span class="ident">unwrap</span>().<span class="ident">checked_sub</span>(<span class="ident">conf</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">unwrap</span>() <span class="op">+</span> <span class="number">1</span>,
+                <span class="ident">height</span>: <span class="ident">current_height</span>.<span class="ident">expect</span>(<span class="string">&quot;Current height is needed for testing transaction with min-confirmation values&quot;</span>).<span class="ident">checked_sub</span>(<span class="ident">conf</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">unwrap</span>() <span class="op">+</span> <span class="number">1</span>,
                 <span class="ident">timestamp</span>: <span class="number">0</span>,
             });
+
+        <span class="comment">// Set the database sync_time.</span>
+        <span class="comment">// Check if the current_height is less than already known sync height, apply the max</span>
+        <span class="comment">// If any of them is None, the other will be applied instead.</span>
+        <span class="comment">// If both are None, this will not be set.</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">height</span>) <span class="op">=</span> <span class="ident">db</span>.<span class="ident">get_sync_time</span>().<span class="ident">unwrap</span>()
+                                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">sync_time</span><span class="op">|</span> <span class="ident">sync_time</span>.<span class="ident">block_time</span>.<span class="ident">height</span>)
+                                .<span class="ident">max</span>(<span class="ident">current_height</span>) {
+            <span class="kw">let</span> <span class="ident">sync_time</span> <span class="op">=</span> <span class="ident">SyncTime</span> {
+                <span class="ident">block_time</span>: <span class="ident">BlockTime</span> {
+                    <span class="ident">height</span>,
+                    <span class="ident">timestamp</span>: <span class="number">0</span>
+                }
+            };
+            <span class="ident">db</span>.<span class="ident">set_sync_time</span>(<span class="ident">sync_time</span>).<span class="ident">unwrap</span>();
+        }
 
         <span class="kw">let</span> <span class="ident">tx_details</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::TransactionDetails</span> {
             <span class="ident">transaction</span>: <span class="prelude-val">Some</span>(<span class="ident">tx</span>.<span class="ident">clone</span>()),
