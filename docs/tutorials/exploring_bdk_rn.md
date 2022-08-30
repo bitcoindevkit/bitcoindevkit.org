@@ -593,6 +593,7 @@ A click handler for send button, we will use the  [`quickSend()`](https://github
       amount: amount,
     });
     setTransaction(data);
+    setDisplayText(JSON.stringify(data));
   };
 ```
 
@@ -619,7 +620,6 @@ Let's add the send transaction section and ui components below `{/* input boxes 
           style={styles.methodButton}
           onPress={sendTx}
         />
-        <Text selectable>{transaction}</Text>
       </Fragment>
     </View>
 ```
@@ -633,7 +633,7 @@ We should now be able to send a transaction as long as there is sufficient balan
 
 ## Conclusion
 
-
+// TODO: Add conclusion
 
 
 #### References:
