@@ -21,7 +21,7 @@ Figure 1. is our end goal, an app that interacts with the bitcoin network manage
 
 // TODO: replace with image based on the respository , ensure buttons are in the same order and section styles are the same as the repository
 
-<img src="./exploring_bdk_rn/bdk_rn_quick_start_device.png" alt="BDK RN Quick Start" style="display: block; margin: 0 auto; zoom: 50%;" />
+<img src="./exploring_bdk_rn/bdk_rn_complete_app_device.png" alt="BDK RN Quick Start" style="display: block; margin: 0 auto; zoom: 50%;" />
 
 ### Prerequisites
 
@@ -198,14 +198,17 @@ const Home = () => {
 export default Home;
 ```
 
-
 We now have a app title section and a structure to hold the rest of our app components.
 
-<img src="./exploring_bdk_rn/bdk_rn_app_title.png" style="display: block; margin: 0 auto; zoom: 33%;" />
+
+
+<img src="./exploring_bdk_rn/bdk_rn_title.png" style="display: block; margin: 0 auto; zoom: 33%;" />
+
+
 
 ## Calling bdk-rn methods
 
-All `bdk-rn` methods return a json response with a data and error**All methods return response as follows:**
+All `bdk-rn` methods return a json response with a data and error. All methods return response as follows:
 
 ```javascript
 Promise<Response> = {
@@ -317,6 +320,7 @@ const [displayText, setDisplayText] = useState('');
 and finally lets add the component to display the output under `{/* method call result */}`
 
 ```jsx
+// screens/home.js
 
  {/* method call result */}
 	// display the component only if displayText has a value
@@ -506,7 +510,7 @@ Add `address` and `setAddress` state variables below balance and setBalance:
   const [address, setAddress] = useState();
 ```
 
-A new `getAddress` Click event handler below `getBalance` click handler:
+A new `getAddress` click event handler below `getBalance` click handler:
 
 ```javascript
   const getAddress = async () => {
@@ -532,14 +536,102 @@ We should now have the following, and Get Address will be able to display a new 
 
 
 
+Now that we are able to generate a receive address we can get some testnet bitcoin from one of the public testnet faucets like https://coinfaucet.eu/en/btc-testnet/ or https://bitcoinfaucet.uo1.net/ and https://testnet-faucet.mempool.co/ 
+
+After we send and transaction is confirmed we will need to sync wallet before we can see the new balance.
+
+## Restoring wallet
+
+The `createWallet` method creates a wallet using a `mnemonic`, in order to restore we can use the same method, we wont need to call `generateMnemonic` as we will already have a `mnemonic` to restore with.
+
+Let's add a input box to enter our own `mnemonic`, we will use the `mnemonic` entered in the input box to create a wallet.
+
+Let's add input box for `mnemonic` below the Generate Mnemonic button.
+
+```jsx
+<TextInput
+  style={styles.input}
+  multiline
+  value={mnemonic}
+  onChangeText={setMnemonic}
+  textAlignVertical="top"
+/>
+```
+
+This code will also display the mnemonic state variable in the input box,  if we click Generate Mnemonic the generated mnemonic will show up in the input box. We can overwrite it with our own mnemonic and doing so will also overwrite the mnemonic state variable. This way the mnemonic displayed will be the one used to create the wallet.
+
+we are already using the mnemonic state variable in the createWallet Method so no other changes are required.
+
+We can now use our own mnemonic and use it to restore a wallet. This will come in handy if we have a  wallet with testnet bitcoin as these are hard to come by.
+
+<img src="./exploring_bdk_rn/bdk_rn_get_restore.png" style="display: block; margin: 0px auto; zoom: 50%;" />
 
 
 
+## Sending bitcoin
+
+We are now able to receive bitcoin, lets add functionality to send as well.
+
+`bdk-rn` has a number of transaction related methods to enable varied use cases. A new send transaction can be created and broadcast by one method call using [`quickSend()`](https://github.com/LtbLightning/bdk-rn#quicksend). If required a unsigned transaction can be created using [`createTransaction()`](https://github.com/LtbLightning/bdk-rn#createtransaction) , this can be signed later with [`signTransactioin()`](https://github.com/LtbLightning/bdk-rn#signtransaction)  method and broadcast using [`broadcastTransaction()`](https://github.com/LtbLightning/bdk-rn#broadcasttransaction). There are also methods to query transactions by pending or confirmed status as well as to query all transactions. Please refer to bdk-rn [readme](https://github.com/LtbLightning/bdk-rn/blob/main/README.md#gettransactions) for more details on all the methods.
+
+We will need sate variables for `recepient` address and `amount` as well as for `transaction`, these can be added below our existing variables for `syncResponse` and `address`
+
+```javascript
+  const [syncResponse, setSyncResponse] = useState();
+  const [address, setAddress] = useState();
+  const [transaction, setTransaction] = useState();
+  const [recepient, setRecepient] = useState('');
+  const [amount, setAmount] = useState();
+```
+
+A click handler for send button, we will use the  [`quickSend()`](https://github.com/LtbLightning/bdk-rn#quicksend) method to send specified amount in sats to recepient address.
+
+```javascript
+	const sendTx = async () => {
+    const { data } = await BdkRn.quickSend({
+      address: recepient,
+      amount: amount,
+    });
+    setTransaction(data);
+  };
+```
+
+Lets add a new section for send transaction functionality. We will need a input box for receiver address and a input box for amount to send. We will also need a button to trigger the transaction.
+
+Let's add the send transaction section and ui components below `{/* input boxes and send transaction button */}`
+
+```jsx
+    {/* input boxes and send transaction button */}
+    <View style={styles.sendSection}>
+      <Fragment>
+        <TextInput
+          style={styles.input}
+          placeholder="Recepient Address"
+          onChangeText={setRecepient}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Amount (in sats)"
+          onChangeText={e => setAmount(parseInt(e))}
+        />
+        <Button
+          title="Send Transaction"
+          style={styles.methodButton}
+          onPress={sendTx}
+        />
+        <Text selectable>{transaction}</Text>
+      </Fragment>
+    </View>
+```
+
+
+We should now be able to send a transaction as long as there is sufficient balance. 
+
+<img src="./exploring_bdk_rn/bdk_rn_send.png" style="display: block; margin: 0px auto; zoom: 50%;" />
 
 
 
-
-
+## Conclusion
 
 
 
@@ -552,3 +644,48 @@ We should now have the following, and Get Address will be able to display a new 
 - [Setup React Native Development Environment](https://reactnative.dev/docs/environment-setup)
 - [Mastering Bitcoin(HD Wallet chapter)](https://www.oreilly.com/library/view/mastering-bitcoin/9781491902639/ch04.html)
 - [Bitcoin Output Descriptors from bitcoin GitHub](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
