@@ -16,7 +16,7 @@ In this tutorial we will explore `bdk-rn` usage and the api it provides. This gu
 The tutorial will focus on bitcoin and `bdk-rn` concepts and api and will gloss over react native related aspects. 
 All the code for this tutorial is available on Github at https://github.com/LtbLightning/AwesomeBitcoinApp
 
-<img src="./exploring_bdk_rn/bdk_rn_complete_app_device.png" alt="BDK RN Quick Start" style="display: block; margin: 0 auto; zoom: 50%;" />
+<img src="./exploring_bdk_rn/bdk_rn_complete_app.png" alt="BDK RN Quick Start" style="display: block; margin: 0 auto; zoom: 50%;" />
 
 ### Prerequisites
 
@@ -64,11 +64,11 @@ This should start building the app and then launch the app in an  simulator. So 
 
 Let's setup a very basic app structure and some RN scaffolding. Lets create a `src` folder in the project root and then add new folders for `assets`, `elements`, `screens` and `styles`
 
-To make this quick you can download the styles and images used in the tutorial from the repository. The image assets, `Button.tsx` and `styles.js` can be take from https://github.com/LtbLightning/AwesomeBitcoinApp/tree/master/src and moved the folders as shown. Alternatively you can write your own styles and use your own images if you intend to style the app in a different way.
+To make this quick you can download the styles and images used in the tutorial from the repository. The image assets, `Button.tsx` and `styles.js` can be taken from https://github.com/LtbLightning/AwesomeBitcoinApp/tree/master/src and moved to the folders as shown. Alternatively you can write your own styles and use your own images if you intend to style the app in a different way.
 
- create a `home.js` file under screens, this will be where we will be adding most of our code.
+ create a `home.js` file under screens, this will be where we will be adding most of the code.
 
-Once done the file structure should look like Figure 3.
+Once done the file structure should look like this:
 
 <img src="./exploring_bdk_rn/folder_structure.png" style="display: block; margin: 0px auto; zoom: 67%;" />
 
@@ -531,9 +531,9 @@ We should now have the following, and Get Address will be able to display a new 
 
 
 
-Now that we are able to generate a receive address we can get some testnet bitcoin from one of the public testnet faucets like https://coinfaucet.eu/en/btc-testnet/ or https://bitcoinfaucet.uo1.net/ and https://testnet-faucet.mempool.co/ 
+Now that we are able to generate a receive address we can get some testnet bitcoin from one of the public [testnet faucets](https://coinfaucet.eu/en/btc-testnet/)
 
-After we send and transaction is confirmed we will need to sync wallet before we can see the new balance.
+After we send and after the transaction is confirmed we will need to sync wallet before we can see the new balance from the received transaction.
 
 ## Restoring wallet
 
@@ -643,11 +643,20 @@ In the meantime keep in touch with the project on [GitHub](https://github.com/Lt
 #### References:
 
 - [bdk](https://github.com/bitcoindevkit)
+
 - [bdk-rn](https://github.com/LtbLightning/bdk-rn)
+
 - [Awesome Bitcoin App Github Repository](https://github.com/LtbLightning/AwesomeBitcoinApp)
+
 - [Setup React Native Development Environment](https://reactnative.dev/docs/environment-setup)
+
 - [Mastering Bitcoin(HD Wallet chapter)](https://www.oreilly.com/library/view/mastering-bitcoin/9781491902639/ch04.html)
+
 - [Bitcoin Output Descriptors from bitcoin GitHub](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md)
+
+- [Testnet Faucet]( https://coinfaucet.eu/en/btc-testnet/ or https://bitcoinfaucet.uo1.net/)
+
+  
 
 
 
