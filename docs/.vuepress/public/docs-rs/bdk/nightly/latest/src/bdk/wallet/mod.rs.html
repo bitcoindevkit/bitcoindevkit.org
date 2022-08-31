@@ -5506,6 +5506,33 @@
 <span id="5499">5499</span>
 <span id="5500">5500</span>
 <span id="5501">5501</span>
+<span id="5502">5502</span>
+<span id="5503">5503</span>
+<span id="5504">5504</span>
+<span id="5505">5505</span>
+<span id="5506">5506</span>
+<span id="5507">5507</span>
+<span id="5508">5508</span>
+<span id="5509">5509</span>
+<span id="5510">5510</span>
+<span id="5511">5511</span>
+<span id="5512">5512</span>
+<span id="5513">5513</span>
+<span id="5514">5514</span>
+<span id="5515">5515</span>
+<span id="5516">5516</span>
+<span id="5517">5517</span>
+<span id="5518">5518</span>
+<span id="5519">5519</span>
+<span id="5520">5520</span>
+<span id="5521">5521</span>
+<span id="5522">5522</span>
+<span id="5523">5523</span>
+<span id="5524">5524</span>
+<span id="5525">5525</span>
+<span id="5526">5526</span>
+<span id="5527">5527</span>
+<span id="5528">5528</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -6298,7 +6325,10 @@
         <span class="kw">let</span> <span class="ident">recipients</span> <span class="op">=</span> <span class="ident">params</span>.<span class="ident">recipients</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">r</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">r</span>, <span class="kw-2">*</span><span class="ident">v</span>));
 
         <span class="kw">for</span> (<span class="ident">index</span>, (<span class="ident">script_pubkey</span>, <span class="ident">value</span>)) <span class="kw">in</span> <span class="ident">recipients</span>.<span class="ident">enumerate</span>() {
-            <span class="kw">if</span> <span class="ident">value</span>.<span class="ident">is_dust</span>(<span class="ident">script_pubkey</span>) <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">script_pubkey</span>.<span class="ident">is_provably_unspendable</span>() {
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">params</span>.<span class="ident">allow_dust</span>
+                <span class="op">&amp;&amp;</span> <span class="ident">value</span>.<span class="ident">is_dust</span>(<span class="ident">script_pubkey</span>)
+                <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">script_pubkey</span>.<span class="ident">is_provably_unspendable</span>()
+            {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::OutputBelowDustLimit</span>(<span class="ident">index</span>));
             }
 
@@ -10914,6 +10944,30 @@
             .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="ident">balance</span>.<span class="ident">confirmed</span> <span class="op">/</span> <span class="number">2</span>)
             .<span class="ident">current_height</span>(<span class="ident">maturity_time</span>);
         <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_allow_dust_limit</span>() {
+        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_single_sig_cltv</span>());
+
+        <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
+
+        <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">0</span>);
+
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
+            <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap_err</span>(),
+            <span class="ident">Error::OutputBelowDustLimit</span>(<span class="number">0</span>)
+        ));
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
+
+        <span class="ident">builder</span>
+            .<span class="ident">allow_dust</span>(<span class="bool-val">true</span>)
+            .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">0</span>);
+
+        <span class="macro">assert!</span>(<span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">is_ok</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
