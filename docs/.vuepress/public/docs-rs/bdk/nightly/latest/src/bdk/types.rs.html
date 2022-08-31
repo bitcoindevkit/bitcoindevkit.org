@@ -366,6 +366,46 @@
 <span id="359">359</span>
 <span id="360">360</span>
 <span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -431,6 +471,16 @@
         <span class="ident">FeeRate</span>(<span class="ident">value</span>)
     }
 
+    <span class="doccomment">/// Create a new instance of [`FeeRate`] given a float fee rate in sats/kwu</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_sat_per_kwu</span>(<span class="ident">sat_per_kwu</span>: <span class="ident">f32</span>) -&gt; <span class="self">Self</span> {
+        <span class="ident">FeeRate::new_checked</span>(<span class="ident">sat_per_kwu</span> <span class="op">/</span> <span class="number">250.0_f32</span>)
+    }
+
+    <span class="doccomment">/// Create a new instance of [`FeeRate`] given a float fee rate in sats/kvb</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_sat_per_kvb</span>(<span class="ident">sat_per_kvb</span>: <span class="ident">f32</span>) -&gt; <span class="self">Self</span> {
+        <span class="ident">FeeRate::new_checked</span>(<span class="ident">sat_per_kvb</span> <span class="op">/</span> <span class="number">1000.0_f32</span>)
+    }
+
     <span class="doccomment">/// Create a new instance of [`FeeRate`] given a float fee rate in btc/kvbytes</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// ## Panics</span>
@@ -466,7 +516,7 @@
     }
 
     <span class="doccomment">/// Return the value as satoshi/vbyte</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_sat_vb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">f32</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_sat_per_vb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">f32</span> {
         <span class="self">self</span>.<span class="number">0</span>
     }
 
@@ -477,7 +527,7 @@
 
     <span class="doccomment">/// Calculate absolute fee in Satoshis using size in virtual bytes.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fee_vb</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">vbytes</span>: <span class="ident">usize</span>) -&gt; <span class="ident">u64</span> {
-        (<span class="self">self</span>.<span class="ident">as_sat_vb</span>() <span class="op">*</span> <span class="ident">vbytes</span> <span class="kw">as</span> <span class="ident">f32</span>).<span class="ident">ceil</span>() <span class="kw">as</span> <span class="ident">u64</span>
+        (<span class="self">self</span>.<span class="ident">as_sat_per_vb</span>() <span class="op">*</span> <span class="ident">vbytes</span> <span class="kw">as</span> <span class="ident">f32</span>).<span class="ident">ceil</span>() <span class="kw">as</span> <span class="ident">u64</span>
     }
 }
 
@@ -725,6 +775,36 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_valid_feerate_pos_zero</span>() {
         <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">FeeRate::from_sat_per_vb</span>(<span class="number">0.0</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_fee_from_btc_per_kvb</span>() {
+        <span class="kw">let</span> <span class="ident">fee</span> <span class="op">=</span> <span class="ident">FeeRate::from_btc_per_kvb</span>(<span class="number">1e-5</span>);
+        <span class="macro">assert!</span>((<span class="ident">fee</span>.<span class="ident">as_sat_per_vb</span>() <span class="op">-</span> <span class="number">1.0</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">f32::EPSILON</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_fee_from_sat_per_vbyte</span>() {
+        <span class="kw">let</span> <span class="ident">fee</span> <span class="op">=</span> <span class="ident">FeeRate::from_sat_per_vb</span>(<span class="number">1.0</span>);
+        <span class="macro">assert!</span>((<span class="ident">fee</span>.<span class="ident">as_sat_per_vb</span>() <span class="op">-</span> <span class="number">1.0</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">f32::EPSILON</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_fee_default_min_relay_fee</span>() {
+        <span class="kw">let</span> <span class="ident">fee</span> <span class="op">=</span> <span class="ident">FeeRate::default_min_relay_fee</span>();
+        <span class="macro">assert!</span>((<span class="ident">fee</span>.<span class="ident">as_sat_per_vb</span>() <span class="op">-</span> <span class="number">1.0</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">f32::EPSILON</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_fee_from_sat_per_kvb</span>() {
+        <span class="kw">let</span> <span class="ident">fee</span> <span class="op">=</span> <span class="ident">FeeRate::from_sat_per_kvb</span>(<span class="number">1000.0</span>);
+        <span class="macro">assert!</span>((<span class="ident">fee</span>.<span class="ident">as_sat_per_vb</span>() <span class="op">-</span> <span class="number">1.0</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">f32::EPSILON</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_fee_from_sat_per_kwu</span>() {
+        <span class="kw">let</span> <span class="ident">fee</span> <span class="op">=</span> <span class="ident">FeeRate::from_sat_per_kwu</span>(<span class="number">250.0</span>);
+        <span class="macro">assert!</span>((<span class="ident">fee</span>.<span class="ident">as_sat_per_vb</span>() <span class="op">-</span> <span class="number">1.0</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">f32::EPSILON</span>);
     }
 }
 </code></pre></div>
