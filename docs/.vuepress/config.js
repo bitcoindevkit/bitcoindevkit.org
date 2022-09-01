@@ -53,7 +53,8 @@ const tutorialSidebar = [
       '/tutorials/descriptors_in_the_wild',
       '/tutorials/hidden-power-of-bitcoin',
       '/tutorials/descriptor_based_paper_wallet',
-      '/tutorials/spending_policy_demo'
+      '/tutorials/spending_policy_demo',
+      '/tutorials/getting_started_with_rust_hwi'
     ],
   }
 ]
