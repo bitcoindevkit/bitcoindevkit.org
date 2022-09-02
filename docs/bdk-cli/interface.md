@@ -4,7 +4,7 @@ Remember the `bdk-cli --help` command you ran before? Let's analyze its output h
 
 ## Flags
 
-```bash
+```
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
@@ -23,10 +23,9 @@ export RUST_LOG="bdk=debug"
 
 ## Options
 
-```bash
+```
 OPTIONS:
     -n, --network <NETWORK>                            Sets the network [default: testnet]
-
 ```
 
 These are the global options that can be set. They are pretty much like the flags, but they also take a value. 
@@ -37,7 +36,9 @@ The `--network` flag can be used to change the network. Right now only `testnet`
 
 ## key
 
-A few tools to quickly generate, restore and derive HD keys.
+Commands to generate, restore and derive HD keys.
+
+To get more details about every single subcommand to the `key` command, run `bdk-cli key`. Under the `key` command we have the following subcommands to quickly generate, restore and derive HD keys.
 
 | Command | Description |
 | ------- | ----------- |
@@ -47,45 +48,39 @@ A few tools to quickly generate, restore and derive HD keys.
 
 ### generate
 
-```bash
+```
 OPTIONS:
     -p, --password <PASSWORD>     Seed password
-    -e, --entropy <WORD_COUNT>    Entropy level based on number of random seed mnemonic words [default: 24]  [possible
-                                  values: 12, 24]
+    -e, --entropy <WORD_COUNT>    Entropy level based on number of random seed mnemonic words [default: 24]  [possible values: 12, 24]
 ```
 
-Creates a BIP32 HD wallet seed and output BIP39 mnemonic words. Outputs an xprv that can be used with `key derive`.
+To use this subcommand, run `bdk-cli key generate`. This creates a BIP32 HD wallet master extended private key, a wallet fingerprint and BIP39 mnemonic words. The xprv can be used with `key derive` to derive extended public keys.
 
 
 ### restore 
 
-```bash
-
+```
 OPTIONS:
     -m, --mnemonic <MNEMONIC>    Seed mnemonic words, must be quoted (eg. "word1 word2 ...")
     -p, --password <PASSWORD>    Seed password
-
 ```
 
-Recovers a BIP32 HD wallet seed from BIP39 mnemonic words. Same output as generate.
+To use this subcommand, run `bdk-cli key restore -m <MNEMONIC>`. Format `<MNEMONIC>` as shown in the options above. This recovers a BIP32 HD wallet seed from BIP39 mnemonic words. It outputs a wallet fingerprint and a master extended private key.
 
 
 ### derive 
 
-```bash
-
+```
 OPTIONS:
     -p, --path <PATH>    Path to use to derive extended public key from extended private key
     -x, --xprv <XPRV>    Extended private key to derive from
-
-
 ```
 
-Derive child keys from a master extended private key. 
+To derive child keys from an extended private key, run `bdk-cli key derive -p <PATH> -x <XPRV>`.  
 
 ## wallet
 
-These are the main "functions" of the wallet. Most of them are pretty self explanatory, but we'll go over them quickly anyways. You can get more details about every single command by running `bdk-cli wallet`.
+These are the main "functions" of the wallet. Most of them are pretty self explanatory, but we'll go over them quickly anyways. You can get more details about the subcommands by running `bdk-cli wallet`. In addition, you can also get more details about every single command by running `bdk-cli wallet <subcommand> --help`.
 
 | Command | Description |
 | ------- | ----------- |
@@ -101,75 +96,60 @@ These are the main "functions" of the wallet. Most of them are pretty self expla
 | [list_unspent](#list_unspent)      | Lists the available spendable UTXOs |
 | [policies](#policies)          | Returns the available spending policies for the descriptor |
 | [public_descriptor](#public_descriptor) | Returns the public version of the wallet's descriptor(s) |
-| [repl](#repl)              | Opens an interactive shell |
+| [help](#help)              | Prints this message or the help of the given subcommand(s) |
 | [sign](#sign)              | Signs and tries to finalize a PSBT |
 | [sync](#sync)              | Syncs with the chosen Electrum server |
 
 
 ### Options
 
-```bash
+```
 OPTIONS:
-    -c, --change_descriptor <CHANGE_DESCRIPTOR>        Sets the descriptor to use for internal addresses
-    -d, --descriptor <DESCRIPTOR>                      Sets the descriptor to use for the external addresses
-        --esplora_concurrency <ESPLORA_CONCURRENCY>    Concurrency of requests made to the esplora server [default: 4]
-    -e, --esplora <ESPLORA_URL>                        Use the esplora server if given as parameter
-    -n, --network <NETWORK>                            Sets the network [default: testnet]
-    -p, --proxy <PROXY_SERVER:PORT>                    Sets the SOCKS5 proxy for the Electrum client
-    -s, --server <SERVER:PORT>
-            Sets the Electrum server to use [default: ssl://electrum.blockstream.info:60002]
+    -c, --change_descriptor <CHANGE_DESCRIPTOR>    Sets the descriptor to use for internal addresses
+        --conc <CONCURRENCY>
+            Number of parallel requests sent to the esplora service (default: 4) [default: 4]
 
-    -w, --wallet <WALLET_NAME>                         Selects the wallet to use [default: main]
+    -d, --descriptor <DESCRIPTOR>                  Sets the descriptor to use for the external addresses
+    -s, --server <ESPLORA_URL>
+            Use the esplora server if given as parameter [default: https://blockstream.info/testnet/api/]
+
+    -p, --proxy <PROXY_ADDRS:PORT>                 Sets the SOCKS5 proxy for Blockchain backend
+    -r, --retries <PROXY_RETRIES>                  Sets the SOCKS5 proxy retries for the Electrum client [default: 5]
+    -a, --proxy_auth <PROXY_USER:PASSWD>           Sets the SOCKS5 proxy credential
+    -g, --stop_gap <STOP_GAP>
+            Stop searching addresses for transactions after finding an unused gap of this length [default: 10]
+
+        --timeout <TIMEOUT>                        Socket timeout [default: 5]
+    -w, --wallet <WALLET_NAME>                     Selects the wallet to use
 ```
 
 These are the global options that can be set. They are pretty much like the flags, but they also take a value. The only **required** one is the `--descriptor` or `-d` flag, since every wallet **must have an
 associated descriptor**.
 
 The `--change-descriptor` flag can be used to set a different descriptor for the change addresses, sometimes called "internal" addresses in Bitcoin Core. Unfortunately there isn't
-[really consensus](https://freenode.irclog.whitequark.org/bitcoin-wizards/2020-01-25#26222504;) on a nice way to encode information about the change derivation inside the standard descriptor, so we are
-stuck with having two separate ones. Keep in mind though, that even if you don't specify a change descriptor, you'll still be able to create transactions - the change address will simply be generated from the
-standard descriptor.
-
-The `--network` flag can be used to change the network. Right now only `testnet` and `regtest` are supported since the code is very much not production-ready yet.
+[really consensus](https://freenode.irclog.whitequark.org/bitcoin-wizards/2020-01-25#26222504;) on a nice way to encode information about the change derivation inside the standard descriptor, so we are stuck with having two separate ones. Keep in mind though, that even if you don't specify a change descriptor, you'll still be able to create transactions - the change address will simply be generated from the standard descriptor.
 
 The `--server` flag can be used to select the Electrum server to use. By default it's connecting to Blockstream's electrum servers, which seems pretty stable.
 If you are having connection issues, you can also try with one of the other servers [listed here](https://1209k.com/bitcoin-eye/ele.php?chain=tbtc) and see if you have more luck with those.
-Right now both plaintext and ssl servers are supported (prefix `tcp://` or no prefix at all for tcp, prefix `ssl://` for ssl).
+Right now both plaintext and ssl servers are supported (prefix `tcp://` or no prefix at all for tcp, prefix `ssl://` for ssl). This flag can also be used to connect to an Esplora server. It should be set to the API's "base url". For public instances of Esplora this is `https://blockstream.info/api` for mainnet and `https://blockstream.info/testnet/api` for testnet.
 
-The `--esplora` flag can be used to connect to an Esplora instance instead of using Electrum. It should be set to the API's "base url". For public instances of Esplora this is `https://blockstream.info/api` for mainnet
-and `https://blockstream.info/testnet/api` for testnet.
+The `--proxy` flag can be optionally used to specify a SOCKS5 proxy to use when connecting to an `electrum`, `esplora` or `compact_filters` blockchain backend. Spawning a local Tor daemon and using it as a proxy will allow you to connect to the backend's `.onion` URLs. **Keep in mind that only plaintext server are supported over a proxy.**
 
-The `--proxy` flag can be optionally used to specify a SOCKS5 proxy to use when connecting to the Electrum server. Spawning a local Tor daemon and using it as a proxy will allow you to connect to `.onion` Electrum
-URLs. **Keep in mind that only plaintext server are supported over a proxy.**
+The `--retries` flag can be optionally used to specify the number of retries when connecting to
+an `electrum`, `esplora` or `compact_filters` blockchain backend via the SOCKS5 proxy.
 
-The `--wallet` flag can be used to select which wallet to use, if you have more than one of them. If you get a `ChecksumMismatch` error when you make some changes to your descriptor, it's because it does not
-match anymore the one you've used to initialize the cache. One solution could be to switch to a new wallet name, or delete the cache directory at `~/.bdk-bitcoin` and start from scratch.
+The `--proxy_auth` flag can be optionally used to set the SOCKS5 proxy authentication credentials.
+
+The `--stop_gap` flag can be optionally used to stop searching addresses for transactions after finding an unused gap of this length.
+
+The `--wallet` flag can be used to select which wallet to use, if you have more than one of them.
+If no `--wallet` option is passed, a random wallet name is generated based on the hash of the descriptor string. If you get a `ChecksumMismatch` error when you make some changes to your descriptor, it's because it does not match the one you've used to initialize the cache. One solution could be to switch to a new wallet name, or delete the cache directory at `~/.bdk-bitcoin` and start from scratch.
 
 ## Subcommands
 
-| Command | Description |
-| ------- | ----------- |
-| [broadcast](#broadcast)         | Broadcasts a transaction to the network. Takes either a raw transaction or a PSBT to extract |
-| [bump_fee](#bump-fee)         | Bumps the fees of an RBF transaction |
-| [combine_psbt](#combine-psbt)      | Combines multiple PSBTs into one |
-| [create_tx](#create-tx)         | Creates a new unsigned tranasaction |
-| [extract_psbt](#extract-psbt)      | Extracts a raw transaction from a PSBT |
-| [finalize_psbt](#finalize-psbt)     | Finalizes a psbt |
-| [get_balance](#get-balance)       | Returns the current wallet balance |
-| [get_new_address](#get-new-address)   | Generates a new external address |
-| [list_transactions](#list-transactions)      | Lists all the incoming and outgoing transactions of the wallet |
-| [list_unspent](#list-unspent)      | Lists the available spendable UTXOs |
-| [policies](#policies)          | Returns the available spending policies for the descriptor |
-| [public_descriptor](#public-descriptor) | Returns the public version of the wallet's descriptor(s) |
-| [repl](#repl)              | Opens an interactive shell |
-| [sign](#sign)              | Signs and tries to finalize a PSBT |
-| [sync](#sync)              | Syncs with the chosen Electrum server |
-
-These are the main "functions" of the wallet. Most of them are pretty self explanatory, but we'll go over them quickly anyways. You can get more details about every single command by running `bdk-cli <subcommand> --help`.
-
 ### broadcast
 
-```bash
+```
 OPTIONS:
         --psbt <BASE64_PSBT>    Sets the PSBT to extract and broadcast
         --tx <RAWTX>            Sets the raw transaction to broadcast
@@ -179,26 +159,31 @@ Broadcasts a transaction. The transaction can be a raw hex transaction or a PSBT
 
 ### bump\_fee
 
-```bash
+```
 FLAGS:
-    -a, --send_all    Allows the wallet to reduce the amount of the only output in order to increase fees. This is
-                      generally the expected behavior for transactions originally created with `send_all`
+        --offline_signer    
+            Make a PSBT that can be signed by offline signers and hardware wallets. Forces the addition of `non_witness_utxo` and more details to let the signer identify the change output
 
 OPTIONS:
-    -f, --fee_rate <SATS_VBYTE>         The new targeted fee rate in sat/vbyte
-    -t, --txid <txid>                   TXID of the transaction to update
-        --unspendable <TXID:VOUT>...    Marks an utxo as unspendable, in case more inputs are needed to cover the extra
-                                        fees
-        --utxos <TXID:VOUT>...          Selects which utxos *must* be added to the tx. Unconfirmed utxos cannot be used
+        --unspendable <CANT_SPEND_TXID:VOUT>...
+            Marks an utxo as unspendable, in case more inputs are needed to cover the extra fees
+
+        --utxos <MUST_SPEND_TXID:VOUT>...
+            Selects which utxos *must* be added to the tx. Unconfirmed utxos cannot be used
+
+    -f, --fee_rate <SATS_VBYTE>                    The new targeted fee rate in sat/vbyte
+    -s, --shrink <SHRINK_ADDRESS>
+            Allows the wallet to reduce the amount to the specified address in order to increase fees
+
+    -t, --txid <TXID>                              TXID of the transaction to update
 ```
 
 Bumps the fee of a transaction made with RBF. The transaction to bump is specified using the `--txid` flag and the new fee rate with `--fee_rate`.
 
-The `--send_all` flag should be enabled if the original transaction was also made with `--send_all`.
 
 ### combine\_psbt
 
-```bash
+```
 OPTIONS:
         --psbt <BASE64_PSBT>...    Add one PSBT to comine. This option can be repeated multiple times, one for each PSBT
 ```
@@ -207,7 +192,7 @@ Combines multiple PSBTs by merging metadata and partial signatures. It can be us
 
 ### create\_tx
 
-```bash
+```
 FLAGS:
     -r, --enable_rbf        Enables Replace-By-Fee (BIP125)
         --offline_signer    Make a PSBT that can be signed by offline signers and hardware wallets. Forces the addition
@@ -227,17 +212,13 @@ OPTIONS:
     -f, --fee_rate <SATS_VBYTE>                    Fee rate to use in sat/vbyte
 ```
 
-Creates a new unsigned PSBT. The flags allow to set a custom fee rate (the default is 1.0 sat/vbyte) with `--fee_rate` or `-f`, the list of UTXOs that should be considered unspendable with `--unspendable` (this
-option can be specified multiple times) and a list of UTXOs that must be spent with `--utxos` (again, this option can also be specified multiple times).
+Creates a new unsigned PSBT. The flags allow to set a custom fee rate (the default is 1.0 sat/vbyte) with `--fee_rate` or `-f`, the list of UTXOs that should be considered unspendable with `--unspendable` (this option can be specified multiple times) and a list of UTXOs that must be spent with `--utxos` (again, this option can also be specified multiple times).
 
-The `--to` option sets the receiver address of the transaction, and should contain the address and amount in Satoshi separated by a colon, like: `--to 2NErbQPsooXRatRJdrXDm9wKR2fRiZDT9wL:50000`. This option
-can also be specified multiple times to send to multiple addresses at once.
+The `--to` option sets the receiver address of the transaction, and should contain the address and amount in Satoshi separated by a colon, like: `--to 2NErbQPsooXRatRJdrXDm9wKR2fRiZDT9wL:50000`. This option can also be specified multiple times to send to multiple addresses at once.
 
-The `--send_all` flag can be used to send the value of all the spendable UTXOs to a single address, without creating a change output. If this flag is set, there must be only one `--to` address, and its value will
-be ignored (it can be set to 0).
+The `--send_all` flag can be used to send the value of all the spendable UTXOs to a single address, without creating a change output. If this flag is set, there must be only one `--to` address, and its value will be ignored (it can be set to 0).
 
-The `--external_policy` and `--internal_policy` options are two advanced flags that can be used to select the spending policy that the sender intends to satisfy in this transaction. They are normally not required if there's no ambiguity, but sometimes
-with a complex descriptor one or both of them have to be specified, or you'll get a `SpendingPolicyRequired` error. Those flags should be set to a JSON object that maps a policy node id to the list of child indexes that
+The `--external_policy` and `--internal_policy` options are two advanced flags that can be used to select the spending policy that the sender intends to satisfy in this transaction. They are normally not required if there's no ambiguity, but sometimes with a complex descriptor one or both of them have to be specified, or you'll get a `SpendingPolicyRequired` error. Those flags should be set to a JSON object that maps a policy node id to the list of child indexes that
 the user intends to satisfy for that node. This is probably better explained with an example:
 
 Let's assume our descriptor is: `sh(thresh(2,pk(A),sj:and_v(v:pk(B),n:older(6)),snj:and_v(v:pk(C),after(630000))))`. There are three conditions and we need to satisfy two of them to be able to spend. The conditions are:
@@ -281,7 +262,7 @@ we want to use. In this case we want to use children #0 and #1 of the root, so o
 
 ### extract\_psbt
 
-```bash
+```
 OPTIONS:
         --psbt <BASE64_PSBT>    Sets the PSBT to extract
 ```
@@ -290,14 +271,14 @@ Extracts the global transaction from a PSBT. **Note that partial signatures are 
 
 ### finalize\_psbt
 
-```bash
+```
 OPTIONS:
-        --psbt <BASE64_PSBT>        Sets the PSBT to finalize
-        --assume_height <HEIGHT>    Assume the blockchain has reached a specific height
+        --psbt <BASE64_PSBT>              Sets the PSBT to finalize
+        --assume_height <HEIGHT>          Assume the blockchain has reached a specific height
+        --trust_witness_utxo <WITNESS>    Whether the signer should trust the witness_utxo, if the non_witness_utxo hasn’t been provided
 ```
 
-Tries to finalize a PSBT by merging all the partial signatures and other elements back into the global transaction. This command fails if there are timelocks that have not yet expired, but the check can be overridden
-by specifying `--assume_height` to make the wallet assume that a future height has already been reached.
+Tries to finalize a PSBT by merging all the partial signatures and other elements back into the global transaction. This command fails if there are timelocks that have not yet expired, but the check can be overridden by specifying `--assume_height` to make the wallet assume that a future height has already been reached.
 
 ### get\_balance
 
@@ -320,8 +301,7 @@ on the internal cache.
 
 ### policies
 
-This subcommand has no extra flags and returns the spending policies encoded by the descriptor in a more human-readable format. As an example, running the `policies` command on the descriptor shown earlier for the
-in the explanation of the [create_tx](#create-tx) command, it will return this:
+This subcommand has no extra flags and returns the spending policies encoded by the descriptor in a more human-readable format. As an example, running the `policies` command on the descriptor shown earlier for the explanation of the [create_tx](#create-tx) command, it will return this:
 
 ```json
 {
@@ -528,7 +508,7 @@ This is a tree-like recursive structure, so it tends to get huge as more and mor
     - `NONE`, which means that the descriptor cannot contribute.
     - `COMPLETE`, which means that the descriptor by itself is enough to completely satisfy the node. It also adds a `condition` field which represent any potential extra condition that has to be met to
       consider the node complete. An example are the timelock nodes, that are always complete *but* they have an extra `csv` or `timelock` condition.
-    - `PARTIAL`, which means that the descriptor can partially satisfy the descriptor. This adds a `m`, `n`, `items` that respectively represent the threshold, the number of available items to satisfy and the items
+    - `PARTIAL`, which means that the descriptor can partially satisfy the policy. This adds a `m`, `n`, `items` that respectively represent the threshold, the number of available items to satisfy and the items
       that the provided descriptor can satisfy. Also adds a `conditions` field which is an integer to list of conditions map. The key is the child index and the map are all the possibile extra conditions that
       have to be satisfied if that node is used in the threshold. For instance, if you have a threshold of a SIGNATURE and a RELATIVETIMELOCK, in this order, the `conditions` field will be `1 ⇒ csv(x)`,
       because the item at index 1 needs the extra csv condition.
@@ -537,7 +517,7 @@ This is a tree-like recursive structure, so it tends to get huge as more and mor
       and the value contains all the possible conditions that also have to be satisfied. For instance, if you have a 2-of-2 threshold of a TIMELOCK and a RELATIVETIMELOCK, the `conditions` field will be `[0, 1] ⇒
       csv(x) + timelock(y)`, because if the combination of items 0 and 1 is picked, both of their conditions will have to be meet too.
 
-While the structure contains all of the intermediate nodes too, the root node is the most important one because defines how the descriptor can contribute to spend outputs sent to its addresses.
+While the structure contains all of the intermediate nodes too, the root node is the most important one because it defines how the descriptor can contribute to spend outputs sent to its addresses.
 
 For instance, looking at the root node of the previous example (with the internal `items` omitted) from a descriptor that has all the three private keys for keys A, B and C, we can clearly see that it can satisfy
 the descriptor (type = `PARTIALCOMPLETE`) and the three options are `[0, 1] ⇒ csv(6)` (Option #1), `[0, 2] ⇒ timelock(630,000)` (Option #2) or `[1, 2] ⇒ csv(6) + timelock(630,000)` (Option #3).
@@ -585,25 +565,24 @@ the descriptor (type = `PARTIALCOMPLETE`) and the three options are `[0, 1] ⇒ 
 
 This subcommand has no extra flags and returns the "public" version of the wallet's descriptor(s). It can be used to bootstrap a watch-only instance for the wallet.
 
-### `repl`
+### `help`
 
-This subcommand has no extra flags and launches an interactive shell session.
+This subcommand has no extra flags. When used as `bdk-cli wallet help` it will displays all the
+options and subcommands of the `wallet` command. When used as `bdk-cli wallet help <subcommand>`
+it will display all the details of the subcommand.
 
 ### `sign`
 
-```bash
+```
 OPTIONS:
           --psbt <BASE64_PSBT>        Sets the PSBT to sign
-          --assume_height <HEIGHT>    Assume the blockchain has reached a specific height. This affects the transaction
-                                      finalization, if there are timelocks in the descriptor
+          --assume_height <HEIGHT>    Assume the blockchain has reached a specific height. This affects the transaction finalization, if there are timelocks in the descriptor
+          --trust_witness_utxo <WITNESS>    Whether the signer should trust the witness_utxo, if the non_witness_utxo hasn’t been provided
 ```
 
-Adds to the PSBT all the signatures it can produce with the secrets embedded in the descriptor (xprv or WIF keys). Returns the signed PSBT and, if there are enough item to satisfy the script, also the extracted raw
-Bitcoin transaction.
+Adds to the PSBT all the signatures it can produce with the secrets embedded in the descriptor (xprv or WIF keys). Returns the signed PSBT and, if there are enough item to satisfy the script, also the extracted raw Bitcoin transaction.
 
-Optionally, the `assume_height` option can be specified to let the wallet assume the blockchain has reached a specific height. This affects the finalization of the PSBT which is done right at the end of the signing
-process: the wallet tries to satisfy the spending condition of each input using the partial signatures collected. In case timelocks are present the wallet needs to know whether or not they have expired. This flag
-is particularly useful for offline wallets.
+Optionally, the `--assume_height` option can be specified to let the wallet assume the blockchain has reached a specific height. This affects the finalization of the PSBT which is done right at the end of the signing process: the wallet tries to satisfy the spending condition of each input using the partial signatures collected. In case timelocks are present the wallet needs to know whether or not they have expired. This flag is particularly useful for offline wallets.
 
 ### `sync`
 
