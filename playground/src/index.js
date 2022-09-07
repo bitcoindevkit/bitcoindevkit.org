@@ -1,4 +1,8 @@
-import { WasmWallet, log_init, compile } from "../bdk-cli/target/wasm32-unknown-unknown/release/bdk-cli.js";
+import {
+    WasmWallet,
+    log_init,
+    compile
+} from "../bdk-cli/target/wasm32-unknown-unknown/release/bdk-cli.js";
 import * as InternalBlockly from "./blockly.js";
 
 async function startWallet(desc, change_desc) {
@@ -18,7 +22,7 @@ async function startWallet(desc, change_desc) {
             args.push(change_desc);
         }
         inst = await new WasmWallet("testnet", args);
-    } catch(e) {
+    } catch (e) {
         console.error(e);
     }
 
@@ -93,8 +97,8 @@ async function startWallet(desc, change_desc) {
     start_button.disabled = false;
     stop_button.disabled = true;
 
-    const descriptor = document.getElementById("descriptor"); 
-    const change_descriptor = document.getElementById("change_descriptor"); 
+    const descriptor = document.getElementById("descriptor");
+    const change_descriptor = document.getElementById("change_descriptor");
 
     start_button.onclick = (e) => {
         if (descriptor.value.length == 0) {
@@ -170,13 +174,16 @@ async function startWallet(desc, change_desc) {
             const extra = elements_extra.filter((x) => x.attributes["data-index"].value == alias.attributes["data-index"].value)[0].value;
             const aliasValue = alias.value;
 
-            aliases[aliasValue] = { type, extra };
+            aliases[aliasValue] = {
+                type,
+                extra
+            };
         });
 
         try {
             let res = compile(policy.value, JSON.stringify(aliases), compiler_script_type.value);
             compiler_output.innerHTML = res;
-        } catch(e) {
+        } catch (e) {
             compiler_output.innerHTML = `<span class="error">${e}</span>`;
         }
     }
