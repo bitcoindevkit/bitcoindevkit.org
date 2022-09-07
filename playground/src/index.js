@@ -1,4 +1,4 @@
-import { WalletWrapper, init, compile } from "magical-bitcoin-wallet-playground";
+import { WasmWallet, log_init, compile } from "../bdk-cli/target/wasm32-unknown-unknown/release/bdk-cli.js";
 import * as InternalBlockly from "./blockly.js";
 
 async function startWallet(desc, change_desc) {
@@ -12,7 +12,12 @@ async function startWallet(desc, change_desc) {
 
     let inst = null;
     try {
-        inst = await new WalletWrapper("testnet", desc, change_desc, "https://blockstream.info/testnet/api");
+        let args = ["_", "-d", desc];
+        if (change_desc) {
+            args.push("-c");
+            args.push(change_desc);
+        }
+        inst = await new WasmWallet("testnet", args);
     } catch(e) {
         console.error(e);
     }
@@ -33,10 +38,10 @@ async function startWallet(desc, change_desc) {
         historyIndex = history.push(command);
 
         return inst
-            .run(command)
+            .run_command(command)
             .then(success => {
                 if (success) {
-                    stdout.innerHTML += `<span class="success">${success}</span>\n`;
+                    stdout.innerHTML += `<span class="success">${JSON.stringify(success)}</span>\n`;
                 }
             })
             .catch(err => stdout.innerHTML += `<span class="error">${err}</span>\n`)
@@ -74,7 +79,7 @@ async function startWallet(desc, change_desc) {
 }
 
 (async function() {
-    init();
+    log_init();
     InternalBlockly.startBlockly('blocklyDiv', 'policy');
 
     let currentWallet = null;
@@ -107,7 +112,7 @@ async function startWallet(desc, change_desc) {
 
                 start_message.innerHTML = "Wallet created, running `sync`...";
 
-                w.run('sync').then(() => start_message.innerHTML = "Ready!");
+                w.run('wallet sync').then(() => start_message.innerHTML = "Ready!");
 
                 currentWallet = w;
                 stop_button.disabled = false;
@@ -168,8 +173,11 @@ async function startWallet(desc, change_desc) {
             aliases[aliasValue] = { type, extra };
         });
 
-        compile(policy.value, JSON.stringify(aliases), compiler_script_type.value)
-            .then(res => compiler_output.innerHTML = res)
-            .catch(err => compiler_output.innerHTML = `<span class="error">${err}</span>`);
+        try {
+            let res = compile(policy.value, JSON.stringify(aliases), compiler_script_type.value);
+            compiler_output.innerHTML = res;
+        } catch(e) {
+            compiler_output.innerHTML = `<span class="error">${e}</span>`;
+        }
     }
 })();
