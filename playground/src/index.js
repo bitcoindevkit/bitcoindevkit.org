@@ -15,16 +15,12 @@ async function startWallet(desc, change_desc) {
     let historyIndex = 0;
 
     let inst = null;
-    try {
-        let args = ["_", "-d", desc];
-        if (change_desc) {
-            args.push("-c");
-            args.push(change_desc);
-        }
-        inst = await new WasmWallet("testnet", args);
-    } catch (e) {
-        console.error(e);
+    let args = ["_", "-d", desc];
+    if (change_desc) {
+        args.push("-c");
+        args.push(change_desc);
     }
+    inst = await new WasmWallet("testnet", args);
 
     const run = (command) => {
         if (command == "clear") {
