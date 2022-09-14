@@ -127,7 +127,7 @@ async function startWallet(desc, change_desc) {
 
         e.preventDefault();
 
-        currentWallet.free();
+        currentWallet = null;
         start_message.innerHTML = "Wallet instance destroyed";
 
         start_button.disabled = false;
