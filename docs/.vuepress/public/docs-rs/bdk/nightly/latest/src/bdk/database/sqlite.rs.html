@@ -1086,6 +1086,24 @@
 <span id="1079">1079</span>
 <span id="1080">1080</span>
 <span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -1140,6 +1158,11 @@
     <span class="string">&quot;DELETE FROM transactions;&quot;</span>,
     <span class="string">&quot;DELETE FROM utxos;&quot;</span>,
     <span class="string">&quot;DROP INDEX idx_txid_vout;&quot;</span>,
+    <span class="string">&quot;CREATE UNIQUE INDEX idx_utxos_txid_vout ON utxos(txid, vout);&quot;</span>,
+    <span class="string">&quot;ALTER TABLE utxos RENAME TO utxos_old;&quot;</span>,
+    <span class="string">&quot;CREATE TABLE utxos (value INTEGER, keychain TEXT, vout INTEGER, txid BLOB, script BLOB, is_spent BOOLEAN DEFAULT 0);&quot;</span>,
+    <span class="string">&quot;INSERT INTO utxos SELECT value, keychain, vout, txid, script, is_spent FROM utxos_old;&quot;</span>,
+    <span class="string">&quot;DROP TABLE utxos_old;&quot;</span>,
     <span class="string">&quot;CREATE UNIQUE INDEX idx_utxos_txid_vout ON utxos(txid, vout);&quot;</span>
 ];
 
@@ -2004,8 +2027,8 @@
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_connection</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Connection</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">connection</span> <span class="op">=</span> <span class="ident">Connection::open</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
-    <span class="ident">migrate</span>(<span class="kw-2">&amp;</span><span class="ident">connection</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">connection</span> <span class="op">=</span> <span class="ident">Connection::open</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
+    <span class="ident">migrate</span>(<span class="kw-2">&amp;mut</span> <span class="ident">connection</span>)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="ident">connection</span>)
 }
 
@@ -2040,28 +2063,41 @@
     )
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">migrate</span>(<span class="ident">conn</span>: <span class="kw-2">&amp;</span><span class="ident">Connection</span>) -&gt; <span class="ident">rusqlite::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">migrate</span>(<span class="ident">conn</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Connection</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="ident">get_schema_version</span>(<span class="ident">conn</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">stmts</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">MIGRATIONS</span>[(<span class="ident">version</span> <span class="kw">as</span> <span class="ident">usize</span>)..];
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="ident">version</span>;
 
-    <span class="kw">if</span> <span class="ident">version</span> <span class="op">==</span> <span class="ident">MIGRATIONS</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">i32</span> {
+    <span class="comment">// begin transaction, all migration statements and new schema version commit or rollback</span>
+    <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">transaction</span>()<span class="question-mark">?</span>;
+
+    <span class="comment">// execute every statement and return `Some` new schema version</span>
+    <span class="comment">// if execution fails, return `Error::Rusqlite`</span>
+    <span class="comment">// if no statements executed returns `None`</span>
+    <span class="kw">let</span> <span class="ident">new_version</span> <span class="op">=</span> <span class="ident">stmts</span>
+        .<span class="ident">iter</span>()
+        .<span class="ident">enumerate</span>()
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">version_stmt</span><span class="op">|</span> {
+            <span class="macro">log::info!</span>(
+                <span class="string">&quot;executing db migration {}: `{}`&quot;</span>,
+                <span class="ident">version</span> <span class="op">+</span> <span class="ident">version_stmt</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">+</span> <span class="number">1</span>,
+                <span class="ident">version_stmt</span>.<span class="number">1</span>
+            );
+            <span class="ident">tx</span>.<span class="ident">execute</span>(<span class="ident">version_stmt</span>.<span class="number">1</span>, [])
+                <span class="comment">// map result value to next migration version</span>
+                .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">version_stmt</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">+</span> <span class="ident">version</span> <span class="op">+</span> <span class="number">1</span>)
+        })
+        .<span class="ident">last</span>()
+        .<span class="ident">transpose</span>()<span class="question-mark">?</span>;
+
+    <span class="comment">// if `Some` new statement version, set new schema version</span>
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">version</span>) <span class="op">=</span> <span class="ident">new_version</span> {
+        <span class="ident">set_schema_version</span>(<span class="kw-2">&amp;</span><span class="ident">tx</span>, <span class="ident">version</span>)<span class="question-mark">?</span>;
+    } <span class="kw">else</span> {
         <span class="macro">log::info!</span>(<span class="string">&quot;db up to date, no migration needed&quot;</span>);
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
     }
 
-    <span class="kw">for</span> <span class="ident">stmt</span> <span class="kw">in</span> <span class="ident">stmts</span> {
-        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="ident">stmt</span>, []);
-        <span class="kw">if</span> <span class="ident">res</span>.<span class="ident">is_err</span>() {
-            <span class="macro">println!</span>(<span class="string">&quot;migration failed on:\n{}\n{:?}&quot;</span>, <span class="ident">stmt</span>, <span class="ident">res</span>);
-            <span class="kw">break</span>;
-        }
-
-        <span class="ident">i</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-    }
-
-    <span class="ident">set_schema_version</span>(<span class="ident">conn</span>, <span class="ident">i</span>)<span class="question-mark">?</span>;
-
+    <span class="comment">// commit transaction</span>
+    <span class="ident">tx</span>.<span class="ident">commit</span>()<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
 
