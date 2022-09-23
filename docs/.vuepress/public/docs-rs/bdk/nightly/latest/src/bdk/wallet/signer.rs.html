@@ -1111,8 +1111,6 @@
 <span id="1104">1104</span>
 <span id="1105">1105</span>
 <span id="1106">1106</span>
-<span id="1107">1107</span>
-<span id="1108">1108</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -1218,6 +1216,7 @@
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::utils::SecpCtx</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor</span>::{<span class="ident">DescriptorMeta</span>, <span class="ident">XKeyUtils</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::psbt::PsbtUtils</span>;
 
 <span class="doccomment">/// Identifier of a signer in the `SignersContainers`. Used as a key to find the right signer among</span>
 <span class="doccomment">/// multiple of them</span>
@@ -2036,11 +2035,8 @@
             .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">SchnorrSighashType::Default</span>.<span class="ident">into</span>())
             .<span class="ident">schnorr_hash_ty</span>()
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">SignerError::InvalidSighash</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">witness_utxos</span> <span class="op">=</span> <span class="ident">psbt</span>
-            .<span class="ident">inputs</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">cloned</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">witness_utxo</span>)
+        <span class="kw">let</span> <span class="ident">witness_utxos</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>())
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">psbt</span>.<span class="ident">get_utxo_for</span>(<span class="ident">i</span>))
             .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">all_witness_utxos</span> <span class="op">=</span> <span class="macro">vec!</span>[];
 
