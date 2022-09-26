@@ -5562,6 +5562,25 @@
 <span id="5555">5555</span>
 <span id="5556">5556</span>
 <span id="5557">5557</span>
+<span id="5558">5558</span>
+<span id="5559">5559</span>
+<span id="5560">5560</span>
+<span id="5561">5561</span>
+<span id="5562">5562</span>
+<span id="5563">5563</span>
+<span id="5564">5564</span>
+<span id="5565">5565</span>
+<span id="5566">5566</span>
+<span id="5567">5567</span>
+<span id="5568">5568</span>
+<span id="5569">5569</span>
+<span id="5570">5570</span>
+<span id="5571">5571</span>
+<span id="5572">5572</span>
+<span id="5573">5573</span>
+<span id="5574">5574</span>
+<span id="5575">5575</span>
+<span id="5576">5576</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -7639,6 +7658,10 @@
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get_test_tr_with_taptree_xprv</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
         <span class="string">&quot;tr(cNJmN3fH9DDbDt131fQNkVakkpzawJBSeybCUNmP1BovpmGQ45xG,{pk(tprv8ZgxMBicQKsPdDArR4xSAECuVxeX1jwwSXR4ApKbkYgZiziDc4LdBy2WvJeGDfUSE4UT4hHhbgEwbdq8ajjUHiKDegkwrNU6V55CxcxonVN/*),pk(8aee2b8120a5f157f1223f72b5e62b825831a27a9fdf427db7cc697494d4a642)})&quot;</span>
+    }
+
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get_test_tr_dup_keys</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+        <span class="string">&quot;tr(cNJmN3fH9DDbDt131fQNkVakkpzawJBSeybCUNmP1BovpmGQ45xG,{pk(8aee2b8120a5f157f1223f72b5e62b825831a27a9fdf427db7cc697494d4a642),pk(8aee2b8120a5f157f1223f72b5e62b825831a27a9fdf427db7cc697494d4a642)})&quot;</span>
     }
 
     <span class="macro">macro_rules!</span> <span class="ident">assert_fee_rate</span> {
@@ -11117,6 +11140,21 @@
 
         <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;mut</span> <span class="ident">psbt</span>, <span class="ident">Default::default</span>()).<span class="ident">unwrap</span>();
         <span class="macro">assert!</span>(<span class="ident">finalized</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_taproot_load_descriptor_duplicated_keys</span>() {
+        <span class="comment">// Added after issue https://github.com/bitcoindevkit/bdk/issues/760</span>
+        <span class="comment">//</span>
+        <span class="comment">// Having the same key in multiple taproot leaves is safe and should be accepted by BDK</span>
+
+        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_tr_dup_keys</span>());
+        <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
+
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">addr</span>.<span class="ident">to_string</span>(),
+            <span class="string">&quot;bcrt1pvysh4nmh85ysrkpwtrr8q8gdadhgdejpy6f9v424a8v9htjxjhyqw9c5s5&quot;</span>
+        );
     }
 }
 </code></pre></div>
