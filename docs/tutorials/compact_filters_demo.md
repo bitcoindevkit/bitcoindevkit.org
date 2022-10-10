@@ -30,7 +30,7 @@ The main three components of abstraction in BDK are
   - `Descriptors`
   - `Blockchain`
 
-BDK comes with default implementations of all them that developers can start with out of the box. Developers can also create there own custom implementations and plug it into BDK (thanks to rust magic of `Traits`).
+BDK comes with default implementations of all them that developers can start with out of the box. Developers can also create their own custom implementations and plug it into BDK (thanks to rust magic of `Traits`).
 
 BDK also supports [BIP158](https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki) communication protocol, which allows creation of `BIP157` type compact filter SPV nodes. This capability is extended to wallet with BDK's `Blockchain` data structure. The [API](https://docs.rs/bdk/0.8.0/bdk/blockchain/trait.Blockchain.html) for `compact_filters` backend is similar to any other kind of backends, so wallet devs don't need to worry about all the details. Its ok if the dev haven't even heard of `BIP157`, BDK takes care of that in background.
 
