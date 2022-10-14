@@ -35,7 +35,7 @@ Now let's jump into Bitcoin Dev Kit
 ## Bitcoin Dev Kit and bdk-rn
 
 `bdk-rn` is a React Native library of Bitcoin Dev Kit(BDK) for building React Native Apps.
-It encapsulates all of the low-level APIs and methods for BDK and exposes them in a react native context. To use BDK in React Native(RN) apps only the `bdk-rn` module is required. `Bdk-rn` can be used like any other react native library and is available in public package managers.
+It encapsulates all of the low-level APIs and methods for BDK and exposes them in a react native context. To use BDK in React Native(RN) apps only the `bdk-rn` module is required. `Bdk-rn` can be used like any other react native library and is available on [public package managers(npm and yarn)](https://www.npmjs.com/package/bdk-rn).
 
 ## Getting Started
 
@@ -226,8 +226,8 @@ const mnemonic  = response.data;
 
 We can specify a longer length or we can also specify the bits of entropy we need by passing the length or entropy arguments.
 
-To create a mnemonic with an entropy of 256 bits which will be a 24-word length mnemonic sentence we can use `{ entropy: 256 }`.
-Refer to the readme file on [GitHub](https://github.com/LtbLightning/bdk-rn#generatemnemomic)
+To create a mnemonic with an entropy of 256 bits, which will be a 24-word length mnemonic sentence, we can use `{ entropy: 256 }`.
+Refer to the readme file on [GitHub](https://github.com/LtbLightning/bdk-rn#generatemnemomic) for more details.
 
 ```javascript
 const {data: mnemonic} = await BdkRn.generateMnemonic({ entropy: 256 });
@@ -432,7 +432,7 @@ The wallet created is a HD wallet and the address displayed is the 0 index addre
 
 As we specified `testnet` and did not specify `blockChainName` and  `blockChainConfigUrl` a default testnet  server will be used as the bitcoin node, `ssl://electrum.blockstream.info` is the default url used for testnet.
 
-Using `mnemonic` is a quick way to create a new wallet with bdk-rn. The `createWallet()` method in `bdk-rn` has many optional arguments to configure the wallet. In addition to mnemonic, a wallet can also be created with a descriptor. If a descriptor is passed as an argument the wallet will be created using the descriptor. When using a descriptor, arguments for network, password and mnemonic are not required. `bdk-rn` has a `createDescriptor()` method to create a descriptor. More about output descriptors [here](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md). Refer to the [readme](https://github.com/LtbLightning/bdk-rn#createdescriptor) for all options available when creating output descriptors with `bdk-rn`
+Using `mnemonic` is a quick way to create a new wallet with `bdk-rn`. The `createWallet()` method in `bdk-rn` has many optional arguments to configure the wallet. In addition to mnemonic, a wallet can also be created with a descriptor. If a descriptor is passed as an argument the wallet will be created using the descriptor. When using a descriptor, arguments for network, password and mnemonic are not required. `bdk-rn` has a `createDescriptor()` method to create a descriptor. More about output descriptors [here](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md). Refer to the [readme](https://github.com/LtbLightning/bdk-rn#createdescriptor) for all options available when creating output descriptors with `bdk-rn`
 
 ```javascript
 // using a descriptor to create wallet 
@@ -452,11 +452,11 @@ Refer to [readme](https://github.com/LtbLightning/bdk-rn#createwallet) for a com
 
 ## UTXOs and balance
 
-With the wallet created, we can now add methods to sync UTXOs and get a balance. 
+With the wallet created, we can now add methods to sync UTXOs compute balance. 
 
-`bdk-rn` has a `syncWallet` method to sync all UTXOs belonging to the wallet with the bitcoin network, the specified `blockChainName` and `blockChainConfigUrl` is used to sync. Once the wallet sync is complete `getBalance` can fetch the balance. 
+`bdk-rn` has a `syncWallet` method to sync all UTXOs belonging to the wallet with the bitcoin network, the specified `blockChainName` and `blockChainConfigUrl` is used to sync. Once the wallet sync is complete balance is computed and `getBalance` can fetch the balance. 
 
-Earlier we have aleady added state variables for`syncResponse`and `balance`.  Now we will add buttons to call syncWallet and getBalance. Just below the Create Wallet button lets add two buttons as follows:
+Earlier we have aleady added state variables for`syncResponse`and `balance`. Now we will add buttons to call `syncWallet` and `getBalance`. Just below the Create Wallet button lets add two buttons as follows:
 
 ```jsx
     <Button
@@ -566,9 +566,9 @@ We can now use our own mnemonic and use it to restore a wallet. This will come i
 
 ## Sending bitcoin
 
-We are now able to receive bitcoin, and add functionality to send as well.
+We are now able to receive bitcoin, time to add functionality to send as well.
 
-bdk-rn has a number of transaction-related methods to enable varied use cases. A new send transaction can be created and broadcast by one method using [quickSend()](https://github.com/LtbLightning/bdk-rn#quicksend). If required an unsigned transaction can be created using [createTransaction()](https://github.com/LtbLightning/bdk-rn#createtransaction) , this can be signed later with [signTransactioin()](https://github.com/LtbLightning/bdk-rn#signtransaction) method and broadcast using [broadcastTransaction()](https://github.com/LtbLightning/bdk-rn#broadcasttransaction). There are also methods to query transactions by pending or confirmed status and all transactions. Please refer to bdk-rn [readme](https://github.com/LtbLightning/bdk-rn/blob/main/README.md#gettransactions) for more details on all the methods.
+`bdk-rn` has a number of transaction-related methods to enable varied use cases. A new send transaction can be created and broadcast using [quickSend()](https://github.com/LtbLightning/bdk-rn#quicksend). If required an unsigned transaction can be created using [createTransaction()](https://github.com/LtbLightning/bdk-rn#createtransaction) , this can be signed later with [signTransactioin()](https://github.com/LtbLightning/bdk-rn#signtransaction) method and broadcast using [broadcastTransaction()](https://github.com/LtbLightning/bdk-rn#broadcasttransaction). There are also methods to query transactions by pending or confirmed status and all transactions. Please refer to bdk-rn [readme](https://github.com/LtbLightning/bdk-rn/blob/main/README.md#gettransactions) for more details on all the methods.
 
 We will need state variables for recipient address and amount as well as for transaction, these can be added below our existing variables for syncResponse and address
 
@@ -629,13 +629,9 @@ We should now be able to send a transaction as long as there is sufficient balan
 
 ## Conclusion
 
-The app we created can be distributed for both iOS and Android thus sharing a code base, the development focused on use cases and we did not have to code intricate bitcoin node, transaction and sync-related functionalities this was managed by `bdk-rn` allowing the product to focus on the functionality. This is how `bdk` and `bdk-rn` intend to make Rapid Bitcoin Application Development possible.
+The App we created can be built and distributed for both iOS and Android thus sharing a code base and reducing development time. The development and coding focused on use cases and we did not have to code intricate internal bitcoin protocol level code nor bitcoin node interactions, transaction, UTXO  and sync-related functionalities were also not required. All this was managed by `bdk-rn` allowing the us to focus on the product, functionality and user journey. This is how `bdk` and `bdk-rn` intend to make Rapid Bitcoin Application Development possible.
 
-
-
-bdk-rn intends to expose functionality and API from bdk which has a wide variety of API with granular details allowing for many interesting use cases to be implemented. bdk-rn and bdk are constantly updated and enhanced based on developer feedback both from the bitcoin community as well as bitcoin product development teams.
-
-
+`bdk-rn` intends to expose functionality and API from `bdk` which has a wide variety of API with granular details allowing for many interesting use cases to be implemented. `bdk-rn` and `bdk` are constantly updated and enhanced based on feedback from product teams and developers in the bitcoin community.
 
 Stay tuned for more APIs and enhancements coming to bdk-rn in the near future. Feature and API requests are most welcome. New blogs and tutorials will be published soon for a more in-depth exploration of bdk-rn. 
 
