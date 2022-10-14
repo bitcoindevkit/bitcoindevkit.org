@@ -20,7 +20,7 @@ The tutorial will focus on bitcoin and `bdk-rn` concepts and API. So it will glo
 
 ### Prerequisites
 
-In order to use bdk-rn in a React Native App, a React Native development environment is required. Please refer to resources out there on the internet if you need to set this up, here is one of many good resources to guide you https://reactnative.dev/docs/environment-setup
+In order to use bdk-rn in a React Native App, a React Native development environment is required. Please refer to resources out there on the internet if you need to set this up, here is one of many good resources to guide you on [environment setup](https://reactnative.dev/docs/environment-setup)
 
 ### Bitcoin Basics
 
