@@ -11,7 +11,7 @@ tags: ["bdk-rn", "bdk", "tutorial", "guide", "wallet"]
 
 `bdk-rn` is the **Bitcoin Dev kit**'s **React Native** library which enables building bitcoin applications for Android and iOS mobile platforms. Using bdk-rn does not require knowledge of the underlying bitcoin or BDK API. Using `bdk-rn` is similar to using any other RN module. Just do `yarn add bdk-rn` and you are ready to code!  This is the first tutorial on how to use bdk-rn, more coming soon, make sure to [follow](https://twitter.com/BitcoinZavior?ref_src=twsrc%5Etfw) to be notified of new ones. In case you missed it, there is a recorded bdk-rn focused Twitch Livestream available on the [Bitcoin Developers](https://www.youtube.com/watch?v=gMpWA875go4) YouTube channel which covers most of this article, make sure to [subscribe](https://www.youtube.com/channel/UCUq_ZdezVWKPvkWRicAYxLA/videos) for more.
 
-In this tutorial, we will explore `bdk-rn` ousage and the API it provides. This guide will walk through the development process and code for making a bitcoin application. The bitcoin application we create will be a non-custodial HD Wallet. The application will have the functionality to create a new wallet or restore from a known mnemonic seed phrase. This application will also be able to interact with the bitcoin network to sync UTXOs from new blocks and broadcast transactions.
+In this tutorial, we will explore `bdk-rn` usage and the API it provides. This guide will walk through the development process and code for making a bitcoin application. The bitcoin application we create will be a non-custodial HD Wallet. The application will have the functionality to create a new wallet or restore from a known mnemonic seed phrase. This application will also be able to interact with the bitcoin network to sync UTXOs from new blocks and broadcast transactions.
 
 The tutorial will focus on bitcoin and `bdk-rn` concepts and API. So it will gloss over React Native aspects. The code for this tutorial is available on the [LtbLightning GitHub](https://github.com/LtbLightning/BdkRnQuickStart)
 
@@ -444,11 +444,11 @@ const response = await BdkRn.createWallet({
 
 Other arguments for `createWallet()` are:
 
-**blockChainName**: Blockchain backend to use, like [`electrum` (opens new window)](https://github.com/romanz/electrs), [`esplora` (opens new window)](https://github.com/Blockstream/esplora), `compact-filters` ([BIP157 (opens new window)](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki)) and Bitcoin Core. bdk-rn at the moment doesn't support compact-filters and Bitcoin Core, this will be added shortly in a future release.
+**blockChainName**: Blockchain backend to use, like [`electrum`](https://github.com/romanz/electrs), [`esplora`](https://github.com/Blockstream/esplora), `compact-filters` ([BIP157](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki)) and Bitcoin Core. bdk-rn at the moment doesn't support compact-filters and Bitcoin Core, this will be added shortly in a future release.
 
 **blockChainConfigUrl**: This is the url of the specified bitcoin node this should match the chain and the type of blockchain specified as **blockChainName**
 
-Refer to readme for a complete list of options for `createWallet`: https://github.com/LtbLightning/bdk-rn#createwallet
+Refer to [readme](https://github.com/LtbLightning/bdk-rn#createwallet) for a complete list of options for `createWallet`
 
 ## UTXOs and balance
 
