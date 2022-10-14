@@ -9,11 +9,12 @@ tags: ["bdk-rn", "bdk", "tutorial", "guide", "wallet"]
 
 ## Introduction
 
-The **BitcoinDevkit**'s **React Native** library, bdk-rn enables building bitcoin applications for Android and iOS mobile platforms. Using bdk-rn does not require knowledge of the underlying bitcoin or BDK API, and using bdk-rn is similar to using any other RN module. 
+`bdk-rn` is the **Bitcoin Dev kit**'s **React Native** library which enables building bitcoin applications for Android and iOS mobile platforms. Using bdk-rn does not require knowledge of the underlying bitcoin or BDK API. Using `bdk-rn` is similar to using any other RN module. Just do `yarn add bdk-rn` and you are ready to code!  This is the first tutorial on how to use bdk-rn, more coming soon, make sure to [follow](https://twitter.com/BitcoinZavior?ref_src=twsrc%5Etfw) to be notified of new ones. In case you missed it, there is a recorded bdk-rn focused Twitch Livestream available on the [Bitcoin Developers](https://www.youtube.com/watch?v=gMpWA875go4) YouTube channel which covers most of this article, make sure to [subscribe](https://www.youtube.com/channel/UCUq_ZdezVWKPvkWRicAYxLA/videos) for more.
 
-In this tutorial, we will explore bdk-rn usage and the API it provides. This guide will walk through the development process and code for making a bitcoin application. The bitcoin application we create will be a non-custodial HD Wallet. The application will have the functionality to create a new wallet or restore from a known mnemonic seed phrase. The application will also be able to interact with the bitcoin network to sync UTXOs from new blocks and broadcast transactions.
+In this tutorial, we will explore `bdk-rn` ousage and the API it provides. This guide will walk through the development process and code for making a bitcoin application. The bitcoin application we create will be a non-custodial HD Wallet. The application will have the functionality to create a new wallet or restore from a known mnemonic seed phrase. This application will also be able to interact with the bitcoin network to sync UTXOs from new blocks and broadcast transactions.
 
-The tutorial will focus on bitcoin and bdk-rn concepts and API. So it will gloss over react native related aspects. The code for this tutorial is available on GitHub at https://github.com/LtbLightning/AwesomeBitcoinApp
+The tutorial will focus on bitcoin and `bdk-rn` concepts and API. So it will gloss over React Native aspects. The code for this tutorial is available on the [LtbLightning GitHub](https://github.com/LtbLightning/BdkRnQuickStart)
+
 
 <img src="./exploring_bdk_rn/bdk_rn_complete_app.png" alt="BDK RN Quick Start" style="display: block; margin: 0 auto; zoom: 50%;" />
 
@@ -25,7 +26,9 @@ In order to use bdk-rn in a React Native App, a React Native development environ
 
 The bitcoin concepts used in this blog post are detailed and explained very well in external bitcoin resources. Here are some links for reference:
 
-Mastering Bitcoin(HD Wallet chapter): https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch04.asciidoc Bitcoin Output Descriptors from GitHub: https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md
+[Mastering Bitcoin(HD Wallet chapter)](https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch04.asciidoc)
+
+[Bitcoin Output Descriptors from bitcoin GitHub](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md)
 
 Now let's jump into Bitcoin Dev Kit
 
@@ -40,19 +43,19 @@ Although we won't delve deep into RN we will focus more on bitcoin and bdk-rn, h
 
  start by creating a new RN project.
 
-`npx react-native init AwesomeBitcoinApp`
+`npx react-native init BdkRnQuickStart`
 
-If this fails end is an error on an M1 Mac please use
+If this fails in an error on an M1/M2 Mac please use
  `arch -x86_64 pod install --repo-update`
 
-Once done lets `cd` into the new project and run the basic RN app thats created
+Once done `cd` into the new project directory and run the basic RN app that's created
 
 ```shell
-cd AwesomeBitcoinApp
+cd BdkRnQuickStart
 yarn ios
 ```
 
-This should start building the app and then launch the app in an simulator. So far we have created a basic RN project if this doesn't work then refer to the React Native development setup guide to troubleshoot.
+This should start building the app and launch the app in a simulator. So far we have created a basic RN project if this doesn't work then refer to the React Native development setup guide to troubleshoot.
 
 <img src="./exploring_bdk_rn/default_rn_app.png" style="display: block; margin: 0 auto; zoom: 25%;" />
 
@@ -60,19 +63,19 @@ This should start building the app and then launch the app in an simulator. So f
 
 ## Setting up styles and RN app structure
 
-Let's set up a very basic app structure and some RN scaffolding. Let's create a `src` folder in the project root and then add new folders for `assets`, `elements`, `screens` and `styles`
+Let's set up a very basic app structure and some RN scaffolding. Let's create an `src` folder in the project root and inside it add new folders for `assets`, `elements`, `screens` and `styles`
 
-To make this quick you can download the styles and images used in the tutorial from the repository. The image assets, `Button.tsx` and `styles.js` can be taken from https://github.com/LtbLightning/AwesomeBitcoinApp/tree/master/src and moved to the folders as shown. Alternatively, you can write your own styles and use your own images if you intend to style the app in a different way.
+To make this quick you can download the styles and images used in the tutorial from the repository. The image assets, `Button.tsx` and `styles.js` can be taken from [here](https://github.com/LtbLightning/BdkRnQuickStart/tree/master/src) and moved to the folders as shown. Alternatively, you can write your own styles and use your own images if you intend to style the app in a different way.
 
- create a `home.js` file under screens, this will be where we will be adding most of the code.
+ Create a `home.js` file under `screens` folder, this will be where we will be adding most of the code.
 
-Once done the file structure should look like this:
+Once done the project structure should look like this:
 
 <img src="./exploring_bdk_rn/folder_structure.png" style="display: block; margin: 0px auto; zoom: 67%;" />
 
 
 
-Locate `App.js` in the project root, this will have the default code added by react-native init, let's delete all contents of `App.js` and replace it with code to import `home.js` as our main screen.
+Locate `App.js` in the project root, this will have the default code added by `react-native init`, let's delete all contents of `App.js` and replace it with code to import `home.js` as our main screen.
 
 ```javascript
 // App.js 
@@ -113,11 +116,11 @@ or
 cd ios && pod install && cd ..
 ```
 
-Verify that `bdk-rn` has been added to `package.json`, once done `bdk-rn` is installed and ready to be used in our **AwesomeBitcoinApp**
+Verify that `bdk-rn` has been added to `package.json`, once done `bdk-rn` is installed and ready to be used in our **BdkRnQuickStart** App.
 
 ## Importing `bdk-rn`
 
-Locate home.js which we added in the setup section and import bdk-rn and also create an RN functional component.
+Locate `home.js` which we added in the setup section and import `bdk-rn` and also create an RN functional component.
 
 ```javascript
 // screens/home.js
@@ -131,7 +134,7 @@ export default Home;
 ```
 
 
-Before we start using `bdk-rn` let's add some additional RN component imports, as well as import styles, button and image assets to create a basic layout to build our home screen
+Before we start using `bdk-rn` let's add some additional RN component imports, as well as import styles, a button and image assets to create a basic layout to build our home screen.
 
 ```jsx
 // screens/home.js
@@ -191,7 +194,7 @@ const Home = () => {
 export default Home;
 ```
 
-We now have a app title section and a structure to hold the rest of our app components.
+We now have an app title section and a structure to hold the rest of our app components.
 
 
 
@@ -201,7 +204,7 @@ We now have a app title section and a structure to hold the rest of our app comp
 
 ## Calling bdk-rn methods
 
-All `bdk-rn` methods return a JSON response with a data and error. All methods return response as follows:
+All `bdk-rn` methods return a JSON response with data and error properties. All methods return a  response as follows:
 
 ```javascript
 Promise<Response> = {
@@ -223,8 +226,8 @@ const mnemonic  = response.data;
 
 We can specify a longer length or we can also specify the bits of entropy we need by passing the length or entropy arguments.
 
-To create a mnemonic with an entropy of 256 bits which will be a 24 word length mnemonic sentence we can use.
-Refer to the readme file on GitHub: https://github.com/LtbLightning/bdk-rn#generatemnemomic
+To create a mnemonic with an entropy of 256 bits which will be a 24-word length mnemonic sentence we can use `{ entropy: 256 }`.
+Refer to the readme file on [GitHub](https://github.com/LtbLightning/bdk-rn#generatemnemomic)
 
 ```javascript
 const {data: mnemonic} = await BdkRn.generateMnemonic({ entropy: 256 });
@@ -290,7 +293,7 @@ return (
 };
 ```
 
-Now we need to add a component to display output of our method calls and this will also need a state variable to track our method call response. To achieve this add the following code.
+Now we need to add a component to display the output of our method calls and this will also need a state variable to track our method call response. To achieve this add the following code.
 
 ```javascript
 // screens/home.js
@@ -310,7 +313,7 @@ const [displayText, setDisplayText] = useState('');
   };
 ```
 
-and finally lets add the component to display the output under `{/* method call result */}`
+and finally, let's add the component to display the output under `{/* method call result */}`
 
 ```jsx
 // screens/home.js
@@ -381,7 +384,7 @@ We will next add code to create a wallet.
 
 To create a wallet the simple approach is to call `createWallet()` method with `mnemonic` , `password` and `network`.
 Let's add another click event handler below where we have the `getMnemonic()` method
-We want to see the response of this call so let's use `setDisplayText()` to see the output
+We want to see the response to this call so let's use `setDisplayText()` to see the output
 
 ```javascript
 
@@ -421,7 +424,7 @@ The response returned by `createWallet` is a new address for the created wallet.
 }
 ```
 
-The AwesomeBitcoinApp should now be creating a wallet when we click **Create Mnemonic** followed by **Create Wallet**.
+The App should now be creating a wallet when we click **Create Mnemonic** followed by **Create Wallet**.
 
 <img src="./exploring_bdk_rn/bdk_rn_tutorial_screen_createwallet.png" style="display: block; margin: 0 auto; zoom:50%;" />
 
@@ -429,7 +432,7 @@ The wallet created is a HD wallet and the address displayed is the 0 index addre
 
 As we specified `testnet` and did not specify `blockChainName` and  `blockChainConfigUrl` a default testnet  server will be used as the bitcoin node, `ssl://electrum.blockstream.info` is the default url used for testnet.
 
-Using `mnemonic` is a quick way to create a new wallet with bdk-rn. The `createWallet()` method in `bdk-rn` has many optional arguments to configure the wallet. In addition to mnemonic, a wallet can also be created with a descriptor. If a descriptor is passed as an argument the wallet will be created using the descriptor. When using a descriptor, arguments for network, password and mnemonic are not required. bdk-rn has a `createDescriptor()` method to create a descriptor. More about output descriptors here https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md and here https://github.com/LtbLightning/bdk-rn#createdescriptor
+Using `mnemonic` is a quick way to create a new wallet with bdk-rn. The `createWallet()` method in `bdk-rn` has many optional arguments to configure the wallet. In addition to mnemonic, a wallet can also be created with a descriptor. If a descriptor is passed as an argument the wallet will be created using the descriptor. When using a descriptor, arguments for network, password and mnemonic are not required. `bdk-rn` has a `createDescriptor()` method to create a descriptor. More about output descriptors [here](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md). Refer to the [readme](https://github.com/LtbLightning/bdk-rn#createdescriptor) for all options available when creating output descriptors with `bdk-rn`
 
 ```javascript
 // using a descriptor to create wallet 
@@ -493,7 +496,7 @@ We should now be able to create a wallet, sync UTXOs and get balance
 
 
 
-We can use a public testnet faucet to send testnet coins to the wallet and check that the UTXO sync and balance fetch is working correctly. Before we do that add one more method to generate a new address we can then use this address to get testnet coins from a faucet.
+We can use a public testnet faucet to send testnet coins to the wallet and check that the UTXO sync and balance fetch are working correctly. Before we do that add one more method to generate a new address we can then use this address to get testnet coins from a faucet.
 
 Let's add a state variable for `address`, a button for **Get Address** and a click event handler to call `bdk-rn` and create a new address. Let's do the following
 
@@ -565,7 +568,7 @@ We can now use our own mnemonic and use it to restore a wallet. This will come i
 
 We are now able to receive bitcoin, and add functionality to send as well.
 
-bdk-rn has a number of transaction-related methods to enable varied use cases. A new send transaction can be created and broadcast by one method call using [quickSend()](https://github.com/LtbLightning/bdk-rn#quicksend). If required an unsigned transaction can be created using [createTransaction()](https://github.com/LtbLightning/bdk-rn#createtransaction) , this can be signed later with [signTransactioin()](https://github.com/LtbLightning/bdk-rn#signtransaction) method and broadcast using [broadcastTransaction()](https://github.com/LtbLightning/bdk-rn#broadcasttransaction). There are also methods to query transactions by pending or confirmed status and all transactions. Please refer to bdk-rn [readme](https://github.com/LtbLightning/bdk-rn/blob/main/README.md#gettransactions) for more details on all the methods.
+bdk-rn has a number of transaction-related methods to enable varied use cases. A new send transaction can be created and broadcast by one method using [quickSend()](https://github.com/LtbLightning/bdk-rn#quicksend). If required an unsigned transaction can be created using [createTransaction()](https://github.com/LtbLightning/bdk-rn#createtransaction) , this can be signed later with [signTransactioin()](https://github.com/LtbLightning/bdk-rn#signtransaction) method and broadcast using [broadcastTransaction()](https://github.com/LtbLightning/bdk-rn#broadcasttransaction). There are also methods to query transactions by pending or confirmed status and all transactions. Please refer to bdk-rn [readme](https://github.com/LtbLightning/bdk-rn/blob/main/README.md#gettransactions) for more details on all the methods.
 
 We will need state variables for recipient address and amount as well as for transaction, these can be added below our existing variables for syncResponse and address
 
@@ -573,7 +576,7 @@ We will need state variables for recipient address and amount as well as for tra
   const [syncResponse, setSyncResponse] = useState();
   const [address, setAddress] = useState();
   const [transaction, setTransaction] = useState();
-  const [recipient, setRecepient] = useState('');
+  const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState();
 ```
 
@@ -590,7 +593,7 @@ A click event handler for send button, we will use the  [`quickSend()`](https://
   };
 ```
 
- Add a new section for send transaction functionality. We will need an input box for receiver address and an input box for amount to send. We will also need a button to trigger the transaction.
+ Add a new section for send transaction functionality. We will need an input box for the receiver address and an input box for the amount to send. We will also need a button to trigger the transaction.
 
 Let's add the send transaction section and UI components below `{/* input boxes and send transaction button */}`
 
@@ -600,8 +603,8 @@ Let's add the send transaction section and UI components below `{/* input boxes 
       <Fragment>
         <TextInput
           style={styles.input}
-          placeholder="Recepient Address"
-          onChangeText={setRecepient}
+          placeholder="Recipient Address"
+          onChangeText={setRecipient}
         />
         <TextInput
           style={styles.input}
@@ -635,21 +638,19 @@ bdk-rn intends to expose functionality and API from bdk which has a wide variety
 
 
 Stay tuned for more APIs and enhancements coming to bdk-rn in the near future. Feature and API requests are most welcome. New blogs and tutorials will be published soon for a more in-depth exploration of bdk-rn. 
-In the meantime keep in touch with the project on [GitHub](https://github.com/LtbLightning/bdk-rn) and [Twitter](https://twitter.com/BitcoinZavior).
+
+In the meantime keep in touch with the project by following  [GitHub](https://github.com/LtbLightning/bdk-rn) and [Twitter](https://twitter.com/BitcoinZavior)
+
+
 
 
 #### References:
 
 - [bdk](https://github.com/bitcoindevkit)
-
 - [bdk-rn](https://github.com/LtbLightning/bdk-rn)
-
-- [Awesome Bitcoin App GitHub Repository](https://github.com/LtbLightning/AwesomeBitcoinApp)
-
+- [Bitcoin Developers YouTube](https://www.youtube.com/watch?v=gMpWA875go4)
+- [BdkRnQuickStart App GitHub Repository](https://github.com/LtbLightning/BdkRnQuickStart)
 - [Setup React Native Development Environment](https://reactnative.dev/docs/environment-setup)
-
 - [Mastering Bitcoin(HD Wallet chapter)](https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch04.asciidoc)
-
 - [Bitcoin Output Descriptors from bitcoin GitHub](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md)
-
-- [Testnet Faucet]( https://coinfaucet.eu/en/btc-testnet/ or https://bitcoinfaucet.uo1.net/)
+- Testnet Faucet: [https://coinfaucet.eu/en/btc-testnet/](https://coinfaucet.eu/en/btc-testnet/) or [https://bitcoinfaucet.uo1.net](https://bitcoinfaucet.uo1.net)
