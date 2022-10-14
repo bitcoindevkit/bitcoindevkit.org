@@ -5534,6 +5534,69 @@
 <span id="5527">5527</span>
 <span id="5528">5528</span>
 <span id="5529">5529</span>
+<span id="5530">5530</span>
+<span id="5531">5531</span>
+<span id="5532">5532</span>
+<span id="5533">5533</span>
+<span id="5534">5534</span>
+<span id="5535">5535</span>
+<span id="5536">5536</span>
+<span id="5537">5537</span>
+<span id="5538">5538</span>
+<span id="5539">5539</span>
+<span id="5540">5540</span>
+<span id="5541">5541</span>
+<span id="5542">5542</span>
+<span id="5543">5543</span>
+<span id="5544">5544</span>
+<span id="5545">5545</span>
+<span id="5546">5546</span>
+<span id="5547">5547</span>
+<span id="5548">5548</span>
+<span id="5549">5549</span>
+<span id="5550">5550</span>
+<span id="5551">5551</span>
+<span id="5552">5552</span>
+<span id="5553">5553</span>
+<span id="5554">5554</span>
+<span id="5555">5555</span>
+<span id="5556">5556</span>
+<span id="5557">5557</span>
+<span id="5558">5558</span>
+<span id="5559">5559</span>
+<span id="5560">5560</span>
+<span id="5561">5561</span>
+<span id="5562">5562</span>
+<span id="5563">5563</span>
+<span id="5564">5564</span>
+<span id="5565">5565</span>
+<span id="5566">5566</span>
+<span id="5567">5567</span>
+<span id="5568">5568</span>
+<span id="5569">5569</span>
+<span id="5570">5570</span>
+<span id="5571">5571</span>
+<span id="5572">5572</span>
+<span id="5573">5573</span>
+<span id="5574">5574</span>
+<span id="5575">5575</span>
+<span id="5576">5576</span>
+<span id="5577">5577</span>
+<span id="5578">5578</span>
+<span id="5579">5579</span>
+<span id="5580">5580</span>
+<span id="5581">5581</span>
+<span id="5582">5582</span>
+<span id="5583">5583</span>
+<span id="5584">5584</span>
+<span id="5585">5585</span>
+<span id="5586">5586</span>
+<span id="5587">5587</span>
+<span id="5588">5588</span>
+<span id="5589">5589</span>
+<span id="5590">5590</span>
+<span id="5591">5591</span>
+<span id="5592">5592</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -6732,7 +6795,12 @@
         }
     }
 
-    <span class="doccomment">/// Try to finalize a PSBT</span>
+    <span class="doccomment">/// Finalize a PSBT, i.e., for each input determine if sufficient data is available to pass</span>
+    <span class="doccomment">/// validation and construct the respective `scriptSig` or `scriptWitness`. Please refer to</span>
+    <span class="doccomment">/// [BIP174](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki#Input_Finalizer)</span>
+    <span class="doccomment">/// for further information.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Returns `true` if the PSBT could be finalized, and `false` otherwise.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The [`SignOptions`] can be used to tweak the behavior of the finalizer.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">finalize_psbt</span>(
@@ -7373,7 +7441,7 @@
             .<span class="ident">to_string</span>()
             .<span class="ident">split_once</span>(<span class="string">&#39;#&#39;</span>)
             .<span class="ident">unwrap</span>()
-            .<span class="number">0</span>
+            .<span class="number">1</span>
             .<span class="ident">to_string</span>()
     }
 }
@@ -7468,6 +7536,22 @@
     <span class="comment">// Here, we push just once for simplicity, so we have to add an extra byte for the missing</span>
     <span class="comment">// OP_PUSH.</span>
     <span class="kw">const</span> <span class="ident">P2WPKH_FAKE_WITNESS_SIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">106</span>;
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_descriptor_checksum</span>() {
+        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
+        <span class="kw">let</span> <span class="ident">checksum</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">descriptor_checksum</span>(<span class="ident">KeychainKind::External</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">checksum</span>.<span class="ident">len</span>(), <span class="number">8</span>);
+
+        <span class="kw">let</span> <span class="ident">raw_descriptor</span> <span class="op">=</span> <span class="ident">wallet</span>
+            .<span class="ident">descriptor</span>
+            .<span class="ident">to_string</span>()
+            .<span class="ident">split_once</span>(<span class="string">&#39;#&#39;</span>)
+            .<span class="ident">unwrap</span>()
+            .<span class="number">0</span>
+            .<span class="ident">to_string</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">get_checksum</span>(<span class="kw-2">&amp;</span><span class="ident">raw_descriptor</span>).<span class="ident">unwrap</span>(), <span class="ident">checksum</span>);
+    }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_get_funded_wallet_balance</span>() {
@@ -7606,6 +7690,10 @@
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get_test_tr_with_taptree_xprv</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
         <span class="string">&quot;tr(cNJmN3fH9DDbDt131fQNkVakkpzawJBSeybCUNmP1BovpmGQ45xG,{pk(tprv8ZgxMBicQKsPdDArR4xSAECuVxeX1jwwSXR4ApKbkYgZiziDc4LdBy2WvJeGDfUSE4UT4hHhbgEwbdq8ajjUHiKDegkwrNU6V55CxcxonVN/*),pk(8aee2b8120a5f157f1223f72b5e62b825831a27a9fdf427db7cc697494d4a642)})&quot;</span>
+    }
+
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get_test_tr_dup_keys</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+        <span class="string">&quot;tr(cNJmN3fH9DDbDt131fQNkVakkpzawJBSeybCUNmP1BovpmGQ45xG,{pk(8aee2b8120a5f157f1223f72b5e62b825831a27a9fdf427db7cc697494d4a642),pk(8aee2b8120a5f157f1223f72b5e62b825831a27a9fdf427db7cc697494d4a642)})&quot;</span>
     }
 
     <span class="macro">macro_rules!</span> <span class="ident">assert_fee_rate</span> {
@@ -10496,6 +10584,29 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_taproot_sign_using_non_witness_utxo</span>() {
+        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="ident">prev_txid</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_tr_single_sig</span>());
+        <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
+        <span class="ident">builder</span>.<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>()).<span class="ident">drain_wallet</span>();
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
+
+        <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">witness_utxo</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+        <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">non_witness_utxo</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">database</span>().<span class="ident">get_raw_tx</span>(<span class="kw-2">&amp;</span><span class="ident">prev_txid</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert!</span>(
+            <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">non_witness_utxo</span>.<span class="ident">is_some</span>(),
+            <span class="string">&quot;Previous tx should be present in the database&quot;</span>
+        );
+
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;mut</span> <span class="ident">psbt</span>, <span class="ident">Default::default</span>());
+        <span class="macro">assert!</span>(<span class="ident">result</span>.<span class="ident">is_ok</span>(), <span class="string">&quot;Signing should have worked&quot;</span>);
+        <span class="macro">assert!</span>(
+            <span class="ident">result</span>.<span class="ident">unwrap</span>(),
+            <span class="string">&quot;Should finalize the input since we can produce signatures&quot;</span>
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_taproot_foreign_utxo</span>() {
         <span class="kw">let</span> (<span class="ident">wallet1</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="kw">let</span> (<span class="ident">wallet2</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_tr_single_sig</span>());
@@ -11061,6 +11172,21 @@
 
         <span class="kw">let</span> <span class="ident">finalized</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">sign</span>(<span class="kw-2">&amp;mut</span> <span class="ident">psbt</span>, <span class="ident">Default::default</span>()).<span class="ident">unwrap</span>();
         <span class="macro">assert!</span>(<span class="ident">finalized</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_taproot_load_descriptor_duplicated_keys</span>() {
+        <span class="comment">// Added after issue https://github.com/bitcoindevkit/bdk/issues/760</span>
+        <span class="comment">//</span>
+        <span class="comment">// Having the same key in multiple taproot leaves is safe and should be accepted by BDK</span>
+
+        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_tr_dup_keys</span>());
+        <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
+
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">addr</span>.<span class="ident">to_string</span>(),
+            <span class="string">&quot;bcrt1pvysh4nmh85ysrkpwtrr8q8gdadhgdejpy6f9v424a8v9htjxjhyqw9c5s5&quot;</span>
+        );
     }
 }
 </code></pre></div>
