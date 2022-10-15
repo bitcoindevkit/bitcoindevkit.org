@@ -1,6 +1,6 @@
 ---
 title: "BDK-RN: Building React Native Apps with BDK"
-description: "A guide to using bdk-rn for building bitcoin apps"
+description: "A tutorial and guide to using bdk-rn for building bitcoin apps"
 authors:
     - Bitcoin Zavior
 date: "2022-08-05"
@@ -629,9 +629,9 @@ We should now be able to send a transaction as long as there is sufficient balan
 
 ## Conclusion
 
-The App we created can be built and distributed for both iOS and Android thus sharing a code base and reducing development time. The development and coding focused on use cases and we did not have to code intricate internal bitcoin protocol level code nor bitcoin node interactions, transactions, UTXOs and sync-related functionalities were also not required. All this was managed by `bdk-rn` allowing us to focus on the product, functionality and user journey. This is how `bdk` and `bdk-rn` intend to make Rapid Bitcoin Application Development possible by allowing product and application developers to focus on what they know best while `bdk` handles bitcoin complexity.
+The App we created can be built and distributed for both iOS and Android thus sharing a code base and reducing development time. The development and coding focused on application-level code for use cases and we did not have to code intricate internal bitcoin protocol-level code or bitcoin node interactions, and transactions. UTXOs and sync-related functionalities were also not required. All this was managed by `bdk-rn` allowing us to focus on the product, functionality and user journey. This is how `bdk` and `bdk-rn` intend to make Rapid Bitcoin Application Development possible by allowing product and application developers to focus on what they know best while `bdk` handles bitcoin complexity.
 
-`bdk-rn` intends to expose functionality and API from `bdk` which has a wide variety of API with granular details allowing for many interesting use cases to be implemented. `bdk-rn` and `bdk` are constantly updated and enhanced based on feedback from product teams and developers in the bitcoin community.
+`bdk-rn` intends to expose functionality and APIs from `bdk` which has a wide variety of API with granular details allowing for many interesting use cases to be implemented. `bdk-rn` and `bdk` are constantly updated and enhanced based on feedback from product teams and developers in the bitcoin community.
 
 Stay tuned for more APIs and enhancements coming to `bdk-rn` in the near future. Feature and API requests are most welcome. New blogs and tutorials will be published soon for a more in-depth exploration of bdk-rn. 
 
