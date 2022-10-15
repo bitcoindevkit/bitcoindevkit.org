@@ -4,12 +4,12 @@ description: "A guide to using bdk-rn for building bitcoin apps"
 authors:
     - Bitcoin Zavior
 date: "2022-08-05"
-tags: ["bdk-rn", "bdk", "tutorial", "guide", "wallet"]
+tags: ["bitcoin", "React Native", "iOS", "Android", "mobile", "bdk-rn", "bdk", "tutorial", "guide", "wallet"]
 ---
 
 ## Introduction
 
-`bdk-rn` is the **Bitcoin Dev kit**'s **React Native** library which enables building bitcoin applications for Android and iOS mobile platforms. Using bdk-rn does not require knowledge of the underlying bitcoin or BDK API. Using `bdk-rn` is similar to using any other RN module. Just do `yarn add bdk-rn` and you are ready to code!  This is the first tutorial on how to use bdk-rn, more coming soon, make sure to [follow](https://twitter.com/BitcoinZavior?ref_src=twsrc%5Etfw) to be notified of new ones. In case you missed it, there is a recorded bdk-rn focused Twitch Livestream available on the [Bitcoin Developers](https://www.youtube.com/watch?v=gMpWA875go4) YouTube channel which covers most of this article, make sure to [subscribe](https://www.youtube.com/channel/UCUq_ZdezVWKPvkWRicAYxLA/videos) for more.
+`bdk-rn` is the **Bitcoin Dev kit**'s **React Native** library which enables building bitcoin applications for Android and iOS mobile platforms. Using `bdk-rn` does not require knowledge of the underlying bitcoin or BDK API. Using `bdk-rn` is similar to using any other RN module. Just do `yarn add bdk-rn` and you are ready to code!  This is the first tutorial on how to use `bdk-rn`, more coming soon, make sure to [follow](https://twitter.com/BitcoinZavior?ref_src=twsrc%5Etfw) to be notified of new ones. In case you missed it, there is a recorded `bdk-rn` focused Twitch Livestream available on the [Bitcoin Developers](https://www.youtube.com/watch?v=gMpWA875go4) YouTube channel which covers most of this article, make sure to subscribe to Bitcoin Developers [YouTube Channel](https://www.youtube.com/channel/UCUq_ZdezVWKPvkWRicAYxLA/videos) for more bitcoin development videos.
 
 In this tutorial, we will explore `bdk-rn` usage and the API it provides. This guide will walk through the development process and code for making a bitcoin application. The bitcoin application we create will be a non-custodial HD Wallet. The application will have the functionality to create a new wallet or restore from a known mnemonic seed phrase. This application will also be able to interact with the bitcoin network to sync UTXOs from new blocks and broadcast transactions.
 
@@ -20,7 +20,7 @@ The tutorial will focus on bitcoin and `bdk-rn` concepts and API. So it will glo
 
 ### Prerequisites
 
-In order to use bdk-rn in a React Native App, a React Native development environment is required. Please refer to resources out there on the internet if you need to set this up, here is one of many good resources to guide you on [environment setup](https://reactnative.dev/docs/environment-setup)
+In order to use `bdk-rn` in a React Native App, a React Native development environment is required. Please refer to resources out there on the internet if you need to set this up, here is one of many good resources to guide you on [environment setup](https://reactnative.dev/docs/environment-setup)
 
 ### Bitcoin Basics
 
@@ -202,7 +202,7 @@ We now have an app title section and a structure to hold the rest of our app com
 
 
 
-## Calling bdk-rn methods
+## Calling `bdk-rn` methods
 
 All `bdk-rn` methods return a JSON response with data and error properties. All methods return a  response as follows:
 
@@ -444,7 +444,7 @@ const response = await BdkRn.createWallet({
 
 Other arguments for `createWallet()` are:
 
-**blockChainName**: Blockchain backend to use, like [`electrum`](https://github.com/romanz/electrs), [`esplora`](https://github.com/Blockstream/esplora), `compact-filters` ([BIP157](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki)) and Bitcoin Core. bdk-rn at the moment doesn't support compact-filters and Bitcoin Core, this will be added shortly in a future release.
+**blockChainName**: Blockchain backend to use, like [`electrum`](https://github.com/romanz/electrs), [`esplora`](https://github.com/Blockstream/esplora), `compact-filters` ([BIP157](https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki)) and Bitcoin Core. `bdk-rn` at the moment doesn't support compact-filters and Bitcoin Core, this will be added shortly in a future release.
 
 **blockChainConfigUrl**: This is the url of the specified bitcoin node this should match the chain and the type of blockchain specified as **blockChainName**
 
@@ -568,7 +568,7 @@ We can now use our own mnemonic and use it to restore a wallet. This will come i
 
 We are now able to receive bitcoin, time to add functionality to send as well.
 
-`bdk-rn` has a number of transaction-related methods to enable varied use cases. A new send transaction can be created and broadcast using [quickSend()](https://github.com/LtbLightning/bdk-rn#quicksend). If required an unsigned transaction can be created using [createTransaction()](https://github.com/LtbLightning/bdk-rn#createtransaction) , this can be signed later with [signTransactioin()](https://github.com/LtbLightning/bdk-rn#signtransaction) method and broadcast using [broadcastTransaction()](https://github.com/LtbLightning/bdk-rn#broadcasttransaction). There are also methods to query transactions by pending or confirmed status and all transactions. Please refer to bdk-rn [readme](https://github.com/LtbLightning/bdk-rn/blob/main/README.md#gettransactions) for more details on all the methods.
+`bdk-rn` has a number of transaction-related methods to enable varied use cases. A new send transaction can be created and broadcast using [quickSend()](https://github.com/LtbLightning/bdk-rn#quicksend). If required an unsigned transaction can be created using [createTransaction()](https://github.com/LtbLightning/bdk-rn#createtransaction) , this can be signed later with [signTransactioin()](https://github.com/LtbLightning/bdk-rn#signtransaction) method and broadcast using [broadcastTransaction()](https://github.com/LtbLightning/bdk-rn#broadcasttransaction). There are also methods to query transactions by pending or confirmed status and all transactions. Please refer to `bdk-rn` [readme](https://github.com/LtbLightning/bdk-rn/blob/main/README.md#gettransactions) for more details on all the methods.
 
 We will need state variables for recipient address and amount as well as for transaction, these can be added below our existing variables for syncResponse and address
 
@@ -629,13 +629,13 @@ We should now be able to send a transaction as long as there is sufficient balan
 
 ## Conclusion
 
-The App we created can be built and distributed for both iOS and Android thus sharing a code base and reducing development time. The development and coding focused on use cases and we did not have to code intricate internal bitcoin protocol level code nor bitcoin node interactions, transaction, UTXO  and sync-related functionalities were also not required. All this was managed by `bdk-rn` allowing the us to focus on the product, functionality and user journey. This is how `bdk` and `bdk-rn` intend to make Rapid Bitcoin Application Development possible.
+The App we created can be built and distributed for both iOS and Android thus sharing a code base and reducing development time. The development and coding focused on use cases and we did not have to code intricate internal bitcoin protocol level code nor bitcoin node interactions, transactions, UTXOs and sync-related functionalities were also not required. All this was managed by `bdk-rn` allowing us to focus on the product, functionality and user journey. This is how `bdk` and `bdk-rn` intend to make Rapid Bitcoin Application Development possible by allowing product and application developers to focus on what they know best while `bdk` handles bitcoin complexity.
 
 `bdk-rn` intends to expose functionality and API from `bdk` which has a wide variety of API with granular details allowing for many interesting use cases to be implemented. `bdk-rn` and `bdk` are constantly updated and enhanced based on feedback from product teams and developers in the bitcoin community.
 
-Stay tuned for more APIs and enhancements coming to bdk-rn in the near future. Feature and API requests are most welcome. New blogs and tutorials will be published soon for a more in-depth exploration of bdk-rn. 
+Stay tuned for more APIs and enhancements coming to `bdk-rn` in the near future. Feature and API requests are most welcome. New blogs and tutorials will be published soon for a more in-depth exploration of bdk-rn. 
 
-In the meantime keep in touch with the project by following  [GitHub](https://github.com/LtbLightning/bdk-rn) and [Twitter](https://twitter.com/BitcoinZavior)
+In the meantime keep in touch with the project by following on  [GitHub](https://github.com/LtbLightning/bdk-rn) and [Twitter](https://twitter.com/BitcoinZavior)
 
 
 
