@@ -54,6 +54,7 @@ const tutorialSidebar = [
       '/tutorials/hidden-power-of-bitcoin',
       '/tutorials/descriptor_based_paper_wallet',
       '/tutorials/spending_policy_demo',
+      '/tutorials/exploring_bdk_rn',
       '/tutorials/getting_started_with_rust_hwi'
     ],
   }
