@@ -4,7 +4,7 @@ description: "A tutorial and guide to using bdk-flutter for building bitcoin app
 authors:
     - Bitcoin Zavior
 date: "2022-10-05"
-tags: ["bitcoin", "React Native", "Flutter", "iOS", "Android", "mobile", "bdk-rn", "bdk", "tutorial", "guide", "wallet"]
+tags: ["bitcoin", "React Native", "Flutter", "iOS", "Android", "mobile", "bdk-flutter", "bdk", "tutorial", "guide", "wallet"]
 ---
 
 ## Introduction
