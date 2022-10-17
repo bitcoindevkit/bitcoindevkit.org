@@ -71,7 +71,7 @@ Once done let's run a `get` command from the pub tool commands, this will get al
 flutter pub get
 ```
 
-To make this quick you can download the styles and images used in the tutorial from the repository. The image assets and `theme.dart` can be taken from [here](https://github.com/LtbLightning/bdk-flutter-quickstart/tree/main/lib) and moved to the folders as shown. Alternatively, you can write your own theme and use your own images if you intend to style the app in a different way.
+To make this quick you can download the styles and images used in the tutorial from the repository. The image assets and `theme.dart` can be taken from [here](https://github.com/LtbLightning/bdk-flutter-quickstart/tree/master/lib) and moved to the folders as shown. Alternatively, you can write your own theme and use your own images if you intend to style the app in a different way.
 
 Under `screens` create a `home.dart` file, this will be where most of the code of the code will be added. 
 
