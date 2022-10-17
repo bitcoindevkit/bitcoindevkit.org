@@ -1111,6 +1111,18 @@
 <span id="1104">1104</span>
 <span id="1105">1105</span>
 <span id="1106">1106</span>
+<span id="1107">1107</span>
+<span id="1108">1108</span>
+<span id="1109">1109</span>
+<span id="1110">1110</span>
+<span id="1111">1111</span>
+<span id="1112">1112</span>
+<span id="1113">1113</span>
+<span id="1114">1114</span>
+<span id="1115">1115</span>
+<span id="1116">1116</span>
+<span id="1117">1117</span>
+<span id="1118">1118</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -1585,6 +1597,7 @@
             <span class="ident">hash</span>,
             <span class="ident">hash_ty</span>,
             <span class="ident">secp</span>,
+            <span class="ident">sign_options</span>.<span class="ident">allow_grinding</span>,
         );
 
         <span class="prelude-val">Ok</span>(())
@@ -1598,9 +1611,14 @@
     <span class="ident">hash</span>: <span class="ident">bitcoin::Sighash</span>,
     <span class="ident">hash_ty</span>: <span class="ident">EcdsaSighashType</span>,
     <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>,
+    <span class="ident">allow_grinding</span>: <span class="ident">bool</span>,
 ) {
     <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">Message::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">hash</span>.<span class="ident">into_inner</span>()[..]).<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">sig</span> <span class="op">=</span> <span class="ident">secp</span>.<span class="ident">sign_ecdsa</span>(<span class="ident">msg</span>, <span class="ident">secret_key</span>);
+    <span class="kw">let</span> <span class="ident">sig</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">allow_grinding</span> {
+        <span class="ident">secp</span>.<span class="ident">sign_ecdsa_low_r</span>(<span class="ident">msg</span>, <span class="ident">secret_key</span>)
+    } <span class="kw">else</span> {
+        <span class="ident">secp</span>.<span class="ident">sign_ecdsa</span>(<span class="ident">msg</span>, <span class="ident">secret_key</span>)
+    };
     <span class="ident">secp</span>.<span class="ident">verify_ecdsa</span>(<span class="ident">msg</span>, <span class="kw-2">&amp;</span><span class="ident">sig</span>, <span class="kw-2">&amp;</span><span class="ident">pubkey</span>.<span class="ident">inner</span>)
         .<span class="ident">expect</span>(<span class="string">&quot;invalid or corrupted ecdsa signature&quot;</span>);
 
@@ -1831,6 +1849,11 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Defaults to `true`, i.e., we always try to sign with the taproot internal key.</span>
     <span class="kw">pub</span> <span class="ident">sign_with_tap_internal_key</span>: <span class="ident">bool</span>,
+
+    <span class="doccomment">/// Whether we should grind ECDSA signature to ensure signing with low r</span>
+    <span class="doccomment">/// or not.</span>
+    <span class="doccomment">/// Defaults to `true`, i.e., we always grind ECDSA signature to sign with low r.</span>
+    <span class="kw">pub</span> <span class="ident">allow_grinding</span>: <span class="ident">bool</span>,
 }
 
 <span class="doccomment">/// Customize which taproot script-path leaves the signer should sign.</span>
@@ -1864,6 +1887,7 @@
             <span class="ident">try_finalize</span>: <span class="bool-val">true</span>,
             <span class="ident">tap_leaves_options</span>: <span class="ident">TapLeavesOptions::default</span>(),
             <span class="ident">sign_with_tap_internal_key</span>: <span class="bool-val">true</span>,
+            <span class="ident">allow_grinding</span>: <span class="bool-val">true</span>,
         }
     }
 }
