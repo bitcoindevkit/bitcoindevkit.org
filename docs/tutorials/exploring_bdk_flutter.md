@@ -1,6 +1,6 @@
 ---
 title: "BDK-FLUTTER: Building Flutter Apps with BDK"
-description: "A tutorial and guide to using bdk-flutter for building bitcoin apps"
+description: "A tutorial and how to guide for using bdk-flutter for building bitcoin apps with Flutter"
 authors:
     - Bitcoin Zavior
 date: "2022-10-05"
@@ -9,7 +9,7 @@ tags: ["bitcoin", "React Native", "Flutter", "iOS", "Android", "mobile", "bdk-fl
 
 ## Introduction
 
-`bdk-flutter` is the **Bitcoin Dev kit**'s **Flutter** library which enables building bitcoin applications for Android and iOS mobile platforms. Using `bdk-flutter` does not require knowledge of the underlying bitcoin or BDK API. Using `bdk-flutter` is similar to using any other Flutter module. Just do `flutter pub add bdk_flutter` and you are ready to code!  This is the first tutorial on how to use `bdk-flutter`, more coming soon, make sure to [follow](https://twitter.com/BitcoinZavior) to be notified of new ones. There will also be a **`**bdk-flutter**`** focused Livestream on [Twitch](https://www.twitch.tv/bitcoindevelopers) and on the Bitcoin Developers [YouTube Channel](https://www.youtube.com/channel/UCUq_ZdezVWKPvkWRicAYxLA/videos) so make sure to subscribe.
+`bdk-flutter` is the **Bitcoin Dev kit**'s **Flutter** library which enables building bitcoin applications for Android and iOS mobile platforms. Using `bdk-flutter` does not require knowledge of the underlying bitcoin or BDK API. Using `bdk-flutter` is similar to using any other Flutter module. Just do `flutter pub add bdk_flutter` and you are ready to code!  This is the first tutorial on how to use `bdk-flutter`, more coming soon, make sure to [follow](https://twitter.com/BitcoinZavior) to be notified of new ones. There will also be a **bdk-flutter** focused Livestream on [Twitch](https://www.twitch.tv/bitcoindevelopers) and on the Bitcoin Developers [YouTube Channel](https://www.youtube.com/channel/UCUq_ZdezVWKPvkWRicAYxLA/videos) so make sure to subscribe.
 
 In this tutorial, we will explore `bdk-flutter` usage and the APIs it provides. This guide will walk through the development process and code for making a bitcoin application. The bitcoin application we create will be a non-custodial HD Wallet. The application will have the functionality to create a new wallet or restore from a known mnemonic seed phrase. This application will also be able to interact with the bitcoin network to sync UTXOs from new blocks and broadcast transactions.
 
@@ -33,7 +33,7 @@ Now let's jump into Bitcoin Dev Kit
 
 ## Bitcoin Dev Kit and bdk-flutter
 
-`**bdk-flutter**` is **Bitcoin Dev kit**'s **Flutter** library for building  **Flutter** Apps.
+**bdk-flutter** is **Bitcoin Dev kit**'s **Flutter** library for building  **Flutter** Apps.
 It encapsulates all of the low-level APIs and methods for BDK and exposes them in a  Flutter context. To use BDK in Flutter apps only the `bdk-flutter` module is required. `bdk-flutter` can be used like any other Flutter library and is available on [pub.dev](https://pub.dev/packages/bdk_flutter)
 
 ## Getting Started
@@ -489,7 +489,7 @@ The wallet created is a HD wallet and the address displayed is the 0 index addre
 
 As we specified `testnet` and did not specify `blockchainConfig` a default electrum server will be used as the bitcoin node, `ssl://electrum.blockstream.info` is the default bitcoin node url used for testnet.
 
-Using **`**mnemonic**`** is a quick way to create a new wallet with **`**bdk-flutter**`**. The **`**createWallet()**`** method in **`**bdk-flutter**`** has many optional arguments to configure the wallet. In addition to mnemonic, a wallet can also be created with a descriptor. If a descriptor is passed as an argument the wallet will be created using the descriptor. When using a descriptor, arguments for network, password and mnemonic are not required. **`**bdk-flutter**`** has a **`**createDescriptor()**`** method to create a descriptor. More about output descriptors [here](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md). Refer to the [readme](https://github.com/LtbLightning/bdk-flutter#createdescriptor) for all options available when creating output descriptors with **`**bdk-flutter**`**
+Using `mnemonic` is a quick way to create a new wallet with `bdk-flutter`. The `createWallet()` method in `bdk-flutter` has many optional arguments to configure the wallet. In addition to mnemonic, a wallet can also be created with a descriptor. If a descriptor is passed as an argument the wallet will be created using the descriptor. When using a descriptor, arguments for network, password and mnemonic are not required. `bdk-flutter` has a `createDescriptor()` method to create a descriptor. More about output descriptors [here](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md). Refer to the [readme](https://github.com/LtbLightning/bdk-flutter#createdescriptor) for all options available when creating output descriptors with `bdk-flutter`
 
 ```dart
 // using a descriptor to create wallet 
@@ -708,11 +708,11 @@ We should now be able to send a transaction as long as there is sufficient balan
 
 ## Conclusion
 
-The App we created can be built and distributed for both iOS and Android thus sharing a code base and reducing development time. The development and coding focused on application-level code for use cases and we did not have to code intricate internal bitcoin protocol-level code or bitcoin node interactions, and transactions. UTXOs and sync-related functionalities were also not required. All this was managed by **`**bdk-flutter**`** allowing us to focus on the product, functionality and user journey. This is how **`**bdk**`** and **`**bdk-flutter**`** intend to make Rapid Bitcoin Application Development possible by allowing product and application developers to focus on what they know best while **`**bdk**`** handles bitcoin complexity.
+The App we created can be built and distributed for both iOS and Android thus sharing a code base and reducing development time. The development and coding focused on application-level code for use cases and we did not have to code intricate internal bitcoin protocol-level code or bitcoin node interactions, and transactions. UTXOs and sync-related functionalities were also not required. All this was managed by `bdk-flutter` allowing us to focus on the product, functionality and user journey. This is how `bdk` and `bdk-flutter` intend to make Rapid Bitcoin Application Development possible by allowing product and application developers to focus on what they know best while `bdk` handles bitcoin complexity.
 
-**`**bdk-flutter**`** intends to expose functionality and APIs from **`**bdk**`** which has a wide variety of APIs with granular details allowing for many interesting use cases to be implemented. **`**bdk-flutter**`** and **`**bdk**`** are constantly updated and enhanced based on feedback from product teams and developers in the bitcoin community.
+`bdk-flutter` intends to expose functionality and APIs from `bdk` which has a wide variety of APIs with granular details allowing for many interesting use cases to be implemented. `bdk-flutter` and `bdk` are constantly updated and enhanced based on feedback from product teams and developers in the bitcoin community.
 
-Stay tuned for more APIs and enhancements coming to **`**bdk-flutter**`** in the near future. Feature and API requests are most welcome. New blogs and tutorials will be published soon for a more in-depth exploration of `bdk-flutter`. 
+Stay tuned for more APIs and enhancements coming to `bdk-flutter` in the near future. Feature and API requests are most welcome. New blogs and tutorials will be published soon for a more in-depth exploration of `bdk-flutter`. 
 
 In the meantime keep in touch with the project by following on  [GitHub](https://github.com/LtbLightning/bdk-flutter) and [Twitter](https://twitter.com/BitcoinZavior)
 
