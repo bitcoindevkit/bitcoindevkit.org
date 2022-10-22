@@ -5597,6 +5597,41 @@
 <span id="5590">5590</span>
 <span id="5591">5591</span>
 <span id="5592">5592</span>
+<span id="5593">5593</span>
+<span id="5594">5594</span>
+<span id="5595">5595</span>
+<span id="5596">5596</span>
+<span id="5597">5597</span>
+<span id="5598">5598</span>
+<span id="5599">5599</span>
+<span id="5600">5600</span>
+<span id="5601">5601</span>
+<span id="5602">5602</span>
+<span id="5603">5603</span>
+<span id="5604">5604</span>
+<span id="5605">5605</span>
+<span id="5606">5606</span>
+<span id="5607">5607</span>
+<span id="5608">5608</span>
+<span id="5609">5609</span>
+<span id="5610">5610</span>
+<span id="5611">5611</span>
+<span id="5612">5612</span>
+<span id="5613">5613</span>
+<span id="5614">5614</span>
+<span id="5615">5615</span>
+<span id="5616">5616</span>
+<span id="5617">5617</span>
+<span id="5618">5618</span>
+<span id="5619">5619</span>
+<span id="5620">5620</span>
+<span id="5621">5621</span>
+<span id="5622">5622</span>
+<span id="5623">5623</span>
+<span id="5624">5624</span>
+<span id="5625">5625</span>
+<span id="5626">5626</span>
+<span id="5627">5627</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -11123,6 +11158,7 @@
                     <span class="ident">SignOptions</span> {
                         <span class="ident">remove_partial_sigs</span>: <span class="bool-val">false</span>,
                         <span class="ident">try_finalize</span>: <span class="bool-val">false</span>,
+                        <span class="ident">allow_grinding</span>: <span class="bool-val">false</span>,
                         ..<span class="ident">Default::default</span>()
                     },
                 )
@@ -11137,11 +11173,45 @@
                 <span class="kw-2">&amp;mut</span> <span class="ident">psbt</span>,
                 <span class="ident">SignOptions</span> {
                     <span class="ident">remove_partial_sigs</span>: <span class="bool-val">false</span>,
+                    <span class="ident">allow_grinding</span>: <span class="bool-val">false</span>,
                     ..<span class="ident">Default::default</span>()
                 },
             )
             .<span class="ident">unwrap</span>();
         <span class="comment">// ...and checking that everything is fine</span>
+        <span class="macro">assert_fee_rate!</span>(<span class="ident">psbt</span>, <span class="ident">details</span>.<span class="ident">fee</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>), <span class="ident">fee_rate</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_fee_rate_sign_grinding_low_r</span>() {
+        <span class="comment">// Our goal is to obtain a transaction with a signature with low-R (70 bytes)</span>
+        <span class="comment">// by setting the `allow_grinding` signing option as true.</span>
+        <span class="comment">// We then check that our fee rate and fee calculation is alright and that our</span>
+        <span class="comment">// signature is 70 bytes.</span>
+        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="string">&quot;wpkh(tprv8ZgxMBicQKsPd3EupYiPRhaMooHKUHJxNsTfYuScep13go8QFfHdtkG9nRkFGb7busX4isf6X9dURGCoKgitaApQ6MupRhZMcELAxTBRJgS/*)&quot;</span>);
+        <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">New</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">fee_rate</span> <span class="op">=</span> <span class="ident">FeeRate::from_sat_per_vb</span>(<span class="number">1.0</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
+        <span class="ident">builder</span>
+            .<span class="ident">drain_to</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>())
+            .<span class="ident">drain_wallet</span>()
+            .<span class="ident">fee_rate</span>(<span class="ident">fee_rate</span>);
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">psbt</span>, <span class="ident">details</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
+
+        <span class="ident">wallet</span>
+            .<span class="ident">sign</span>(
+                <span class="kw-2">&amp;mut</span> <span class="ident">psbt</span>,
+                <span class="ident">SignOptions</span> {
+                    <span class="ident">remove_partial_sigs</span>: <span class="bool-val">false</span>,
+                    <span class="ident">allow_grinding</span>: <span class="bool-val">true</span>,
+                    ..<span class="ident">Default::default</span>()
+                },
+            )
+            .<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">partial_sigs</span>.<span class="ident">keys</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">sig_len</span> <span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>].<span class="ident">partial_sigs</span>[<span class="ident">key</span>].<span class="ident">sig</span>.<span class="ident">serialize_der</span>().<span class="ident">len</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">sig_len</span>, <span class="number">70</span>);
         <span class="macro">assert_fee_rate!</span>(<span class="ident">psbt</span>, <span class="ident">details</span>.<span class="ident">fee</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>), <span class="ident">fee_rate</span>);
     }
 
