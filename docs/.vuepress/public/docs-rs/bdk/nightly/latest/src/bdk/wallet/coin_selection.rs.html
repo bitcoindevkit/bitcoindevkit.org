@@ -1604,6 +1604,7 @@
 <span id="1597">1597</span>
 <span id="1598">1598</span>
 <span id="1599">1599</span>
+<span id="1600">1600</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -1916,7 +1917,7 @@
     <span class="kw">let</span> <span class="ident">drain_val</span> <span class="op">=</span> <span class="ident">remaining_amount</span>.<span class="ident">saturating_sub</span>(<span class="ident">change_fee</span>);
 
     <span class="kw">if</span> <span class="ident">drain_val</span>.<span class="ident">is_dust</span>(<span class="ident">drain_script</span>) {
-        <span class="kw">let</span> <span class="ident">dust_threshold</span> <span class="op">=</span> <span class="ident">drain_script</span>.<span class="ident">dust_value</span>().<span class="ident">as_sat</span>();
+        <span class="kw">let</span> <span class="ident">dust_threshold</span> <span class="op">=</span> <span class="ident">drain_script</span>.<span class="ident">dust_value</span>().<span class="ident">to_sat</span>();
         <span class="ident">Excess::NoChange</span> {
             <span class="ident">dust_threshold</span>,
             <span class="ident">change_fee</span>,
@@ -2441,7 +2442,7 @@
                     )
                     .<span class="ident">unwrap</span>(),
                     <span class="ident">txout</span>: <span class="ident">TxOut</span> {
-                        <span class="ident">value</span>: <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">0</span>, <span class="number">200000000</span>),
+                        <span class="ident">value</span>: <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">0</span>..<span class="number">200000000</span>),
                         <span class="ident">script_pubkey</span>: <span class="ident">Script::new</span>(),
                     },
                     <span class="ident">keychain</span>: <span class="ident">KeychainKind::External</span>,
@@ -2472,7 +2473,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">sum_random_utxos</span>(<span class="kw-2">mut</span> <span class="ident">rng</span>: <span class="kw-2">&amp;mut</span> <span class="ident">StdRng</span>, <span class="ident">utxos</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WeightedUtxo</span><span class="op">&gt;</span>) -&gt; <span class="ident">u64</span> {
-        <span class="kw">let</span> <span class="ident">utxos_picked_len</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">2</span>, <span class="ident">utxos</span>.<span class="ident">len</span>() <span class="op">/</span> <span class="number">2</span>);
+        <span class="kw">let</span> <span class="ident">utxos_picked_len</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">2</span>..<span class="ident">utxos</span>.<span class="ident">len</span>() <span class="op">/</span> <span class="number">2</span>);
         <span class="ident">utxos</span>.<span class="ident">shuffle</span>(<span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
         <span class="ident">utxos</span>[..<span class="ident">utxos_picked_len</span>]
             .<span class="ident">iter</span>()
@@ -2832,6 +2833,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="attribute">#[<span class="ident">ignore</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_bnb_coin_selection_required_not_enough</span>() {
         <span class="kw">let</span> <span class="ident">utxos</span> <span class="op">=</span> <span class="ident">get_test_utxos</span>();
         <span class="kw">let</span> <span class="ident">database</span> <span class="op">=</span> <span class="ident">MemoryDatabase::default</span>();

@@ -238,9 +238,6 @@
 <span id="231">231</span>
 <span id="232">232</span>
 <span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -344,25 +341,21 @@
 <span class="macro">macro_rules!</span> <span class="ident">testutils</span> {
     ( @<span class="ident">external</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">descriptors</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>:<span class="ident">expr</span> ) =&gt; ({
         <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::bitcoin::secp256k1::Secp256k1</span>;
-        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::miniscript::descriptor</span>::{<span class="ident">Descriptor</span>, <span class="ident">DescriptorPublicKey</span>, <span class="ident">DescriptorTrait</span>};
-
-        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::descriptor::AsDerived</span>;
+        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::miniscript::descriptor</span>::{<span class="ident">Descriptor</span>, <span class="ident">DescriptorPublicKey</span>};
 
         <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1::new</span>();
 
         <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">Descriptor</span>::<span class="op">&lt;</span><span class="ident">DescriptorPublicKey</span><span class="op">&gt;</span><span class="ident">::parse_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">descriptors</span>.<span class="number">0</span>).<span class="ident">expect</span>(<span class="string">&quot;Failed to parse descriptor in `testutils!(@external)`&quot;</span>).<span class="number">0</span>;
-        <span class="ident">parsed</span>.<span class="ident">as_derived</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>).<span class="ident">address</span>(<span class="ident">bitcoin::Network::Regtest</span>).<span class="ident">expect</span>(<span class="string">&quot;No address form&quot;</span>)
+        <span class="ident">parsed</span>.<span class="ident">at_derivation_index</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>).<span class="ident">address</span>(<span class="ident">bitcoin::Network::Regtest</span>).<span class="ident">expect</span>(<span class="string">&quot;No address form&quot;</span>)
     });
     ( @<span class="ident">internal</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">descriptors</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>:<span class="ident">expr</span> ) =&gt; ({
         <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::bitcoin::secp256k1::Secp256k1</span>;
-        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::miniscript::descriptor</span>::{<span class="ident">Descriptor</span>, <span class="ident">DescriptorPublicKey</span>, <span class="ident">DescriptorTrait</span>};
-
-        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::descriptor::AsDerived</span>;
+        <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::miniscript::descriptor</span>::{<span class="ident">Descriptor</span>, <span class="ident">DescriptorPublicKey</span>};
 
         <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1::new</span>();
 
         <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">Descriptor</span>::<span class="op">&lt;</span><span class="ident">DescriptorPublicKey</span><span class="op">&gt;</span><span class="ident">::parse_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">descriptors</span>.<span class="number">1</span>.<span class="ident">expect</span>(<span class="string">&quot;Missing internal descriptor&quot;</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to parse descriptor in `testutils!(@internal)`&quot;</span>).<span class="number">0</span>;
-        <span class="ident">parsed</span>.<span class="ident">as_derived</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>).<span class="ident">address</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::bitcoin::Network::Regtest</span>).<span class="ident">expect</span>(<span class="string">&quot;No address form&quot;</span>)
+        <span class="ident">parsed</span>.<span class="ident">at_derivation_index</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>).<span class="ident">address</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::bitcoin::Network::Regtest</span>).<span class="ident">expect</span>(<span class="string">&quot;No address form&quot;</span>)
     });
     ( @<span class="ident">e</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">descriptors</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>:<span class="ident">expr</span> ) =&gt; ({ <span class="macro">testutils!</span>(@<span class="ident">external</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">descriptors</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>) });
     ( @<span class="ident">i</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">descriptors</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>:<span class="ident">expr</span> ) =&gt; ({ <span class="macro">testutils!</span>(@<span class="ident">internal</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">descriptors</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>) });
@@ -429,49 +422,50 @@
     ( @<span class="ident">descriptors</span> ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">external_descriptor</span>:<span class="ident">expr</span> ) $( ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">internal_descriptor</span>:<span class="ident">expr</span> ) )<span class="question-mark">?</span> $( ( @<span class="ident">keys</span> $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">keys</span>:<span class="ident">tt</span> )<span class="op">*</span> ) )<span class="op">*</span> ) =&gt; ({
         <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
         <span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
+        <span class="kw">use</span> <span class="ident">std::convert::Infallible</span>;
+
         <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::miniscript::descriptor::Descriptor</span>;
         <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::miniscript::TranslatePk</span>;
 
+        <span class="kw">struct</span> <span class="ident">Translator</span> {
+            <span class="ident">keys</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, (<span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>)<span class="op">&gt;</span>,
+            <span class="ident">is_internal</span>: <span class="ident">bool</span>,
+        }
+
+        <span class="kw">impl</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::miniscript::Translator</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span>, <span class="ident">Infallible</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Translator</span> {
+            <span class="kw">fn</span> <span class="ident">pk</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">pk</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Infallible</span><span class="op">&gt;</span> {
+                <span class="kw">match</span> <span class="self">self</span>.<span class="ident">keys</span>.<span class="ident">get</span>(<span class="ident">pk</span>.<span class="ident">as_str</span>()) {
+                    <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="ident">ext_path</span>, <span class="ident">int_path</span>)) =&gt; {
+                        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_internal</span> { <span class="ident">int_path</span> } <span class="kw">else</span> { <span class="ident">ext_path</span> };
+                        <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">key</span>, <span class="ident">path</span>.<span class="ident">clone</span>().<span class="ident">unwrap_or_default</span>()))
+                    }
+                    <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">pk</span>.<span class="ident">clone</span>()),
+                }
+            }
+            <span class="kw">fn</span> <span class="ident">sha256</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">sha256</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Infallible</span><span class="op">&gt;</span> { <span class="prelude-val">Ok</span>(<span class="ident">sha256</span>.<span class="ident">clone</span>()) }
+            <span class="kw">fn</span> <span class="ident">hash256</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">hash256</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Infallible</span><span class="op">&gt;</span> { <span class="prelude-val">Ok</span>(<span class="ident">hash256</span>.<span class="ident">clone</span>()) }
+            <span class="kw">fn</span> <span class="ident">ripemd160</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">ripemd160</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Infallible</span><span class="op">&gt;</span> { <span class="prelude-val">Ok</span>(<span class="ident">ripemd160</span>.<span class="ident">clone</span>()) }
+            <span class="kw">fn</span> <span class="ident">hash160</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">hash160</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Infallible</span><span class="op">&gt;</span> { <span class="prelude-val">Ok</span>(<span class="ident">hash160</span>.<span class="ident">clone</span>()) }
+        }
+
         <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_assignments</span>, <span class="ident">unused_mut</span>)]</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">keys</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, (<span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">keys</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
         $(
             <span class="ident">keys</span> <span class="op">=</span> <span class="macro">testutils!</span>{ @<span class="ident">keys</span> $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">keys</span> )<span class="op">*</span> };
         )<span class="op">*</span>
 
-        <span class="kw">let</span> <span class="ident">external</span>: <span class="ident">Descriptor</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">FromStr::from_str</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">external_descriptor</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">external</span>: <span class="ident">Descriptor</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">external</span>.<span class="ident">translate_pk_infallible</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="op">|</span><span class="ident">k</span><span class="op">|</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="ident">ext_path</span>, <span class="kw">_</span>)) <span class="op">=</span> <span class="ident">keys</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">k</span>.<span class="ident">as_str</span>()) {
-                <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">key</span>, <span class="ident">ext_path</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="string">&quot;&quot;</span>.<span class="ident">into</span>()))
-            } <span class="kw">else</span> {
-                <span class="ident">k</span>.<span class="ident">clone</span>()
-            }
-        }, <span class="op">|</span><span class="ident">kh</span><span class="op">|</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="ident">ext_path</span>, <span class="kw">_</span>)) <span class="op">=</span> <span class="ident">keys</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">kh</span>.<span class="ident">as_str</span>()) {
-                <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">key</span>, <span class="ident">ext_path</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="string">&quot;&quot;</span>.<span class="ident">into</span>()))
-            } <span class="kw">else</span> {
-                <span class="ident">kh</span>.<span class="ident">clone</span>()
-            }
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">translator</span> <span class="op">=</span> <span class="ident">Translator</span> { <span class="ident">keys</span>, <span class="ident">is_internal</span>: <span class="bool-val">false</span> };
 
-        });
+        <span class="kw">let</span> <span class="ident">external</span>: <span class="ident">Descriptor</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">FromStr::from_str</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">external_descriptor</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">external</span> <span class="op">=</span> <span class="ident">external</span>.<span class="ident">translate_pk</span>(<span class="kw-2">&amp;mut</span> <span class="ident">translator</span>).<span class="ident">expect</span>(<span class="string">&quot;Infallible conversion&quot;</span>);
         <span class="kw">let</span> <span class="ident">external</span> <span class="op">=</span> <span class="ident">external</span>.<span class="ident">to_string</span>();
 
-        <span class="kw">let</span> <span class="ident">internal</span> <span class="op">=</span> <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>$(.<span class="ident">or</span>({
-            <span class="kw">let</span> <span class="ident">string_internal</span>: <span class="ident">Descriptor</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">FromStr::from_str</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">internal_descriptor</span>).<span class="ident">unwrap</span>();
+        <span class="ident">translator</span>.<span class="ident">is_internal</span> <span class="op">=</span> <span class="bool-val">true</span>;
 
-            <span class="kw">let</span> <span class="ident">string_internal</span>: <span class="ident">Descriptor</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">string_internal</span>.<span class="ident">translate_pk_infallible</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="op">|</span><span class="ident">k</span><span class="op">|</span> {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="kw">_</span>, <span class="ident">int_path</span>)) <span class="op">=</span> <span class="ident">keys</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">k</span>.<span class="ident">as_str</span>()) {
-                    <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">key</span>, <span class="ident">int_path</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="string">&quot;&quot;</span>.<span class="ident">into</span>()))
-                } <span class="kw">else</span> {
-                    <span class="ident">k</span>.<span class="ident">clone</span>()
-                }
-            }, <span class="op">|</span><span class="ident">kh</span><span class="op">|</span> {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="kw">_</span>, <span class="ident">int_path</span>)) <span class="op">=</span> <span class="ident">keys</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">kh</span>.<span class="ident">as_str</span>()) {
-                    <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">key</span>, <span class="ident">int_path</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="string">&quot;&quot;</span>.<span class="ident">into</span>()))
-                } <span class="kw">else</span> {
-                    <span class="ident">kh</span>.<span class="ident">clone</span>()
-                }
-            });
-            <span class="prelude-val">Some</span>(<span class="ident">string_internal</span>.<span class="ident">to_string</span>())
+        <span class="kw">let</span> <span class="ident">internal</span> <span class="op">=</span> <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>$(.<span class="ident">or</span>({
+            <span class="kw">let</span> <span class="ident">internal</span>: <span class="ident">Descriptor</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">FromStr::from_str</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">internal_descriptor</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">internal</span> <span class="op">=</span> <span class="ident">internal</span>.<span class="ident">translate_pk</span>(<span class="kw-2">&amp;mut</span> <span class="ident">translator</span>).<span class="ident">expect</span>(<span class="string">&quot;Infallible conversion&quot;</span>);
+            <span class="prelude-val">Some</span>(<span class="ident">internal</span>.<span class="ident">to_string</span>())
         }))<span class="question-mark">?</span>;
 
         (<span class="ident">external</span>, <span class="ident">internal</span>)

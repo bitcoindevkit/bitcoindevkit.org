@@ -972,9 +972,7 @@
 <span class="kw">use</span> <span class="ident">std::marker::PhantomData</span>;
 
 <span class="kw">use</span> <span class="ident">bitcoin::util::psbt</span>::{<span class="self">self</span>, <span class="ident">PartiallySignedTransaction</span> <span class="kw">as</span> <span class="ident">Psbt</span>};
-<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">OutPoint</span>, <span class="ident">Script</span>, <span class="ident">Transaction</span>};
-
-<span class="kw">use</span> <span class="ident">miniscript::descriptor::DescriptorTrait</span>;
+<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">LockTime</span>, <span class="ident">OutPoint</span>, <span class="ident">Script</span>, <span class="ident">Sequence</span>, <span class="ident">Transaction</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::coin_selection</span>::{<span class="ident">CoinSelectionAlgorithm</span>, <span class="ident">DefaultCoinSelectionAlgorithm</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">database::BatchDatabase</span>, <span class="ident">Error</span>, <span class="ident">Utxo</span>, <span class="ident">Wallet</span>};
@@ -1069,7 +1067,7 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">manually_selected_only</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">sighash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">psbt::PsbtSighashType</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">ordering</span>: <span class="ident">TxOrdering</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">locktime</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">locktime</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LockTime</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">rbf</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RbfValue</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">version</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Version</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">change_policy</span>: <span class="ident">ChangeSpendPolicy</span>,
@@ -1077,7 +1075,7 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">add_global_xpubs</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">include_output_redeem_witness_script</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">bumping_fee</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PreviousFee</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">current_height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">current_height</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LockTime</span><span class="op">&gt;</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">allow_dust</span>: <span class="ident">bool</span>,
 }
 
@@ -1356,7 +1354,7 @@
     <span class="doccomment">/// Use a specific nLockTime while creating the transaction</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This can cause conflicts if the wallet&#39;s descriptors contain an &quot;after&quot; (OP_CLTV) operator.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">nlocktime</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">locktime</span>: <span class="ident">u32</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">nlocktime</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">locktime</span>: <span class="ident">LockTime</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">locktime</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">locktime</span>);
         <span class="self">self</span>
     }
@@ -1471,7 +1469,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// If the `nsequence` is higher than `0xFFFFFFFD` an error will be thrown, since it would not</span>
     <span class="doccomment">/// be a valid nSequence to signal RBF.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_rbf_with_sequence</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">nsequence</span>: <span class="ident">u32</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_rbf_with_sequence</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">nsequence</span>: <span class="ident">Sequence</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">rbf</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">RbfValue::Value</span>(<span class="ident">nsequence</span>));
         <span class="self">self</span>
     }
@@ -1488,7 +1486,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// In both cases, if you don&#39;t provide a current height, we use the last sync height.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">current_height</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">height</span>: <span class="ident">u32</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">current_height</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">height</span>);
+        <span class="self">self</span>.<span class="ident">params</span>.<span class="ident">current_height</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">LockTime::from_height</span>(<span class="ident">height</span>).<span class="ident">expect</span>(<span class="string">&quot;Invalid height&quot;</span>));
         <span class="self">self</span>
     }
 
@@ -1633,7 +1631,7 @@
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">test</span>))]</span>
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::thread_rng</span>();
                 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::rngs::StdRng::seed_from_u64</span>(<span class="number">0</span>);
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">rand::rngs::StdRng::seed_from_u64</span>(<span class="number">12345</span>);
 
                 <span class="ident">tx</span>.<span class="ident">output</span>.<span class="ident">shuffle</span>(<span class="kw-2">&amp;mut</span> <span class="ident">rng</span>);
             }
@@ -1666,13 +1664,13 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Ord</span>, <span class="ident">PartialOrd</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Hash</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">RbfValue</span> {
     <span class="ident">Default</span>,
-    <span class="ident">Value</span>(<span class="ident">u32</span>),
+    <span class="ident">Value</span>(<span class="ident">Sequence</span>),
 }
 
 <span class="kw">impl</span> <span class="ident">RbfValue</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get_value</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u32</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get_value</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Sequence</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">RbfValue::Default</span> =&gt; <span class="number">0xFFFFFFFD</span>,
+            <span class="ident">RbfValue::Default</span> =&gt; <span class="ident">Sequence::ENABLE_RBF_NO_LOCKTIME</span>,
             <span class="ident">RbfValue::Value</span>(<span class="ident">v</span>) =&gt; <span class="kw-2">*</span><span class="ident">v</span>,
         }
     }
@@ -1788,10 +1786,12 @@
     }
 
     <span class="kw">fn</span> <span class="ident">get_test_utxos</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">LocalUtxo</span><span class="op">&gt;</span> {
+        <span class="kw">use</span> <span class="ident">bitcoin::hashes::Hash</span>;
+
         <span class="macro">vec!</span>[
             <span class="ident">LocalUtxo</span> {
                 <span class="ident">outpoint</span>: <span class="ident">OutPoint</span> {
-                    <span class="ident">txid</span>: <span class="ident">Default::default</span>(),
+                    <span class="ident">txid</span>: <span class="ident">bitcoin::Txid::from_inner</span>([<span class="number">0</span>; <span class="number">32</span>]),
                     <span class="ident">vout</span>: <span class="number">0</span>,
                 },
                 <span class="ident">txout</span>: <span class="ident">Default::default</span>(),
@@ -1800,7 +1800,7 @@
             },
             <span class="ident">LocalUtxo</span> {
                 <span class="ident">outpoint</span>: <span class="ident">OutPoint</span> {
-                    <span class="ident">txid</span>: <span class="ident">Default::default</span>(),
+                    <span class="ident">txid</span>: <span class="ident">bitcoin::Txid::from_inner</span>([<span class="number">0</span>; <span class="number">32</span>]),
                     <span class="ident">vout</span>: <span class="number">1</span>,
                 },
                 <span class="ident">txout</span>: <span class="ident">Default::default</span>(),
