@@ -771,10 +771,6 @@
 <span id="764">764</span>
 <span id="765">765</span>
 <span id="766">766</span>
-<span id="767">767</span>
-<span id="768">768</span>
-<span id="769">769</span>
-<span id="770">770</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -1245,12 +1241,10 @@
     <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
 
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::derived::AsDerived</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor</span>::{<span class="ident">DescriptorError</span>, <span class="ident">DescriptorMeta</span>};
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keys::ValidNetworks</span>;
     <span class="kw">use</span> <span class="ident">bitcoin::network::constants::Network::Regtest</span>;
-    <span class="kw">use</span> <span class="ident">bitcoin::secp256k1::Secp256k1</span>;
-    <span class="kw">use</span> <span class="ident">miniscript::descriptor</span>::{<span class="ident">DescriptorPublicKey</span>, <span class="ident">DescriptorTrait</span>, <span class="ident">KeyMap</span>};
+    <span class="kw">use</span> <span class="ident">miniscript::descriptor</span>::{<span class="ident">DescriptorPublicKey</span>, <span class="ident">KeyMap</span>};
     <span class="kw">use</span> <span class="ident">miniscript::Descriptor</span>;
 
     <span class="comment">// BIP44 `pkh(key/44&#39;/{0,1}&#39;/0&#39;/{0,1}/*)`</span>
@@ -1294,17 +1288,15 @@
         <span class="ident">is_fixed</span>: <span class="ident">bool</span>,
         <span class="ident">expected</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>],
     ) {
-        <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1::new</span>();
-
         <span class="kw">let</span> (<span class="ident">desc</span>, <span class="ident">_key_map</span>, <span class="ident">_networks</span>) <span class="op">=</span> <span class="ident">desc</span>.<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">desc</span>.<span class="ident">is_witness</span>(), <span class="ident">is_witness</span>);
-        <span class="macro">assert_eq!</span>(<span class="op">!</span><span class="ident">desc</span>.<span class="ident">is_deriveable</span>(), <span class="ident">is_fixed</span>);
+        <span class="macro">assert_eq!</span>(<span class="op">!</span><span class="ident">desc</span>.<span class="ident">has_wildcard</span>(), <span class="ident">is_fixed</span>);
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">expected</span>.<span class="ident">len</span>() {
             <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">u32</span>;
-            <span class="kw">let</span> <span class="ident">child_desc</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">desc</span>.<span class="ident">is_deriveable</span>() {
-                <span class="ident">desc</span>.<span class="ident">as_derived_fixed</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>)
+            <span class="kw">let</span> <span class="ident">child_desc</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">desc</span>.<span class="ident">has_wildcard</span>() {
+                <span class="ident">desc</span>.<span class="ident">at_derivation_index</span>(<span class="number">0</span>)
             } <span class="kw">else</span> {
-                <span class="ident">desc</span>.<span class="ident">as_derived</span>(<span class="ident">index</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>)
+                <span class="ident">desc</span>.<span class="ident">at_derivation_index</span>(<span class="ident">index</span>)
             };
             <span class="kw">let</span> <span class="ident">address</span> <span class="op">=</span> <span class="ident">child_desc</span>.<span class="ident">address</span>(<span class="ident">Regtest</span>).<span class="ident">unwrap</span>();
             <span class="macro">assert_eq!</span>(<span class="ident">address</span>.<span class="ident">to_string</span>(), <span class="kw-2">*</span><span class="ident">expected</span>.<span class="ident">get</span>(<span class="ident">i</span>).<span class="ident">unwrap</span>());

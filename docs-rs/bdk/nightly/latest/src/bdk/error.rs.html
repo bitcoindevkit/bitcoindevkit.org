@@ -247,6 +247,14 @@
 <span id="240">240</span>
 <span id="241">241</span>
 <span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -261,7 +269,7 @@
 <span class="kw">use</span> <span class="ident">std::fmt</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::bitcoin::Network</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">descriptor</span>, <span class="ident">wallet</span>, <span class="ident">wallet::address_validator</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">descriptor</span>, <span class="ident">wallet</span>};
 <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">OutPoint</span>, <span class="ident">Txid</span>};
 
 <span class="doccomment">/// Errors that can be thrown by the [`Wallet`](crate::wallet::Wallet)</span>
@@ -348,12 +356,12 @@
 
     <span class="doccomment">/// Error related to the parsing and usage of descriptors</span>
     <span class="ident">Descriptor</span>(<span class="ident"><span class="kw">crate</span>::descriptor::error::Error</span>),
-    <span class="doccomment">/// Error that can be returned to fail the validation of an address</span>
-    <span class="ident">AddressValidator</span>(<span class="ident"><span class="kw">crate</span>::wallet::address_validator::AddressValidatorError</span>),
     <span class="doccomment">/// Encoding error</span>
     <span class="ident">Encode</span>(<span class="ident">bitcoin::consensus::encode::Error</span>),
     <span class="doccomment">/// Miniscript error</span>
     <span class="ident">Miniscript</span>(<span class="ident">miniscript::Error</span>),
+    <span class="doccomment">/// Miniscript PSBT error</span>
+    <span class="ident">MiniscriptPsbt</span>(<span class="ident">MiniscriptPsbtError</span>),
     <span class="doccomment">/// BIP32 error</span>
     <span class="ident">Bip32</span>(<span class="ident">bitcoin::util::bip32::Error</span>),
     <span class="doccomment">/// An ECDSA error</span>
@@ -398,6 +406,14 @@
     <span class="ident">Rusqlite</span>(<span class="ident">rusqlite::Error</span>),
 }
 
+<span class="doccomment">/// Errors returned by miniscript when updating inconsistent PSBTs</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">MiniscriptPsbtError</span> {
+    <span class="ident">Conversion</span>(<span class="ident">miniscript::descriptor::ConversionError</span>),
+    <span class="ident">UtxoUpdate</span>(<span class="ident">miniscript::psbt::UtxoUpdateError</span>),
+    <span class="ident">OutputUpdate</span>(<span class="ident">miniscript::psbt::OutputUpdateError</span>),
+}
+
 <span class="doccomment">/// Represents the last failed [`crate::blockchain::WalletSync`] sync attempt in which we were short</span>
 <span class="doccomment">/// on cached `scriptPubKey`s.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
@@ -430,7 +446,6 @@
 }
 
 <span class="macro">impl_error!</span>(<span class="ident">descriptor::error::Error</span>, <span class="ident">Descriptor</span>);
-<span class="macro">impl_error!</span>(<span class="ident">address_validator::AddressValidatorError</span>, <span class="ident">AddressValidator</span>);
 <span class="macro">impl_error!</span>(<span class="ident">descriptor::policy::PolicyError</span>, <span class="ident">InvalidPolicyPathError</span>);
 <span class="macro">impl_error!</span>(<span class="ident">wallet::signer::SignerError</span>, <span class="ident">Signer</span>);
 
@@ -447,6 +462,7 @@
 
 <span class="macro">impl_error!</span>(<span class="ident">bitcoin::consensus::encode::Error</span>, <span class="ident">Encode</span>);
 <span class="macro">impl_error!</span>(<span class="ident">miniscript::Error</span>, <span class="ident">Miniscript</span>);
+<span class="macro">impl_error!</span>(<span class="ident">MiniscriptPsbtError</span>, <span class="ident">MiniscriptPsbt</span>);
 <span class="macro">impl_error!</span>(<span class="ident">bitcoin::util::bip32::Error</span>, <span class="ident">Bip32</span>);
 <span class="macro">impl_error!</span>(<span class="ident">bitcoin::secp256k1::Error</span>, <span class="ident">Secp256k1</span>);
 <span class="macro">impl_error!</span>(<span class="ident">serde_json::Error</span>, <span class="ident">Json</span>);
