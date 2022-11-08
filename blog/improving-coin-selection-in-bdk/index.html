@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Improving coin selection in BDK | Bitcoin Dev Kit Documentation</title>
+    <meta name="generator" content="VuePress 1.9.7">
+    <link rel="preload" href="/fonts/ibm-plex-mono-400.woff2" as="font" crossorigin="true">
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link name="msapplication-config" content="/browserconfig.xml">
+    <link name="msapplication-TileColor" content="#ffffff">
+    <link name="theme-color" content="#ffffff">
+    <meta name="description" content="A brief description of the work done in the coin selection module in BDK during Summer of Bitcoin 2022">
+    <meta property="article:published_time" content="2022-08-17T00:00:00.000Z">
+    <meta property="og:site_name" content="Bitcoin Dev Kit Documentation">
+    <meta property="og:title" content="Improving coin selection in BDK">
+    <meta property="og:description" content="A brief description of the work done in the coin selection module in BDK during Summer of Bitcoin 2022">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://bitcoindevkit.org/_blog/improving_coin_selection_in_BDK/">
+    <meta property="og:image" content="https://bitcoindevkit.org/card.png">
+    <meta name="twitter:title" content="Improving coin selection in BDK">
+    <meta name="twitter:description" content="A brief description of the work done in the coin selection module in BDK during Summer of Bitcoin 2022">
+    <meta name="twitter:url" content="https://bitcoindevkit.org/_blog/improving_coin_selection_in_BDK/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:image" content="https://bitcoindevkit.org/card.png">
+    <meta name="twitter:label2" content="Filed under">
+    <meta name="twitter:data2" content="coin selection, BDK, development, summer of bitcoin">
+    <meta property="article:tag" content="coin selection">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    
+    <link rel="preload" href="/assets/css/0.styles.5522b66b.css" as="style"><link rel="preload" href="/assets/js/app.e6dd7e6a.js" as="script"><link rel="preload" href="/assets/js/8.ad6d42e3.js" as="script"><link rel="preload" href="/assets/js/1.2e1eea68.js" as="script"><link rel="preload" href="/assets/js/25.a1d8bd0d.js" as="script"><link rel="prefetch" href="/assets/js/10.2c083324.js"><link rel="prefetch" href="/assets/js/11.f7cd811c.js"><link rel="prefetch" href="/assets/js/12.0011179f.js"><link rel="prefetch" href="/assets/js/13.b0ce0b72.js"><link rel="prefetch" href="/assets/js/14.60b1238e.js"><link rel="prefetch" href="/assets/js/15.d3587424.js"><link rel="prefetch" href="/assets/js/16.4b1106af.js"><link rel="prefetch" href="/assets/js/17.332b10dc.js"><link rel="prefetch" href="/assets/js/18.e561b6d2.js"><link rel="prefetch" href="/assets/js/19.f371f1e7.js"><link rel="prefetch" href="/assets/js/20.2b1bf0c5.js"><link rel="prefetch" href="/assets/js/21.a3b7d87d.js"><link rel="prefetch" href="/assets/js/22.7914f825.js"><link rel="prefetch" href="/assets/js/23.2d24994a.js"><link rel="prefetch" href="/assets/js/24.a5987c74.js"><link rel="prefetch" href="/assets/js/26.1621ad40.js"><link rel="prefetch" href="/assets/js/27.6dbfa865.js"><link rel="prefetch" href="/assets/js/28.ae038e26.js"><link rel="prefetch" href="/assets/js/29.8ba2cb85.js"><link rel="prefetch" href="/assets/js/30.62c6d433.js"><link rel="prefetch" href="/assets/js/31.d919b5af.js"><link rel="prefetch" href="/assets/js/32.a3e38db7.js"><link rel="prefetch" href="/assets/js/33.2b0199a6.js"><link rel="prefetch" href="/assets/js/34.5455b505.js"><link rel="prefetch" href="/assets/js/35.ec4cf7f0.js"><link rel="prefetch" href="/assets/js/36.1f2e8b8d.js"><link rel="prefetch" href="/assets/js/37.cc2da979.js"><link rel="prefetch" href="/assets/js/38.a2895dad.js"><link rel="prefetch" href="/assets/js/39.541cf282.js"><link rel="prefetch" href="/assets/js/40.09f928fe.js"><link rel="prefetch" href="/assets/js/41.86dfe4dc.js"><link rel="prefetch" href="/assets/js/42.115d5d95.js"><link rel="prefetch" href="/assets/js/43.00cbf408.js"><link rel="prefetch" href="/assets/js/44.e95a5d91.js"><link rel="prefetch" href="/assets/js/45.916aed02.js"><link rel="prefetch" href="/assets/js/46.77f0f013.js"><link rel="prefetch" href="/assets/js/47.8375d1c9.js"><link rel="prefetch" href="/assets/js/48.f59959c6.js"><link rel="prefetch" href="/assets/js/49.e7194bc5.js"><link rel="prefetch" href="/assets/js/5.06e92c41.js"><link rel="prefetch" href="/assets/js/50.25f2eed9.js"><link rel="prefetch" href="/assets/js/51.017d0cdf.js"><link rel="prefetch" href="/assets/js/52.79881a12.js"><link rel="prefetch" href="/assets/js/53.dbcc01c7.js"><link rel="prefetch" href="/assets/js/54.7b765922.js"><link rel="prefetch" href="/assets/js/55.bb11a5bb.js"><link rel="prefetch" href="/assets/js/6.4f0e29df.js"><link rel="prefetch" href="/assets/js/7.4cf88d66.js"><link rel="prefetch" href="/assets/js/9.e360c80b.js"><link rel="prefetch" href="/assets/js/vendors~docsearch.567a400b.js"><link rel="prefetch" href="/assets/js/vuejs-paginate.e2882327.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.5522b66b.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container" data-v-9ca807bc data-v-5a6fa056><header class="navbar" data-v-9ca807bc><div class="wrap"><div class="wrap-border"><a href="/" class="home-link router-link-active"><svg role="img" alt="Bitcoin Dev Kit Documentation" class="logo"><use href="/img/logo.svg#small" class="small"></use> <use href="/img/logo.svg#large" class="large"></use></svg></a> <div class="links"><nav class="nav-links can-hide"><div class="nav-item"><a href="/getting-started/" class="nav-link">
+  Docs
+</a></div><div class="nav-item"><a href="/tutorials/hello-world.html" class="nav-link">
+  Tutorials
+</a></div><div class="nav-item"><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div><div class="nav-item"><a href="https://discord.gg/dstn4dQ" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Discord
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div class="nav-item"><a href="https://github.com/bitcoindevkit" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <a href="https://github.com/bitcoindevkit/bitcoindevkit.org" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav> <div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <button type="button" class="theme-switch"><svg viewBox="0 0 30 31" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="theme-switch-dark"><path d="M15 20.4219C12.5187 20.4219 10.5 18.4032 10.5 15.9219C10.5 13.4406 12.5187 11.4219 15 11.4219C17.4813 11.4219 19.5 13.4406 19.5 15.9219C19.5 18.4032 17.4813 20.4219 15 20.4219Z" fill="currentColor"></path> <path d="M19.4541 20.3769L21.3644 22.2862M15 24.9219V22.2219V24.9219ZM15 9.62187V6.92188V9.62187ZM6 15.9219H8.7H6ZM21.3 15.9219H24H21.3ZM8.6361 22.2862L10.5454 20.3769L8.6361 22.2862ZM19.4541 11.4678L21.3644 9.55797L19.4541 11.4678ZM8.6361 9.55797L10.5454 11.4678L8.6361 9.55797Z" stroke="currentColor" stroke-width="1" stroke-linecap="round"></path></g> <g fill="currentColor" class="theme-switch-light"><path d="M10.1539 8.75585C10.018 8.75585 9.88774 8.70189 9.79168 8.60583C9.69563 8.50977 9.64166 8.37949 9.64166 8.24365V6.19482C9.64166 6.05898 9.69563 5.9287 9.79168 5.83264C9.88774 5.73658 10.018 5.68262 10.1539 5.68262C10.2897 5.68262 10.42 5.73658 10.5161 5.83264C10.6121 5.9287 10.6661 6.05898 10.6661 6.19482V8.24365C10.6661 8.37949 10.6121 8.50977 10.5161 8.60583C10.42 8.70189 10.2897 8.75585 10.1539 8.75585Z"></path> <path d="M11.1783 7.73144H9.12945C8.9936 7.73144 8.86332 7.67748 8.76726 7.58142C8.6712 7.48536 8.61724 7.35508 8.61724 7.21924C8.61724 7.08339 8.6712 6.95311 8.76726 6.85705C8.86332 6.761 8.9936 6.70703 9.12945 6.70703H11.1783C11.3141 6.70703 11.4444 6.761 11.5405 6.85705C11.6365 6.95311 11.6905 7.08339 11.6905 7.21924C11.6905 7.35508 11.6365 7.48536 11.5405 7.58142C11.4444 7.67748 11.3141 7.73144 11.1783 7.73144ZM6.05621 13.8779C5.92037 13.8779 5.79009 13.8239 5.69403 13.7279C5.59797 13.6318 5.54401 13.5015 5.54401 13.3657V12.3413C5.54401 12.2054 5.59797 12.0752 5.69403 11.9791C5.79009 11.8831 5.92037 11.8291 6.05621 11.8291C6.19206 11.8291 6.32234 11.8831 6.4184 11.9791C6.51445 12.0752 6.56842 12.2054 6.56842 12.3413V13.3657C6.56842 13.5015 6.51445 13.6318 6.4184 13.7279C6.32234 13.8239 6.19206 13.8779 6.05621 13.8779Z"></path> <path d="M6.56842 13.366H5.544C5.40816 13.366 5.27788 13.312 5.18182 13.216C5.08576 13.1199 5.0318 12.9896 5.0318 12.8538C5.0318 12.7179 5.08576 12.5877 5.18182 12.4916C5.27788 12.3955 5.40816 12.3416 5.544 12.3416H6.56842C6.70426 12.3416 6.83454 12.3955 6.9306 12.4916C7.02666 12.5877 7.08062 12.7179 7.08062 12.8538C7.08062 12.9896 7.02666 13.1199 6.9306 13.216C6.83454 13.312 6.70426 13.366 6.56842 13.366ZM16.8125 23.6101C12.8583 23.6101 9.64165 20.3934 9.64165 16.4392C9.64165 12.8983 12.2851 9.85021 15.7907 9.34876L16.4658 9.25195L16.37 9.92755C16.326 10.218 16.3027 10.5112 16.3003 10.805C16.3003 14.1942 19.0575 16.9514 22.4468 16.9514C22.708 16.9514 22.9872 16.9294 23.3247 16.8813L23.9998 16.7855L23.9035 17.4606C23.401 20.9666 20.3524 23.6101 16.8125 23.6101Z"></path></g></svg></button></div> <div class="sidebar-button"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" class="icon"><g fill="currentColor" class="hamburger"><path d="M33.75 11.6699H6.25C5.55964 11.6699 5 12.2296 5 12.9199C5 13.6103 5.55964 14.1699 6.25 14.1699H33.75C34.4404 14.1699 35 13.6103 35 12.9199C35 12.2296 34.4404 11.6699 33.75 11.6699Z"></path> <path d="M28.75 18.752H6.25C5.55964 18.752 5 19.3116 5 20.002C5 20.6923 5.55964 21.252 6.25 21.252H28.75C29.4404 21.252 30 20.6923 30 20.002C30 19.3116 29.4404 18.752 28.75 18.752Z"></path> <path d="M33.75 25.8301H6.25C5.55964 25.8301 5 26.3897 5 27.0801C5 27.7704 5.55964 28.3301 6.25 28.3301H33.75C34.4404 28.3301 35 27.7704 35 27.0801C35 26.3897 34.4404 25.8301 33.75 25.8301Z"></path></g> <g stroke="currentColor" class="close"><path d="M10 10L30 30" stroke-width="2" stroke-linecap="round"></path> <path d="M30 10L10 30" stroke-width="2" stroke-linecap="round"></path></g></svg></div></div></div></header> <div class="wrap" data-v-9ca807bc><div class="wrap-border" data-v-9ca807bc><div class="sidebar-mask" data-v-9ca807bc></div> <aside class="sidebar" data-v-9ca807bc><nav class="nav-links"><div class="nav-item"><a href="/getting-started/" class="nav-link">
+  Docs
+</a></div><div class="nav-item"><a href="/tutorials/hello-world.html" class="nav-link">
+  Tutorials
+</a></div><div class="nav-item"><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div><div class="nav-item"><a href="https://discord.gg/dstn4dQ" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Discord
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div class="nav-item"><a href="https://github.com/bitcoindevkit" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <a href="https://github.com/bitcoindevkit/bitcoindevkit.org" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav>  <ul class="sidebar-links"><li><section class="sidebar-group depth-0"><p class="sidebar-heading open"><span>Blog</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/blog/" aria-current="page" class="sidebar-link">Articles</a></li><li><a href="/blog/tags/" class="sidebar-link">Tags</a></li><li><a href="/blog/author/" class="sidebar-link">Authors</a></li></ul></section></li></ul> </aside> <main class="page" data-v-5a6fa056><header class="theme-default-content post-header" data-v-5a6fa056><h1 data-v-5a6fa056>Improving coin selection in BDK</h1> <p class="meta" data-v-070abed8 data-v-5a6fa056>
+  By
+
+  <span data-v-070abed8><a href="/blog/author/César Alvarez Vallero" class="meta-link" data-v-070abed8>César Alvarez Vallero</a><!----></span>
+
+  on
+
+  8/18/2022
+
+  - Tags:
+
+  <span data-v-070abed8><a href="/blog/tags/coin selection" class="meta-link" data-v-070abed8>Coin selection</a>, </span><span data-v-070abed8><a href="/blog/tags/BDK" class="meta-link" data-v-070abed8>BDK</a>, </span><span data-v-070abed8><a href="/blog/tags/development" class="meta-link" data-v-070abed8>Development</a>, </span><span data-v-070abed8><a href="/blog/tags/summer of bitcoin" class="meta-link" data-v-070abed8>Summer of bitcoin</a><!----></span></p> <hr data-v-5a6fa056></header> <div class="theme-default-content content__default"><p>As a project designed to be used as a build tool in wallet development, one of
+the main things that BDK provides is the coin selection module. The purpose of
+the module is to select the group of utxos to use as inputs for the transaction.
+When you coin select you must consider cost, size and traceability.</p> <ul><li><p>What are those costs?</p> <p>Principally fees determined by the satisfaction size required by each of the
+inputs. But the costs are also related to the change outputs generated.
+Change outputs are not part of the inputs, but they must be considered during
+coin selection because they affect the fee rate of the transaction and will
+be used in future transactions as inputs.
+For example, if you always create change outputs when you have some excess
+after coin selecting, you'll probably end up with very small UTXOs. The
+smaller the UTXO, the greater the proportion of fees spend to use that UTXO,
+depending on the fee rate.</p></li> <li><p>What do we mean by &quot;size&quot; considerations?</p> <p>Here we are not referring to the size in MB of the transaction, as that is
+addressed by the associated fees.
+Here, &quot;size&quot; is the number of new UTXOs created by each transaction. It has a
+direct impact on the size of the UTXO set maintained by each node.</p></li> <li><p>What is this traceability thing?</p> <p>Certain companies sell services whose purpose is to link address with their
+owners, harming the fungibility of some bitcoins and attacking the privacy of
+the users.
+There are some things that coin selection can do to make privacy leaking
+harder. For example, not creating change outputs, avoiding mixing UTXOs
+belonging to different owned addresses in the same transaction, or the total
+expenditure of the related utxos.</p></li></ul> <p>Besides the algorithm you use to coin select, which can target some of the
+things described above, other code changes also have implications for them. The
+following section will describe some of those changes and why they have been
+done or could be added.</p> <h2 id="waste"><a href="#waste" class="header-anchor">#</a> Waste</h2> <p>One of my project changes for the <code>coin_selection</code> module is the addition of
+the <code>Waste</code> metric, and its use to optimize the coin selection in relation to
+the fee costs.</p> <p>Waste is a metric introduced by the BnB algorithm as part of its bounding
+procedure. Later, it was included as a high-level function to use in comparison
+of different coin selection algorithms in Bitcoin Core.</p> <h3 id="how-it-works"><a href="#how-it-works" class="header-anchor">#</a> How it works?</h3> <p>We can describe waste as the sum of two values: creation cost and timing cost.</p> <p>Timing cost is the cost associated with the current fee rate and some long-term
+fee rate used as a threshold to consolidate UTXOs. It can be negative if the
+current fee rate is cheaper than the long-term fee rate or zero if they are
+equal.</p> <p>Creation cost is the cost associated with the surplus of coins besides the
+transaction amount and transaction fees. It can happen in the form of a change
+output or excessive fees paid to the miner.
+Change cost derives from the cost of adding the extra output to the transaction
+and spending it in the future.
+Excess happens when there is no change, and the surplus of coins is spent as
+part of the fees to the miner.</p> <p>The creation cost can be zero if there is a perfect match as a result of the
+coin selection algorithm.</p> <p>So, waste can be zero or negative if the creation cost is zero and the timing
+cost is less than or equal to zero</p> <p>You can read about the technical details in <a href="https://github.com/bitcoindevkit/bdk/pull/558" target="_blank" rel="noopener noreferrer">bdk PR 558<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>. Comments and suggestions are
+welcome!</p> <p>But, while developing the proposal, some requirements to resolve first arose.
+Let's talk about them.</p> <h3 id="what-has-been-done"><a href="#what-has-been-done" class="header-anchor">#</a> What has been done</h3> <p>Waste is closely related to the creation of change or the drop of it as fees.
+Formerly, whether your selection would produce change or not, was decided
+inside the <code>create_tx</code> function. From the perspective of the Waste metric, that
+was problematic. How to score coin selection based on <code>Waste</code> if you don't know
+yet if it will create change or not?</p> <p>The problem had been pointed out before, in <a href="https://github.com/bitcoindevkit/bdk/issues/147" target="_blank" rel="noopener noreferrer">this issue<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>.</p> <p>The <a href="https://github.com/bitcoindevkit/bdk/pull/630" target="_blank" rel="noopener noreferrer">bdk PR 630<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> merged in <a href="https://github.com/bitcoindevkit/bdk/releases/tag/v0.21.0" target="_blank" rel="noopener noreferrer">release 0.21.0<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> moved change creation to the
+<code>coin_selection</code> module. It introduced several changes:</p> <ul><li>the enum <code>Excess</code>.</li> <li>the function <code>decide_change</code>.</li> <li>a new field in <code>CoinSelectionResult</code> to hold the <code>Excess</code> produced while coin
+selecting.</li></ul> <p>We hope to have chosen meaningful names for all these new additions, but lets
+explain them in depth.</p> <p>Formerly, when you needed to create change inside <code>create_tx</code>, you must get the
+weight of the change output, compute its fees and, jointly with the overall
+fee amount and the outgoing amount, subtract them from the remaining amount of
+the selected utxos, then decide whether the amount of that output should be
+considered dust, and throw the remaining amount to fees in that case. Otherwise
+add an extra output to the output list and sum their fees to the fee amount.
+Also, there was the case when you wanted to sweep all the funds associated with
+an address, but the amount created a dust output. In that situation, the dust
+value of the output and the amount available after deducing the fees were
+necessary to report an informative error to the user.</p> <p>In general, the idea was to compute all those values inside <code>coin_selection</code>
+but keep the decision logic where it was meaningful, that is, inside
+<code>create_tx</code>.</p> <p>Those considerations ended up with an enum, <code>Excess</code>, with two struct variants
+that differentiated the cases mentioned above, which carry all the needed
+information to act in each one of those cases.</p> <div class="language-rust extra-class"><pre class="language-rust"><code><span class="token comment">/// Remaining amount after performing coin selection</span>
+<span class="token keyword">pub</span> <span class="token keyword">enum</span> <span class="token type-definition class-name">Excess</span> <span class="token punctuation">{</span>
+    <span class="token comment">/// It's not possible to create spendable output from excess using the current drain output</span>
+    <span class="token class-name">NoChange</span> <span class="token punctuation">{</span>
+        <span class="token comment">/// Threshold to consider amount as dust for this particular change script_pubkey</span>
+        dust_threshold<span class="token punctuation">:</span> <span class="token keyword">u64</span><span class="token punctuation">,</span>
+        <span class="token comment">/// Exceeding amount of current selection over outgoing value and fee costs</span>
+        remaining_amount<span class="token punctuation">:</span> <span class="token keyword">u64</span><span class="token punctuation">,</span>
+        <span class="token comment">/// The calculated fee for the drain TxOut with the selected script_pubkey</span>
+        change_fee<span class="token punctuation">:</span> <span class="token keyword">u64</span><span class="token punctuation">,</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token comment">/// It's possible to create spendable output from excess using the current drain output</span>
+    <span class="token class-name">Change</span> <span class="token punctuation">{</span>
+        <span class="token comment">/// Effective amount available to create change after deducting the change output fee</span>
+        amount<span class="token punctuation">:</span> <span class="token keyword">u64</span><span class="token punctuation">,</span>
+        <span class="token comment">/// The deducted change output fee</span>
+        fee<span class="token punctuation">:</span> <span class="token keyword">u64</span><span class="token punctuation">,</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p>The function <code>decide_change</code> was created to build <code>Excess</code>. This function
+requires the remaining amount after coin selection, the script that will be
+used to create the output and the fee rate aimed by the user.</p> <div class="language-rust extra-class"><pre class="language-rust"><code><span class="token comment">/// Decide if change can be created</span>
+<span class="token comment">///</span>
+<span class="token comment">/// - `remaining_amount`: the amount in which the selected coins exceed the target amount</span>
+<span class="token comment">/// - `fee_rate`: required fee rate for the current selection</span>
+<span class="token comment">/// - `drain_script`: script to consider change creation</span>
+<span class="token keyword">pub</span> <span class="token keyword">fn</span> <span class="token function-definition function">decide_change</span><span class="token punctuation">(</span>remaining_amount<span class="token punctuation">:</span> <span class="token keyword">u64</span><span class="token punctuation">,</span> fee_rate<span class="token punctuation">:</span> <span class="token class-name">FeeRate</span><span class="token punctuation">,</span> drain_script<span class="token punctuation">:</span> <span class="token operator">&amp;</span><span class="token class-name">Script</span><span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token class-name">Excess</span> <span class="token punctuation">{</span>
+    <span class="token comment">// drain_output_len = size(len(script_pubkey)) + len(script_pubkey) + size(output_value)</span>
+    <span class="token keyword">let</span> drain_output_len <span class="token operator">=</span> <span class="token function">serialize</span><span class="token punctuation">(</span>drain_script<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">len</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">8usize</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> change_fee <span class="token operator">=</span> fee_rate<span class="token punctuation">.</span><span class="token function">fee_vb</span><span class="token punctuation">(</span>drain_output_len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">let</span> drain_val <span class="token operator">=</span> remaining_amount<span class="token punctuation">.</span><span class="token function">saturating_sub</span><span class="token punctuation">(</span>change_fee<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> drain_val<span class="token punctuation">.</span><span class="token function">is_dust</span><span class="token punctuation">(</span>drain_script<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">let</span> dust_threshold <span class="token operator">=</span> drain_script<span class="token punctuation">.</span><span class="token function">dust_value</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">as_sat</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Excess</span><span class="token punctuation">::</span><span class="token class-name">NoChange</span> <span class="token punctuation">{</span>
+            dust_threshold<span class="token punctuation">,</span>
+            change_fee<span class="token punctuation">,</span>
+            remaining_amount<span class="token punctuation">,</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span> <span class="token keyword">else</span> <span class="token punctuation">{</span>
+        <span class="token class-name">Excess</span><span class="token punctuation">::</span><span class="token class-name">Change</span> <span class="token punctuation">{</span>
+            amount<span class="token punctuation">:</span> drain_val<span class="token punctuation">,</span>
+            fee<span class="token punctuation">:</span> change_fee<span class="token punctuation">,</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre></div><p>To pass this new value to <code>Wallet::create_tx</code> and make decisions based on it,
+the field <code>excess</code> was added to the <code>CoinSelectionResult</code>, and the
+<code>coin_select</code> methods of each algorithm were adapted to compute this value,
+using <code>decide_change</code> after performing the coin selection.</p> <div class="language-rust extra-class"><pre class="language-rust"><code><span class="token comment">/// Result of a successful coin selection</span>
+<span class="token keyword">pub</span> <span class="token keyword">struct</span> <span class="token type-definition class-name">CoinSelectionResult</span> <span class="token punctuation">{</span>
+    <span class="token comment">/// List of outputs selected for use as inputs</span>
+    <span class="token keyword">pub</span> selected<span class="token punctuation">:</span> <span class="token class-name">Vec</span><span class="token operator">&lt;</span><span class="token class-name">Utxo</span><span class="token operator">&gt;</span><span class="token punctuation">,</span>
+    <span class="token comment">/// Total fee amount for the selected utxos in satoshis</span>
+    <span class="token keyword">pub</span> fee_amount<span class="token punctuation">:</span> <span class="token keyword">u64</span><span class="token punctuation">,</span>
+    <span class="token comment">/// Remaining amount after deducing fees and outgoing outputs</span>
+    <span class="token keyword">pub</span> excess<span class="token punctuation">:</span> <span class="token class-name">Excess</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span>
+</code></pre></div><h3 id="work-in-progress"><a href="#work-in-progress" class="header-anchor">#</a> Work in progress</h3> <p>There remains unresolved the work to integrate the <code>Waste::calculate</code> method
+with the <code>CoinSelectionAlgorithm</code> implementations and the <code>decide_change</code>
+function.</p> <p>A step towards that goal would be the removal of the Database generic parameter
+from the <code>CoinSelectionAlgorithm</code> trait. There isn't a clear way to make it, as
+you may guess by this
+<a href="https://github.com/bitcoindevkit/bdk/issues/281" target="_blank" rel="noopener noreferrer">issue<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>.
+The only algorithm currently using the database features is
+<code>OldestFirstCoinSelection</code>.
+There is a proposal to fix this problem by removing the need for a database
+trait altogether, so, in the meanwhile, we could move the generic from the
+trait to the <code>OldestFirstCoinSelection</code>, to avoid doing work that will probably
+be disposed in the future.</p> <p>Another step in that direction is a proposal to add a
+<code>CoinSelectionAlgorithm::process_and_select_coins</code> wrapper to the coin
+selection module, which will join together preprocessing and validation of the
+utxos, coin selection, the decision to create change and the calculus of waste
+in the same function. The idea is to create a real pipeline to build a
+<code>CoinSelectionResult</code>.</p> <p>In addition, the function will allow the separation of the algorithms
+<code>BranchAndBound</code> and <code>SingleRandomDraw</code> from each other, which were put
+together only by the dependence of the former on the second one as a fallback
+method.
+That dependence will not be broken, but the possibility to use
+<code>SingleRandomDraw</code> through BDK will be enabled, expanding the flexibility of
+the library.</p> <p>As a bonus, this function will save some parts of the code from unnecessary
+information, avoid code duplication (and all the things associated with it) and
+provide a simple interface to integrate your custom algorithms with all the
+other functionalities of the BDK library, enhancing them through the new change
+primitives and the computation of <code>Waste</code>.</p> <p>You can start reviewing <a href="https://github.com/bitcoindevkit/bdk/pull/727" target="_blank" rel="noopener noreferrer">bdk PR 727<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> right now!</p> <h2 id="further-improvements"><a href="#further-improvements" class="header-anchor">#</a> Further Improvements</h2> <p>Besides the <code>Waste</code> metric, there are other changes that could improve the
+current state of the coin selection module in BDK, which will impact the
+privacy and the flexibility provided by it.</p> <h3 id="privacy"><a href="#privacy" class="header-anchor">#</a> Privacy</h3> <p>In Bitcoin Core, the term <code>Output Group</code> is associated with a structure that
+joins all the UTXOs belonging to a certain ScriptPubKey, up to a specified
+threshold. The idea behind this is to reduce the address footprint in the
+blockchain, reducing traceability and improving privacy.
+In BDK, OutputGroups are a mere way to aggregate metadata to UTXOs. But this
+structure can be improved to something like what there is in Bitcoin, by
+transforming the weighted utxos into a vector of them and adding a new field or
+parameter to control the amount stored in the vector.</p> <h3 id="flexibility"><a href="#flexibility" class="header-anchor">#</a> Flexibility</h3> <p>A further tweak in the UTXO structure could be the transition to traits, which
+define the minimal properties accepted by the algorithms to select the
+underlying UTXOs.
+The hope is that anyone can define new algorithms consuming any form of UTXO
+wrapper that you can imagine, as long as they follow the behavior specified by
+those primitive traits.</p> <p>Also, there is a major architectural change proposal called <code>bdk_core</code> that
+will refactor a lot of sections of BDK to improve its modularity and
+flexibility. If you want to know more, you can read the
+<a href="https://bitcoindevkit.org/blog/bdk-core-pt1/" target="_blank" rel="noopener noreferrer">blog post<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> about it or dig
+directly into its <a href="https://github.com/LLFourn/bdk_core_staging" target="_blank" rel="noopener noreferrer">prototype<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>.</p> <h2 id="conclusion"><a href="#conclusion" class="header-anchor">#</a> Conclusion</h2> <p>A lot of work is coming to the coin selection module of BDK.
+Adding the <code>Waste</code> metric will be a great step in the improvement of the coin
+selection features of the kit, and we hope to find new ways to measure the
+selection capabilities. We are open to new ideas!
+The new changes range from refactorings to enhancements. It's not hard to find
+something to do in the project, as long as you spend some time figuring out how
+the thing works. Hopefully, these new changes will make this task easier. And
+we are ready to help anyone who needs it.
+If you would like to improve something, request a new feature or discuss how
+you would use BDK in your personal project, join us on
+<a href="https://discord.gg/dstn4dQ" target="_blank" rel="noopener noreferrer">Discord<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>.</p> <h2 id="acknowledgements"><a href="#acknowledgements" class="header-anchor">#</a> Acknowledgements</h2> <p>Special thanks to my mentor <a href="https://github.com/danielabrozzoni" target="_blank" rel="noopener noreferrer">Daniela Brozzoni<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> for the support and help provided
+during the development of the above work, and to <a href="https://github.com/notmandatory" target="_blank" rel="noopener noreferrer">Steve Myers<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>,
+for the final review of this article.</p> <p>Thanks to all BDK contributors for their reviews and comments and thanks to the
+Bitcoin community for the open source work that made this an enjoyable learning
+experience.</p> <p>Finally, thanks to the <a href="https://www.summerofbitcoin.org/" target="_blank" rel="noopener noreferrer">Summer of Bitcoin<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a> organizers, sponsors and speakers for
+the wonderful initiative, and all the guide provided.</p> <h2 id="references"><a href="#references" class="header-anchor">#</a> References</h2> <h3 id="about-coin-selection-considerations"><a href="#about-coin-selection-considerations" class="header-anchor">#</a> About coin selection considerations</h3> <ul><li>Jameson Lopp. &quot;The Challenges of Optimizing Unspent Output Selection&quot;
+<em>Cypherpunk Cogitations</em>.
+<a href="https://blog.lopp.net/the-challenges-of-optimizing-unspent-output-selection/" target="_blank" rel="noopener noreferrer">https://blog.lopp.net/the-challenges-of-optimizing-unspent-output-selection/<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul> <h3 id="about-waste-metric"><a href="#about-waste-metric" class="header-anchor">#</a> About Waste metric</h3> <ul><li>Murch. &quot;What is the Waste Metric?&quot; <em>Murch ado about nothing</em>.
+<a href="https://murch.one/posts/waste-metric/" target="_blank" rel="noopener noreferrer">https://murch.one/posts/waste-metric/<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li> <li>Andrew Chow. &quot;wallet: Decide which coin selection solution to use based on
+waste metric&quot; <em>Bitcoin Core</em>. <a href="https://github.com/bitcoin/bitcoin/pull/22009" target="_blank" rel="noopener noreferrer">https://github.com/bitcoin/bitcoin/pull/22009<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li> <li>Bitcoin Core PR Review Club. &quot;Decide which coin selection solution to use
+based on waste metric&quot;. <em>Bitcoin Core PR Review Club</em>.
+<a href="https://bitcoincore.reviews/22009" target="_blank" rel="noopener noreferrer">https://bitcoincore.reviews/22009<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul> <h3 id="about-improving-privacy-in-coin-selection"><a href="#about-improving-privacy-in-coin-selection" class="header-anchor">#</a> About improving privacy in coin selection</h3> <ul><li>Josi Bake. &quot;wallet: avoid mixing different OutputTypes during coin selection&quot;
+<em>Bitcoin Core</em>. <a href="https://github.com/bitcoin/bitcoin/pull/24584" target="_blank" rel="noopener noreferrer">https://github.com/bitcoin/bitcoin/pull/24584<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li> <li>Bitcoin Core PR Review Club. &quot;Increase OUTPUT_GROUP_MAX_ENTRIES to 100&quot;
+<em>Bitcoin Core PR Review Club</em>. <a href="https://bitcoincore.reviews/18418" target="_blank" rel="noopener noreferrer">https://bitcoincore.reviews/18418<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li> <li>Bitcoin Core PR Review Club. &quot;Avoid mixing different <code>OutputTypes</code> during
+coin selection&quot; <em>Bitcoin Core PR Review Club</em>.
+<a href="https://bitcoincore.reviews/24584" target="_blank" rel="noopener noreferrer">https://bitcoincore.reviews/24584<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul> <h3 id="about-bdk-core"><a href="#about-bdk-core" class="header-anchor">#</a> About <code>bdk_core</code></h3> <ul><li>Lloyd Fournier. &quot;bdk_core: a new architecture for the Bitcoin Dev Kit&quot;.
+<em>bitcoindevkit blog</em>. <a href="https://bitcoindevkit.org/blog/bdk-core-pt1/" target="_blank" rel="noopener noreferrer">https://bitcoindevkit.org/blog/bdk-core-pt1/<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></li></ul></div> <footer class="page-edit"><div class="edit-link"><a href="https://github.com/bitcoindevkit/bitcoindevkit.org/edit/master/docs/_blog/improving_coin_selection_in_BDK.md" target="_blank" rel="noopener noreferrer">Edit this page</a> <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></div> <div class="last-updated"><span class="prefix">Last Updated:</span> <span class="time">11/8/2022, 9:16:42 PM</span></div></footer> <!----> </main></div></div> <footer class="footer" data-v-9ca807bc><div class="wrap"><div class="wrap-border"><div class="inner"><div class="footer-content"><div class="footer-block"><h4>Docs</h4> <div><a href="/getting-started/" class="nav-link">
+  Getting Started
+</a></div><div><a href="/bdk-cli/installation/" class="nav-link">
+  BDK-CLI
+</a></div><div><a href="/descriptors/" class="nav-link">
+  Descriptors
+</a></div></div><div class="footer-block"><h4>Community</h4> <div><a href="https://github.com/bitcoindevkit" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  GitHub
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div><a href="https://twitter.com/intent/follow?screen_name=bitcoindevkit" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Twitter
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div><div><a href="https://discord.gg/dstn4dQ" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Chat on Discord
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div></div><div class="footer-block"><h4>More</h4> <div><a href="/blog/" class="nav-link router-link-active">
+  Blog
+</a></div><div><a href="/supporters/" class="nav-link">
+  Supporters
+</a></div></div></div> <p class="copyright">Copyright © 2022 BDK Developers</p></div></div></div></footer></div><div class="global-ui"></div></div>
+    <script src="/assets/js/app.e6dd7e6a.js" defer></script><script src="/assets/js/8.ad6d42e3.js" defer></script><script src="/assets/js/1.2e1eea68.js" defer></script><script src="/assets/js/25.a1d8bd0d.js" defer></script>
+  </body>
+</html>
