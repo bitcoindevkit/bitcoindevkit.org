@@ -28,6 +28,7 @@ const docsSidebar = [
         ]
       },
       '/descriptors/',
+      '/examples/',
     ]
   },
   {
