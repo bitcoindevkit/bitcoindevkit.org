@@ -5590,48 +5590,6 @@
 <span id="5583">5583</span>
 <span id="5584">5584</span>
 <span id="5585">5585</span>
-<span id="5586">5586</span>
-<span id="5587">5587</span>
-<span id="5588">5588</span>
-<span id="5589">5589</span>
-<span id="5590">5590</span>
-<span id="5591">5591</span>
-<span id="5592">5592</span>
-<span id="5593">5593</span>
-<span id="5594">5594</span>
-<span id="5595">5595</span>
-<span id="5596">5596</span>
-<span id="5597">5597</span>
-<span id="5598">5598</span>
-<span id="5599">5599</span>
-<span id="5600">5600</span>
-<span id="5601">5601</span>
-<span id="5602">5602</span>
-<span id="5603">5603</span>
-<span id="5604">5604</span>
-<span id="5605">5605</span>
-<span id="5606">5606</span>
-<span id="5607">5607</span>
-<span id="5608">5608</span>
-<span id="5609">5609</span>
-<span id="5610">5610</span>
-<span id="5611">5611</span>
-<span id="5612">5612</span>
-<span id="5613">5613</span>
-<span id="5614">5614</span>
-<span id="5615">5615</span>
-<span id="5616">5616</span>
-<span id="5617">5617</span>
-<span id="5618">5618</span>
-<span id="5619">5619</span>
-<span id="5620">5620</span>
-<span id="5621">5621</span>
-<span id="5622">5622</span>
-<span id="5623">5623</span>
-<span id="5624">5624</span>
-<span id="5625">5625</span>
-<span id="5626">5626</span>
-<span id="5627">5627</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -5658,20 +5616,17 @@
 <span class="kw">use</span> <span class="ident">bitcoin::secp256k1::Secp256k1</span>;
 
 <span class="kw">use</span> <span class="ident">bitcoin::consensus::encode::serialize</span>;
-<span class="kw">use</span> <span class="ident">bitcoin::util</span>::{<span class="ident">psbt</span>, <span class="ident">taproot</span>};
+<span class="kw">use</span> <span class="ident">bitcoin::util::psbt</span>;
 <span class="kw">use</span> <span class="ident">bitcoin</span>::{
-    <span class="ident">Address</span>, <span class="ident">EcdsaSighashType</span>, <span class="ident">Network</span>, <span class="ident">OutPoint</span>, <span class="ident">SchnorrSighashType</span>, <span class="ident">Script</span>, <span class="ident">Transaction</span>, <span class="ident">TxOut</span>,
-    <span class="ident">Txid</span>, <span class="ident">Witness</span>,
+    <span class="ident">Address</span>, <span class="ident">EcdsaSighashType</span>, <span class="ident">LockTime</span>, <span class="ident">Network</span>, <span class="ident">OutPoint</span>, <span class="ident">SchnorrSighashType</span>, <span class="ident">Script</span>, <span class="ident">Sequence</span>,
+    <span class="ident">Transaction</span>, <span class="ident">TxOut</span>, <span class="ident">Txid</span>, <span class="ident">Witness</span>,
 };
 
-<span class="kw">use</span> <span class="ident">miniscript::descriptor::DescriptorTrait</span>;
-<span class="kw">use</span> <span class="ident">miniscript::psbt::PsbtInputSatisfier</span>;
-<span class="kw">use</span> <span class="ident">miniscript::ToPublicKey</span>;
+<span class="kw">use</span> <span class="ident">miniscript::psbt</span>::{<span class="ident">PsbtExt</span>, <span class="ident">PsbtInputExt</span>, <span class="ident">PsbtInputSatisfier</span>};
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
 <span class="kw">use</span> <span class="ident">log</span>::{<span class="ident">debug</span>, <span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">trace</span>};
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">address_validator</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">coin_selection</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">export</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">signer</span>;
@@ -5688,24 +5643,21 @@
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">utils::IsDust</span>;
 
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">deprecated</span>)]</span>
-<span class="kw">use</span> <span class="ident">address_validator::AddressValidator</span>;
 <span class="kw">use</span> <span class="ident">coin_selection::DefaultCoinSelectionAlgorithm</span>;
 <span class="kw">use</span> <span class="ident">signer</span>::{<span class="ident">SignOptions</span>, <span class="ident">SignerOrdering</span>, <span class="ident">SignersContainer</span>, <span class="ident">TransactionSigner</span>};
 <span class="kw">use</span> <span class="ident">tx_builder</span>::{<span class="ident">BumpFee</span>, <span class="ident">CreateTx</span>, <span class="ident">FeePolicy</span>, <span class="ident">TxBuilder</span>, <span class="ident">TxParams</span>};
-<span class="kw">use</span> <span class="ident">utils</span>::{<span class="ident">check_nlocktime</span>, <span class="ident">check_nsequence_rbf</span>, <span class="ident">After</span>, <span class="ident">Older</span>, <span class="ident">SecpCtx</span>};
+<span class="kw">use</span> <span class="ident">utils</span>::{<span class="ident">check_nsequence_rbf</span>, <span class="ident">After</span>, <span class="ident">Older</span>, <span class="ident">SecpCtx</span>};
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::blockchain</span>::{<span class="ident">GetHeight</span>, <span class="ident">NoopProgress</span>, <span class="ident">Progress</span>, <span class="ident">WalletSync</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::memory::MemoryDatabase</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database</span>::{<span class="ident">AnyDatabase</span>, <span class="ident">BatchDatabase</span>, <span class="ident">BatchOperations</span>, <span class="ident">DatabaseUtils</span>, <span class="ident">SyncTime</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::derived::AsDerived</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::checksum::calc_checksum_bytes_internal</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::policy::BuildSatisfaction</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor</span>::{
-    <span class="ident">get_checksum</span>, <span class="ident">into_wallet_descriptor_checked</span>, <span class="ident">DerivedDescriptor</span>, <span class="ident">DerivedDescriptorMeta</span>,
-    <span class="ident">DescriptorMeta</span>, <span class="ident">DescriptorScripts</span>, <span class="ident">ExtendedDescriptor</span>, <span class="ident">ExtractPolicy</span>, <span class="ident">IntoWalletDescriptor</span>,
-    <span class="ident">Policy</span>, <span class="ident">XKeyUtils</span>,
+    <span class="ident">calc_checksum</span>, <span class="ident">into_wallet_descriptor_checked</span>, <span class="ident">DerivedDescriptor</span>, <span class="ident">DescriptorMeta</span>,
+    <span class="ident">ExtendedDescriptor</span>, <span class="ident">ExtractPolicy</span>, <span class="ident">IntoWalletDescriptor</span>, <span class="ident">Policy</span>, <span class="ident">XKeyUtils</span>,
 };
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::Error</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error</span>::{<span class="ident">Error</span>, <span class="ident">MiniscriptPsbtError</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::psbt::PsbtUtils</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::signer::SignerError</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::testutils</span>;
@@ -5733,9 +5685,6 @@
 
     <span class="ident">signers</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">SignersContainer</span><span class="op">&gt;</span>,
     <span class="ident">change_signers</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">SignersContainer</span><span class="op">&gt;</span>,
-
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">deprecated</span>)]</span>
-    <span class="ident">address_validators</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">AddressValidator</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 
     <span class="ident">network</span>: <span class="ident">Network</span>,
 
@@ -5777,7 +5726,7 @@
 
 <span class="doccomment">/// A derived address and the index it was found at</span>
 <span class="doccomment">/// For convenience this automatically derefs to `Address`</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AddressInfo</span> {
     <span class="doccomment">/// Child index of this address</span>
     <span class="kw">pub</span> <span class="ident">index</span>: <span class="ident">u32</span>,
@@ -5837,18 +5786,20 @@
         <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1::new</span>();
 
         <span class="kw">let</span> (<span class="ident">descriptor</span>, <span class="ident">keymap</span>) <span class="op">=</span> <span class="ident">into_wallet_descriptor_checked</span>(<span class="ident">descriptor</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">network</span>)<span class="question-mark">?</span>;
-        <span class="ident">database</span>.<span class="ident">check_descriptor_checksum</span>(
+        <span class="ident"><span class="self">Self</span>::db_checksum</span>(
+            <span class="kw-2">&amp;mut</span> <span class="ident">database</span>,
+            <span class="kw-2">&amp;</span><span class="ident">descriptor</span>.<span class="ident">to_string</span>(),
             <span class="ident">KeychainKind::External</span>,
-            <span class="ident">get_checksum</span>(<span class="kw-2">&amp;</span><span class="ident">descriptor</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>.<span class="ident">as_bytes</span>(),
         )<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">signers</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">SignersContainer::build</span>(<span class="ident">keymap</span>, <span class="kw-2">&amp;</span><span class="ident">descriptor</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>));
         <span class="kw">let</span> (<span class="ident">change_descriptor</span>, <span class="ident">change_signers</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">change_descriptor</span> {
             <span class="prelude-val">Some</span>(<span class="ident">desc</span>) =&gt; {
                 <span class="kw">let</span> (<span class="ident">change_descriptor</span>, <span class="ident">change_keymap</span>) <span class="op">=</span>
                     <span class="ident">into_wallet_descriptor_checked</span>(<span class="ident">desc</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">network</span>)<span class="question-mark">?</span>;
-                <span class="ident">database</span>.<span class="ident">check_descriptor_checksum</span>(
+                <span class="ident"><span class="self">Self</span>::db_checksum</span>(
+                    <span class="kw-2">&amp;mut</span> <span class="ident">database</span>,
+                    <span class="kw-2">&amp;</span><span class="ident">change_descriptor</span>.<span class="ident">to_string</span>(),
                     <span class="ident">KeychainKind::Internal</span>,
-                    <span class="ident">get_checksum</span>(<span class="kw-2">&amp;</span><span class="ident">change_descriptor</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>.<span class="ident">as_bytes</span>(),
                 )<span class="question-mark">?</span>;
 
                 <span class="kw">let</span> <span class="ident">change_signers</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">SignersContainer::build</span>(
@@ -5856,9 +5807,6 @@
                     <span class="kw-2">&amp;</span><span class="ident">change_descriptor</span>,
                     <span class="kw-2">&amp;</span><span class="ident">secp</span>,
                 ));
-                <span class="comment">// if !parsed.same_structure(descriptor.as_ref()) {</span>
-                <span class="comment">//     return Err(Error::DifferentDescriptorStructure);</span>
-                <span class="comment">// }</span>
 
                 (<span class="prelude-val">Some</span>(<span class="ident">change_descriptor</span>), <span class="ident">change_signers</span>)
             }
@@ -5870,11 +5818,23 @@
             <span class="ident">change_descriptor</span>,
             <span class="ident">signers</span>,
             <span class="ident">change_signers</span>,
-            <span class="ident">address_validators</span>: <span class="ident">Vec::new</span>(),
             <span class="ident">network</span>,
             <span class="ident">database</span>: <span class="ident">RefCell::new</span>(<span class="ident">database</span>),
             <span class="ident">secp</span>,
         })
+    }
+
+    <span class="doccomment">/// This checks the checksum within [`BatchDatabase`] twice (if needed). The first time with the</span>
+    <span class="doccomment">/// actual checksum, and the second time with the checksum of `descriptor+checksum`. The second</span>
+    <span class="doccomment">/// check is necessary for backwards compatibility of a checksum-inception bug.</span>
+    <span class="kw">fn</span> <span class="ident">db_checksum</span>(<span class="ident">db</span>: <span class="kw-2">&amp;mut</span> <span class="ident">D</span>, <span class="ident">desc</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">kind</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">checksum</span> <span class="op">=</span> <span class="ident">calc_checksum_bytes_internal</span>(<span class="ident">desc</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+        <span class="kw">if</span> <span class="ident">db</span>.<span class="ident">check_descriptor_checksum</span>(<span class="ident">kind</span>, <span class="ident">checksum</span>).<span class="ident">is_ok</span>() {
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+        }
+
+        <span class="kw">let</span> <span class="ident">checksum_inception</span> <span class="op">=</span> <span class="ident">calc_checksum_bytes_internal</span>(<span class="ident">desc</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+        <span class="ident">db</span>.<span class="ident">check_descriptor_checksum</span>(<span class="ident">kind</span>, <span class="ident">checksum_inception</span>)
     }
 
     <span class="doccomment">/// Get the Bitcoin network the wallet is using.</span>
@@ -5888,7 +5848,7 @@
 
         <span class="kw">let</span> <span class="ident">address_result</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>)
-            .<span class="ident">as_derived</span>(<span class="ident">incremented_index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)
+            .<span class="ident">at_derivation_index</span>(<span class="ident">incremented_index</span>)
             .<span class="ident">address</span>(<span class="self">self</span>.<span class="ident">network</span>);
 
         <span class="ident">address_result</span>
@@ -5907,7 +5867,7 @@
 
         <span class="kw">let</span> <span class="ident">derived_key</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>)
-            .<span class="ident">as_derived</span>(<span class="ident">current_index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>);
+            .<span class="ident">at_derivation_index</span>(<span class="ident">current_index</span>);
 
         <span class="kw">let</span> <span class="ident">script_pubkey</span> <span class="op">=</span> <span class="ident">derived_key</span>.<span class="ident">script_pubkey</span>();
 
@@ -5935,7 +5895,7 @@
     <span class="comment">// Return derived address for the descriptor of given [`KeychainKind`] at a specific index</span>
     <span class="kw">fn</span> <span class="ident">peek_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u32</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AddressInfo</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>)
-            .<span class="ident">as_derived</span>(<span class="ident">index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)
+            .<span class="ident">at_derivation_index</span>(<span class="ident">index</span>)
             .<span class="ident">address</span>(<span class="self">self</span>.<span class="ident">network</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">address</span><span class="op">|</span> <span class="ident">AddressInfo</span> {
                 <span class="ident">index</span>,
@@ -5951,7 +5911,7 @@
         <span class="self">self</span>.<span class="ident">set_index</span>(<span class="ident">keychain</span>, <span class="ident">index</span>)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>)
-            .<span class="ident">as_derived</span>(<span class="ident">index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)
+            .<span class="ident">at_derivation_index</span>(<span class="ident">index</span>)
             .<span class="ident">address</span>(<span class="self">self</span>.<span class="ident">network</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">address</span><span class="op">|</span> <span class="ident">AddressInfo</span> {
                 <span class="ident">index</span>,
@@ -6000,7 +5960,7 @@
     <span class="doccomment">/// transaction output scripts.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ensure_addresses_cached</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">max_addresses</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_addresses_cached</span> <span class="op">=</span> <span class="bool-val">false</span>;
-        <span class="kw">let</span> <span class="ident">max_address</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">descriptor</span>.<span class="ident">is_deriveable</span>() {
+        <span class="kw">let</span> <span class="ident">max_address</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">descriptor</span>.<span class="ident">has_wildcard</span>() {
             <span class="bool-val">false</span> =&gt; <span class="number">0</span>,
             <span class="bool-val">true</span> =&gt; <span class="ident">max_addresses</span>,
         };
@@ -6017,7 +5977,7 @@
         }
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">change_descriptor</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">change_descriptor</span> {
-            <span class="kw">let</span> <span class="ident">max_address</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">change_descriptor</span>.<span class="ident">is_deriveable</span>() {
+            <span class="kw">let</span> <span class="ident">max_address</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">change_descriptor</span>.<span class="ident">has_wildcard</span>() {
                 <span class="bool-val">false</span> =&gt; <span class="number">0</span>,
                 <span class="bool-val">true</span> =&gt; <span class="ident">max_addresses</span>,
             };
@@ -6186,24 +6146,6 @@
         }
     }
 
-    <span class="doccomment">/// Add an address validator</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See [the `address_validator` module](address_validator) for an example.</span>
-    <span class="attribute">#[<span class="ident">deprecated</span>]</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">deprecated</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_address_validator</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">validator</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">AddressValidator</span><span class="op">&gt;</span>) {
-        <span class="self">self</span>.<span class="ident">address_validators</span>.<span class="ident">push</span>(<span class="ident">validator</span>);
-    }
-
-    <span class="doccomment">/// Get the address validators</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See [the `address_validator` module](address_validator).</span>
-    <span class="attribute">#[<span class="ident">deprecated</span>]</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">deprecated</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_address_validators</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">AddressValidator</span><span class="op">&gt;</span>] {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">address_validators</span>
-    }
-
     <span class="doccomment">/// Start building a transaction.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This returns a blank [`TxBuilder`] from which you can specify the parameters for the transaction.</span>
@@ -6318,10 +6260,9 @@
         <span class="comment">// We use a match here instead of a map_or_else as it&#39;s way more readable :)</span>
         <span class="kw">let</span> <span class="ident">current_height</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">params</span>.<span class="ident">current_height</span> {
             <span class="comment">// If they didn&#39;t tell us the current height, we assume it&#39;s the latest sync height.</span>
-            <span class="prelude-val">None</span> =&gt; <span class="self">self</span>
-                .<span class="ident">database</span>()
-                .<span class="ident">get_sync_time</span>()<span class="question-mark">?</span>
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">sync_time</span><span class="op">|</span> <span class="ident">sync_time</span>.<span class="ident">block_time</span>.<span class="ident">height</span>),
+            <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">database</span>().<span class="ident">get_sync_time</span>()<span class="question-mark">?</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">sync_time</span><span class="op">|</span> {
+                <span class="ident">LockTime::from_height</span>(<span class="ident">sync_time</span>.<span class="ident">block_time</span>.<span class="ident">height</span>).<span class="ident">expect</span>(<span class="string">&quot;Invalid height&quot;</span>)
+            }),
             <span class="ident">h</span> =&gt; <span class="ident">h</span>,
         };
 
@@ -6331,24 +6272,33 @@
                 <span class="comment">// Fee sniping can be partially prevented by setting the timelock</span>
                 <span class="comment">// to current_height. If we don&#39;t know the current_height,</span>
                 <span class="comment">// we default to 0.</span>
-                <span class="kw">let</span> <span class="ident">fee_sniping_height</span> <span class="op">=</span> <span class="ident">current_height</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>);
+                <span class="kw">let</span> <span class="ident">fee_sniping_height</span> <span class="op">=</span> <span class="ident">current_height</span>.<span class="ident">unwrap_or</span>(<span class="ident">LockTime::ZERO</span>);
+
                 <span class="comment">// We choose the biggest between the required nlocktime and the fee sniping</span>
                 <span class="comment">// height</span>
-                <span class="ident">std::cmp::max</span>(<span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>), <span class="ident">fee_sniping_height</span>)
+                <span class="kw">match</span> <span class="ident">requirements</span>.<span class="ident">timelock</span> {
+                    <span class="comment">// No requirement, just use the fee_sniping_height</span>
+                    <span class="prelude-val">None</span> =&gt; <span class="ident">fee_sniping_height</span>,
+                    <span class="comment">// There&#39;s a block-based requirement, but the value is lower than the fee_sniping_height</span>
+                    <span class="prelude-val">Some</span>(<span class="ident">value</span> @ <span class="ident">LockTime::Blocks</span>(<span class="kw">_</span>)) <span class="kw">if</span> <span class="ident">value</span> <span class="op">&lt;</span> <span class="ident">fee_sniping_height</span> =&gt; <span class="ident">fee_sniping_height</span>,
+                    <span class="comment">// There&#39;s a time-based requirement or a block-based requirement greater</span>
+                    <span class="comment">// than the fee_sniping_height use that value</span>
+                    <span class="prelude-val">Some</span>(<span class="ident">value</span>) =&gt; <span class="ident">value</span>,
+                }
             }
             <span class="comment">// Specific nLockTime required and we have no constraints, so just set to that value</span>
             <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="kw">if</span> <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">is_none</span>() =&gt; <span class="ident">x</span>,
             <span class="comment">// Specific nLockTime required and it&#39;s compatible with the constraints</span>
-            <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="kw">if</span> <span class="ident">check_nlocktime</span>(<span class="ident">x</span>, <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap</span>()) =&gt; <span class="ident">x</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="kw">if</span> <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap</span>().<span class="ident">is_same_unit</span>(<span class="ident">x</span>) <span class="op">&amp;&amp;</span> <span class="ident">x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap</span>() =&gt; <span class="ident">x</span>,
             <span class="comment">// Invalid nLockTime required</span>
-            <span class="prelude-val">Some</span>(<span class="ident">x</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::Generic</span>(<span class="macro">format!</span>(<span class="string">&quot;TxBuilder requested timelock of `{}`, but at least `{}` is required to spend from this script&quot;</span>, <span class="ident">x</span>, <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap</span>())))
+            <span class="prelude-val">Some</span>(<span class="ident">x</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::Generic</span>(<span class="macro">format!</span>(<span class="string">&quot;TxBuilder requested timelock of `{:?}`, but at least `{:?}` is required to spend from this script&quot;</span>, <span class="ident">x</span>, <span class="ident">requirements</span>.<span class="ident">timelock</span>.<span class="ident">unwrap</span>())))
         };
 
         <span class="kw">let</span> <span class="ident">n_sequence</span> <span class="op">=</span> <span class="kw">match</span> (<span class="ident">params</span>.<span class="ident">rbf</span>, <span class="ident">requirements</span>.<span class="ident">csv</span>) {
             <span class="comment">// No RBF or CSV but there&#39;s an nLockTime, so the nSequence cannot be final</span>
-            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="kw">if</span> <span class="ident">lock_time</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> =&gt; <span class="number">0xFFFFFFFE</span>,
+            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="kw">if</span> <span class="ident">lock_time</span> <span class="op">!</span><span class="op">=</span> <span class="ident">LockTime::ZERO</span> =&gt; <span class="ident">Sequence::ENABLE_LOCKTIME_NO_RBF</span>,
             <span class="comment">// No RBF, CSV or nLockTime, make the transaction final</span>
-            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="number">0xFFFFFFFF</span>,
+            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="ident">Sequence::MAX</span>,
 
             <span class="comment">// No RBF requested, use the value from CSV. Note that this value is by definition</span>
             <span class="comment">// non-final, so even if a timelock is enabled this nSequence is fine, hence why we</span>
@@ -6356,7 +6306,7 @@
             (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">csv</span>)) =&gt; <span class="ident">csv</span>,
 
             <span class="comment">// RBF with a specific value but that value is too high</span>
-            (<span class="prelude-val">Some</span>(<span class="ident">tx_builder::RbfValue::Value</span>(<span class="ident">rbf</span>)), <span class="kw">_</span>) <span class="kw">if</span> <span class="ident">rbf</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0xFFFFFFFE</span> =&gt; {
+            (<span class="prelude-val">Some</span>(<span class="ident">tx_builder::RbfValue::Value</span>(<span class="ident">rbf</span>)), <span class="kw">_</span>) <span class="kw">if</span> <span class="op">!</span><span class="ident">rbf</span>.<span class="ident">is_rbf</span>() =&gt; {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::Generic</span>(
                     <span class="string">&quot;Cannot enable RBF with a nSequence &gt;= 0xFFFFFFFE&quot;</span>.<span class="ident">into</span>(),
                 ))
@@ -6366,7 +6316,7 @@
                 <span class="kw">if</span> <span class="op">!</span><span class="ident">check_nsequence_rbf</span>(<span class="ident">rbf</span>, <span class="ident">csv</span>) =&gt;
             {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::Generic</span>(<span class="macro">format!</span>(
-                    <span class="string">&quot;Cannot enable RBF with nSequence `{}` given a required OP_CSV of `{}`&quot;</span>,
+                    <span class="string">&quot;Cannot enable RBF with nSequence `{:?}` given a required OP_CSV of `{:?}`&quot;</span>,
                     <span class="ident">rbf</span>, <span class="ident">csv</span>
                 )))
             }
@@ -6409,7 +6359,7 @@
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">Transaction</span> {
             <span class="ident">version</span>,
-            <span class="ident">lock_time</span>,
+            <span class="ident">lock_time</span>: <span class="ident">lock_time</span>.<span class="ident">into</span>(),
             <span class="ident">input</span>: <span class="macro">vec!</span>[],
             <span class="ident">output</span>: <span class="macro">vec!</span>[],
         };
@@ -6474,7 +6424,7 @@
             <span class="ident">params</span>.<span class="ident">drain_wallet</span>,
             <span class="ident">params</span>.<span class="ident">manually_selected_only</span>,
             <span class="ident">params</span>.<span class="ident">bumping_fee</span>.<span class="ident">is_some</span>(), <span class="comment">// we mandate confirmed transactions if we&#39;re bumping the fee</span>
-            <span class="ident">current_height</span>,
+            <span class="ident">current_height</span>.<span class="ident">map</span>(<span class="ident">LockTime::to_consensus_u32</span>),
         )<span class="question-mark">?</span>;
 
         <span class="comment">// get drain script</span>
@@ -6626,7 +6576,11 @@
             <span class="prelude-val">Some</span>(<span class="ident">tx</span>) =&gt; <span class="ident">tx</span>,
         };
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">details</span>.<span class="ident">transaction</span>.<span class="ident">take</span>().<span class="ident">unwrap</span>();
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">tx</span>.<span class="ident">input</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">txin</span><span class="op">|</span> <span class="ident">txin</span>.<span class="ident">sequence</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0xFFFFFFFD</span>) {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">tx</span>
+            .<span class="ident">input</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">any</span>(<span class="op">|</span><span class="ident">txin</span><span class="op">|</span> <span class="ident">txin</span>.<span class="ident">sequence</span>.<span class="ident">to_consensus_u32</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">0xFFFFFFFD</span>)
+        {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::IrreplaceableTransaction</span>);
         }
 
@@ -6752,8 +6706,9 @@
         <span class="ident">psbt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
         <span class="ident">sign_options</span>: <span class="ident">SignOptions</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="comment">// this helps us doing our job later</span>
-        <span class="self">self</span>.<span class="ident">add_input_hd_keypaths</span>(<span class="ident">psbt</span>)<span class="question-mark">?</span>;
+        <span class="comment">// This adds all the PSBT metadata for the inputs, which will help us later figure out how</span>
+        <span class="comment">// to derive our keys</span>
+        <span class="self">self</span>.<span class="ident">update_psbt_with_descriptor</span>(<span class="ident">psbt</span>)<span class="question-mark">?</span>;
 
         <span class="comment">// If we aren&#39;t allowed to use `witness_utxo`, ensure that every input (except p2tr and finalized ones)</span>
         <span class="comment">// has the `non_witness_utxo`</span>
@@ -6954,21 +6909,18 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">get_descriptor_for_txout</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">txout</span>: <span class="kw-2">&amp;</span><span class="ident">TxOut</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DerivedDescriptor</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_descriptor_for_txout</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txout</span>: <span class="kw-2">&amp;</span><span class="ident">TxOut</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DerivedDescriptor</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="self">self</span>
             .<span class="ident">database</span>
             .<span class="ident">borrow</span>()
             .<span class="ident">get_path_from_script_pubkey</span>(<span class="kw-2">&amp;</span><span class="ident">txout</span>.<span class="ident">script_pubkey</span>)<span class="question-mark">?</span>
             .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">keychain</span>, <span class="ident">child</span>)<span class="op">|</span> (<span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>), <span class="ident">child</span>))
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">desc</span>, <span class="ident">child</span>)<span class="op">|</span> <span class="ident">desc</span>.<span class="ident">as_derived</span>(<span class="ident">child</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)))
+            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">desc</span>, <span class="ident">child</span>)<span class="op">|</span> <span class="ident">desc</span>.<span class="ident">at_derivation_index</span>(<span class="ident">child</span>)))
     }
 
     <span class="kw">fn</span> <span class="ident">fetch_and_increment_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">descriptor</span>, <span class="ident">keychain</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">_get_descriptor_for_keychain</span>(<span class="ident">keychain</span>);
-        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">descriptor</span>.<span class="ident">is_deriveable</span>() {
+        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">descriptor</span>.<span class="ident">has_wildcard</span>() {
             <span class="bool-val">false</span> =&gt; <span class="number">0</span>,
             <span class="bool-val">true</span> =&gt; <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>().<span class="ident">increment_last_index</span>(<span class="ident">keychain</span>)<span class="question-mark">?</span>,
         };
@@ -6982,22 +6934,12 @@
             <span class="self">self</span>.<span class="ident">cache_addresses</span>(<span class="ident">keychain</span>, <span class="ident">index</span>, <span class="ident">CACHE_ADDR_BATCH_SIZE</span>)<span class="question-mark">?</span>;
         }
 
-        <span class="kw">let</span> <span class="ident">derived_descriptor</span> <span class="op">=</span> <span class="ident">descriptor</span>.<span class="ident">as_derived</span>(<span class="ident">index</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>);
-
-        <span class="kw">let</span> <span class="ident">hd_keypaths</span> <span class="op">=</span> <span class="ident">derived_descriptor</span>.<span class="ident">get_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>);
-        <span class="kw">let</span> <span class="ident">script</span> <span class="op">=</span> <span class="ident">derived_descriptor</span>.<span class="ident">script_pubkey</span>();
-
-        <span class="kw">for</span> <span class="ident">validator</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">address_validators</span> {
-            <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">deprecated</span>)]</span>
-            <span class="ident">validator</span>.<span class="ident">validate</span>(<span class="ident">keychain</span>, <span class="kw-2">&amp;</span><span class="ident">hd_keypaths</span>, <span class="kw-2">&amp;</span><span class="ident">script</span>)<span class="question-mark">?</span>;
-        }
-
         <span class="prelude-val">Ok</span>(<span class="ident">index</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">fetch_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">keychain</span>: <span class="ident">KeychainKind</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">descriptor</span>, <span class="ident">keychain</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">_get_descriptor_for_keychain</span>(<span class="ident">keychain</span>);
-        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">descriptor</span>.<span class="ident">is_deriveable</span>() {
+        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">descriptor</span>.<span class="ident">has_wildcard</span>() {
             <span class="bool-val">false</span> =&gt; <span class="prelude-val">Some</span>(<span class="number">0</span>),
             <span class="bool-val">true</span> =&gt; <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow_mut</span>().<span class="ident">get_last_index</span>(<span class="ident">keychain</span>)<span class="question-mark">?</span>,
         };
@@ -7021,7 +6963,7 @@
         <span class="kw-2">mut</span> <span class="ident">count</span>: <span class="ident">u32</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> (<span class="ident">descriptor</span>, <span class="ident">keychain</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">_get_descriptor_for_keychain</span>(<span class="ident">keychain</span>);
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">descriptor</span>.<span class="ident">is_deriveable</span>() {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">descriptor</span>.<span class="ident">has_wildcard</span>() {
             <span class="kw">if</span> <span class="ident">from</span> <span class="op">&gt;</span> <span class="number">0</span> {
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
             }
@@ -7034,7 +6976,7 @@
         <span class="kw">let</span> <span class="ident">start_time</span> <span class="op">=</span> <span class="ident">time::Instant::new</span>();
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">from</span>..(<span class="ident">from</span> <span class="op">+</span> <span class="ident">count</span>) {
             <span class="ident">address_batch</span>.<span class="ident">set_script_pubkey</span>(
-                <span class="kw-2">&amp;</span><span class="ident">descriptor</span>.<span class="ident">as_derived</span>(<span class="ident">i</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>).<span class="ident">script_pubkey</span>(),
+                <span class="kw-2">&amp;</span><span class="ident">descriptor</span>.<span class="ident">at_derivation_index</span>(<span class="ident">i</span>).<span class="ident">script_pubkey</span>(),
                 <span class="ident">keychain</span>,
                 <span class="ident">i</span>,
             )<span class="question-mark">?</span>;
@@ -7238,52 +7180,7 @@
             }
         }
 
-        <span class="comment">// probably redundant but it doesn&#39;t hurt...</span>
-        <span class="self">self</span>.<span class="ident">add_input_hd_keypaths</span>(<span class="kw-2">&amp;mut</span> <span class="ident">psbt</span>)<span class="question-mark">?</span>;
-
-        <span class="comment">// add metadata for the outputs</span>
-        <span class="kw">for</span> (<span class="ident">psbt_output</span>, <span class="ident">tx_output</span>) <span class="kw">in</span> <span class="ident">psbt</span>.<span class="ident">outputs</span>.<span class="ident">iter_mut</span>().<span class="ident">zip</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">output</span>.<span class="ident">iter</span>())
-        {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">keychain</span>, <span class="ident">child</span>)) <span class="op">=</span> <span class="self">self</span>
-                .<span class="ident">database</span>
-                .<span class="ident">borrow</span>()
-                .<span class="ident">get_path_from_script_pubkey</span>(<span class="kw-2">&amp;</span><span class="ident">tx_output</span>.<span class="ident">script_pubkey</span>)<span class="question-mark">?</span>
-            {
-                <span class="kw">let</span> (<span class="ident">desc</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">_get_descriptor_for_keychain</span>(<span class="ident">keychain</span>);
-                <span class="kw">let</span> <span class="ident">derived_descriptor</span> <span class="op">=</span> <span class="ident">desc</span>.<span class="ident">as_derived</span>(<span class="ident">child</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>);
-
-                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">miniscript::Descriptor::Tr</span>(<span class="ident">tr</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">derived_descriptor</span> {
-                    <span class="kw">let</span> <span class="ident">tap_tree</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">tr</span>.<span class="ident">taptree</span>().<span class="ident">is_some</span>() {
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">taproot::TaprootBuilder::new</span>();
-                        <span class="kw">for</span> (<span class="ident">depth</span>, <span class="ident">ms</span>) <span class="kw">in</span> <span class="ident">tr</span>.<span class="ident">iter_scripts</span>() {
-                            <span class="kw">let</span> <span class="ident">script</span> <span class="op">=</span> <span class="ident">ms</span>.<span class="ident">encode</span>();
-                            <span class="ident">builder</span> <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">add_leaf</span>(<span class="ident">depth</span>, <span class="ident">script</span>).<span class="ident">expect</span>(
-                                <span class="string">&quot;Computing spend data on a valid Tree should always succeed&quot;</span>,
-                            );
-                        }
-                        <span class="prelude-val">Some</span>(
-                            <span class="ident">psbt::TapTree::from_builder</span>(<span class="ident">builder</span>)
-                                .<span class="ident">expect</span>(<span class="string">&quot;The tree should always be valid&quot;</span>),
-                        )
-                    } <span class="kw">else</span> {
-                        <span class="prelude-val">None</span>
-                    };
-                    <span class="ident">psbt_output</span>.<span class="ident">tap_tree</span> <span class="op">=</span> <span class="ident">tap_tree</span>;
-                    <span class="ident">psbt_output</span>
-                        .<span class="ident">tap_key_origins</span>
-                        .<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="ident">derived_descriptor</span>.<span class="ident">get_tap_key_origins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>));
-                    <span class="ident">psbt_output</span>.<span class="ident">tap_internal_key</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">tr</span>.<span class="ident">internal_key</span>().<span class="ident">to_x_only_pubkey</span>());
-                } <span class="kw">else</span> {
-                    <span class="ident">psbt_output</span>
-                        .<span class="ident">bip32_derivation</span>
-                        .<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="ident">derived_descriptor</span>.<span class="ident">get_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>));
-                }
-                <span class="kw">if</span> <span class="ident">params</span>.<span class="ident">include_output_redeem_witness_script</span> {
-                    <span class="ident">psbt_output</span>.<span class="ident">witness_script</span> <span class="op">=</span> <span class="ident">derived_descriptor</span>.<span class="ident">psbt_witness_script</span>();
-                    <span class="ident">psbt_output</span>.<span class="ident">redeem_script</span> <span class="op">=</span> <span class="ident">derived_descriptor</span>.<span class="ident">psbt_redeem_script</span>();
-                };
-            }
-        }
+        <span class="self">self</span>.<span class="ident">update_psbt_with_descriptor</span>(<span class="kw-2">&amp;mut</span> <span class="ident">psbt</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="ident">psbt</span>)
     }
@@ -7309,29 +7206,11 @@
         };
 
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>);
-        <span class="kw">let</span> <span class="ident">derived_descriptor</span> <span class="op">=</span> <span class="ident">desc</span>.<span class="ident">as_derived</span>(<span class="ident">child</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>);
+        <span class="kw">let</span> <span class="ident">derived_descriptor</span> <span class="op">=</span> <span class="ident">desc</span>.<span class="ident">at_derivation_index</span>(<span class="ident">child</span>);
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">miniscript::Descriptor::Tr</span>(<span class="ident">tr</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">derived_descriptor</span> {
-            <span class="ident">psbt_input</span>.<span class="ident">tap_key_origins</span> <span class="op">=</span> <span class="ident">derived_descriptor</span>.<span class="ident">get_tap_key_origins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>);
-            <span class="ident">psbt_input</span>.<span class="ident">tap_internal_key</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">tr</span>.<span class="ident">internal_key</span>().<span class="ident">to_x_only_pubkey</span>());
-
-            <span class="kw">let</span> <span class="ident">spend_info</span> <span class="op">=</span> <span class="ident">tr</span>.<span class="ident">spend_info</span>();
-            <span class="ident">psbt_input</span>.<span class="ident">tap_merkle_root</span> <span class="op">=</span> <span class="ident">spend_info</span>.<span class="ident">merkle_root</span>();
-            <span class="ident">psbt_input</span>.<span class="ident">tap_scripts</span> <span class="op">=</span> <span class="ident">spend_info</span>
-                .<span class="ident">as_script_map</span>()
-                .<span class="ident">keys</span>()
-                .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">script_ver</span><span class="op">|</span> {
-                    <span class="ident">spend_info</span>
-                        .<span class="ident">control_block</span>(<span class="ident">script_ver</span>)
-                        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cb</span><span class="op">|</span> (<span class="ident">cb</span>, <span class="ident">script_ver</span>.<span class="ident">clone</span>()))
-                })
-                .<span class="ident">collect</span>();
-        } <span class="kw">else</span> {
-            <span class="ident">psbt_input</span>.<span class="ident">bip32_derivation</span> <span class="op">=</span> <span class="ident">derived_descriptor</span>.<span class="ident">get_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>);
-        }
-
-        <span class="ident">psbt_input</span>.<span class="ident">redeem_script</span> <span class="op">=</span> <span class="ident">derived_descriptor</span>.<span class="ident">psbt_redeem_script</span>();
-        <span class="ident">psbt_input</span>.<span class="ident">witness_script</span> <span class="op">=</span> <span class="ident">derived_descriptor</span>.<span class="ident">psbt_witness_script</span>();
+        <span class="ident">psbt_input</span>
+            .<span class="ident">update_with_descriptor_unchecked</span>(<span class="kw-2">&amp;</span><span class="ident">derived_descriptor</span>)
+            .<span class="ident">map_err</span>(<span class="ident">MiniscriptPsbtError::Conversion</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">prev_output</span> <span class="op">=</span> <span class="ident">utxo</span>.<span class="ident">outpoint</span>;
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">prev_tx</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">database</span>.<span class="ident">borrow</span>().<span class="ident">get_raw_tx</span>(<span class="kw-2">&amp;</span><span class="ident">prev_output</span>.<span class="ident">txid</span>)<span class="question-mark">?</span> {
@@ -7345,38 +7224,47 @@
         <span class="prelude-val">Ok</span>(<span class="ident">psbt_input</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">add_input_hd_keypaths</span>(
+    <span class="kw">fn</span> <span class="ident">update_psbt_with_descriptor</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">psbt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">psbt::PartiallySignedTransaction</span>,
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">input_utxos</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>());
-        <span class="kw">for</span> <span class="ident">n</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>() {
-            <span class="ident">input_utxos</span>.<span class="ident">push</span>(<span class="ident">psbt</span>.<span class="ident">get_utxo_for</span>(<span class="ident">n</span>).<span class="ident">clone</span>());
-        }
+        <span class="comment">// We need to borrow `psbt` mutably within the loops, so we have to allocate a vec for all</span>
+        <span class="comment">// the input utxos and outputs</span>
+        <span class="comment">//</span>
+        <span class="comment">// Clippy complains that the collect is not required, but that&#39;s wrong</span>
+        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::needless_collect</span>)]</span>
+        <span class="kw">let</span> <span class="ident">utxos</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">len</span>())
+            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">psbt</span>.<span class="ident">get_utxo_for</span>(<span class="ident">i</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">utxo</span><span class="op">|</span> (<span class="bool-val">true</span>, <span class="ident">i</span>, <span class="ident">utxo</span>)))
+            .<span class="ident">chain</span>(
+                <span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>
+                    .<span class="ident">output</span>
+                    .<span class="ident">iter</span>()
+                    .<span class="ident">enumerate</span>()
+                    .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">out</span>)<span class="op">|</span> (<span class="bool-val">false</span>, <span class="ident">i</span>, <span class="ident">out</span>.<span class="ident">clone</span>())),
+            )
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
-        <span class="comment">// try to add hd_keypaths if we&#39;ve already seen the output</span>
-        <span class="kw">for</span> (<span class="ident">psbt_input</span>, <span class="ident">out</span>) <span class="kw">in</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">iter_mut</span>().<span class="ident">zip</span>(<span class="ident">input_utxos</span>.<span class="ident">iter</span>()) {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">out</span>) <span class="op">=</span> <span class="ident">out</span> {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">keychain</span>, <span class="ident">child</span>)) <span class="op">=</span> <span class="self">self</span>
-                    .<span class="ident">database</span>
-                    .<span class="ident">borrow</span>()
-                    .<span class="ident">get_path_from_script_pubkey</span>(<span class="kw-2">&amp;</span><span class="ident">out</span>.<span class="ident">script_pubkey</span>)<span class="question-mark">?</span>
-                {
-                    <span class="macro">debug!</span>(<span class="string">&quot;Found descriptor {:?}/{}&quot;</span>, <span class="ident">keychain</span>, <span class="ident">child</span>);
+        <span class="comment">// Try to figure out the keychain and derivation for every input and output</span>
+        <span class="kw">for</span> (<span class="ident">is_input</span>, <span class="ident">index</span>, <span class="ident">out</span>) <span class="kw">in</span> <span class="ident">utxos</span>.<span class="ident">into_iter</span>() {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">keychain</span>, <span class="ident">child</span>)) <span class="op">=</span> <span class="self">self</span>
+                .<span class="ident">database</span>
+                .<span class="ident">borrow</span>()
+                .<span class="ident">get_path_from_script_pubkey</span>(<span class="kw-2">&amp;</span><span class="ident">out</span>.<span class="ident">script_pubkey</span>)<span class="question-mark">?</span>
+            {
+                <span class="macro">debug!</span>(
+                    <span class="string">&quot;Found descriptor for input #{} {:?}/{}&quot;</span>,
+                    <span class="ident">index</span>, <span class="ident">keychain</span>, <span class="ident">child</span>
+                );
 
-                    <span class="comment">// merge hd_keypaths or tap_key_origins</span>
-                    <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>);
-                    <span class="kw">if</span> <span class="ident">desc</span>.<span class="ident">is_taproot</span>() {
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tap_key_origins</span> <span class="op">=</span> <span class="ident">desc</span>
-                            .<span class="ident">as_derived</span>(<span class="ident">child</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)
-                            .<span class="ident">get_tap_key_origins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>);
-                        <span class="ident">psbt_input</span>.<span class="ident">tap_key_origins</span>.<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="ident">tap_key_origins</span>);
-                    } <span class="kw">else</span> {
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hd_keypaths</span> <span class="op">=</span> <span class="ident">desc</span>
-                            .<span class="ident">as_derived</span>(<span class="ident">child</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>)
-                            .<span class="ident">get_hd_keypaths</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secp</span>);
-                        <span class="ident">psbt_input</span>.<span class="ident">bip32_derivation</span>.<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="ident">hd_keypaths</span>);
-                    }
+                <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_descriptor_for_keychain</span>(<span class="ident">keychain</span>);
+                <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="ident">desc</span>.<span class="ident">at_derivation_index</span>(<span class="ident">child</span>);
+
+                <span class="kw">if</span> <span class="ident">is_input</span> {
+                    <span class="ident">psbt</span>.<span class="ident">update_input_with_descriptor</span>(<span class="ident">index</span>, <span class="kw-2">&amp;</span><span class="ident">desc</span>)
+                        .<span class="ident">map_err</span>(<span class="ident">MiniscriptPsbtError::UtxoUpdate</span>)<span class="question-mark">?</span>;
+                } <span class="kw">else</span> {
+                    <span class="ident">psbt</span>.<span class="ident">update_output_with_descriptor</span>(<span class="ident">index</span>, <span class="kw-2">&amp;</span><span class="ident">desc</span>)
+                        .<span class="ident">map_err</span>(<span class="ident">MiniscriptPsbtError::OutputUpdate</span>)<span class="question-mark">?</span>;
                 }
             }
         }
@@ -7415,12 +7303,12 @@
 
         <span class="comment">// We need to ensure descriptor is derivable to fullfil &quot;missing cache&quot;, otherwise we will</span>
         <span class="comment">// end up with an infinite loop</span>
-        <span class="kw">let</span> <span class="ident">is_deriveable</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">descriptor</span>.<span class="ident">is_deriveable</span>()
+        <span class="kw">let</span> <span class="ident">has_wildcard</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">descriptor</span>.<span class="ident">has_wildcard</span>()
             <span class="op">&amp;&amp;</span> (<span class="self">self</span>.<span class="ident">change_descriptor</span>.<span class="ident">is_none</span>()
-                <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">change_descriptor</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">is_deriveable</span>());
+                <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">change_descriptor</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">has_wildcard</span>());
 
         <span class="comment">// Restrict max rounds in case of faulty &quot;missing cache&quot; implementation by blockchain</span>
-        <span class="kw">let</span> <span class="ident">max_rounds</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">is_deriveable</span> { <span class="number">100</span> } <span class="kw">else</span> { <span class="number">1</span> };
+        <span class="kw">let</span> <span class="ident">max_rounds</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">has_wildcard</span> { <span class="number">100</span> } <span class="kw">else</span> { <span class="number">1</span> };
 
         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">max_rounds</span> {
             <span class="kw">let</span> <span class="ident">sync_res</span> <span class="op">=</span>
@@ -7498,14 +7386,14 @@
         .<span class="ident">into_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)<span class="question-mark">?</span>
         .<span class="number">0</span>
         .<span class="ident">to_string</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">wallet_name</span> <span class="op">=</span> <span class="ident">get_checksum</span>(<span class="kw-2">&amp;</span><span class="ident">descriptor</span>[..<span class="ident">descriptor</span>.<span class="ident">find</span>(<span class="string">&#39;#&#39;</span>).<span class="ident">unwrap</span>()])<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">wallet_name</span> <span class="op">=</span> <span class="ident">calc_checksum</span>(<span class="kw-2">&amp;</span><span class="ident">descriptor</span>[..<span class="ident">descriptor</span>.<span class="ident">find</span>(<span class="string">&#39;#&#39;</span>).<span class="ident">unwrap</span>()])<span class="question-mark">?</span>;
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">change_descriptor</span>) <span class="op">=</span> <span class="ident">change_descriptor</span> {
         <span class="kw">let</span> <span class="ident">change_descriptor</span> <span class="op">=</span> <span class="ident">change_descriptor</span>
             .<span class="ident">into_wallet_descriptor</span>(<span class="ident">secp</span>, <span class="ident">network</span>)<span class="question-mark">?</span>
             .<span class="number">0</span>
             .<span class="ident">to_string</span>();
         <span class="ident">wallet_name</span>.<span class="ident">push_str</span>(
-            <span class="ident">get_checksum</span>(<span class="kw-2">&amp;</span><span class="ident">change_descriptor</span>[..<span class="ident">change_descriptor</span>.<span class="ident">find</span>(<span class="string">&#39;#&#39;</span>).<span class="ident">unwrap</span>()])<span class="question-mark">?</span>.<span class="ident">as_str</span>(),
+            <span class="ident">calc_checksum</span>(<span class="kw-2">&amp;</span><span class="ident">change_descriptor</span>[..<span class="ident">change_descriptor</span>.<span class="ident">find</span>(<span class="string">&#39;#&#39;</span>).<span class="ident">unwrap</span>()])<span class="question-mark">?</span>.<span class="ident">as_str</span>(),
         );
     }
 
@@ -7555,7 +7443,7 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">util::psbt</span>, <span class="ident">Network</span>};
+    <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">util::psbt</span>, <span class="ident">Network</span>, <span class="ident">PackedLockTime</span>, <span class="ident">Sequence</span>};
 
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::database::Database</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::types::KeychainKind</span>;
@@ -7577,15 +7465,38 @@
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
         <span class="kw">let</span> <span class="ident">checksum</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">descriptor_checksum</span>(<span class="ident">KeychainKind::External</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">checksum</span>.<span class="ident">len</span>(), <span class="number">8</span>);
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">calc_checksum</span>(<span class="kw-2">&amp;</span><span class="ident">wallet</span>.<span class="ident">descriptor</span>.<span class="ident">to_string</span>()).<span class="ident">unwrap</span>(),
+            <span class="ident">checksum</span>
+        );
+    }
 
-        <span class="kw">let</span> <span class="ident">raw_descriptor</span> <span class="op">=</span> <span class="ident">wallet</span>
-            .<span class="ident">descriptor</span>
-            .<span class="ident">to_string</span>()
-            .<span class="ident">split_once</span>(<span class="string">&#39;#&#39;</span>)
-            .<span class="ident">unwrap</span>()
-            .<span class="number">0</span>
-            .<span class="ident">to_string</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">get_checksum</span>(<span class="kw-2">&amp;</span><span class="ident">raw_descriptor</span>).<span class="ident">unwrap</span>(), <span class="ident">checksum</span>);
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_db_checksum</span>() {
+        <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_wpkh</span>());
+        <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">descriptor</span>.<span class="ident">to_string</span>();
+
+        <span class="kw">let</span> <span class="ident">checksum</span> <span class="op">=</span> <span class="ident">calc_checksum_bytes_internal</span>(<span class="kw-2">&amp;</span><span class="ident">desc</span>, <span class="bool-val">true</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">checksum_inception</span> <span class="op">=</span> <span class="ident">calc_checksum_bytes_internal</span>(<span class="kw-2">&amp;</span><span class="ident">desc</span>, <span class="bool-val">false</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">checksum_invalid</span> <span class="op">=</span> [<span class="string">b&#39;q&#39;</span>; <span class="number">8</span>];
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDatabase::new</span>();
+        <span class="ident">db</span>.<span class="ident">check_descriptor_checksum</span>(<span class="ident">KeychainKind::External</span>, <span class="ident">checksum</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;failed to save actual checksum&quot;</span>);
+        <span class="ident">Wallet::db_checksum</span>(<span class="kw-2">&amp;mut</span> <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="ident">desc</span>, <span class="ident">KeychainKind::External</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;db that uses actual checksum should be supported&quot;</span>);
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDatabase::new</span>();
+        <span class="ident">db</span>.<span class="ident">check_descriptor_checksum</span>(<span class="ident">KeychainKind::External</span>, <span class="ident">checksum_inception</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;failed to save checksum inception&quot;</span>);
+        <span class="ident">Wallet::db_checksum</span>(<span class="kw-2">&amp;mut</span> <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="ident">desc</span>, <span class="ident">KeychainKind::External</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;db that uses checksum inception should be supported&quot;</span>);
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">db</span> <span class="op">=</span> <span class="ident">MemoryDatabase::new</span>();
+        <span class="ident">db</span>.<span class="ident">check_descriptor_checksum</span>(<span class="ident">KeychainKind::External</span>, <span class="ident">checksum_invalid</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;failed to save invalid checksum&quot;</span>);
+        <span class="ident">Wallet::db_checksum</span>(<span class="kw-2">&amp;mut</span> <span class="ident">db</span>, <span class="kw-2">&amp;</span><span class="ident">desc</span>, <span class="ident">KeychainKind::External</span>)
+            .<span class="ident">expect_err</span>(<span class="string">&quot;db that uses invalid checksum should fail&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7868,7 +7779,7 @@
 
         <span class="comment">// Since we never synced the wallet we don&#39;t have a last_sync_height</span>
         <span class="comment">// we could use to try to prevent fee sniping. We default to 0.</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="ident">PackedLockTime</span>(<span class="number">0</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7893,7 +7804,7 @@
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="comment">// current_height will override the last sync height</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="ident">current_height</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="ident">PackedLockTime</span>(<span class="ident">current_height</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7916,7 +7827,10 @@
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="comment">// If there&#39;s no current_height we&#39;re left with using the last sync height</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="ident">sync_time</span>.<span class="ident">block_time</span>.<span class="ident">height</span>);
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>,
+            <span class="ident">PackedLockTime</span>(<span class="ident">sync_time</span>.<span class="ident">block_time</span>.<span class="ident">height</span>)
+        );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7927,7 +7841,7 @@
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="number">100_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="ident">PackedLockTime</span>(<span class="number">100_000</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7938,13 +7852,13 @@
         <span class="ident">builder</span>
             .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>)
             .<span class="ident">current_height</span>(<span class="number">630_001</span>)
-            .<span class="ident">nlocktime</span>(<span class="number">630_000</span>);
+            .<span class="ident">nlocktime</span>(<span class="ident">LockTime::from_height</span>(<span class="number">630_000</span>).<span class="ident">unwrap</span>());
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
         <span class="comment">// When we explicitly specify a nlocktime</span>
         <span class="comment">// we don&#39;t try any fee sniping prevention trick</span>
         <span class="comment">// (we ignore the current_height)</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="number">630_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="ident">PackedLockTime</span>(<span class="number">630_000</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7954,15 +7868,15 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
             .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>)
-            .<span class="ident">nlocktime</span>(<span class="number">630_000</span>);
+            .<span class="ident">nlocktime</span>(<span class="ident">LockTime::from_height</span>(<span class="number">630_000</span>).<span class="ident">unwrap</span>());
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="number">630_000</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">lock_time</span>, <span class="ident">PackedLockTime</span>(<span class="number">630_000</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">should_panic</span>(
-        <span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;TxBuilder requested timelock of `50000`, but at least `100000` is required to spend from this script&quot;</span>
+        <span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;TxBuilder requested timelock of `Blocks(Height(50000))`, but at least `Blocks(Height(100000))` is required to spend from this script&quot;</span>
     )]</span>
     <span class="kw">fn</span> <span class="ident">test_create_tx_custom_locktime_incompatible_with_cltv</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_single_sig_cltv</span>());
@@ -7970,7 +7884,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
             .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>)
-            .<span class="ident">nlocktime</span>(<span class="number">50000</span>);
+            .<span class="ident">nlocktime</span>(<span class="ident">LockTime::from_height</span>(<span class="number">50000</span>).<span class="ident">unwrap</span>());
         <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
     }
 
@@ -7982,7 +7896,7 @@
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">6</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="ident">Sequence</span>(<span class="number">6</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -7996,12 +7910,12 @@
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
         <span class="comment">// When CSV is enabled it takes precedence over the rbf value (unless forced by the user).</span>
         <span class="comment">// It will be set to the OP_CSV value, in this case 6</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">6</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="ident">Sequence</span>(<span class="number">6</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">should_panic</span>(
-        <span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;Cannot enable RBF with nSequence `3` given a required OP_CSV of `6`&quot;</span>
+        <span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;Cannot enable RBF with nSequence `Sequence(3)` given a required OP_CSV of `Sequence(6)`&quot;</span>
     )]</span>
     <span class="kw">fn</span> <span class="ident">test_create_tx_with_custom_rbf_csv</span>() {
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_single_sig_csv</span>());
@@ -8009,7 +7923,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
             .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>)
-            .<span class="ident">enable_rbf_with_sequence</span>(<span class="number">3</span>);
+            .<span class="ident">enable_rbf_with_sequence</span>(<span class="ident">Sequence</span>(<span class="number">3</span>));
         <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
     }
 
@@ -8021,7 +7935,7 @@
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xFFFFFFFE</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="ident">Sequence</span>(<span class="number">0xFFFFFFFE</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -8032,7 +7946,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
             .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>)
-            .<span class="ident">enable_rbf_with_sequence</span>(<span class="number">0xFFFFFFFE</span>);
+            .<span class="ident">enable_rbf_with_sequence</span>(<span class="ident">Sequence</span>(<span class="number">0xFFFFFFFE</span>));
         <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
     }
 
@@ -8043,10 +7957,10 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">build_tx</span>();
         <span class="ident">builder</span>
             .<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>)
-            .<span class="ident">enable_rbf_with_sequence</span>(<span class="number">0xDEADBEEF</span>);
+            .<span class="ident">enable_rbf_with_sequence</span>(<span class="ident">Sequence</span>(<span class="number">0xDEADBEEF</span>));
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xDEADBEEF</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="ident">Sequence</span>(<span class="number">0xDEADBEEF</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -8073,7 +7987,7 @@
         <span class="ident">builder</span>.<span class="ident">add_recipient</span>(<span class="ident">addr</span>.<span class="ident">script_pubkey</span>(), <span class="number">25_000</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xFFFFFFFF</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="ident">Sequence</span>(<span class="number">0xFFFFFFFF</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -8594,7 +8508,7 @@
             .<span class="ident">policy_path</span>(<span class="ident">path</span>, <span class="ident">KeychainKind::External</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">0xFFFFFFFF</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="ident">Sequence</span>(<span class="number">0xFFFFFFFF</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -8613,7 +8527,7 @@
             .<span class="ident">policy_path</span>(<span class="ident">path</span>, <span class="ident">KeychainKind::External</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="number">144</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">psbt</span>.<span class="ident">unsigned_tx</span>.<span class="ident">input</span>[<span class="number">0</span>].<span class="ident">sequence</span>, <span class="ident">Sequence</span>(<span class="number">144</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -10466,7 +10380,7 @@
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_tr_repeated_key</span>());
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">AddressIndex::New</span>).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">vec!</span>[(<span class="string">&quot;rn4nre9c&quot;</span>.<span class="ident">to_string</span>(), <span class="macro">vec!</span>[<span class="number">0</span>])]
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">vec!</span>[(<span class="string">&quot;e5mmg3xh&quot;</span>.<span class="ident">to_string</span>(), <span class="macro">vec!</span>[<span class="number">0</span>])]
             .<span class="ident">into_iter</span>()
             .<span class="ident">collect</span>();
 
@@ -10476,48 +10390,50 @@
             .<span class="ident">policy_path</span>(<span class="ident">path</span>, <span class="ident">KeychainKind::External</span>);
         <span class="kw">let</span> (<span class="ident">psbt</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">finish</span>().<span class="ident">unwrap</span>();
 
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">input_key_origins</span> <span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>]
+            .<span class="ident">tap_key_origins</span>
+            .<span class="ident">clone</span>()
+            .<span class="ident">into_iter</span>()
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+        <span class="ident">input_key_origins</span>.<span class="ident">sort</span>();
+
         <span class="macro">assert_eq!</span>(
-            <span class="ident">psbt</span>.<span class="ident">inputs</span>[<span class="number">0</span>]
-                .<span class="ident">tap_key_origins</span>
-                .<span class="ident">clone</span>()
-                .<span class="ident">into_iter</span>()
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
-            <span class="macro">vec!</span>[(
-                <span class="macro">from_str!</span>(<span class="string">&quot;2b0558078bec38694a84933d659303e2575dae7e91685911454115bfd64487e3&quot;</span>),
+            <span class="ident">input_key_origins</span>,
+            <span class="macro">vec!</span>[
                 (
-                    <span class="macro">vec!</span>[
-                        <span class="macro">from_str!</span>(
-                            <span class="string">&quot;858ad7a7d7f270e2c490c4d6ba00c499e46b18fdd59ea3c2c47d20347110271e&quot;</span>
-                        ),
-                        <span class="macro">from_str!</span>(
-                            <span class="string">&quot;f6e927ad4492c051fe325894a4f5f14538333b55a35f099876be42009ec8f903&quot;</span>
-                        )
-                    ],
-                    (<span class="ident">Default::default</span>(), <span class="ident">Default::default</span>())
+                    <span class="macro">from_str!</span>(<span class="string">&quot;b511bd5771e47ee27558b1765e87b541668304ec567721c7b880edc0a010da55&quot;</span>),
+                    (
+                        <span class="macro">vec!</span>[],
+                        (<span class="ident">FromStr::from_str</span>(<span class="string">&quot;871fd295&quot;</span>).<span class="ident">unwrap</span>(), <span class="macro">vec!</span>[].<span class="ident">into</span>())
+                    )
+                ),
+                (
+                    <span class="macro">from_str!</span>(<span class="string">&quot;2b0558078bec38694a84933d659303e2575dae7e91685911454115bfd64487e3&quot;</span>),
+                    (
+                        <span class="macro">vec!</span>[
+                            <span class="macro">from_str!</span>(
+                                <span class="string">&quot;858ad7a7d7f270e2c490c4d6ba00c499e46b18fdd59ea3c2c47d20347110271e&quot;</span>
+                            ),
+                            <span class="macro">from_str!</span>(
+                                <span class="string">&quot;f6e927ad4492c051fe325894a4f5f14538333b55a35f099876be42009ec8f903&quot;</span>
+                            ),
+                        ],
+                        (<span class="ident">FromStr::from_str</span>(<span class="string">&quot;ece52657&quot;</span>).<span class="ident">unwrap</span>(), <span class="macro">vec!</span>[].<span class="ident">into</span>())
+                    )
                 )
-            )],
+            ],
             <span class="string">&quot;Wrong input tap_key_origins&quot;</span>
         );
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output_key_origins</span> <span class="op">=</span> <span class="ident">psbt</span>.<span class="ident">outputs</span>[<span class="number">0</span>]
+            .<span class="ident">tap_key_origins</span>
+            .<span class="ident">clone</span>()
+            .<span class="ident">into_iter</span>()
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+        <span class="ident">output_key_origins</span>.<span class="ident">sort</span>();
+
         <span class="macro">assert_eq!</span>(
-            <span class="ident">psbt</span>.<span class="ident">outputs</span>[<span class="number">0</span>]
-                .<span class="ident">tap_key_origins</span>
-                .<span class="ident">clone</span>()
-                .<span class="ident">into_iter</span>()
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
-            <span class="macro">vec!</span>[(
-                <span class="macro">from_str!</span>(<span class="string">&quot;2b0558078bec38694a84933d659303e2575dae7e91685911454115bfd64487e3&quot;</span>),
-                (
-                    <span class="macro">vec!</span>[
-                        <span class="macro">from_str!</span>(
-                            <span class="string">&quot;858ad7a7d7f270e2c490c4d6ba00c499e46b18fdd59ea3c2c47d20347110271e&quot;</span>
-                        ),
-                        <span class="macro">from_str!</span>(
-                            <span class="string">&quot;f6e927ad4492c051fe325894a4f5f14538333b55a35f099876be42009ec8f903&quot;</span>
-                        )
-                    ],
-                    (<span class="ident">Default::default</span>(), <span class="ident">Default::default</span>())
-                )
-            )],
+            <span class="ident">input_key_origins</span>, <span class="ident">output_key_origins</span>,
             <span class="string">&quot;Wrong output tap_key_origins&quot;</span>
         );
     }
@@ -10769,7 +10685,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_taproot_script_spend_sign_include_some_leaves</span>() {
         <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::signer::TapLeavesOptions</span>;
-        <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet::taproot::TapLeafHash</span>;
+        <span class="kw">use</span> <span class="ident">bitcoin::util::taproot::TapLeafHash</span>;
 
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_tr_with_taptree_both_priv</span>());
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">AddressIndex::New</span>).<span class="ident">unwrap</span>();
@@ -10811,7 +10727,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_taproot_script_spend_sign_exclude_some_leaves</span>() {
         <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::signer::TapLeavesOptions</span>;
-        <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet::taproot::TapLeafHash</span>;
+        <span class="kw">use</span> <span class="ident">bitcoin::util::taproot::TapLeafHash</span>;
 
         <span class="kw">let</span> (<span class="ident">wallet</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">get_funded_wallet</span>(<span class="ident">get_test_tr_with_taptree_both_priv</span>());
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet</span>.<span class="ident">get_address</span>(<span class="ident">AddressIndex::New</span>).<span class="ident">unwrap</span>();

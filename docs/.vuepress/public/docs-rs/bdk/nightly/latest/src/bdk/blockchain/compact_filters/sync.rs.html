@@ -301,6 +301,7 @@
 <span id="294">294</span>
 <span id="295">295</span>
 <span id="296">296</span>
+<span id="297">297</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -317,6 +318,7 @@
 <span class="kw">use</span> <span class="ident">std::time::Duration</span>;
 
 <span class="kw">use</span> <span class="ident">bitcoin::hash_types</span>::{<span class="ident">BlockHash</span>, <span class="ident">FilterHeader</span>};
+<span class="kw">use</span> <span class="ident">bitcoin::hashes::Hash</span>;
 <span class="kw">use</span> <span class="ident">bitcoin::network::message::NetworkMessage</span>;
 <span class="kw">use</span> <span class="ident">bitcoin::network::message_blockdata::GetHeadersMessage</span>;
 <span class="kw">use</span> <span class="ident">bitcoin::util::bip158::BlockFilter</span>;
@@ -557,7 +559,7 @@
 
     <span class="ident">peer</span>.<span class="ident">send</span>(<span class="ident">NetworkMessage::GetHeaders</span>(<span class="ident">GetHeadersMessage::new</span>(
         <span class="ident">locators_vec</span>,
-        <span class="ident">Default::default</span>(),
+        <span class="ident">Hash::all_zeros</span>(),
     )))<span class="question-mark">?</span>;
     <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">snapshot</span>, <span class="kw-2">mut</span> <span class="ident">last_hash</span>) <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NetworkMessage::Headers</span>(<span class="ident">headers</span>) <span class="op">=</span> <span class="ident">peer</span>
         .<span class="ident">recv</span>(<span class="string">&quot;headers&quot;</span>, <span class="prelude-val">Some</span>(<span class="ident">Duration::from_secs</span>(<span class="ident">TIMEOUT_SECS</span>)))<span class="question-mark">?</span>
@@ -579,7 +581,7 @@
     <span class="kw">while</span> <span class="ident">sync_height</span> <span class="op">&lt;</span> <span class="ident">peer</span>.<span class="ident">get_version</span>().<span class="ident">start_height</span> <span class="kw">as</span> <span class="ident">usize</span> {
         <span class="ident">peer</span>.<span class="ident">send</span>(<span class="ident">NetworkMessage::GetHeaders</span>(<span class="ident">GetHeadersMessage::new</span>(
             <span class="macro">vec!</span>[<span class="ident">last_hash</span>],
-            <span class="ident">Default::default</span>(),
+            <span class="ident">Hash::all_zeros</span>(),
         )))<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NetworkMessage::Headers</span>(<span class="ident">headers</span>) <span class="op">=</span> <span class="ident">peer</span>
             .<span class="ident">recv</span>(<span class="string">&quot;headers&quot;</span>, <span class="prelude-val">Some</span>(<span class="ident">Duration::from_secs</span>(<span class="ident">TIMEOUT_SECS</span>)))<span class="question-mark">?</span>

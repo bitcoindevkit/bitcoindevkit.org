@@ -186,56 +186,6 @@
 <span id="179">179</span>
 <span id="180">180</span>
 <span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
-<span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
-<span id="204">204</span>
-<span id="205">205</span>
-<span id="206">206</span>
-<span id="207">207</span>
-<span id="208">208</span>
-<span id="209">209</span>
-<span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -247,22 +197,10 @@
 <span class="comment">// You may not use this file except in accordance with one or both of these</span>
 <span class="comment">// licenses.</span>
 
-<span class="kw">use</span> <span class="ident">bitcoin::blockdata::script::Script</span>;
 <span class="kw">use</span> <span class="ident">bitcoin::secp256k1</span>::{<span class="ident">All</span>, <span class="ident">Secp256k1</span>};
+<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">LockTime</span>, <span class="ident">Script</span>, <span class="ident">Sequence</span>};
 
 <span class="kw">use</span> <span class="ident">miniscript</span>::{<span class="ident">MiniscriptKey</span>, <span class="ident">Satisfier</span>, <span class="ident">ToPublicKey</span>};
-
-<span class="comment">// MSB of the nSequence. If set there&#39;s no consensus-constraint, so it must be disabled when</span>
-<span class="comment">// spending using CSV in order to enforce CSV rules</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">SEQUENCE_LOCKTIME_DISABLE_FLAG</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">31</span>;
-<span class="comment">// When nSequence is lower than this flag the timelock is interpreted as block-height-based,</span>
-<span class="comment">// otherwise it&#39;s time-based</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">SEQUENCE_LOCKTIME_TYPE_FLAG</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">22</span>;
-<span class="comment">// Mask for the bits used to express the timelock</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">SEQUENCE_LOCKTIME_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000FFFF</span>;
-
-<span class="comment">// Threshold for nLockTime to be considered a block-height-based timelock rather than time-based</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">BLOCKS_TIMELOCK_THRESHOLD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">500000000</span>;
 
 <span class="doccomment">/// Trait to check if a value is below the dust limit.</span>
 <span class="doccomment">/// We are performing dust value calculation for a given script public key using rust-bitcoin to</span>
@@ -276,7 +214,7 @@
 
 <span class="kw">impl</span> <span class="ident">IsDust</span> <span class="kw">for</span> <span class="ident">u64</span> {
     <span class="kw">fn</span> <span class="ident">is_dust</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">script</span>: <span class="kw-2">&amp;</span><span class="ident">Script</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw-2">*</span><span class="self">self</span> <span class="op">&lt;</span> <span class="ident">script</span>.<span class="ident">dust_value</span>().<span class="ident">as_sat</span>()
+        <span class="kw-2">*</span><span class="self">self</span> <span class="op">&lt;</span> <span class="ident">script</span>.<span class="ident">dust_value</span>().<span class="ident">to_sat</span>()
     }
 }
 
@@ -294,19 +232,15 @@
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">check_nsequence_rbf</span>(<span class="ident">rbf</span>: <span class="ident">u32</span>, <span class="ident">csv</span>: <span class="ident">u32</span>) -&gt; <span class="ident">bool</span> {
-    <span class="comment">// This flag cannot be set in the nSequence when spending using OP_CSV</span>
-    <span class="kw">if</span> <span class="ident">rbf</span> <span class="op">&amp;</span> <span class="ident">SEQUENCE_LOCKTIME_DISABLE_FLAG</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">check_nsequence_rbf</span>(<span class="ident">rbf</span>: <span class="ident">Sequence</span>, <span class="ident">csv</span>: <span class="ident">Sequence</span>) -&gt; <span class="ident">bool</span> {
+    <span class="comment">// The RBF value must enable relative timelocks</span>
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">rbf</span>.<span class="ident">is_relative_lock_time</span>() {
         <span class="kw">return</span> <span class="bool-val">false</span>;
     }
 
-    <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="ident">SEQUENCE_LOCKTIME_TYPE_FLAG</span> <span class="op">|</span> <span class="ident">SEQUENCE_LOCKTIME_MASK</span>;
-    <span class="kw">let</span> <span class="ident">rbf</span> <span class="op">=</span> <span class="ident">rbf</span> <span class="op">&amp;</span> <span class="ident">mask</span>;
-    <span class="kw">let</span> <span class="ident">csv</span> <span class="op">=</span> <span class="ident">csv</span> <span class="op">&amp;</span> <span class="ident">mask</span>;
-
     <span class="comment">// Both values should be represented in the same unit (either time-based or</span>
     <span class="comment">// block-height based)</span>
-    <span class="kw">if</span> (<span class="ident">rbf</span> <span class="op">&lt;</span> <span class="ident">SEQUENCE_LOCKTIME_TYPE_FLAG</span>) <span class="op">!</span><span class="op">=</span> (<span class="ident">csv</span> <span class="op">&lt;</span> <span class="ident">SEQUENCE_LOCKTIME_TYPE_FLAG</span>) {
+    <span class="kw">if</span> <span class="ident">rbf</span>.<span class="ident">is_time_locked</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">csv</span>.<span class="ident">is_time_locked</span>() {
         <span class="kw">return</span> <span class="bool-val">false</span>;
     }
 
@@ -318,24 +252,10 @@
     <span class="bool-val">true</span>
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">check_nlocktime</span>(<span class="ident">nlocktime</span>: <span class="ident">u32</span>, <span class="ident">required</span>: <span class="ident">u32</span>) -&gt; <span class="ident">bool</span> {
-    <span class="comment">// Both values should be expressed in the same unit</span>
-    <span class="kw">if</span> (<span class="ident">nlocktime</span> <span class="op">&lt;</span> <span class="ident">BLOCKS_TIMELOCK_THRESHOLD</span>) <span class="op">!</span><span class="op">=</span> (<span class="ident">required</span> <span class="op">&lt;</span> <span class="ident">BLOCKS_TIMELOCK_THRESHOLD</span>) {
-        <span class="kw">return</span> <span class="bool-val">false</span>;
-    }
-
-    <span class="comment">// The value should be at least `required`</span>
-    <span class="kw">if</span> <span class="ident">nlocktime</span> <span class="op">&lt;</span> <span class="ident">required</span> {
-        <span class="kw">return</span> <span class="bool-val">false</span>;
-    }
-
-    <span class="bool-val">true</span>
-}
-
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Pk</span>: <span class="ident">MiniscriptKey</span> <span class="op">+</span> <span class="ident">ToPublicKey</span><span class="op">&gt;</span> <span class="ident">Satisfier</span><span class="op">&lt;</span><span class="ident">Pk</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">After</span> {
-    <span class="kw">fn</span> <span class="ident">check_after</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">n</span>: <span class="ident">u32</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">check_after</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">n</span>: <span class="ident">LockTime</span>) -&gt; <span class="ident">bool</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">current_height</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">current_height</span> {
-            <span class="ident">current_height</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">n</span>
+            <span class="ident">current_height</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">n</span>.<span class="ident">to_consensus_u32</span>()
         } <span class="kw">else</span> {
             <span class="self">self</span>.<span class="ident">assume_height_reached</span>
         }
@@ -363,10 +283,15 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Pk</span>: <span class="ident">MiniscriptKey</span> <span class="op">+</span> <span class="ident">ToPublicKey</span><span class="op">&gt;</span> <span class="ident">Satisfier</span><span class="op">&lt;</span><span class="ident">Pk</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Older</span> {
-    <span class="kw">fn</span> <span class="ident">check_older</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">n</span>: <span class="ident">u32</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">check_older</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">n</span>: <span class="ident">Sequence</span>) -&gt; <span class="ident">bool</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">current_height</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">current_height</span> {
             <span class="comment">// TODO: test &gt;= / &gt;</span>
-            <span class="ident">current_height</span> <span class="kw">as</span> <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">create_height</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>) <span class="kw">as</span> <span class="ident">u64</span> <span class="op">+</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">u64</span>
+            <span class="ident">current_height</span>
+                <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>
+                    .<span class="ident">create_height</span>
+                    .<span class="ident">unwrap_or</span>(<span class="number">0</span>)
+                    .<span class="ident">checked_add</span>(<span class="ident">n</span>.<span class="ident">to_consensus_u32</span>())
+                    .<span class="ident">expect</span>(<span class="string">&quot;Overflowing addition&quot;</span>)
         } <span class="kw">else</span> {
             <span class="self">self</span>.<span class="ident">assume_height_reached</span>
         }
@@ -377,11 +302,12 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::{
-        <span class="ident">check_nlocktime</span>, <span class="ident">check_nsequence_rbf</span>, <span class="ident">IsDust</span>, <span class="ident">BLOCKS_TIMELOCK_THRESHOLD</span>,
-        <span class="ident">SEQUENCE_LOCKTIME_TYPE_FLAG</span>,
-    };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::bitcoin::Address</span>;
+    <span class="comment">// When nSequence is lower than this flag the timelock is interpreted as block-height-based,</span>
+    <span class="comment">// otherwise it&#39;s time-based</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">SEQUENCE_LOCKTIME_TYPE_FLAG</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">22</span>;
+
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">check_nsequence_rbf</span>, <span class="ident">IsDust</span>};
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::bitcoin</span>::{<span class="ident">Address</span>, <span class="ident">Sequence</span>};
     <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -403,66 +329,40 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_check_nsequence_rbf_msb_set</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nsequence_rbf</span>(<span class="number">0x80000000</span>, <span class="number">5000</span>);
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nsequence_rbf</span>(<span class="ident">Sequence</span>(<span class="number">0x80000000</span>), <span class="ident">Sequence</span>(<span class="number">5000</span>));
         <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">result</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_check_nsequence_rbf_lt_csv</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nsequence_rbf</span>(<span class="number">4000</span>, <span class="number">5000</span>);
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nsequence_rbf</span>(<span class="ident">Sequence</span>(<span class="number">4000</span>), <span class="ident">Sequence</span>(<span class="number">5000</span>));
         <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">result</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_check_nsequence_rbf_different_unit</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nsequence_rbf</span>(<span class="ident">SEQUENCE_LOCKTIME_TYPE_FLAG</span> <span class="op">+</span> <span class="number">5000</span>, <span class="number">5000</span>);
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span>
+            <span class="ident">check_nsequence_rbf</span>(<span class="ident">Sequence</span>(<span class="ident">SEQUENCE_LOCKTIME_TYPE_FLAG</span> <span class="op">+</span> <span class="number">5000</span>), <span class="ident">Sequence</span>(<span class="number">5000</span>));
         <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">result</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_check_nsequence_rbf_mask</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nsequence_rbf</span>(<span class="number">0x3f</span> <span class="op">+</span> <span class="number">10_000</span>, <span class="number">5000</span>);
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nsequence_rbf</span>(<span class="ident">Sequence</span>(<span class="number">0x3f</span> <span class="op">+</span> <span class="number">10_000</span>), <span class="ident">Sequence</span>(<span class="number">5000</span>));
         <span class="macro">assert!</span>(<span class="ident">result</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_check_nsequence_rbf_same_unit_blocks</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nsequence_rbf</span>(<span class="number">10_000</span>, <span class="number">5000</span>);
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nsequence_rbf</span>(<span class="ident">Sequence</span>(<span class="number">10_000</span>), <span class="ident">Sequence</span>(<span class="number">5000</span>));
         <span class="macro">assert!</span>(<span class="ident">result</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_check_nsequence_rbf_same_unit_time</span>() {
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nsequence_rbf</span>(
-            <span class="ident">SEQUENCE_LOCKTIME_TYPE_FLAG</span> <span class="op">+</span> <span class="number">10_000</span>,
-            <span class="ident">SEQUENCE_LOCKTIME_TYPE_FLAG</span> <span class="op">+</span> <span class="number">5000</span>,
-        );
-        <span class="macro">assert!</span>(<span class="ident">result</span>);
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_check_nlocktime_lt_cltv</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nlocktime</span>(<span class="number">4000</span>, <span class="number">5000</span>);
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">result</span>);
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_check_nlocktime_different_unit</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nlocktime</span>(<span class="ident">BLOCKS_TIMELOCK_THRESHOLD</span> <span class="op">+</span> <span class="number">5000</span>, <span class="number">5000</span>);
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">result</span>);
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_check_nlocktime_same_unit_blocks</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nlocktime</span>(<span class="number">10_000</span>, <span class="number">5000</span>);
-        <span class="macro">assert!</span>(<span class="ident">result</span>);
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_check_nlocktime_same_unit_time</span>() {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">check_nlocktime</span>(
-            <span class="ident">BLOCKS_TIMELOCK_THRESHOLD</span> <span class="op">+</span> <span class="number">10_000</span>,
-            <span class="ident">BLOCKS_TIMELOCK_THRESHOLD</span> <span class="op">+</span> <span class="number">5000</span>,
+            <span class="ident">Sequence</span>(<span class="ident">SEQUENCE_LOCKTIME_TYPE_FLAG</span> <span class="op">+</span> <span class="number">10_000</span>),
+            <span class="ident">Sequence</span>(<span class="ident">SEQUENCE_LOCKTIME_TYPE_FLAG</span> <span class="op">+</span> <span class="number">5000</span>),
         );
         <span class="macro">assert!</span>(<span class="ident">result</span>);
     }

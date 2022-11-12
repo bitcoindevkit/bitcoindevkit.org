@@ -1920,6 +1920,13 @@
 <span id="1913">1913</span>
 <span id="1914">1914</span>
 <span id="1915">1915</span>
+<span id="1916">1916</span>
+<span id="1917">1917</span>
+<span id="1918">1918</span>
+<span id="1919">1919</span>
+<span id="1920">1920</span>
+<span id="1921">1921</span>
+<span id="1922">1922</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -1965,14 +1972,17 @@
 <span class="kw">use</span> <span class="ident">serde::ser::SerializeMap</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Serialize</span>, <span class="ident">Serializer</span>};
 
-<span class="kw">use</span> <span class="ident">bitcoin::hashes</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">bitcoin::hashes</span>::{<span class="ident">hash160</span>, <span class="ident">ripemd160</span>, <span class="ident">sha256</span>};
 <span class="kw">use</span> <span class="ident">bitcoin::util::bip32::Fingerprint</span>;
-<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">PublicKey</span>, <span class="ident">XOnlyPublicKey</span>};
+<span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">LockTime</span>, <span class="ident">PublicKey</span>, <span class="ident">Sequence</span>, <span class="ident">XOnlyPublicKey</span>};
 
 <span class="kw">use</span> <span class="ident">miniscript::descriptor</span>::{
-    <span class="ident">DescriptorPublicKey</span>, <span class="ident">DescriptorSinglePub</span>, <span class="ident">ShInner</span>, <span class="ident">SinglePubKey</span>, <span class="ident">SortedMultiVec</span>, <span class="ident">WshInner</span>,
+    <span class="ident">DescriptorPublicKey</span>, <span class="ident">ShInner</span>, <span class="ident">SinglePub</span>, <span class="ident">SinglePubKey</span>, <span class="ident">SortedMultiVec</span>, <span class="ident">WshInner</span>,
 };
-<span class="kw">use</span> <span class="ident">miniscript</span>::{<span class="ident">Descriptor</span>, <span class="ident">Miniscript</span>, <span class="ident">MiniscriptKey</span>, <span class="ident">Satisfier</span>, <span class="ident">ScriptContext</span>, <span class="ident">Terminal</span>};
+<span class="kw">use</span> <span class="ident">miniscript::hash256</span>;
+<span class="kw">use</span> <span class="ident">miniscript</span>::{
+    <span class="ident">Descriptor</span>, <span class="ident">Miniscript</span>, <span class="ident">Satisfier</span>, <span class="ident">ScriptContext</span>, <span class="ident">SigType</span>, <span class="ident">Terminal</span>, <span class="ident">ToPublicKey</span>,
+};
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
 <span class="kw">use</span> <span class="ident">log</span>::{<span class="ident">debug</span>, <span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">trace</span>};
@@ -1980,9 +1990,9 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::ExtractPolicy</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keys::ExtScriptContext</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet::signer</span>::{<span class="ident">SignerId</span>, <span class="ident">SignersContainer</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet::utils</span>::{<span class="self">self</span>, <span class="ident">After</span>, <span class="ident">Older</span>, <span class="ident">SecpCtx</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet::utils</span>::{<span class="ident">After</span>, <span class="ident">Older</span>, <span class="ident">SecpCtx</span>};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::checksum::get_checksum</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::checksum::calc_checksum</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::error::Error</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::XKeyUtils</span>;
 <span class="kw">use</span> <span class="ident">bitcoin::util::psbt</span>::{<span class="ident">Input</span> <span class="kw">as</span> <span class="ident">PsbtInput</span>, <span class="ident">PartiallySignedTransaction</span> <span class="kw">as</span> <span class="ident">Psbt</span>};
@@ -2003,11 +2013,11 @@
 <span class="kw">impl</span> <span class="ident">PkOrF</span> {
     <span class="kw">fn</span> <span class="ident">from_key</span>(<span class="ident">k</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) -&gt; <span class="self">Self</span> {
         <span class="kw">match</span> <span class="ident">k</span> {
-            <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="ident">DescriptorSinglePub</span> {
+            <span class="ident">DescriptorPublicKey::Single</span>(<span class="ident">SinglePub</span> {
                 <span class="ident">key</span>: <span class="ident">SinglePubKey::FullKey</span>(<span class="ident">pk</span>),
                 ..
             }) =&gt; <span class="ident">PkOrF::Pubkey</span>(<span class="kw-2">*</span><span class="ident">pk</span>),
-            <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="ident">DescriptorSinglePub</span> {
+            <span class="ident">DescriptorPublicKey::Single</span>(<span class="ident">SinglePub</span> {
                 <span class="ident">key</span>: <span class="ident">SinglePubKey::XOnly</span>(<span class="ident">pk</span>),
                 ..
             }) =&gt; <span class="ident">PkOrF::XOnlyPubkey</span>(<span class="kw-2">*</span><span class="ident">pk</span>),
@@ -2033,7 +2043,7 @@
     <span class="doccomment">/// Double SHA256 preimage hash</span>
     <span class="ident">Hash256Preimage</span> {
         <span class="doccomment">/// The digest value</span>
-        <span class="ident">hash</span>: <span class="ident">sha256d::Hash</span>,
+        <span class="ident">hash</span>: <span class="ident">hash256::Hash</span>,
     },
     <span class="doccomment">/// RIPEMD160 preimage hash</span>
     <span class="ident">Ripemd160Preimage</span> {
@@ -2047,13 +2057,13 @@
     },
     <span class="doccomment">/// Absolute timeclock timestamp</span>
     <span class="ident">AbsoluteTimelock</span> {
-        <span class="doccomment">/// The timestamp value</span>
-        <span class="ident">value</span>: <span class="ident">u32</span>,
+        <span class="doccomment">/// The timelock value</span>
+        <span class="ident">value</span>: <span class="ident">LockTime</span>,
     },
     <span class="doccomment">/// Relative timelock locktime</span>
     <span class="ident">RelativeTimelock</span> {
-        <span class="doccomment">/// The locktime value</span>
-        <span class="ident">value</span>: <span class="ident">u32</span>,
+        <span class="doccomment">/// The timelock value</span>
+        <span class="ident">value</span>: <span class="ident">Sequence</span>,
     },
     <span class="doccomment">/// Multi-signature public keys with threshold count</span>
     <span class="ident">Multisig</span> {
@@ -2087,7 +2097,7 @@
 
     <span class="doccomment">/// Returns a unique id for the [`SatisfiableItem`]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">id</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="ident">get_checksum</span>(<span class="kw-2">&amp;</span><span class="ident">serde_json::to_string</span>(<span class="self">self</span>).<span class="ident">expect</span>(<span class="string">&quot;Failed to serialize a SatisfiableItem&quot;</span>))
+        <span class="ident">calc_checksum</span>(<span class="kw-2">&amp;</span><span class="ident">serde_json::to_string</span>(<span class="self">self</span>).<span class="ident">expect</span>(<span class="string">&quot;Failed to serialize a SatisfiableItem&quot;</span>))
             .<span class="ident">expect</span>(<span class="string">&quot;Failed to compute a SatisfiableItem id&quot;</span>)
     }
 }
@@ -2360,32 +2370,30 @@
 }
 
 <span class="doccomment">/// An extra condition that must be satisfied but that is out of control of the user</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Hash</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>)]</span>
+<span class="doccomment">/// TODO: use `bitcoin::LockTime` and `bitcoin::Sequence`</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Hash</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Condition</span> {
     <span class="doccomment">/// Optional CheckSequenceVerify condition</span>
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">csv</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">csv</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Sequence</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Optional timelock condition</span>
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">timelock</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">timelock</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LockTime</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Condition</span> {
-    <span class="kw">fn</span> <span class="ident">merge_nlocktime</span>(<span class="ident">a</span>: <span class="ident">u32</span>, <span class="ident">b</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">PolicyError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> (<span class="ident">a</span> <span class="op">&lt;</span> <span class="ident">utils::BLOCKS_TIMELOCK_THRESHOLD</span>) <span class="op">!</span><span class="op">=</span> (<span class="ident">b</span> <span class="op">&lt;</span> <span class="ident">utils::BLOCKS_TIMELOCK_THRESHOLD</span>) {
+    <span class="kw">fn</span> <span class="ident">merge_nlocktime</span>(<span class="ident">a</span>: <span class="ident">LockTime</span>, <span class="ident">b</span>: <span class="ident">LockTime</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">LockTime</span>, <span class="ident">PolicyError</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">a</span>.<span class="ident">is_same_unit</span>(<span class="ident">b</span>) {
             <span class="prelude-val">Err</span>(<span class="ident">PolicyError::MixedTimelockUnits</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">a</span> <span class="op">&gt;</span> <span class="ident">b</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">a</span>)
         } <span class="kw">else</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">max</span>(<span class="ident">a</span>, <span class="ident">b</span>))
+            <span class="prelude-val">Ok</span>(<span class="ident">b</span>)
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">merge_nsequence</span>(<span class="ident">a</span>: <span class="ident">u32</span>, <span class="ident">b</span>: <span class="ident">u32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">PolicyError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="ident">utils::SEQUENCE_LOCKTIME_TYPE_FLAG</span> <span class="op">|</span> <span class="ident">utils::SEQUENCE_LOCKTIME_MASK</span>;
-
-        <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="ident">a</span> <span class="op">&amp;</span> <span class="ident">mask</span>;
-        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span> <span class="op">&amp;</span> <span class="ident">mask</span>;
-
-        <span class="kw">if</span> (<span class="ident">a</span> <span class="op">&lt;</span> <span class="ident">utils::SEQUENCE_LOCKTIME_TYPE_FLAG</span>) <span class="op">!</span><span class="op">=</span> (<span class="ident">b</span> <span class="op">&lt;</span> <span class="ident">utils::SEQUENCE_LOCKTIME_TYPE_FLAG</span>) {
+    <span class="kw">fn</span> <span class="ident">merge_nsequence</span>(<span class="ident">a</span>: <span class="ident">Sequence</span>, <span class="ident">b</span>: <span class="ident">Sequence</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Sequence</span>, <span class="ident">PolicyError</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">a</span>.<span class="ident">is_time_locked</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">b</span>.<span class="ident">is_time_locked</span>() {
             <span class="prelude-val">Err</span>(<span class="ident">PolicyError::MixedTimelockUnits</span>)
         } <span class="kw">else</span> {
             <span class="prelude-val">Ok</span>(<span class="ident">max</span>(<span class="ident">a</span>, <span class="ident">b</span>))
@@ -2642,15 +2650,18 @@
 }
 
 <span class="kw">fn</span> <span class="ident">signer_id</span>(<span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">DescriptorPublicKey</span>, <span class="ident">secp</span>: <span class="kw-2">&amp;</span><span class="ident">SecpCtx</span>) -&gt; <span class="ident">SignerId</span> {
+    <span class="comment">// For consistency we always compute the key hash in &quot;ecdsa&quot; form (with the leading sign</span>
+    <span class="comment">// prefix) even if we are in a taproot descriptor. We just want some kind of unique identifier</span>
+    <span class="comment">// for a key, so it doesn&#39;t really matter how the identifier is computed.</span>
     <span class="kw">match</span> <span class="ident">key</span> {
-        <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="ident">DescriptorSinglePub</span> {
+        <span class="ident">DescriptorPublicKey::Single</span>(<span class="ident">SinglePub</span> {
             <span class="ident">key</span>: <span class="ident">SinglePubKey::FullKey</span>(<span class="ident">pk</span>),
             ..
-        }) =&gt; <span class="ident">pk</span>.<span class="ident">to_pubkeyhash</span>().<span class="ident">into</span>(),
-        <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="ident">DescriptorSinglePub</span> {
+        }) =&gt; <span class="ident">pk</span>.<span class="ident">to_pubkeyhash</span>(<span class="ident">SigType::Ecdsa</span>).<span class="ident">into</span>(),
+        <span class="ident">DescriptorPublicKey::Single</span>(<span class="ident">SinglePub</span> {
             <span class="ident">key</span>: <span class="ident">SinglePubKey::XOnly</span>(<span class="ident">pk</span>),
             ..
-        }) =&gt; <span class="ident">pk</span>.<span class="ident">to_pubkeyhash</span>().<span class="ident">into</span>(),
+        }) =&gt; <span class="ident">pk</span>.<span class="ident">to_pubkeyhash</span>(<span class="ident">SigType::Ecdsa</span>).<span class="ident">into</span>(),
         <span class="ident">DescriptorPublicKey::XPub</span>(<span class="ident">xpub</span>) =&gt; <span class="ident">xpub</span>.<span class="ident">root_fingerprint</span>(<span class="ident">secp</span>).<span class="ident">into</span>(),
     }
 }
@@ -2701,7 +2712,7 @@
 ) -&gt; <span class="ident">bool</span> {
     <span class="comment">//TODO check signature validity</span>
     <span class="ident">psbt</span>.<span class="ident">inputs</span>.<span class="ident">iter</span>().<span class="ident">all</span>(<span class="op">|</span><span class="ident">input</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">key</span> {
-        <span class="ident">DescriptorPublicKey::SinglePub</span>(<span class="ident">DescriptorSinglePub</span> { <span class="ident">key</span>, .. }) =&gt; <span class="ident">check</span>(<span class="ident">input</span>, <span class="ident">key</span>),
+        <span class="ident">DescriptorPublicKey::Single</span>(<span class="ident">SinglePub</span> { <span class="ident">key</span>, .. }) =&gt; <span class="ident">check</span>(<span class="ident">input</span>, <span class="ident">key</span>),
         <span class="ident">DescriptorPublicKey::XPub</span>(<span class="ident">xpub</span>) =&gt; {
             <span class="comment">//TODO check actual derivation matches</span>
             <span class="kw">match</span> <span class="ident">extract</span>(<span class="ident">input</span>, <span class="ident">xpub</span>.<span class="ident">root_fingerprint</span>(<span class="ident">secp</span>)) {
@@ -2813,10 +2824,13 @@
                 <span class="prelude-val">Some</span>(<span class="ident">Ctx::make_signature</span>(<span class="ident">pubkey_hash</span>, <span class="ident">signers</span>, <span class="ident">build_sat</span>, <span class="ident">secp</span>))
             }
             <span class="ident">Terminal::After</span>(<span class="ident">value</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">policy</span>: <span class="ident">Policy</span> <span class="op">=</span> <span class="ident">SatisfiableItem::AbsoluteTimelock</span> { <span class="ident">value</span>: <span class="kw-2">*</span><span class="ident">value</span> }.<span class="ident">into</span>();
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">policy</span>: <span class="ident">Policy</span> <span class="op">=</span> <span class="ident">SatisfiableItem::AbsoluteTimelock</span> {
+                    <span class="ident">value</span>: <span class="ident">value</span>.<span class="ident">into</span>(),
+                }
+                .<span class="ident">into</span>();
                 <span class="ident">policy</span>.<span class="ident">contribution</span> <span class="op">=</span> <span class="ident">Satisfaction::Complete</span> {
                     <span class="ident">condition</span>: <span class="ident">Condition</span> {
-                        <span class="ident">timelock</span>: <span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">value</span>),
+                        <span class="ident">timelock</span>: <span class="prelude-val">Some</span>(<span class="ident">value</span>.<span class="ident">into</span>()),
                         <span class="ident">csv</span>: <span class="prelude-val">None</span>,
                     },
                 };
@@ -2827,9 +2841,11 @@
                 } <span class="op">=</span> <span class="ident">build_sat</span>
                 {
                     <span class="kw">let</span> <span class="ident">after</span> <span class="op">=</span> <span class="ident">After::new</span>(<span class="prelude-val">Some</span>(<span class="ident">current_height</span>), <span class="bool-val">false</span>);
-                    <span class="kw">let</span> <span class="ident">after_sat</span> <span class="op">=</span> <span class="ident">Satisfier</span>::<span class="op">&lt;</span><span class="ident">bitcoin::PublicKey</span><span class="op">&gt;</span><span class="ident">::check_after</span>(<span class="kw-2">&amp;</span><span class="ident">after</span>, <span class="kw-2">*</span><span class="ident">value</span>);
-                    <span class="kw">let</span> <span class="ident">inputs_sat</span> <span class="op">=</span> <span class="ident">psbt_inputs_sat</span>(<span class="ident">psbt</span>)
-                        .<span class="ident">all</span>(<span class="op">|</span><span class="ident">sat</span><span class="op">|</span> <span class="ident">Satisfier</span>::<span class="op">&lt;</span><span class="ident">bitcoin::PublicKey</span><span class="op">&gt;</span><span class="ident">::check_after</span>(<span class="kw-2">&amp;</span><span class="ident">sat</span>, <span class="kw-2">*</span><span class="ident">value</span>));
+                    <span class="kw">let</span> <span class="ident">after_sat</span> <span class="op">=</span>
+                        <span class="ident">Satisfier</span>::<span class="op">&lt;</span><span class="ident">bitcoin::PublicKey</span><span class="op">&gt;</span><span class="ident">::check_after</span>(<span class="kw-2">&amp;</span><span class="ident">after</span>, <span class="ident">value</span>.<span class="ident">into</span>());
+                    <span class="kw">let</span> <span class="ident">inputs_sat</span> <span class="op">=</span> <span class="ident">psbt_inputs_sat</span>(<span class="ident">psbt</span>).<span class="ident">all</span>(<span class="op">|</span><span class="ident">sat</span><span class="op">|</span> {
+                        <span class="ident">Satisfier</span>::<span class="op">&lt;</span><span class="ident">bitcoin::PublicKey</span><span class="op">&gt;</span><span class="ident">::check_after</span>(<span class="kw-2">&amp;</span><span class="ident">sat</span>, <span class="ident">value</span>.<span class="ident">into</span>())
+                    });
                     <span class="kw">if</span> <span class="ident">after_sat</span> <span class="op">&amp;&amp;</span> <span class="ident">inputs_sat</span> {
                         <span class="ident">policy</span>.<span class="ident">satisfaction</span> <span class="op">=</span> <span class="ident">policy</span>.<span class="ident">contribution</span>.<span class="ident">clone</span>();
                     }
@@ -2921,6 +2937,9 @@
 
                 <span class="ident">Policy::make_thresh</span>(<span class="ident">mapped</span>, <span class="ident">threshold</span>)<span class="question-mark">?</span>
             }
+
+            <span class="comment">// Unsupported</span>
+            <span class="ident">Terminal::RawPkH</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
         })
     }
 }
@@ -3046,14 +3065,12 @@
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor</span>::{<span class="ident">ExtractPolicy</span>, <span class="ident">IntoWalletDescriptor</span>};
 
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::derived::AsDerived</span>;
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::descriptor::policy::SatisfiableItem</span>::{<span class="ident">EcdsaSignature</span>, <span class="ident">Multisig</span>, <span class="ident">Thresh</span>};
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keys</span>::{<span class="ident">DescriptorKey</span>, <span class="ident">IntoDescriptorKey</span>};
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wallet::signer::SignersContainer</span>;
     <span class="kw">use</span> <span class="ident">bitcoin::secp256k1::Secp256k1</span>;
     <span class="kw">use</span> <span class="ident">bitcoin::util::bip32</span>;
     <span class="kw">use</span> <span class="ident">bitcoin::Network</span>;
-    <span class="kw">use</span> <span class="ident">miniscript::DescriptorTrait</span>;
     <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
     <span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
 
@@ -3251,9 +3268,8 @@
         <span class="kw">let</span> (<span class="ident">wallet_desc</span>, <span class="ident">keymap</span>) <span class="op">=</span> <span class="ident">desc</span>
             .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network::Testnet</span>)
             .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">single_key</span> <span class="op">=</span> <span class="ident">wallet_desc</span>.<span class="ident">derive</span>(<span class="number">0</span>);
         <span class="kw">let</span> <span class="ident">signers_container</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">SignersContainer::build</span>(<span class="ident">keymap</span>, <span class="kw-2">&amp;</span><span class="ident">wallet_desc</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>));
-        <span class="kw">let</span> <span class="ident">policy</span> <span class="op">=</span> <span class="ident">single_key</span>
+        <span class="kw">let</span> <span class="ident">policy</span> <span class="op">=</span> <span class="ident">wallet_desc</span>
             .<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="ident">signers_container</span>, <span class="ident">BuildSatisfaction::None</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>)
             .<span class="ident">unwrap</span>()
             .<span class="ident">unwrap</span>();
@@ -3265,16 +3281,15 @@
         <span class="kw">let</span> (<span class="ident">wallet_desc</span>, <span class="ident">keymap</span>) <span class="op">=</span> <span class="ident">desc</span>
             .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network::Testnet</span>)
             .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">single_key</span> <span class="op">=</span> <span class="ident">wallet_desc</span>.<span class="ident">derive</span>(<span class="number">0</span>);
         <span class="kw">let</span> <span class="ident">signers_container</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">SignersContainer::build</span>(<span class="ident">keymap</span>, <span class="kw-2">&amp;</span><span class="ident">wallet_desc</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>));
-        <span class="kw">let</span> <span class="ident">policy</span> <span class="op">=</span> <span class="ident">single_key</span>
+        <span class="kw">let</span> <span class="ident">policy</span> <span class="op">=</span> <span class="ident">wallet_desc</span>
             .<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="ident">signers_container</span>, <span class="ident">BuildSatisfaction::None</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>)
             .<span class="ident">unwrap</span>()
             .<span class="ident">unwrap</span>();
 
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="kw-2">&amp;</span><span class="ident">policy</span>.<span class="ident">item</span>, <span class="ident">EcdsaSignature</span>(<span class="ident">PkOrF::Fingerprint</span>(<span class="ident">f</span>)) <span class="kw">if</span> <span class="ident">f</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">fingerprint</span>));
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="ident">policy</span>.<span class="ident">item</span>, <span class="ident">EcdsaSignature</span>(<span class="ident">PkOrF::Fingerprint</span>(<span class="ident">f</span>)) <span class="kw">if</span> <span class="ident">f</span> <span class="op">==</span> <span class="ident">fingerprint</span>));
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span><span class="ident">policy</span>.<span class="ident">contribution</span>, <span class="ident">Satisfaction::Complete</span> {<span class="ident">condition</span>} <span class="kw">if</span> <span class="ident">condition</span>.<span class="ident">csv</span> <span class="op">==</span> <span class="prelude-val">None</span> <span class="op">&amp;&amp;</span> <span class="ident">condition</span>.<span class="ident">timelock</span> <span class="op">==</span> <span class="prelude-val">None</span>)
+            <span class="macro">matches!</span>(<span class="ident">policy</span>.<span class="ident">contribution</span>, <span class="ident">Satisfaction::Complete</span> {<span class="ident">condition</span>} <span class="kw">if</span> <span class="ident">condition</span>.<span class="ident">csv</span> <span class="op">==</span> <span class="prelude-val">None</span> <span class="op">&amp;&amp;</span> <span class="ident">condition</span>.<span class="ident">timelock</span> <span class="op">==</span> <span class="prelude-val">None</span>)
         );
     }
 
@@ -3290,21 +3305,20 @@
         <span class="kw">let</span> (<span class="ident">wallet_desc</span>, <span class="ident">keymap</span>) <span class="op">=</span> <span class="ident">desc</span>
             .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network::Testnet</span>)
             .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">single_key</span> <span class="op">=</span> <span class="ident">wallet_desc</span>.<span class="ident">derive</span>(<span class="number">0</span>);
         <span class="kw">let</span> <span class="ident">signers_container</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">SignersContainer::build</span>(<span class="ident">keymap</span>, <span class="kw-2">&amp;</span><span class="ident">wallet_desc</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>));
-        <span class="kw">let</span> <span class="ident">policy</span> <span class="op">=</span> <span class="ident">single_key</span>
+        <span class="kw">let</span> <span class="ident">policy</span> <span class="op">=</span> <span class="ident">wallet_desc</span>
             .<span class="ident">extract_policy</span>(<span class="kw-2">&amp;</span><span class="ident">signers_container</span>, <span class="ident">BuildSatisfaction::None</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>)
             .<span class="ident">unwrap</span>()
             .<span class="ident">unwrap</span>();
 
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span><span class="ident">policy</span>.<span class="ident">item</span>, <span class="ident">Multisig</span> { <span class="ident">keys</span>, <span class="ident">threshold</span> } <span class="kw">if</span> <span class="ident">threshold</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="number">1</span>
+            <span class="macro">matches!</span>(<span class="ident">policy</span>.<span class="ident">item</span>, <span class="ident">Multisig</span> { <span class="ident">keys</span>, <span class="ident">threshold</span> } <span class="kw">if</span> <span class="ident">threshold</span> <span class="op">==</span> <span class="number">1</span>
             <span class="op">&amp;&amp;</span> <span class="ident">keys</span>[<span class="number">0</span>] <span class="op">==</span> <span class="ident">PkOrF::Fingerprint</span>(<span class="ident">fingerprint0</span>)
             <span class="op">&amp;&amp;</span> <span class="ident">keys</span>[<span class="number">1</span>] <span class="op">==</span> <span class="ident">PkOrF::Fingerprint</span>(<span class="ident">fingerprint1</span>))
         );
         <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span><span class="ident">policy</span>.<span class="ident">contribution</span>, <span class="ident">Satisfaction::PartialComplete</span> { <span class="ident">n</span>, <span class="ident">m</span>, <span class="ident">items</span>, <span class="ident">conditions</span>, .. } <span class="kw">if</span> <span class="ident">n</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="number">2</span>
-             <span class="op">&amp;&amp;</span> <span class="ident">m</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="number">1</span>
+            <span class="macro">matches!</span>(<span class="ident">policy</span>.<span class="ident">contribution</span>, <span class="ident">Satisfaction::PartialComplete</span> { <span class="ident">n</span>, <span class="ident">m</span>, <span class="ident">items</span>, <span class="ident">conditions</span>, .. } <span class="kw">if</span> <span class="ident">n</span> <span class="op">==</span> <span class="number">2</span>
+             <span class="op">&amp;&amp;</span> <span class="ident">m</span> <span class="op">==</span> <span class="number">1</span>
              <span class="op">&amp;&amp;</span> <span class="ident">items</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">2</span>
              <span class="op">&amp;&amp;</span> <span class="ident">conditions</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>])
              <span class="op">&amp;&amp;</span> <span class="ident">conditions</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>])
@@ -3349,8 +3363,8 @@
              <span class="op">&amp;&amp;</span> <span class="ident">m</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="number">2</span>
              <span class="op">&amp;&amp;</span> <span class="ident">items</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">3</span>
              <span class="op">&amp;&amp;</span> <span class="ident">conditions</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>,<span class="number">1</span>]).<span class="ident">unwrap</span>().<span class="ident">iter</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">csv</span>.<span class="ident">is_none</span>()
-             <span class="op">&amp;&amp;</span> <span class="ident">conditions</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>,<span class="number">2</span>]).<span class="ident">unwrap</span>().<span class="ident">iter</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">csv</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">sequence</span>)
-             <span class="op">&amp;&amp;</span> <span class="ident">conditions</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>,<span class="number">2</span>]).<span class="ident">unwrap</span>().<span class="ident">iter</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">csv</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">sequence</span>)
+             <span class="op">&amp;&amp;</span> <span class="ident">conditions</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>,<span class="number">2</span>]).<span class="ident">unwrap</span>().<span class="ident">iter</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">csv</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">Sequence</span>(<span class="ident">sequence</span>))
+             <span class="op">&amp;&amp;</span> <span class="ident">conditions</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>,<span class="number">2</span>]).<span class="ident">unwrap</span>().<span class="ident">iter</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">csv</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">Sequence</span>(<span class="ident">sequence</span>))
             )
         );
     }
@@ -3496,7 +3510,7 @@
             .<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet_desc</span>
-            .<span class="ident">as_derived</span>(<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>)
+            .<span class="ident">at_derivation_index</span>(<span class="number">0</span>)
             .<span class="ident">address</span>(<span class="ident">Network::Testnet</span>)
             .<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(
@@ -3568,7 +3582,7 @@
         <span class="kw">let</span> <span class="ident">signers_container</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">SignersContainer::build</span>(<span class="ident">keymap</span>, <span class="kw-2">&amp;</span><span class="ident">wallet_desc</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>));
 
         <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">wallet_desc</span>
-            .<span class="ident">as_derived</span>(<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">secp</span>)
+            .<span class="ident">at_derivation_index</span>(<span class="number">0</span>)
             .<span class="ident">address</span>(<span class="ident">Network::Testnet</span>)
             .<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(

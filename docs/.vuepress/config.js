@@ -28,6 +28,7 @@ const docsSidebar = [
         ]
       },
       '/descriptors/',
+      '/examples/',
     ]
   },
   {
@@ -36,8 +37,8 @@ const docsSidebar = [
     children: [
       ['https://docs.rs/bdk/', 'Rust Stable Docs'],
       ['https://bitcoindevkit.org/docs-rs/bdk/nightly/latest/bdk/', 'Rust Nightly Docs'],
-      ['https://bitcoindevkit.org/bdk-android/', 'Android Docs'],
-      ['https://bitcoindevkit.org/bdk-jvm/', 'Kotlin/JVM Docs'],
+      ['https://bitcoindevkit.org/android/', 'Android Docs'],
+      ['https://bitcoindevkit.org/jvm/', 'Kotlin/JVM Docs'],
     ],
   }
 ]
