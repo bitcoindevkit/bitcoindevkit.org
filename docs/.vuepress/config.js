@@ -56,7 +56,7 @@ const tutorialSidebar = [
       '/tutorials/descriptor_based_paper_wallet',
       '/tutorials/spending_policy_demo',
       '/tutorials/exploring_bdk_rn',
-      '/tutorials/getting_started_with_rust_hwi'
+      '/tutorials/using_bdk_with_hardware_wallets',
     ],
   }
 ]
