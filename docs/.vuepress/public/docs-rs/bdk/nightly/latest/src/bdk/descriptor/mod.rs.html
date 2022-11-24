@@ -854,6 +854,45 @@
 <span id="847">847</span>
 <span id="848">848</span>
 <span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -877,7 +916,9 @@
 <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">secp256k1</span>, <span class="ident">PublicKey</span>, <span class="ident">XOnlyPublicKey</span>};
 <span class="kw">use</span> <span class="ident">bitcoin</span>::{<span class="ident">Network</span>, <span class="ident">TxOut</span>};
 
-<span class="kw">use</span> <span class="ident">miniscript::descriptor</span>::{<span class="ident">DefiniteDescriptorKey</span>, <span class="ident">DescriptorType</span>, <span class="ident">InnerXKey</span>, <span class="ident">SinglePubKey</span>};
+<span class="kw">use</span> <span class="ident">miniscript::descriptor</span>::{
+    <span class="ident">DefiniteDescriptorKey</span>, <span class="ident">DescriptorSecretKey</span>, <span class="ident">DescriptorType</span>, <span class="ident">InnerXKey</span>, <span class="ident">SinglePubKey</span>,
+};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">miniscript</span>::{
     <span class="ident">descriptor::DescriptorXKey</span>, <span class="ident">descriptor::KeyMap</span>, <span class="ident">descriptor::Wildcard</span>, <span class="ident">Descriptor</span>,
     <span class="ident">DescriptorPublicKey</span>, <span class="ident">Legacy</span>, <span class="ident">Miniscript</span>, <span class="ident">ScriptContext</span>, <span class="ident">Segwitv0</span>,
@@ -1096,14 +1137,34 @@
             );
         }
 
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="number">2</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">network</span>) {
+        <span class="kw">let</span> (<span class="ident">desc</span>, <span class="ident">keymap</span>, <span class="ident">networks</span>) <span class="op">=</span> <span class="self">self</span>;
+
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">networks</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">network</span>) {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DescriptorError::Key</span>(<span class="ident">KeyError::InvalidNetwork</span>));
         }
 
-        <span class="comment">// fixup the network for keys that need it</span>
-        <span class="kw">let</span> <span class="ident">translated</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">translate_pk</span>(<span class="kw-2">&amp;mut</span> <span class="ident">Translator</span> { <span class="ident">network</span> })<span class="question-mark">?</span>;
+        <span class="comment">// fixup the network for keys that need it in the descriptor</span>
+        <span class="kw">let</span> <span class="ident">translated</span> <span class="op">=</span> <span class="ident">desc</span>.<span class="ident">translate_pk</span>(<span class="kw-2">&amp;mut</span> <span class="ident">Translator</span> { <span class="ident">network</span> })<span class="question-mark">?</span>;
+        <span class="comment">// ...and in the key map</span>
+        <span class="kw">let</span> <span class="ident">fixed_keymap</span> <span class="op">=</span> <span class="ident">keymap</span>
+            .<span class="ident">into_iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw-2">mut</span> <span class="ident">k</span>, <span class="kw-2">mut</span> <span class="ident">v</span>)<span class="op">|</span> {
+                <span class="kw">match</span> (<span class="kw-2">&amp;mut</span> <span class="ident">k</span>, <span class="kw-2">&amp;mut</span> <span class="ident">v</span>) {
+                    (<span class="ident">DescriptorPublicKey::XPub</span>(<span class="ident">xpub</span>), <span class="ident">DescriptorSecretKey::XPrv</span>(<span class="ident">xprv</span>)) =&gt; {
+                        <span class="ident">xpub</span>.<span class="ident">xkey</span>.<span class="ident">network</span> <span class="op">=</span> <span class="ident">network</span>;
+                        <span class="ident">xprv</span>.<span class="ident">xkey</span>.<span class="ident">network</span> <span class="op">=</span> <span class="ident">network</span>;
+                    }
+                    (<span class="kw">_</span>, <span class="ident">DescriptorSecretKey::Single</span>(<span class="ident">key</span>)) =&gt; {
+                        <span class="ident">key</span>.<span class="ident">key</span>.<span class="ident">network</span> <span class="op">=</span> <span class="ident">network</span>;
+                    }
+                    <span class="kw">_</span> =&gt; {}
+                }
 
-        <span class="prelude-val">Ok</span>((<span class="ident">translated</span>, <span class="self">self</span>.<span class="number">1</span>))
+                (<span class="ident">k</span>, <span class="ident">v</span>)
+            })
+            .<span class="ident">collect</span>();
+
+        <span class="prelude-val">Ok</span>((<span class="ident">translated</span>, <span class="ident">fixed_keymap</span>))
     }
 }
 
@@ -1538,23 +1599,40 @@
 
         <span class="kw">let</span> <span class="ident">secp</span> <span class="op">=</span> <span class="ident">Secp256k1::new</span>();
 
-        <span class="kw">let</span> <span class="ident">xpub</span> <span class="op">=</span> <span class="ident">bip32::ExtendedPubKey::from_str</span>(<span class="string">&quot;xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">xprv</span> <span class="op">=</span> <span class="ident">bip32::ExtendedPrivKey::from_str</span>(<span class="string">&quot;xprv9s21ZrQH143K3c3gF1DUWpWNr2SG2XrG8oYPpqYh7hoWsJy9NjabErnzriJPpnGHyKz5NgdXmq1KVbqS1r4NXdCoKitWg5e86zqXHa8kxyB&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">bip32::DerivationPath::from_str</span>(<span class="string">&quot;m/0&quot;</span>).<span class="ident">unwrap</span>();
 
         <span class="comment">// here `to_descriptor_key` will set the valid networks for the key to only mainnet, since</span>
         <span class="comment">// we are using an &quot;xpub&quot;</span>
-        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> (<span class="ident">xpub</span>, <span class="ident">path</span>).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> (<span class="ident">xprv</span>, <span class="ident">path</span>.<span class="ident">clone</span>()).<span class="ident">into_descriptor_key</span>().<span class="ident">unwrap</span>();
         <span class="comment">// override it with any. this happens in some key conversions, like bip39</span>
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">key</span>.<span class="ident">override_valid_networks</span>(<span class="ident">any_network</span>());
 
         <span class="comment">// make a descriptor out of it</span>
         <span class="kw">let</span> <span class="ident">desc</span> <span class="op">=</span> <span class="macro">crate::descriptor!</span>(<span class="ident">wpkh</span>(<span class="ident">key</span>)).<span class="ident">unwrap</span>();
         <span class="comment">// this should convert the key that supports &quot;any_network&quot; to the right network (testnet)</span>
-        <span class="kw">let</span> (<span class="ident">wallet_desc</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">desc</span>
+        <span class="kw">let</span> (<span class="ident">wallet_desc</span>, <span class="ident">keymap</span>) <span class="op">=</span> <span class="ident">desc</span>
             .<span class="ident">into_wallet_descriptor</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="ident">Network::Testnet</span>)
             .<span class="ident">unwrap</span>();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">wallet_desc</span>.<span class="ident">to_string</span>(), <span class="string">&quot;wpkh(tpubDEnoLuPdBep9bzw5LoGYpsxUQYheRQ9gcgrJhJEcdKFB9cWQRyYmkCyRoTqeD4tJYiVVgt6A3rN6rWn9RYhR9sBsGxji29LYWHuKKbdb1ev/0/*)#y8p7e8kk&quot;</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">xprv_testnet</span> <span class="op">=</span> <span class="ident">xprv</span>;
+        <span class="ident">xprv_testnet</span>.<span class="ident">network</span> <span class="op">=</span> <span class="ident">Network::Testnet</span>;
+
+        <span class="kw">let</span> <span class="ident">xpub_testnet</span> <span class="op">=</span> <span class="ident">bip32::ExtendedPubKey::from_priv</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>, <span class="kw-2">&amp;</span><span class="ident">xprv_testnet</span>);
+        <span class="kw">let</span> <span class="ident">desc_pubkey</span> <span class="op">=</span> <span class="ident">DescriptorPublicKey::XPub</span>(<span class="ident">DescriptorXKey</span> {
+            <span class="ident">xkey</span>: <span class="ident">xpub_testnet</span>,
+            <span class="ident">origin</span>: <span class="prelude-val">None</span>,
+            <span class="ident">derivation_path</span>: <span class="ident">path</span>,
+            <span class="ident">wildcard</span>: <span class="ident">Wildcard::Unhardened</span>,
+        });
+
+        <span class="macro">assert_eq!</span>(<span class="ident">wallet_desc</span>.<span class="ident">to_string</span>(), <span class="string">&quot;wpkh(tpubD6NzVbkrYhZ4XtJzoDja5snUjBNQRP5B3f4Hyn1T1x6PVPxzzVjvw6nJx2D8RBCxog9GEVjZoyStfepTz7TtKoBVdkCtnc7VCJh9dD4RAU9/0/*)#a3svx0ha&quot;</span>);
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">keymap</span>
+                .<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">desc_pubkey</span>)
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">key</span><span class="op">|</span> <span class="ident">key</span>.<span class="ident">to_public</span>(<span class="kw-2">&amp;</span><span class="ident">secp</span>).<span class="ident">unwrap</span>()),
+            <span class="prelude-val">Some</span>(<span class="ident">desc_pubkey</span>)
+        );
     }
 
     <span class="comment">// test IntoWalletDescriptor trait from &amp;str with and without checksum appended</span>
