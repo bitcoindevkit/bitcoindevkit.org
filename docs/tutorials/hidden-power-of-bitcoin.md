@@ -14,7 +14,7 @@ draft: false
 
 To send people BTC - we simply scan a QR Code *(or paste an address)*, enter some amount and *whoosh* - sent!
 Users might think, just like traditional currency, we can only exchange money using Bitcoin.
-As it so happens, the underlying technology Bitcoin supports specify outputs not as addresses, but as programming scripts.
+As it so happens, Bitcoin's underlying technology not only supports the specification of addresses as transaction outputs, but also programming _scripts_.
 This opens us to a world of possibilities using Bitcoin.
 
 ## Script
