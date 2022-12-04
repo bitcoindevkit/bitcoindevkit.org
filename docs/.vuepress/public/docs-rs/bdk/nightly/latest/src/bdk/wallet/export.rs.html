@@ -375,6 +375,18 @@
 <span id="368">368</span>
 <span id="369">369</span>
 <span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit</span>
 <span class="comment">// Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;</span>
 <span class="comment">//</span>
@@ -511,15 +523,11 @@
         <span class="kw">let</span> <span class="ident">blockheight</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">wallet</span>.<span class="ident">database</span>.<span class="ident">borrow</span>().<span class="ident">iter_txs</span>(<span class="bool-val">false</span>) {
             <span class="kw">_</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">include_blockheight</span> =&gt; <span class="number">0</span>,
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="number">0</span>,
-            <span class="prelude-val">Ok</span>(<span class="ident">txs</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">heights</span> <span class="op">=</span> <span class="ident">txs</span>
-                    .<span class="ident">into_iter</span>()
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">tx</span><span class="op">|</span> <span class="ident">tx</span>.<span class="ident">confirmation_time</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">height</span>).<span class="ident">unwrap_or</span>(<span class="number">0</span>))
-                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-                <span class="ident">heights</span>.<span class="ident">sort_unstable</span>();
-
-                <span class="kw-2">*</span><span class="ident">heights</span>.<span class="ident">last</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="number">0</span>)
-            }
+            <span class="prelude-val">Ok</span>(<span class="ident">txs</span>) =&gt; <span class="ident">txs</span>
+                .<span class="ident">into_iter</span>()
+                .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">tx</span><span class="op">|</span> <span class="ident">tx</span>.<span class="ident">confirmation_time</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">height</span>))
+                .<span class="ident">min</span>()
+                .<span class="ident">unwrap_or</span>(<span class="number">0</span>),
         };
 
         <span class="kw">let</span> <span class="ident">export</span> <span class="op">=</span> <span class="ident">FullyNodedExport</span> {
@@ -626,6 +634,22 @@
             <span class="ident">fee</span>: <span class="prelude-val">Some</span>(<span class="number">500</span>),
             <span class="ident">confirmation_time</span>: <span class="prelude-val">Some</span>(<span class="ident">BlockTime</span> {
                 <span class="ident">timestamp</span>: <span class="number">12345678</span>,
+                <span class="ident">height</span>: <span class="number">5001</span>,
+            }),
+        })
+        .<span class="ident">unwrap</span>();
+
+        <span class="ident">db</span>.<span class="ident">set_tx</span>(<span class="kw-2">&amp;</span><span class="ident">TransactionDetails</span> {
+            <span class="ident">transaction</span>: <span class="prelude-val">None</span>,
+            <span class="ident">txid</span>: <span class="ident">Txid::from_str</span>(
+                <span class="string">&quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;</span>,
+            )
+            .<span class="ident">unwrap</span>(),
+            <span class="ident">received</span>: <span class="number">25_000</span>,
+            <span class="ident">sent</span>: <span class="number">0</span>,
+            <span class="ident">fee</span>: <span class="prelude-val">Some</span>(<span class="number">300</span>),
+            <span class="ident">confirmation_time</span>: <span class="prelude-val">Some</span>(<span class="ident">BlockTime</span> {
+                <span class="ident">timestamp</span>: <span class="number">12345677</span>,
                 <span class="ident">height</span>: <span class="number">5000</span>,
             }),
         })
