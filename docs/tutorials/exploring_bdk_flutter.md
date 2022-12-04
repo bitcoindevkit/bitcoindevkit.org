@@ -1,6 +1,6 @@
 ---
 title: "BDK-FLUTTER: Building Flutter Apps with BDK"
-description: "A tutorial and how to guide for using bdk-flutter for building bitcoin apps with Flutter"
+description: "A tutorial and guide to using bdk-flutter for building bitcoin apps"
 authors:
   - Bitcoin Zavior
 date: "2022-10-05"
@@ -248,19 +248,19 @@ late Blockchain blockchain;
 
 The first step in creating a non-custodial bitcoin app is creating a mnemonic seed phrase for the wallet.
 
-`bdk-flutter` provides a `Mnemonic` class that can help us create a `Mnemonic`. The `create()` method can be used to create a mnemonic, that takes `WordCount` as its required parameter.
+`bdk-flutter` provides a `Mnemonic` class to create a `Mnemonic`. The `create` method is a named constructor and can be used to create a mnemonic, it takes `WordCount` as its required parameter.
 
 ```dart
-var res = await Mnemonic().create(WordCount.Words12);
+var res = await Mnemonic.create(WordCount.Words12);
 ```
 
-We can specify a longer length we need, by passing in the wordCount argument.
+We can genrate a mnemonic of longer length by passing in a wordCount argument of required length.
 
 To create a mnemonic with a `WordCount` of 18 words, we can use `(WordCount.Words18)`
 Refer to the readme file on [GitHub](https://github.com/LtbLightning/bdk-flutter#generateMnemonic) for more details.
 
 ```dart
-  var res = await Mnemonic().create(WordCount.Words18);
+  var res = await Mnemonic.create(WordCount.Words18);
 // here response is saved as a 'Mnemonic' object
 ```
 
@@ -280,7 +280,7 @@ class _HomeState extends State<Home> {
   TextEditingController mnemonic = TextEditingController();
 
   generateMnemonicHandler() async {
-   var res = await Mnemonic().create(WordCount.Words12);
+   var res = await Mnemonic.create(WordCount.Words12);
     setState(() {
      mnemonic.text = res.asString();
     });
@@ -347,7 +347,7 @@ String? displayText;
 // modify the generateMnemonicHandler method to also set mnemonic as displayText
 
  generateMnemonicHandler() async {
-    var res = await Mnemonic().create(WordCount.Words12);
+    var res = await Mnemonic.create(WordCount.Words12);
     setState(() {
       mnemonic.text = res.asString();
       displayText = res.asString();
@@ -412,7 +412,6 @@ Just below `/* Balance */` and above `/* Result */` add the following UI compone
 
 `"wpkh([b8b575c2/84'/1'/0'/0]tprv8icWtRzy9CWgFxpGMLSdAeE4wWyz39XGc6SwykeTo13tYm14JkVVQAf7jz8DDarCgNJrG3aEPJEqchDWeJdiaWpS3FwbLB9SzsN57V7qxB/\*)"`
 
-
 This describes a `SegwitV0` descriptor of a key derived at path `m/84'/1'/0'/0`. If you already have a descriptor from other sources you can use that or create one. `bdk_flutter` can be used to generate a fresh master key with `mnemonic`, and then derive child keys from it given a specific `derivaion path`. Putting the key in a descriptor is as simple as wrapping it with a `wpkh()` string.
 
 Let's add some code to create a simple `wpkh` descriptor which will create receive and change descriptors for a specified mnemonic.
@@ -422,12 +421,12 @@ Future<List<String>> getDescriptors(String mnemonic) async {
     final descriptors = <String>[];
     try {
       for (var e in ["m/84'/1'/0'/0", "m/84'/1'/0'/1"]) {
-        final mnemonicObj = await Mnemonic().fromString(mnemonic);
-        final descriptorSecretKey = DescriptorSecretKey(
+        final mnemonicObj = await Mnemonic.fromString(mnemonic);
+        final descriptorSecretKey = await DescriptorSecretKey.create(
           network: Network.Testnet,
           mnemonic: mnemonicObj,
         );
-        final derivationPath = await DerivationPath().create(path: e);
+        final derivationPath = await DerivationPath.create(path: e);
         final derivedXprv = await descriptorSecretKey.derive(derivationPath);
         final derivedXprvStr = await derivedXprv.asString();
         descriptors.add("wpkh($derivedXprvStr)");
@@ -443,7 +442,7 @@ Future<List<String>> getDescriptors(String mnemonic) async {
 
 ```
 
-To create a wallet with `bdk-flutter` call the `create()` method with `descriptor`, `changeDescriptor` `network`, and the `databaseConfig`. For databse, we can use memory as the database by specifying  `DatabaseConfig.memory()`
+To create a wallet with `bdk-flutter` call the `create` method with `descriptor`, `changeDescriptor` `network`, and the `databaseConfig`. For database, we can use memory as the database by specifying `DatabaseConfig.memory()`
 Following our pattern of a button, click handler and bdk-flutter API call, Let's add an internal method which will serve as the click handler for the "Create Wallet" button. We want to see the output of this call so let's use `setState()` to set the `displayText` variable with the wallet's first receive address.
 
 ```dart
@@ -451,7 +450,7 @@ Following our pattern of a button, click handler and bdk-flutter API call, Let's
       String mnemonic, Network network, String? password, String path) async {
     try {
       final descriptors = await getDescriptors(mnemonic);
-      final res = await Wallet().create(
+      final res = await Wallet.create(
           descriptor: descriptors[0],
           changeDescriptor: descriptors[1],
           network: network,
@@ -494,7 +493,7 @@ The App should now be creating a wallet when we click **Create Mnemonic** follow
 
 <img src="./exploring_bdk_flutter/bdk_flutter_tutorial_screen_createwallet.png" style="display: block; margin: 0 auto; zoom:50%;" />
 
-The wallet created is an HD wallet and the address displayed is the 0 index address for the wallet. The descriptors we specified for the wallet are using the derivation path, `84'/1'/0'/0`, for receive addresses and `84'/1'/0'/1` for change addresses.
+The wallet created is an HD wallet and the address displayed is the 0 index address for the wallet. The descriptors we specified for the wallet are using the derivation path, `m/84'/1'/0'/0`, for receive addresses and `m/84'/1'/0'/1` for change addresses.
 
 Before going forward, we need to create a `Blockchain` object as well. The Blockchain object will encapsulate the bitcoin node configuration which the wallet will use for syncing blocks and broadcasting transactions.
 
@@ -502,7 +501,7 @@ Let's add an internal method to create and initialize the `Blockchain` object.
 
 ```dart
   blockchainInit() async {
-    blockchain = await Blockchain().create(
+    blockchain = await Blockchain.create(
         config: BlockchainConfig.electrum(
             config: ElectrumConfig(
                 stopGap: 10,
@@ -512,21 +511,21 @@ Let's add an internal method to create and initialize the `Blockchain` object.
   }
 ```
 
-Here we are initializing the `late` non-nullable `blockchain` variable, by calling the `create()` method from the `Blockchain` class, which takes a `BlockchainConfig` object.
+Here we are initializing the `late` non-nullable `blockchain` variable, by calling the named constructor `create`, which takes a `BlockchainConfig` object.
 The bitcoin node specified is an Electrum node and we are specifying the url for Blockstream's public Electrum Testnet servers over SSL.
 
-After creating the `blockchainInit()` method, call it from `createOrRestoreWallet()`, so the `blockchain` variable gets initialized when the `wallet` is created.
+After creating the `blockchainInit()` method, call it from `createOrRestoreWallet()`, so the `blockchain` variable gets initialized before the `wallet` is created.
 
-Include the following line of code inside  `createOrRestoreWallet() `.
+Include the following line of code inside `createOrRestoreWallet() ` just before calling Wallet.create().
 
 ```dart
 ....
   await blockchainInit();
-  final res = await Wallet().create(
+  final res = await Wallet.create(
  .....
 ```
 
-**blockChainConfig**: BlockchainConfig is an enum that has 2 values, `BlockchainConfig.electrum` for [`electrum`](https://github.com/romanz/electrs) and `BlockchainConfig.esplora` for  [`esplora`](https://github.com/Blockstream/esplora).
+**blockChainConfig**: BlockchainConfig is an enum that has 2 values, `BlockchainConfig.electrum` for [`electrum`](https://github.com/romanz/electrs) and `BlockchainConfig.esplora` for [`esplora`](https://github.com/Blockstream/esplora).
 
 Both `BlockchainConfig.electrum` & `BlockchainConfig.esplora` has `ElectrumConfig` object and `EsploraConfig` object, respectively as its parameter.
 
@@ -554,14 +553,16 @@ Earlier we have already added a variable for `balance`. Now we will add buttons 
                 ),
 ```
 
-And internal functions below `createOrRestoreWallet` function:
+Let's add two internal functions for syncing UTXOs and compute balance.
 
 ```dart
-  getBalance() async {
-    final res = await wallet.getBalance();
+   getBalance() async {
+    final balanceObj = await wallet.getBalance();
+    final res = "Total Balance: ${balanceObj.total.toString()}";
+    print(res);
     setState(() {
-      balance = res.total.toString();
-      displayText = res.total.toString();
+      balance = balanceObj.total.toString();
+      displayText = res;
     });
   }
 
@@ -634,7 +635,7 @@ First, we have to initialize the `TxBuilder` object and call the `addRecipient()
 We can create the`Script` object by using the `Address` class, by specifying the recipient address.
 
 ```dart
-  final address = await Address().create(address: addressStr);
+  final address = await Address.create(address: addressStr);
   final script = await address.scriptPubKey();
   final res = await txBuilder.addRecipient(script, amount);
 ```
@@ -643,7 +644,7 @@ We can create a `psbt` object by calling the `finish()` method using the respons
 
 ```dart
  final txBuilder = TxBuilder();
-    final address = await Address().create(address: addressStr);
+    final address = await Address.create(address: addressStr);
     final script = await address.scriptPubKey();
     final psbt = await txBuilder
         .addRecipient(script, amount)
@@ -666,7 +667,7 @@ Let's make an internal function to send a bitcoin transaction, using `Wallet`, `
   sendTx(String addressStr, int amount) async {
     try {
       final txBuilder = TxBuilder();
-      final address = await Address().create(address: addressStr);
+      final address = await Address.create(address: addressStr);
       final script = await address.scriptPubKey();
       final psbt = await txBuilder
           .addRecipient(script, amount)
