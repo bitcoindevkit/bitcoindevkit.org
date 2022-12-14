@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["PsbtUtils","Trait to add functions to extract utxos and calculate fees."]]});
+window.SIDEBAR_ITEMS = {"trait":[["PsbtUtils","Trait to add functions to extract utxos and calculate fees."]]};
