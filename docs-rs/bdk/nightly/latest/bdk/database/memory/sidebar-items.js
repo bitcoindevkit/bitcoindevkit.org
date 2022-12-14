@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["MemoryDatabase","In-memory ephemeral database"]]});
+window.SIDEBAR_ITEMS = {"struct":[["MemoryDatabase","In-memory ephemeral database"]]};

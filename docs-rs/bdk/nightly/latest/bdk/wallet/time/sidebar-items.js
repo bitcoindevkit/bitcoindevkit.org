@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["get_timestamp","Return the current timestamp in seconds"]]});
+window.SIDEBAR_ITEMS = {"fn":[["get_timestamp","Return the current timestamp in seconds"]]};
