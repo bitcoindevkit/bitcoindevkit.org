@@ -423,6 +423,8 @@
 <a href="#422" id="422">422</a>
 <a href="#423" id="423">423</a>
 <a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -706,9 +708,11 @@
                 </span>.client
                 .batch_transaction_get(need_fetch.clone())
                 .map_err(Error::Electrum)<span class="question-mark">?</span>;
-            <span class="kw">for </span>(tx, _txid) <span class="kw">in </span>txs.into_iter().zip(need_fetch) {
-                <span class="macro">debug_assert_eq!</span>(<span class="kw-2">*</span>_txid, tx.txid());
-                <span class="self">self</span>.cache.insert(tx.txid(), tx);
+            <span class="kw">let </span><span class="kw-2">mut </span>txs: HashMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt; = txs.into_iter().map(|tx| (tx.txid(), tx)).collect();
+            <span class="kw">for </span>txid <span class="kw">in </span>need_fetch {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(tx) = txs.remove(txid) {
+                    <span class="self">self</span>.cache.insert(<span class="kw-2">*</span>txid, tx);
+                }
             }
         }
 
