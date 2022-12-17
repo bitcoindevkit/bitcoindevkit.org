@@ -60,7 +60,8 @@ const tutorialSidebar = [
       '/tutorials/using_bdk_with_hardware_wallets',
       '/tutorials/exploring_bdk_flutter',
       '/tutorials/bdk_cli_basics',
-      '/tutorials/bdk-cli_basics_multisig_2of3'
+      '/tutorials/bdk-cli_basics_multisig_2of3',
+      '/tutorials/bdk_with_tor',
     ],
   }
 ]
