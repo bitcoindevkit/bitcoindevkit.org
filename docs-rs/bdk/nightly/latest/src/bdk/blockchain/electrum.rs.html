@@ -425,6 +425,10 @@
 <a href="#424" id="424">424</a>
 <a href="#425" id="425">425</a>
 <a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -739,6 +743,8 @@
     </span><span class="kw">pub </span>timeout: <span class="prelude-ty">Option</span>&lt;u8&gt;,
     <span class="doccomment">/// Stop searching addresses for transactions after finding an unused gap of this length
     </span><span class="kw">pub </span>stop_gap: usize,
+    <span class="doccomment">/// Validate the domain when using SSL
+    </span><span class="kw">pub </span>validate_domain: bool,
 }
 
 <span class="kw">impl </span>ConfigurableBlockchain <span class="kw">for </span>ElectrumBlockchain {
@@ -750,7 +756,8 @@
             .retry(config.retry)
             .timeout(config.timeout)<span class="question-mark">?
             </span>.socks5(socks5)<span class="question-mark">?
-            </span>.build();
+            </span>.validate_domain(config.validate_domain)
+            .build();
 
         <span class="prelude-val">Ok</span>(ElectrumBlockchain {
             client: Client::from_config(config.url.as_str(), electrum_config)<span class="question-mark">?</span>,
@@ -844,6 +851,7 @@
                     retry: <span class="number">0</span>,
                     timeout: <span class="prelude-val">None</span>,
                     stop_gap: stop_gap,
+                    validate_domain: <span class="bool-val">true</span>,
                 })
             }
         }
