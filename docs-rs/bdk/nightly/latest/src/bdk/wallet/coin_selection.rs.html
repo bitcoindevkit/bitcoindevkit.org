@@ -1594,11 +1594,6 @@
 <a href="#1593" id="1593">1593</a>
 <a href="#1594" id="1594">1594</a>
 <a href="#1595" id="1595">1595</a>
-<a href="#1596" id="1596">1596</a>
-<a href="#1597" id="1597">1597</a>
-<a href="#1598" id="1598">1598</a>
-<a href="#1599" id="1599">1599</a>
-<a href="#1600" id="1600">1600</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1703,11 +1698,11 @@
 <span class="kw">use </span>bitcoin::consensus::encode::serialize;
 <span class="kw">use </span>bitcoin::Script;
 
+<span class="attr">#[cfg(test)]
+</span><span class="kw">use </span>assert_matches::assert_matches;
 <span class="kw">use </span>rand::seq::SliceRandom;
 <span class="attr">#[cfg(not(test))]
 </span><span class="kw">use </span>rand::thread_rng;
-<span class="attr">#[cfg(test)]
-</span><span class="kw">use </span>rand::{rngs::StdRng, SeedableRng};
 <span class="kw">use </span>std::collections::HashMap;
 <span class="kw">use </span>std::convert::TryInto;
 
@@ -2272,6 +2267,7 @@
         </span>optional_utxos.shuffle(<span class="kw-2">&amp;mut </span>thread_rng());
         <span class="attr">#[cfg(test)]
         </span>{
+            <span class="kw">use </span>rand::{rngs::StdRng, SeedableRng};
             <span class="kw">let </span>seed = [<span class="number">0</span>; <span class="number">32</span>];
             <span class="kw">let </span><span class="kw-2">mut </span>rng: StdRng = SeedableRng::from_seed(seed);
             optional_utxos.shuffle(<span class="kw-2">&amp;mut </span>rng);
@@ -3123,24 +3119,22 @@
         <span class="kw">let </span>database = MemoryDatabase::default();
         <span class="kw">let </span>drain_script = Script::default();
 
-        <span class="kw">let </span>err = BranchAndBoundCoinSelection::default()
-            .coin_select(
-                <span class="kw-2">&amp;</span>database,
-                <span class="macro">vec!</span>[],
-                utxos,
-                FeeRate::from_sat_per_vb(<span class="number">10.0</span>),
-                <span class="number">500_000</span>,
-                <span class="kw-2">&amp;</span>drain_script,
-            )
-            .unwrap_err();
+        <span class="kw">let </span>selection = BranchAndBoundCoinSelection::default().coin_select(
+            <span class="kw-2">&amp;</span>database,
+            <span class="macro">vec!</span>[],
+            utxos,
+            FeeRate::from_sat_per_vb(<span class="number">10.0</span>),
+            <span class="number">500_000</span>,
+            <span class="kw-2">&amp;</span>drain_script,
+        );
 
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            err,
-            Error::InsufficientFunds {
+        <span class="macro">assert_matches!</span>(
+            selection,
+            <span class="prelude-val">Err</span>(Error::InsufficientFunds {
                 available: <span class="number">300_000</span>,
                 ..
-            }
-        ));
+            })
+        );
     }
 
     <span class="attr">#[test]
@@ -3153,24 +3147,22 @@
             .into_iter()
             .partition(|u| <span class="macro">matches!</span>(u, WeightedUtxo { utxo, .. } <span class="kw">if </span>utxo.txout().value &lt; <span class="number">1000</span>));
 
-        <span class="kw">let </span>err = BranchAndBoundCoinSelection::default()
-            .coin_select(
-                <span class="kw-2">&amp;</span>database,
-                required,
-                optional,
-                FeeRate::from_sat_per_vb(<span class="number">10.0</span>),
-                <span class="number">500_000</span>,
-                <span class="kw-2">&amp;</span>drain_script,
-            )
-            .unwrap_err();
+        <span class="kw">let </span>selection = BranchAndBoundCoinSelection::default().coin_select(
+            <span class="kw-2">&amp;</span>database,
+            required,
+            optional,
+            FeeRate::from_sat_per_vb(<span class="number">10.0</span>),
+            <span class="number">500_000</span>,
+            <span class="kw-2">&amp;</span>drain_script,
+        );
 
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            err,
-            Error::InsufficientFunds {
+        <span class="macro">assert_matches!</span>(
+            selection,
+            <span class="prelude-val">Err</span>(Error::InsufficientFunds {
                 available: <span class="number">300_010</span>,
                 ..
-            }
-        ));
+            })
+        );
     }
 
     <span class="attr">#[test]
@@ -3179,24 +3171,22 @@
         <span class="kw">let </span>database = MemoryDatabase::default();
         <span class="kw">let </span>drain_script = Script::default();
 
-        <span class="kw">let </span>err = BranchAndBoundCoinSelection::default()
-            .coin_select(
-                <span class="kw-2">&amp;</span>database,
-                utxos,
-                <span class="macro">vec!</span>[],
-                FeeRate::from_sat_per_vb(<span class="number">10_000.0</span>),
-                <span class="number">500_000</span>,
-                <span class="kw-2">&amp;</span>drain_script,
-            )
-            .unwrap_err();
+        <span class="kw">let </span>selection = BranchAndBoundCoinSelection::default().coin_select(
+            <span class="kw-2">&amp;</span>database,
+            utxos,
+            <span class="macro">vec!</span>[],
+            FeeRate::from_sat_per_vb(<span class="number">10_000.0</span>),
+            <span class="number">500_000</span>,
+            <span class="kw-2">&amp;</span>drain_script,
+        );
 
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            err,
-            Error::InsufficientFunds {
+        <span class="macro">assert_matches!</span>(
+            selection,
+            <span class="prelude-val">Err</span>(Error::InsufficientFunds {
                 available: <span class="number">300_010</span>,
                 ..
-            }
-        ));
+            })
+        );
     }
 }
 </code></pre></div>

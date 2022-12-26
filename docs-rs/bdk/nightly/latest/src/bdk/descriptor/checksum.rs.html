@@ -179,6 +179,7 @@
 <a href="#178" id="178">178</a>
 <a href="#179" id="179">179</a>
 <a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -314,6 +315,7 @@
 </span><span class="kw">mod </span>test {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::descriptor::calc_checksum;
+    <span class="kw">use </span>assert_matches::assert_matches;
 
     <span class="comment">// test calc_checksum() function; it should return the same value as Bitcoin Core
     </span><span class="attr">#[test]
@@ -336,16 +338,16 @@
         <span class="macro">assert_eq!</span>(calc_checksum(desc).unwrap(), <span class="string">&quot;lasegmfs&quot;</span>);
 
         <span class="kw">let </span>desc = <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)#tqz0nc26&quot;</span>;
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            calc_checksum(desc).err(),
-            <span class="prelude-val">Some</span>(DescriptorError::InvalidDescriptorChecksum)
-        ));
+        <span class="macro">assert_matches!</span>(
+            calc_checksum(desc),
+            <span class="prelude-val">Err</span>(DescriptorError::InvalidDescriptorChecksum)
+        );
 
         <span class="kw">let </span>desc = <span class="string">&quot;pkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/44&#39;/1&#39;/0&#39;/0/*)#lasegmsf&quot;</span>;
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            calc_checksum(desc).err(),
-            <span class="prelude-val">Some</span>(DescriptorError::InvalidDescriptorChecksum)
-        ));
+        <span class="macro">assert_matches!</span>(
+            calc_checksum(desc),
+            <span class="prelude-val">Err</span>(DescriptorError::InvalidDescriptorChecksum)
+        );
     }
 
     <span class="attr">#[test]
@@ -353,10 +355,10 @@
         <span class="kw">let </span>sparkle_heart = <span class="kw">unsafe </span>{ std::str::from_utf8_unchecked(<span class="kw-2">&amp;</span>[<span class="number">240</span>, <span class="number">159</span>, <span class="number">146</span>, <span class="number">150</span>]) };
         <span class="kw">let </span>invalid_desc = <span class="macro">format!</span>(<span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcL{}fjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)&quot;</span>, sparkle_heart);
 
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            calc_checksum(<span class="kw-2">&amp;</span>invalid_desc).err(),
-            <span class="prelude-val">Some</span>(DescriptorError::InvalidDescriptorCharacter(invalid_char)) <span class="kw">if </span>invalid_char == sparkle_heart.as_bytes()[<span class="number">0</span>]
-        ));
+        <span class="macro">assert_matches!</span>(
+            calc_checksum(<span class="kw-2">&amp;</span>invalid_desc),
+            <span class="prelude-val">Err</span>(DescriptorError::InvalidDescriptorCharacter(invalid_char)) <span class="kw">if </span>invalid_char == sparkle_heart.as_bytes()[<span class="number">0</span>]
+        );
     }
 }
 </code></pre></div>
