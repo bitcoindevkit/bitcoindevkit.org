@@ -5573,20 +5573,6 @@
 <a href="#5572" id="5572">5572</a>
 <a href="#5573" id="5573">5573</a>
 <a href="#5574" id="5574">5574</a>
-<a href="#5575" id="5575">5575</a>
-<a href="#5576" id="5576">5576</a>
-<a href="#5577" id="5577">5577</a>
-<a href="#5578" id="5578">5578</a>
-<a href="#5579" id="5579">5579</a>
-<a href="#5580" id="5580">5580</a>
-<a href="#5581" id="5581">5581</a>
-<a href="#5582" id="5582">5582</a>
-<a href="#5583" id="5583">5583</a>
-<a href="#5584" id="5584">5584</a>
-<a href="#5585" id="5585">5585</a>
-<a href="#5586" id="5586">5586</a>
-<a href="#5587" id="5587">5587</a>
-<a href="#5588" id="5588">5588</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -7440,6 +7426,7 @@
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>test {
+    <span class="kw">use </span>assert_matches::assert_matches;
     <span class="kw">use </span>bitcoin::{util::psbt, Network, PackedLockTime, Sequence};
 
     <span class="kw">use </span><span class="kw">crate</span>::database::Database;
@@ -10014,11 +10001,9 @@
             result.is_err(),
             <span class="string">&quot;Signing should have failed because the TX uses non-standard sighashes&quot;
         </span>);
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(
-                result.unwrap_err(),
-                Error::Signer(SignerError::NonStandardSighash)
-            ),
+        <span class="macro">assert_matches!</span>(
+            result,
+            <span class="prelude-val">Err</span>(Error::Signer(SignerError::NonStandardSighash)),
             <span class="string">&quot;Signing failed with the wrong error type&quot;
         </span>);
 
@@ -10501,16 +10486,10 @@
                 ..Default::default()
             },
         );
-        <span class="macro">assert!</span>(
-            result.is_err(),
-            <span class="string">&quot;Signing should have failed because the witness_utxo is missing&quot;
-        </span>);
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(
-                result.unwrap_err(),
-                Error::Signer(SignerError::MissingWitnessUtxo)
-            ),
-            <span class="string">&quot;Signing failed with the wrong error type&quot;
+        <span class="macro">assert_matches!</span>(
+            result,
+            <span class="prelude-val">Err</span>(Error::Signer(SignerError::MissingWitnessUtxo)),
+            <span class="string">&quot;Signing should have failed with the correct error because the witness_utxo is missing&quot;
         </span>);
 
         <span class="comment">// restore the witness_utxo
@@ -10524,9 +10503,9 @@
             },
         );
 
-        <span class="macro">assert!</span>(result.is_ok(), <span class="string">&quot;Signing should have worked&quot;</span>);
-        <span class="macro">assert!</span>(
-            result.unwrap(),
+        <span class="macro">assert_matches!</span>(
+            result,
+            <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>),
             <span class="string">&quot;Should finalize the input since we can produce signatures&quot;
         </span>);
     }
@@ -10851,11 +10830,9 @@
             result.is_err(),
             <span class="string">&quot;Signing should have failed because the TX uses non-standard sighashes&quot;
         </span>);
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(
-                result.unwrap_err(),
-                Error::Signer(SignerError::NonStandardSighash)
-            ),
+        <span class="macro">assert_matches!</span>(
+            result,
+            <span class="prelude-val">Err</span>(Error::Signer(SignerError::NonStandardSighash)),
             <span class="string">&quot;Signing failed with the wrong error type&quot;
         </span>);
 
@@ -10871,11 +10848,9 @@
             result.is_err(),
             <span class="string">&quot;Signing should have failed because the witness_utxo is missing&quot;
         </span>);
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(
-                result.unwrap_err(),
-                Error::Signer(SignerError::MissingWitnessUtxo)
-            ),
+        <span class="macro">assert_matches!</span>(
+            result,
+            <span class="prelude-val">Err</span>(Error::Signer(SignerError::MissingWitnessUtxo)),
             <span class="string">&quot;Signing failed with the wrong error type&quot;
         </span>);
 
@@ -10956,26 +10931,26 @@
         builder
             .add_recipient(addr.script_pubkey(), balance.immature / <span class="number">2</span>)
             .current_height(confirmation_time);
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            builder.finish().unwrap_err(),
-            Error::InsufficientFunds {
+        <span class="macro">assert_matches!</span>(
+            builder.finish(),
+            <span class="prelude-val">Err</span>(Error::InsufficientFunds {
                 needed: <span class="kw">_</span>,
                 available: <span class="number">0
-            </span>}
-        ));
+            </span>})
+        );
 
         <span class="comment">// Still unspendable...
         </span><span class="kw">let </span><span class="kw-2">mut </span>builder = wallet.build_tx();
         builder
             .add_recipient(addr.script_pubkey(), balance.immature / <span class="number">2</span>)
             .current_height(not_yet_mature_time);
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            builder.finish().unwrap_err(),
-            Error::InsufficientFunds {
+        <span class="macro">assert_matches!</span>(
+            builder.finish(),
+            <span class="prelude-val">Err</span>(Error::InsufficientFunds {
                 needed: <span class="kw">_</span>,
                 available: <span class="number">0
-            </span>}
-        ));
+            </span>})
+        );
 
         <span class="comment">// ...Now the coinbase is mature :)
         </span><span class="kw">let </span>sync_time = SyncTime {
@@ -11017,10 +10992,7 @@
 
         builder.add_recipient(addr.script_pubkey(), <span class="number">0</span>);
 
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
-            builder.finish().unwrap_err(),
-            Error::OutputBelowDustLimit(<span class="number">0</span>)
-        ));
+        <span class="macro">assert_matches!</span>(builder.finish(), <span class="prelude-val">Err</span>(Error::OutputBelowDustLimit(<span class="number">0</span>)));
 
         <span class="kw">let </span><span class="kw-2">mut </span>builder = wallet.build_tx();
 

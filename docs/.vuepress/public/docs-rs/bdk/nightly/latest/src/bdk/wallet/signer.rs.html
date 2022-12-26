@@ -1122,6 +1122,7 @@
 <a href="#1121" id="1121">1121</a>
 <a href="#1122" id="1122">1122</a>
 <a href="#1123" id="1123">1123</a>
+<a href="#1124" id="1124">1124</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2122,6 +2123,7 @@
     <span class="kw">use </span><span class="kw">crate</span>::descriptor;
     <span class="kw">use </span><span class="kw">crate</span>::descriptor::IntoWalletDescriptor;
     <span class="kw">use </span><span class="kw">crate</span>::keys::{DescriptorKey, IntoDescriptorKey};
+    <span class="kw">use </span>assert_matches::assert_matches;
     <span class="kw">use </span>bitcoin::secp256k1::{All, Secp256k1};
     <span class="kw">use </span>bitcoin::util::bip32;
     <span class="kw">use </span>bitcoin::Network;
@@ -2191,17 +2193,17 @@
         signers.add_external(id2.clone(), SignerOrdering(<span class="number">2</span>), signer2.clone());
         signers.add_external(id3.clone(), SignerOrdering(<span class="number">3</span>), signer3.clone());
 
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(signers.find(id1), <span class="prelude-val">Some</span>(signer) <span class="kw">if </span>is_equal(signer, <span class="kw-2">&amp;</span>signer1)));
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(signers.find(id2), <span class="prelude-val">Some</span>(signer) <span class="kw">if </span>is_equal(signer, <span class="kw-2">&amp;</span>signer2)));
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(signers.find(id3.clone()), <span class="prelude-val">Some</span>(signer) <span class="kw">if </span>is_equal(signer, <span class="kw-2">&amp;</span>signer3)));
+        <span class="macro">assert_matches!</span>(signers.find(id1), <span class="prelude-val">Some</span>(signer) <span class="kw">if </span>is_equal(signer, <span class="kw-2">&amp;</span>signer1));
+        <span class="macro">assert_matches!</span>(signers.find(id2), <span class="prelude-val">Some</span>(signer) <span class="kw">if </span>is_equal(signer, <span class="kw-2">&amp;</span>signer2));
+        <span class="macro">assert_matches!</span>(signers.find(id3.clone()), <span class="prelude-val">Some</span>(signer) <span class="kw">if </span>is_equal(signer, <span class="kw-2">&amp;</span>signer3));
 
         <span class="comment">// The `signer4` has the same ID as `signer3` but lower ordering.
         // It should be found by `id3` instead of `signer3`.
         </span>signers.add_external(id3.clone(), SignerOrdering(<span class="number">2</span>), signer4.clone());
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(signers.find(id3), <span class="prelude-val">Some</span>(signer) <span class="kw">if </span>is_equal(signer, <span class="kw-2">&amp;</span>signer4)));
+        <span class="macro">assert_matches!</span>(signers.find(id3), <span class="prelude-val">Some</span>(signer) <span class="kw">if </span>is_equal(signer, <span class="kw-2">&amp;</span>signer4));
 
         <span class="comment">// Can&#39;t find anything with ID that doesn&#39;t exist
-        </span><span class="macro">assert!</span>(<span class="macro">matches!</span>(signers.find(id_nonexistent), <span class="prelude-val">None</span>));
+        </span><span class="macro">assert_matches!</span>(signers.find(id_nonexistent), <span class="prelude-val">None</span>);
     }
 
     <span class="attr">#[derive(Debug, Clone, Copy)]

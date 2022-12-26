@@ -1875,52 +1875,6 @@
 <a href="#1874" id="1874">1874</a>
 <a href="#1875" id="1875">1875</a>
 <a href="#1876" id="1876">1876</a>
-<a href="#1877" id="1877">1877</a>
-<a href="#1878" id="1878">1878</a>
-<a href="#1879" id="1879">1879</a>
-<a href="#1880" id="1880">1880</a>
-<a href="#1881" id="1881">1881</a>
-<a href="#1882" id="1882">1882</a>
-<a href="#1883" id="1883">1883</a>
-<a href="#1884" id="1884">1884</a>
-<a href="#1885" id="1885">1885</a>
-<a href="#1886" id="1886">1886</a>
-<a href="#1887" id="1887">1887</a>
-<a href="#1888" id="1888">1888</a>
-<a href="#1889" id="1889">1889</a>
-<a href="#1890" id="1890">1890</a>
-<a href="#1891" id="1891">1891</a>
-<a href="#1892" id="1892">1892</a>
-<a href="#1893" id="1893">1893</a>
-<a href="#1894" id="1894">1894</a>
-<a href="#1895" id="1895">1895</a>
-<a href="#1896" id="1896">1896</a>
-<a href="#1897" id="1897">1897</a>
-<a href="#1898" id="1898">1898</a>
-<a href="#1899" id="1899">1899</a>
-<a href="#1900" id="1900">1900</a>
-<a href="#1901" id="1901">1901</a>
-<a href="#1902" id="1902">1902</a>
-<a href="#1903" id="1903">1903</a>
-<a href="#1904" id="1904">1904</a>
-<a href="#1905" id="1905">1905</a>
-<a href="#1906" id="1906">1906</a>
-<a href="#1907" id="1907">1907</a>
-<a href="#1908" id="1908">1908</a>
-<a href="#1909" id="1909">1909</a>
-<a href="#1910" id="1910">1910</a>
-<a href="#1911" id="1911">1911</a>
-<a href="#1912" id="1912">1912</a>
-<a href="#1913" id="1913">1913</a>
-<a href="#1914" id="1914">1914</a>
-<a href="#1915" id="1915">1915</a>
-<a href="#1916" id="1916">1916</a>
-<a href="#1917" id="1917">1917</a>
-<a href="#1918" id="1918">1918</a>
-<a href="#1919" id="1919">1919</a>
-<a href="#1920" id="1920">1920</a>
-<a href="#1921" id="1921">1921</a>
-<a href="#1922" id="1922">1922</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -3062,6 +3016,7 @@
     <span class="kw">use </span><span class="kw">crate</span>::descriptor::policy::SatisfiableItem::{EcdsaSignature, Multisig, Thresh};
     <span class="kw">use </span><span class="kw">crate</span>::keys::{DescriptorKey, IntoDescriptorKey};
     <span class="kw">use </span><span class="kw">crate</span>::wallet::signer::SignersContainer;
+    <span class="kw">use </span>assert_matches::assert_matches;
     <span class="kw">use </span>bitcoin::secp256k1::Secp256k1;
     <span class="kw">use </span>bitcoin::util::bip32;
     <span class="kw">use </span>bitcoin::Network;
@@ -3105,8 +3060,8 @@
             .unwrap()
             .unwrap();
 
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.item, EcdsaSignature(PkOrF::Fingerprint(f)) <span class="kw">if </span>f == <span class="kw-2">&amp;</span>fingerprint));
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::None));
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.item, EcdsaSignature(PkOrF::Fingerprint(f)) <span class="kw">if </span>f == <span class="kw-2">&amp;</span>fingerprint);
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::None);
 
         <span class="kw">let </span>desc = <span class="macro">descriptor!</span>(wpkh(prvkey)).unwrap();
         <span class="kw">let </span>(wallet_desc, keymap) = desc
@@ -3118,10 +3073,8 @@
             .unwrap()
             .unwrap();
 
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.item, EcdsaSignature(PkOrF::Fingerprint(f)) <span class="kw">if </span>f == <span class="kw-2">&amp;</span>fingerprint));
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::Complete {condition} <span class="kw">if </span>condition.csv == <span class="prelude-val">None </span>&amp;&amp; condition.timelock == <span class="prelude-val">None</span>)
-        );
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.item, EcdsaSignature(PkOrF::Fingerprint(f)) <span class="kw">if </span>f == <span class="kw-2">&amp;</span>fingerprint);
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::Complete {condition} <span class="kw">if </span>condition.csv == <span class="prelude-val">None </span>&amp;&amp; condition.timelock == <span class="prelude-val">None</span>);
     }
 
     <span class="comment">// 2 pub keys descriptor, required 2 prv keys
@@ -3140,19 +3093,16 @@
             .unwrap()
             .unwrap();
 
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.item, Multisig { keys, threshold } <span class="kw">if </span>threshold == <span class="kw-2">&amp;</span><span class="number">2usize
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.item, Multisig { keys, threshold } <span class="kw">if </span>threshold == <span class="kw-2">&amp;</span><span class="number">2usize
             </span>&amp;&amp; keys[<span class="number">0</span>] == PkOrF::Fingerprint(fingerprint0)
-            &amp;&amp; keys[<span class="number">1</span>] == PkOrF::Fingerprint(fingerprint1))
+            &amp;&amp; keys[<span class="number">1</span>] == PkOrF::Fingerprint(fingerprint1)
         );
         <span class="comment">// TODO should this be &quot;Satisfaction::None&quot; since we have no prv keys?
         // TODO should items and conditions not be empty?
-        </span><span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::Partial { n, m, items, conditions, ..} <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2usize
+        </span><span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::Partial { n, m, items, conditions, ..} <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2usize
             </span>&amp;&amp; m == <span class="kw-2">&amp;</span><span class="number">2usize
             </span>&amp;&amp; items.is_empty()
             &amp;&amp; conditions.is_empty()
-            )
         );
     }
 
@@ -3171,18 +3121,15 @@
             .extract_policy(<span class="kw-2">&amp;</span>signers_container, BuildSatisfaction::None, <span class="kw-2">&amp;</span>secp)
             .unwrap()
             .unwrap();
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.item, Multisig { keys, threshold } <span class="kw">if </span>threshold == <span class="kw-2">&amp;</span><span class="number">2usize
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.item, Multisig { keys, threshold } <span class="kw">if </span>threshold == <span class="kw-2">&amp;</span><span class="number">2usize
             </span>&amp;&amp; keys[<span class="number">0</span>] == PkOrF::Fingerprint(fingerprint0)
-            &amp;&amp; keys[<span class="number">1</span>] == PkOrF::Fingerprint(fingerprint1))
+            &amp;&amp; keys[<span class="number">1</span>] == PkOrF::Fingerprint(fingerprint1)
         );
 
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::Partial { n, m, items, conditions, ..} <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2usize
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::Partial { n, m, items, conditions, ..} <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2usize
              </span>&amp;&amp; m == <span class="kw-2">&amp;</span><span class="number">2usize
              </span>&amp;&amp; items.len() == <span class="number">1
              </span>&amp;&amp; conditions.contains_key(<span class="kw-2">&amp;</span><span class="number">0</span>)
-            )
         );
     }
 
@@ -3204,18 +3151,15 @@
             .unwrap()
             .unwrap();
 
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.item, Multisig { keys, threshold } <span class="kw">if </span>threshold == <span class="kw-2">&amp;</span><span class="number">1
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.item, Multisig { keys, threshold } <span class="kw">if </span>threshold == <span class="kw-2">&amp;</span><span class="number">1
             </span>&amp;&amp; keys[<span class="number">0</span>] == PkOrF::Fingerprint(fingerprint0)
-            &amp;&amp; keys[<span class="number">1</span>] == PkOrF::Fingerprint(fingerprint1))
+            &amp;&amp; keys[<span class="number">1</span>] == PkOrF::Fingerprint(fingerprint1)
         );
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::PartialComplete { n, m, items, conditions, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::PartialComplete { n, m, items, conditions, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; m == <span class="kw-2">&amp;</span><span class="number">1
              </span>&amp;&amp; items.len() == <span class="number">2
              </span>&amp;&amp; conditions.contains_key(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>])
              &amp;&amp; conditions.contains_key(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>])
-            )
         );
     }
 
@@ -3236,18 +3180,15 @@
             .unwrap()
             .unwrap();
 
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.item, Multisig { keys, threshold } <span class="kw">if </span>threshold == <span class="kw-2">&amp;</span><span class="number">2
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.item, Multisig { keys, threshold } <span class="kw">if </span>threshold == <span class="kw-2">&amp;</span><span class="number">2
             </span>&amp;&amp; keys[<span class="number">0</span>] == PkOrF::Fingerprint(fingerprint0)
-            &amp;&amp; keys[<span class="number">1</span>] == PkOrF::Fingerprint(fingerprint1))
+            &amp;&amp; keys[<span class="number">1</span>] == PkOrF::Fingerprint(fingerprint1)
         );
 
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::PartialComplete { n, m, items, conditions, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::PartialComplete { n, m, items, conditions, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; m == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; items.len() == <span class="number">2
              </span>&amp;&amp; conditions.contains_key(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>,<span class="number">1</span>])
-            )
         );
     }
 
@@ -3268,8 +3209,8 @@
             .unwrap()
             .unwrap();
 
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.item, EcdsaSignature(PkOrF::Fingerprint(f)) <span class="kw">if </span>f == <span class="kw-2">&amp;</span>fingerprint));
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::None));
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.item, EcdsaSignature(PkOrF::Fingerprint(f)) <span class="kw">if </span>f == <span class="kw-2">&amp;</span>fingerprint);
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::None);
 
         <span class="kw">let </span>desc = <span class="macro">descriptor!</span>(wpkh(prvkey)).unwrap();
         <span class="kw">let </span>(wallet_desc, keymap) = desc
@@ -3281,10 +3222,8 @@
             .unwrap()
             .unwrap();
 
-        <span class="macro">assert!</span>(<span class="macro">matches!</span>(policy.item, EcdsaSignature(PkOrF::Fingerprint(f)) <span class="kw">if </span>f == fingerprint));
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(policy.contribution, Satisfaction::Complete {condition} <span class="kw">if </span>condition.csv == <span class="prelude-val">None </span>&amp;&amp; condition.timelock == <span class="prelude-val">None</span>)
-        );
+        <span class="macro">assert_matches!</span>(policy.item, EcdsaSignature(PkOrF::Fingerprint(f)) <span class="kw">if </span>f == fingerprint);
+        <span class="macro">assert_matches!</span>(policy.contribution, Satisfaction::Complete {condition} <span class="kw">if </span>condition.csv == <span class="prelude-val">None </span>&amp;&amp; condition.timelock == <span class="prelude-val">None</span>);
     }
 
     <span class="comment">// single key, 1 prv and 1 pub key descriptor, required 1 prv keys
@@ -3305,18 +3244,15 @@
             .unwrap()
             .unwrap();
 
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(policy.item, Multisig { keys, threshold } <span class="kw">if </span>threshold == <span class="number">1
+        <span class="macro">assert_matches!</span>(policy.item, Multisig { keys, threshold } <span class="kw">if </span>threshold == <span class="number">1
             </span>&amp;&amp; keys[<span class="number">0</span>] == PkOrF::Fingerprint(fingerprint0)
-            &amp;&amp; keys[<span class="number">1</span>] == PkOrF::Fingerprint(fingerprint1))
+            &amp;&amp; keys[<span class="number">1</span>] == PkOrF::Fingerprint(fingerprint1)
         );
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(policy.contribution, Satisfaction::PartialComplete { n, m, items, conditions, .. } <span class="kw">if </span>n == <span class="number">2
+        <span class="macro">assert_matches!</span>(policy.contribution, Satisfaction::PartialComplete { n, m, items, conditions, .. } <span class="kw">if </span>n == <span class="number">2
              </span>&amp;&amp; m == <span class="number">1
              </span>&amp;&amp; items.len() == <span class="number">2
              </span>&amp;&amp; conditions.contains_key(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>])
              &amp;&amp; conditions.contains_key(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>])
-            )
         );
     }
 
@@ -3348,18 +3284,14 @@
             .unwrap()
             .unwrap();
 
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.item, Thresh { items, threshold } <span class="kw">if </span>items.len() == <span class="number">3 </span>&amp;&amp; threshold == <span class="kw-2">&amp;</span><span class="number">2</span>)
-        );
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.item, Thresh { items, threshold } <span class="kw">if </span>items.len() == <span class="number">3 </span>&amp;&amp; threshold == <span class="kw-2">&amp;</span><span class="number">2</span>);
 
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::PartialComplete { n, m, items, conditions, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">3
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.contribution, Satisfaction::PartialComplete { n, m, items, conditions, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">3
              </span>&amp;&amp; m == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; items.len() == <span class="number">3
              </span>&amp;&amp; conditions.get(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>,<span class="number">1</span>]).unwrap().iter().next().unwrap().csv.is_none()
              &amp;&amp; conditions.get(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>,<span class="number">2</span>]).unwrap().iter().next().unwrap().csv == <span class="prelude-val">Some</span>(Sequence(sequence))
              &amp;&amp; conditions.get(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>,<span class="number">2</span>]).unwrap().iter().next().unwrap().csv == <span class="prelude-val">Some</span>(Sequence(sequence))
-            )
         );
     }
 
@@ -3522,11 +3454,9 @@
             .unwrap();
         <span class="comment">//println!(&quot;{}&quot;, serde_json::to_string(&amp;policy_alice_psbt).unwrap());
 
-        </span><span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy_alice_psbt.satisfaction, Satisfaction::Partial { n, m, items, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2
+        </span><span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy_alice_psbt.satisfaction, Satisfaction::Partial { n, m, items, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; m == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; items == <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>]
-            )
         );
 
         <span class="kw">let </span>psbt = Psbt::from_str(BOB_SIGNED_PSBT).unwrap();
@@ -3536,11 +3466,9 @@
             .unwrap();
         <span class="comment">//println!(&quot;{}&quot;, serde_json::to_string(&amp;policy_bob_psbt).unwrap());
 
-        </span><span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy_bob_psbt.satisfaction, Satisfaction::Partial { n, m, items, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2
+        </span><span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy_bob_psbt.satisfaction, Satisfaction::Partial { n, m, items, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; m == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; items == <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">1</span>]
-            )
         );
 
         <span class="kw">let </span>psbt = Psbt::from_str(ALICE_BOB_SIGNED_PSBT).unwrap();
@@ -3548,11 +3476,9 @@
             .extract_policy(<span class="kw-2">&amp;</span>signers_container, BuildSatisfaction::Psbt(<span class="kw-2">&amp;</span>psbt), <span class="kw-2">&amp;</span>secp)
             .unwrap()
             .unwrap();
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy_alice_bob_psbt.satisfaction, Satisfaction::PartialComplete { n, m, items, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy_alice_bob_psbt.satisfaction, Satisfaction::PartialComplete { n, m, items, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; m == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; items == <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>]
-            )
         );
     }
 
@@ -3596,11 +3522,9 @@
             .extract_policy(<span class="kw-2">&amp;</span>signers_container, build_sat, <span class="kw-2">&amp;</span>secp)
             .unwrap()
             .unwrap();
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy.satisfaction, Satisfaction::Partial { n, m, items, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">3
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy.satisfaction, Satisfaction::Partial { n, m, items, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">3
              </span>&amp;&amp; m == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; items.is_empty()
-            )
         );
         <span class="comment">//println!(&quot;{}&quot;, serde_json::to_string(&amp;policy).unwrap());
 
@@ -3614,11 +3538,9 @@
             .extract_policy(<span class="kw-2">&amp;</span>signers_container, build_sat_expired, <span class="kw-2">&amp;</span>secp)
             .unwrap()
             .unwrap();
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy_expired.satisfaction, Satisfaction::Partial { n, m, items, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">3
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy_expired.satisfaction, Satisfaction::Partial { n, m, items, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">3
              </span>&amp;&amp; m == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; items == <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>]
-            )
         );
         <span class="comment">//println!(&quot;{}&quot;, serde_json::to_string(&amp;policy_expired).unwrap());
 
@@ -3634,11 +3556,9 @@
             .extract_policy(<span class="kw-2">&amp;</span>signers_container, build_sat_expired_signed, <span class="kw-2">&amp;</span>secp)
             .unwrap()
             .unwrap();
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(<span class="kw-2">&amp;</span>policy_expired_signed.satisfaction, Satisfaction::PartialComplete { n, m, items, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">3
+        <span class="macro">assert_matches!</span>(<span class="kw-2">&amp;</span>policy_expired_signed.satisfaction, Satisfaction::PartialComplete { n, m, items, .. } <span class="kw">if </span>n == <span class="kw-2">&amp;</span><span class="number">3
              </span>&amp;&amp; m == <span class="kw-2">&amp;</span><span class="number">2
              </span>&amp;&amp; items == <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>]
-            )
         );
         <span class="comment">//println!(&quot;{}&quot;, serde_json::to_string(&amp;policy_expired_signed).unwrap());
     </span>}
@@ -3713,12 +3633,8 @@
             .unwrap()
             .unwrap();
 
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(policy.item, SatisfiableItem::Thresh { <span class="kw-2">ref </span>items, threshold: <span class="number">1 </span>} <span class="kw">if </span>items.len() == <span class="number">2</span>)
-        );
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(policy.contribution, Satisfaction::PartialComplete { n: <span class="number">2</span>, m: <span class="number">1</span>, items, .. } <span class="kw">if </span>items == <span class="macro">vec!</span>[<span class="number">1</span>])
-        );
+        <span class="macro">assert_matches!</span>(policy.item, SatisfiableItem::Thresh { <span class="kw-2">ref </span>items, threshold: <span class="number">1 </span>} <span class="kw">if </span>items.len() == <span class="number">2</span>);
+        <span class="macro">assert_matches!</span>(policy.contribution, Satisfaction::PartialComplete { n: <span class="number">2</span>, m: <span class="number">1</span>, items, .. } <span class="kw">if </span>items == <span class="macro">vec!</span>[<span class="number">1</span>]);
 
         <span class="kw">let </span>alice_sig = SatisfiableItem::SchnorrSignature(PkOrF::Fingerprint(alice_fing));
         <span class="kw">let </span>bob_sig = SatisfiableItem::SchnorrSignature(PkOrF::Fingerprint(bob_fing));
@@ -3810,19 +3726,11 @@
             .unwrap()
             .unwrap();
 
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(policy_unsigned.item, SatisfiableItem::Thresh { <span class="kw-2">ref </span>items, threshold: <span class="number">1 </span>} <span class="kw">if </span>items.len() == <span class="number">2</span>)
-        );
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(policy_unsigned.satisfaction, Satisfaction::Partial { n: <span class="number">2</span>, m: <span class="number">1</span>, items, .. } <span class="kw">if </span>items.is_empty())
-        );
+        <span class="macro">assert_matches!</span>(policy_unsigned.item, SatisfiableItem::Thresh { <span class="kw-2">ref </span>items, threshold: <span class="number">1 </span>} <span class="kw">if </span>items.len() == <span class="number">2</span>);
+        <span class="macro">assert_matches!</span>(policy_unsigned.satisfaction, Satisfaction::Partial { n: <span class="number">2</span>, m: <span class="number">1</span>, items, .. } <span class="kw">if </span>items.is_empty());
 
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(policy_signed.item, SatisfiableItem::Thresh { <span class="kw-2">ref </span>items, threshold: <span class="number">1 </span>} <span class="kw">if </span>items.len() == <span class="number">2</span>)
-        );
-        <span class="macro">assert!</span>(
-            <span class="macro">matches!</span>(policy_signed.satisfaction, Satisfaction::PartialComplete { n: <span class="number">2</span>, m: <span class="number">1</span>, items, .. } <span class="kw">if </span>items == <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>])
-        );
+        <span class="macro">assert_matches!</span>(policy_signed.item, SatisfiableItem::Thresh { <span class="kw-2">ref </span>items, threshold: <span class="number">1 </span>} <span class="kw">if </span>items.len() == <span class="number">2</span>);
+        <span class="macro">assert_matches!</span>(policy_signed.satisfaction, Satisfaction::PartialComplete { n: <span class="number">2</span>, m: <span class="number">1</span>, items, .. } <span class="kw">if </span>items == <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>]);
 
         <span class="kw">let </span>satisfied_items = <span class="kw">match </span>policy_signed.item {
             SatisfiableItem::Thresh { items, .. } =&gt; items,
