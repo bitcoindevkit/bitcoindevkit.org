@@ -5584,6 +5584,9 @@
 <a href="#5583" id="5583">5583</a>
 <a href="#5584" id="5584">5584</a>
 <a href="#5585" id="5585">5585</a>
+<a href="#5586" id="5586">5586</a>
+<a href="#5587" id="5587">5587</a>
+<a href="#5588" id="5588">5588</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -11132,11 +11135,14 @@
         <span class="kw">use </span>hwi::types::HWIChain;
         <span class="kw">use </span>hwi::HWIClient;
 
-        <span class="kw">let </span>devices = HWIClient::enumerate().unwrap();
-        <span class="kw">let </span>device = devices.first().expect(<span class="string">&quot;No devices found&quot;</span>);
-        <span class="kw">let </span>client = HWIClient::get_client(device, <span class="bool-val">true</span>, HWIChain::Regtest).unwrap();
-        <span class="kw">let </span>descriptors = client.get_descriptors(<span class="prelude-val">None</span>).unwrap();
-        <span class="kw">let </span>custom_signer = HWISigner::from_device(device, HWIChain::Regtest).unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>devices = HWIClient::enumerate().unwrap();
+        <span class="kw">if </span>devices.is_empty() {
+            <span class="macro">panic!</span>(<span class="string">&quot;No devices found!&quot;</span>);
+        }
+        <span class="kw">let </span>device = devices.remove(<span class="number">0</span>).unwrap();
+        <span class="kw">let </span>client = HWIClient::get_client(<span class="kw-2">&amp;</span>device, <span class="bool-val">true</span>, HWIChain::Regtest).unwrap();
+        <span class="kw">let </span>descriptors = client.get_descriptors::&lt;String&gt;(<span class="prelude-val">None</span>).unwrap();
+        <span class="kw">let </span>custom_signer = HWISigner::from_device(<span class="kw-2">&amp;</span>device, HWIChain::Regtest).unwrap();
 
         <span class="kw">let </span>(<span class="kw-2">mut </span>wallet, <span class="kw">_</span>, <span class="kw">_</span>) = get_funded_wallet(<span class="kw-2">&amp;</span>descriptors.internal[<span class="number">0</span>]);
         wallet.add_signer(
