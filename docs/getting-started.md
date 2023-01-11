@@ -18,14 +18,14 @@ Most Rust projects use Cargo to download and build the libraries the code depend
 
 ```
 [dependencies]
-bdk = "0.20.0"
+bdk = "0.28.1"
 ```
 
 Or it is possible to install only the features that will be used in the project.
 
 ```
 [dependencies]
-bdk = { version = "0.20.0", default-feature = false, features = ["all-keys", "key-value-db",  "rpc"] }
+bdk = { version = "0.28.1", default-feature = false, features = ["all-keys", "key-value-db",  "rpc"] }
 ```
 
 BDK uses a set of [feature flags](https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section) to reduce the amount of compiled code by allowing projects to only enable the features they need.
@@ -74,7 +74,7 @@ To be able to run this code, the `bdk` dependency in `Cargo.toml` must be set as
 
 ```
 [dependencies]
-bdk = { version = "0.15.0", default-feature = false, features = ["all-keys"] }
+bdk = { version = "0.28.1", default-feature = false, features = ["all-keys"] }
 ```
 
 ```rust
@@ -101,7 +101,7 @@ fn main() {
     let xprv = xkey.into_xprv(network).unwrap();
 
     // Create a BDK wallet structure using BIP 84 descriptor ("m/84h/1h/0h/0" and "m/84h/1h/0h/1")
-    let wallet = Wallet::new_offline(
+    let wallet = Wallet::new(
         Bip84(xprv, KeychainKind::External),
         Some(Bip84(xprv, KeychainKind::Internal)),
         network,
