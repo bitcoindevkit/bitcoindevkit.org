@@ -392,6 +392,7 @@
 <a href="#391" id="391">391</a>
 <a href="#392" id="392">392</a>
 <a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -410,7 +411,8 @@
 //! [Compact Filters/Neutrino](crate::blockchain::compact_filters), along with a generalized trait
 //! [`Blockchain`] that can be implemented to build customized backends.
 
-</span><span class="kw">use </span>std::collections::HashSet;
+</span><span class="kw">use </span>std::cell::RefCell;
+<span class="kw">use </span>std::collections::HashSet;
 <span class="kw">use </span>std::ops::Deref;
 <span class="kw">use </span>std::sync::mpsc::{channel, Receiver, Sender};
 <span class="kw">use </span>std::sync::Arc;
@@ -527,7 +529,7 @@
     /// Populate the internal database with transactions and UTXOs
     </span><span class="kw">fn </span>wallet_setup&lt;D: BatchDatabase&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        database: <span class="kw-2">&amp;mut </span>D,
+        database: <span class="kw-2">&amp;</span>RefCell&lt;D&gt;,
         progress_update: Box&lt;<span class="kw">dyn </span>Progress&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt;;
 
@@ -550,7 +552,7 @@
     /// [`BatchOperations::del_utxo`]: crate::database::BatchOperations::del_utxo
     </span><span class="kw">fn </span>wallet_sync&lt;D: BatchDatabase&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        database: <span class="kw-2">&amp;mut </span>D,
+        database: <span class="kw-2">&amp;</span>RefCell&lt;D&gt;,
         progress_update: Box&lt;<span class="kw">dyn </span>Progress&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="macro">maybe_await!</span>(<span class="self">self</span>.wallet_setup(database, progress_update))
@@ -771,7 +773,7 @@ fn sum_of_balances&lt;B: BlockchainFactory&gt;(blockchain_factory: B, wallets: &
 </span><span class="kw">impl</span>&lt;T: WalletSync&gt; WalletSync <span class="kw">for </span>Arc&lt;T&gt; {
     <span class="kw">fn </span>wallet_setup&lt;D: BatchDatabase&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        database: <span class="kw-2">&amp;mut </span>D,
+        database: <span class="kw-2">&amp;</span>RefCell&lt;D&gt;,
         progress_update: Box&lt;<span class="kw">dyn </span>Progress&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="macro">maybe_await!</span>(<span class="self">self</span>.deref().wallet_setup(database, progress_update))
@@ -779,7 +781,7 @@ fn sum_of_balances&lt;B: BlockchainFactory&gt;(blockchain_factory: B, wallets: &
 
     <span class="kw">fn </span>wallet_sync&lt;D: BatchDatabase&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        database: <span class="kw-2">&amp;mut </span>D,
+        database: <span class="kw-2">&amp;</span>RefCell&lt;D&gt;,
         progress_update: Box&lt;<span class="kw">dyn </span>Progress&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="macro">maybe_await!</span>(<span class="self">self</span>.deref().wallet_sync(database, progress_update))

@@ -237,6 +237,9 @@
 <a href="#236" id="236">236</a>
 <a href="#237" id="237">237</a>
 <a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -251,6 +254,7 @@
 </span><span class="doccomment">//! Esplora by way of `ureq` HTTP client.
 
 </span><span class="kw">use </span>std::collections::{HashMap, HashSet};
+<span class="kw">use </span>std::ops::DerefMut;
 
 <span class="attr">#[allow(unused_imports)]
 </span><span class="kw">use </span>log::{debug, error, info, trace};
@@ -356,10 +360,12 @@
 <span class="kw">impl </span>WalletSync <span class="kw">for </span>EsploraBlockchain {
     <span class="kw">fn </span>wallet_setup&lt;D: BatchDatabase&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        database: <span class="kw-2">&amp;mut </span>D,
+        database: <span class="kw-2">&amp;</span>RefCell&lt;D&gt;,
         _progress_update: Box&lt;<span class="kw">dyn </span>Progress&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">use </span><span class="kw">crate</span>::blockchain::script_sync::Request;
+        <span class="kw">let </span><span class="kw-2">mut </span>database = database.borrow_mut();
+        <span class="kw">let </span>database = database.deref_mut();
         <span class="kw">let </span><span class="kw-2">mut </span>request = script_sync::start(database, <span class="self">self</span>.stop_gap)<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>tx_index: HashMap&lt;Txid, Tx&gt; = HashMap::new();
         <span class="kw">let </span>batch_update = <span class="kw">loop </span>{
