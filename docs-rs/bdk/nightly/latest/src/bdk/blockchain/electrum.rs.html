@@ -429,6 +429,8 @@
 <a href="#428" id="428">428</a>
 <a href="#429" id="429">429</a>
 <a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -456,7 +458,7 @@
 //! ```
 
 </span><span class="kw">use </span>std::collections::{HashMap, HashSet};
-<span class="kw">use </span>std::ops::Deref;
+<span class="kw">use </span>std::ops::{Deref, DerefMut};
 
 <span class="attr">#[allow(unused_imports)]
 </span><span class="kw">use </span>log::{debug, error, info, trace};
@@ -548,9 +550,11 @@
 <span class="kw">impl </span>WalletSync <span class="kw">for </span>ElectrumBlockchain {
     <span class="kw">fn </span>wallet_setup&lt;D: BatchDatabase&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        database: <span class="kw-2">&amp;mut </span>D,
+        database: <span class="kw-2">&amp;</span>RefCell&lt;D&gt;,
         _progress_update: Box&lt;<span class="kw">dyn </span>Progress&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>database = database.borrow_mut();
+        <span class="kw">let </span>database = database.deref_mut();
         <span class="kw">let </span><span class="kw-2">mut </span>request = script_sync::start(database, <span class="self">self</span>.stop_gap)<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>block_times = HashMap::&lt;u32, u32&gt;::new();
         <span class="kw">let </span><span class="kw-2">mut </span>txid_to_height = HashMap::&lt;Txid, u32&gt;::new();
