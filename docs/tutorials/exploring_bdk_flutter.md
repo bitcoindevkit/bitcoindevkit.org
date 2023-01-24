@@ -131,7 +131,7 @@ This will add a line like this to your package's `pubspec.yaml` and this will al
 
 ```shell
 dependencies:
-  bdk_flutter: ^0.1.5
+  bdk_flutter:
 ```
 
 ## Configuring
@@ -254,7 +254,7 @@ The first step in creating a non-custodial bitcoin app is creating a mnemonic se
 var res = await Mnemonic.create(WordCount.Words12);
 ```
 
-We can genrate a mnemonic of longer length by passing in a wordCount argument of required length.
+We can generate a mnemonic of longer length by passing in a wordCount argument of required length.
 
 To create a mnemonic with a `WordCount` of 18 words, we can use `(WordCount.Words18)`
 Refer to the readme file on [GitHub](https://github.com/LtbLightning/bdk-flutter#generateMnemonic) for more details.
@@ -326,7 +326,7 @@ class _HomeState extends State<Home> {
                         ]
                       )
                    ),
-                /* Send Transaction Butoons */
+                /* Send Transaction Buttons */
 
               ],
             ),
@@ -375,7 +375,7 @@ A quick recap, we added a button to call a click handler (`generateMnemonicHandl
 
 Before moving on to creating a wallet, let's add a section at the top to display the balance of the wallet.
 
-To display the balance we will need a state variable to store the balance and a display component to display it. We will also be creating a recieve address for the wallet so a state variable will be required for the address as well.
+To display the balance we will need a state variable to store the balance and a display component to display it. We will also be creating a receive address for the wallet so a state variable will be required for the address as well.
 
 Under the `mnemonic` and `displayText` state variables, let's add one for `balance` and one for `address`
 
@@ -408,28 +408,28 @@ Just below `/* Balance */` and above `/* Result */` add the following UI compone
         /* Result */
 ```
 
-`bdk_flutter` creates a wallet using output descriptors. More about output descriptors [here](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md). Before creating the `Wallet` we need to create a `descriptor` which will be used to generate recieve addresses and a `changeDescriptor` to collect the change from an outgoing transaction. A `descriptor` is a string that looks like this:
+`bdk_flutter` creates a wallet using output descriptors. More about output descriptors [here](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md). Before creating the `Wallet` we need to create a `descriptor` which will be used to generate receive addresses and a `changeDescriptor` to collect the change from an outgoing transaction. A `descriptor` is a string that looks like this:
 
-`"wpkh([b8b575c2/84'/1'/0'/0]tprv8icWtRzy9CWgFxpGMLSdAeE4wWyz39XGc6SwykeTo13tYm14JkVVQAf7jz8DDarCgNJrG3aEPJEqchDWeJdiaWpS3FwbLB9SzsN57V7qxB/\*)"`
+`"wpkh(key/84'/{0,1}'/0'/{0,1}/*)"`
 
-This describes a `SegwitV0` descriptor of a key derived at path `m/84'/1'/0'/0`. If you already have a descriptor from other sources you can use that or create one. `bdk_flutter` can be used to generate a fresh master key with `mnemonic`, and then derive child keys from it given a specific `derivaion path`. Putting the key in a descriptor is as simple as wrapping it with a `wpkh()` string.
+`bdk_flutter`'s `Descriptor` class has a number of descriptor templates that will help you create a simple wallet.
 
-Let's add some code to create a simple `wpkh` descriptor which will create receive and change descriptors for a specified mnemonic.
+Let's add some code to create a simple `wpkh` descriptor object by using the `BIP84` template. This descriptor will create receive (`KeyChainKind.External`) and change descriptor (` KeyChainKind.Internal`) for a specified mnemonic.
 
 ```dart
-Future<List<String>> getDescriptors(String mnemonic) async {
-    final descriptors = <String>[];
+Future<List<Descriptor>> getDescriptors(String mnemonic) async {
+    final descriptors = <Descriptor>[];
     try {
-      for (var e in ["m/84'/1'/0'/0", "m/84'/1'/0'/1"]) {
+      for (var e in [KeyChainKind.External, KeyChainKind.Internal]) {
         final mnemonicObj = await Mnemonic.fromString(mnemonic);
         final descriptorSecretKey = await DescriptorSecretKey.create(
           network: Network.Testnet,
           mnemonic: mnemonicObj,
         );
-        final derivationPath = await DerivationPath.create(path: e);
-        final derivedXprv = await descriptorSecretKey.derive(derivationPath);
-        final derivedXprvStr = await derivedXprv.asString();
-        descriptors.add("wpkh($derivedXprvStr)");
+        final secretKey = descriptorSecretKey.asString();
+        final descriptor = await Descriptor.newBip84(
+            secretKey: secretKey, network: Network.Testnet, keyChainKind: e);
+        descriptors.add(descriptor);
       }
       return descriptors;
     } on Exception catch (e) {
@@ -442,7 +442,7 @@ Future<List<String>> getDescriptors(String mnemonic) async {
 
 ```
 
-To create a wallet with `bdk-flutter` call the `create` method with `descriptor`, `changeDescriptor` `network`, and the `databaseConfig`. For database, we can use memory as the database by specifying `DatabaseConfig.memory()`
+To create a wallet with `bdk-flutter` call the `create` constructor with `descriptor`, `changeDescriptor` `network`, and the `databaseConfig`. For database, we can use memory as the database by specifying `DatabaseConfig.memory()`
 Following our pattern of a button, click handler and bdk-flutter API call, Let's add an internal method which will serve as the click handler for the "Create Wallet" button. We want to see the output of this call so let's use `setState()` to set the `displayText` variable with the wallet's first receive address.
 
 ```dart
@@ -493,8 +493,6 @@ The App should now be creating a wallet when we click **Create Mnemonic** follow
 
 <img src="./exploring_bdk_flutter/bdk_flutter_tutorial_screen_createwallet.png" style="display: block; margin: 0 auto; zoom:50%;" />
 
-The wallet created is an HD wallet and the address displayed is the 0 index address for the wallet. The descriptors we specified for the wallet are using the derivation path, `m/84'/1'/0'/0`, for receive addresses and `m/84'/1'/0'/1` for change addresses.
-
 Before going forward, we need to create a `Blockchain` object as well. The Blockchain object will encapsulate the bitcoin node configuration which the wallet will use for syncing blocks and broadcasting transactions.
 
 Let's add an internal method to create and initialize the `Blockchain` object.
@@ -525,13 +523,15 @@ Include the following line of code inside `createOrRestoreWallet() ` just before
  .....
 ```
 
-**blockChainConfig**: BlockchainConfig is an enum that has 2 values, `BlockchainConfig.electrum` for [`electrum`](https://github.com/romanz/electrs) and `BlockchainConfig.esplora` for [`esplora`](https://github.com/Blockstream/esplora).
+**blockChainConfig**: BlockchainConfig is an enum that has 3 values, `BlockchainConfig.electrum` for [`electrum`](https://github.com/romanz/electrs) ,`BlockchainConfig.esplora` for [`esplora`](https://github.com/Blockstream/esplora) and `BlockchainConfig.rpc` .
 
-Both `BlockchainConfig.electrum` & `BlockchainConfig.esplora` has `ElectrumConfig` object and `EsploraConfig` object, respectively as its parameter.
+`BlockchainConfig.electrum`, `BlockchainConfig.rpc` & `BlockchainConfig.esplora` has `ElectrumConfig` object, `RpcConfig` object and `EsploraConfig` object, respectively as its parameter.
 
 **ElectrumConfig**: This is the object type of `BlockchainConfig.electrum`'s config that takes a timeout, retry & url as its required parameter.
 
 **EsploraConfig**: This is the object type of `BlockchainConfig.esplora`'s config that takes baseUrl & stopGap as its required parameter.
+
+**RpcConfig**: This is the object type of `BlockchainConfig.rpc`'s config that takes url, network, & walletName as its required parameter. If `Rpc Blockchain` has its authentication values inside a cookie file, please pass in cookie path as authCookie parameter, or you can pass in rpc username and password using `UserPass` class.
 
 Refer to the readme for a complete list of options for [createWallet()](https://github.com/LtbLightning/bdk-flutter#createwallet)
 
