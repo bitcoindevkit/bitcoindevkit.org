@@ -131,7 +131,7 @@ This will add a line like this to your package's `pubspec.yaml` and this will al
 
 ```shell
 dependencies:
-  bdk_flutter:
+  bdk_flutter: 0.3.0
 ```
 
 ## Configuring
@@ -381,9 +381,6 @@ Under the `mnemonic` and `displayText` state variables, let's add one for `balan
 
 ```dart
 class _HomeState extends State<Home> {
-
-  late Wallet wallet;
-  late Blockchain blockchain;
   TextEditingController mnemonic = TextEditingController();
   String? displayText;
   String? balance;
@@ -408,13 +405,13 @@ Just below `/* Balance */` and above `/* Result */` add the following UI compone
         /* Result */
 ```
 
-`bdk_flutter` creates a wallet using output descriptors. More about output descriptors [here](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md). Before creating the `Wallet` we need to create a `descriptor` which will be used to generate receive addresses and a `changeDescriptor` to collect the change from an outgoing transaction. A `descriptor` is a string that looks like this:
-
-`"wpkh(key/84'/{0,1}'/0'/{0,1}/*)"`
+`bdk_flutter` creates a wallet using output descriptors which define the derivation path to derive addresses and sign transactions. More about output descriptors [here](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md). Before creating the `Wallet` we need to create a `descriptor` object which will be used to generate receive addresses and a `changeDescriptor` object to to create change addresses to collect from outgoing transactions.
 
 `bdk_flutter`'s `Descriptor` class has a number of descriptor templates that will help you create a simple wallet.
 
-Let's add some code to create a simple `wpkh` descriptor object by using the `BIP84` template. This descriptor will create receive (`KeyChainKind.External`) and change descriptor (` KeyChainKind.Internal`) for a specified mnemonic.
+Let's add some code to create a simple `wpkh` descriptor object by using the `BIP84` template. This template will create a descriptor in the format `wpkh(key/84'/{0,1}'/0'/{0,1}/*)`
+
+This descriptor will create receive (`KeyChainKind.External`) and change descriptor (` KeyChainKind.Internal`) for a specified mnemonic.
 
 ```dart
 Future<List<Descriptor>> getDescriptors(String mnemonic) async {
@@ -442,8 +439,10 @@ Future<List<Descriptor>> getDescriptors(String mnemonic) async {
 
 ```
 
+Under the `address` state variable, let's add a state variable called `wallet` of the type `Wallet` for saving the bitcoin wallet.
+
 To create a wallet with `bdk-flutter` call the `create` constructor with `descriptor`, `changeDescriptor` `network`, and the `databaseConfig`. For database, we can use memory as the database by specifying `DatabaseConfig.memory()`
-Following our pattern of a button, click handler and bdk-flutter API call, Let's add an internal method which will serve as the click handler for the "Create Wallet" button. We want to see the output of this call so let's use `setState()` to set the `displayText` variable with the wallet's first receive address.
+Following our pattern of a button, click handler and bdk-flutter API call, Let's add an internal method which will serve as the click handler for the "Create Wallet" button. We want to see the output of this call so let's use `setState()` to set the `wallet` object created and the `displayText` variable with the wallet's first receive address.
 
 ```dart
   createOrRestoreWallet(
