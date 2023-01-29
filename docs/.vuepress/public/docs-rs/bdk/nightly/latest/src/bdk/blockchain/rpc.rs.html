@@ -999,6 +999,9 @@
 <a href="#998" id="998">998</a>
 <a href="#999" id="999">999</a>
 <a href="#1000" id="1000">1000</a>
+<a href="#1001" id="1001">1001</a>
+<a href="#1002" id="1002">1002</a>
+<a href="#1003" id="1003">1003</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2021 by Riccardo Casatta &lt;riccardo@casatta.it&gt;
 //
@@ -1050,8 +1053,9 @@
 <span class="kw">use </span>bitcoincore_rpc::{Client, RpcApi};
 <span class="kw">use </span>log::{debug, info};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
+<span class="kw">use </span>std::cell::RefCell;
 <span class="kw">use </span>std::collections::{HashMap, HashSet};
-<span class="kw">use </span>std::ops::Deref;
+<span class="kw">use </span>std::ops::{Deref, DerefMut};
 <span class="kw">use </span>std::path::PathBuf;
 <span class="kw">use </span>std::thread;
 <span class="kw">use </span>std::time::Duration;
@@ -1193,10 +1197,12 @@
 }
 
 <span class="kw">impl </span>WalletSync <span class="kw">for </span>RpcBlockchain {
-    <span class="kw">fn </span>wallet_setup&lt;D&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, db: <span class="kw-2">&amp;mut </span>D, prog: Box&lt;<span class="kw">dyn </span>Progress&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt;
+    <span class="kw">fn </span>wallet_setup&lt;D&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, db: <span class="kw-2">&amp;</span>RefCell&lt;D&gt;, prog: Box&lt;<span class="kw">dyn </span>Progress&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt;
     <span class="kw">where
         </span>D: BatchDatabase,
     {
+        <span class="kw">let </span><span class="kw-2">mut </span>db = db.borrow_mut();
+        <span class="kw">let </span>db = db.deref_mut();
         <span class="kw">let </span>batch = DbState::new(db, <span class="kw-2">&amp;</span><span class="self">self</span>.sync_params, <span class="kw-2">&amp;*</span>prog)<span class="question-mark">?
             </span>.sync_with_core(<span class="kw-2">&amp;</span><span class="self">self</span>.client, <span class="self">self</span>.is_descriptors)<span class="question-mark">?
             </span>.as_db_batch()<span class="question-mark">?</span>;

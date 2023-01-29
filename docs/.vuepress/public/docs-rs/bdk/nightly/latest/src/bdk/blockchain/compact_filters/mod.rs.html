@@ -593,6 +593,10 @@
 <a href="#592" id="592">592</a>
 <a href="#593" id="593">593</a>
 <a href="#594" id="594">594</a>
+<a href="#595" id="595">595</a>
+<a href="#596" id="596">596</a>
+<a href="#597" id="597">597</a>
+<a href="#598" id="598">598</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -646,6 +650,7 @@
 
 </span><span class="kw">use </span>std::collections::HashSet;
 <span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::ops::DerefMut;
 <span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::sync::atomic::{AtomicUsize, Ordering};
 <span class="kw">use </span>std::sync::{Arc, Mutex};
@@ -869,7 +874,7 @@
     <span class="attr">#[allow(clippy::mutex_atomic)] </span><span class="comment">// Mutex is easier to understand than a CAS loop.
     </span><span class="kw">fn </span>wallet_setup&lt;D: BatchDatabase&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        database: <span class="kw-2">&amp;mut </span>D,
+        database: <span class="kw-2">&amp;</span>RefCell&lt;D&gt;,
         progress_update: Box&lt;<span class="kw">dyn </span>Progress&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>first_peer = <span class="kw-2">&amp;</span><span class="self">self</span>.peers[<span class="number">0</span>];
@@ -916,6 +921,9 @@
         <span class="macro">info!</span>(<span class="string">&quot;Synced headers to height: {}&quot;</span>, synced_height);
 
         cf_sync.prepare_sync(Arc::clone(first_peer))<span class="question-mark">?</span>;
+
+        <span class="kw">let </span><span class="kw-2">mut </span>database = database.borrow_mut();
+        <span class="kw">let </span>database = database.deref_mut();
 
         <span class="kw">let </span>all_scripts = Arc::new(
             database
