@@ -66,6 +66,25 @@
 <a href="#65" id="65">65</a>
 <a href="#66" id="66">66</a>
 <a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -121,7 +140,26 @@
 
 <span class="kw">impl </span>std::fmt::Display <span class="kw">for </span>Error {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
-        <span class="macro">write!</span>(f, <span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>)
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::InvalidHdKeyPath =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Invalid HD key path&quot;</span>),
+            <span class="self">Self</span>::InvalidDescriptorChecksum =&gt; {
+                <span class="macro">write!</span>(f, <span class="string">&quot;The provided descriptor doesn&#39;t match its checksum&quot;</span>)
+            }
+            <span class="self">Self</span>::HardenedDerivationXpub =&gt; <span class="macro">write!</span>(
+                f,
+                <span class="string">&quot;The descriptor contains hardened derivation steps on public extended keys&quot;
+            </span>),
+            <span class="self">Self</span>::Key(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Key error: {}&quot;</span>, err),
+            <span class="self">Self</span>::Policy(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Policy error: {}&quot;</span>, err),
+            <span class="self">Self</span>::InvalidDescriptorCharacter(char) =&gt; {
+                <span class="macro">write!</span>(f, <span class="string">&quot;Invalid descriptor character: {}&quot;</span>, char)
+            }
+            <span class="self">Self</span>::Bip32(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;BIP32 error: {}&quot;</span>, err),
+            <span class="self">Self</span>::Base58(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Base58 error: {}&quot;</span>, err),
+            <span class="self">Self</span>::Pk(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Key-related error: {}&quot;</span>, err),
+            <span class="self">Self</span>::Miniscript(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Miniscript error: {}&quot;</span>, err),
+            <span class="self">Self</span>::Hex(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Hex decoding error: {}&quot;</span>, err),
+        }
     }
 }
 
