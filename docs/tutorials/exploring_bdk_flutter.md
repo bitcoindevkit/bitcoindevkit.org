@@ -411,7 +411,7 @@ Just below `/* Balance */` and above `/* Result */` add the following UI compone
 
 Let's add some code to create a simple `wpkh` descriptor object by using the `BIP84` template. This template will create a descriptor in the format `wpkh(key/84'/{0,1}'/0'/{0,1}/*)`
 
-This descriptor will create receive (`KeyChainKind.External`) and change descriptor (` KeyChainKind.Internal`) for a specified mnemonic.
+This descriptor will create receive (`KeychainKind.External`) and change descriptor (` KeycChainKind.Internal`) for a specified mnemonic.
 
 ```dart
 Future<List<Descriptor>> getDescriptors(String mnemonic) async {
