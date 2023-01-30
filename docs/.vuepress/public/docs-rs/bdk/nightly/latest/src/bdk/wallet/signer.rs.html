@@ -1123,6 +1123,21 @@
 <a href="#1122" id="1122">1122</a>
 <a href="#1123" id="1123">1123</a>
 <a href="#1124" id="1124">1124</a>
+<a href="#1125" id="1125">1125</a>
+<a href="#1126" id="1126">1126</a>
+<a href="#1127" id="1127">1127</a>
+<a href="#1128" id="1128">1128</a>
+<a href="#1129" id="1129">1129</a>
+<a href="#1130" id="1130">1130</a>
+<a href="#1131" id="1131">1131</a>
+<a href="#1132" id="1132">1132</a>
+<a href="#1133" id="1133">1133</a>
+<a href="#1134" id="1134">1134</a>
+<a href="#1135" id="1135">1135</a>
+<a href="#1136" id="1136">1136</a>
+<a href="#1137" id="1137">1137</a>
+<a href="#1138" id="1138">1138</a>
+<a href="#1139" id="1139">1139</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1305,7 +1320,22 @@
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>SignerError {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
-        <span class="macro">write!</span>(f, <span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>)
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::MissingKey =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Missing private key&quot;</span>),
+            <span class="self">Self</span>::InvalidKey =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;The private key in use has the right fingerprint but derives differently than expected&quot;</span>),
+            <span class="self">Self</span>::UserCanceled =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;The user canceled the operation&quot;</span>),
+            <span class="self">Self</span>::InputIndexOutOfRange =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Input index out of range&quot;</span>),
+            <span class="self">Self</span>::MissingNonWitnessUtxo =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Missing non-witness UTXO&quot;</span>),
+            <span class="self">Self</span>::InvalidNonWitnessUtxo =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Invalid non-witness UTXO&quot;</span>),
+            <span class="self">Self</span>::MissingWitnessUtxo =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Missing witness UTXO&quot;</span>),
+            <span class="self">Self</span>::MissingWitnessScript =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Missing witness script&quot;</span>),
+            <span class="self">Self</span>::MissingHdKeypath =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Missing fingerprint and derivation path&quot;</span>),
+            <span class="self">Self</span>::NonStandardSighash =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;The psbt contains a non standard sighash&quot;</span>),
+            <span class="self">Self</span>::InvalidSighash =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Invalid SIGHASH for the signing context in use&quot;</span>),
+            <span class="self">Self</span>::SighashError(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Error while computing the hash to sign: {}&quot;</span>, err),
+            <span class="attr">#[cfg(feature = <span class="string">&quot;hardware-signer&quot;</span>)]
+            </span><span class="self">Self</span>::HWIError(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Error while signing using hardware wallets: {}&quot;</span>, err),
+        }
     }
 }
 
