@@ -131,7 +131,7 @@ This will add a line like this to your package's `pubspec.yaml` and this will al
 
 ```shell
 dependencies:
-  bdk_flutter: 0.3.0
+  bdk_flutter: ^0.3.0
 ```
 
 ## Configuring
@@ -417,7 +417,7 @@ This descriptor will create receive (`KeyChainKind.External`) and change descrip
 Future<List<Descriptor>> getDescriptors(String mnemonic) async {
     final descriptors = <Descriptor>[];
     try {
-      for (var e in [KeyChainKind.External, KeyChainKind.Internal]) {
+      for (var e in [KeychainKind.External, KeychainKind.Internal]) {
         final mnemonicObj = await Mnemonic.fromString(mnemonic);
         final descriptorSecretKey = await DescriptorSecretKey.create(
           network: Network.Testnet,
@@ -501,10 +501,11 @@ Let's add an internal method to create and initialize the `Blockchain` object.
     blockchain = await Blockchain.create(
         config: BlockchainConfig.electrum(
             config: ElectrumConfig(
-                stopGap: 10,
-                timeout: 5,
-                retry: 5,
-                url: "ssl://electrum.blockstream.info:60002")));
+                  stopGap: 10,
+                  timeout: 5,
+                  retry: 5,
+                  url: "ssl://electrum.blockstream.info:60002",
+                  validateDomain: false)));
   }
 ```
 
