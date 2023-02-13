@@ -645,7 +645,7 @@ BDK thus allows wallet devs, to only focus on stuff that they care about, writin
 To find and explore more about the BDK capabilities and how it can fit your development need refer the following resources.
 
  - [source code](https://github.com/bitcoindevkit/bdk)
- - [dev docs](https://docs.rs/bdk/0.10.0/bdk/)
+ - [dev docs](https://docs.rs/bdk/latest/bdk/)
  - [community](https://discord.com/invite/d7NkDKm)
 
 

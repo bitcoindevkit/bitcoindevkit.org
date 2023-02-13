@@ -304,9 +304,9 @@ Thanks in advance.
 
 [X window system]: https://en.wikipedia.org/wiki/X_Window_System
 [The Art of UNIX Programming]: https://en.wikipedia.org/wiki/The_Art_of_Unix_Programming
-[`Wallet`]: https://docs.rs/bdk/0.20.0/bdk/wallet/struct.Wallet.html
-[`CoinSelectionAlgorithm`]: https://docs.rs/bdk/0.20.0/bdk/wallet/coin_selection/trait.CoinSelectionAlgorithm.html
-[`Signer`]: https://docs.rs/bdk/0.20.0/bdk/wallet/signer/index.html
-[`WalletSync`]: https://docs.rs/bdk/0.20.0/bdk/blockchain/trait.WalletSync.html
+[`Wallet`]: https://docs.rs/bdk/latest/bdk/wallet/struct.Wallet.html
+[`CoinSelectionAlgorithm`]: https://docs.rs/bdk/latest/bdk/wallet/coin_selection/trait.CoinSelectionAlgorithm.html
+[`Signer`]: https://docs.rs/bdk/latest/bdk/wallet/signer/index.html
+[`WalletSync`]: https://docs.rs/bdk/latest/bdk/blockchain/trait.WalletSync.html
 [Sensei]: https://l2.technology/sensei
-[`Database`]: https://docs.rs/bdk/0.20.0/bdk/database/trait.Database.html
+[`Database`]: https://docs.rs/bdk/latest/bdk/database/trait.Database.html
