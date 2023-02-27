@@ -116,11 +116,11 @@ This descriptor requires spending transaction inputs must be signed by all three
 Each participant's descriptor only uses their own XPRV key plus the XPUB keys of the other participants.
 
 ```bash
-export ALICE_DESCRIPTOR="wsh(thresh(3,pk($ALICE_XPRV/84'/1'/0'/0/*),s:pk($BOB_XPUB),s:pk($CAROL_XPUB),sdv:older(2)))"
+export ALICE_DESCRIPTOR="wsh(thresh(3,pk($ALICE_XPRV/84'/1'/0'/0/*),s:pk($BOB_XPUB),s:pk($CAROL_XPUB),snl:older(2)))"
 
-export BOB_DESCRIPTOR="wsh(thresh(3,pk($ALICE_XPUB),s:pk($BOB_XPRV/84'/1'/0'/0/*),s:pk($CAROL_XPUB),sdv:older(2)))"
+export BOB_DESCRIPTOR="wsh(thresh(3,pk($ALICE_XPUB),s:pk($BOB_XPRV/84'/1'/0'/0/*),s:pk($CAROL_XPUB),snl:older(2)))"
 
-export CAROL_DESCRIPTOR="wsh(thresh(3,pk($ALICE_XPUB),s:pk($BOB_XPUB),s:pk($CAROL_XPRV/84'/1'/0'/0/*),sdv:older(2)))"
+export CAROL_DESCRIPTOR="wsh(thresh(3,pk($ALICE_XPUB),s:pk($BOB_XPUB),s:pk($CAROL_XPRV/84'/1'/0'/0/*),snl:older(2)))"
 ```
 
 ## Policy A. Three signatures

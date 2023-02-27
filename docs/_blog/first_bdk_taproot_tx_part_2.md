@@ -913,7 +913,7 @@ wallet.broadcast(&psbt.extract_tx())?;
 [rust-bitcoin]: https://github.com/rust-bitcoin/rust-bitcoin
 [full diff]: https://github.com/bitcoindevkit/bdk/compare/aa075f0...afilini:taproot-testing
 
-[`policy`]: https://docs.rs/bdk/0.14.0/bdk/descriptor/policy/index.html
+[`policy`]: https://docs.rs/bdk/latest/bdk/descriptor/policy/index.html
 ["segwit bug"]: https://blog.trezor.io/details-of-firmware-updates-for-trezor-one-version-1-9-1-and-trezor-model-t-version-2-3-1-1eba8f60f2dd
 [sighash-leafhash-pr]: https://github.com/rust-bitcoin/rust-bitcoin/pull/722
 [our-taproot-tx]: https://mempool.space/tx/2eb8dbaa346d4be4e82fe444c2f0be00654d8cfd8c4a9a61b11aeaab8c00b272

@@ -44,10 +44,10 @@ Below is a list of the available feature flags and the additional functionality 
 
 These features do not expose any new API, but influence internal implementation aspects of BDK.
 
-* `compact_filters`: [compact_filters](https://docs.rs/bdk/0.15.0/bdk/blockchain/compact_filters/index.html) client protocol for interacting with the bitcoin P2P network
-* `electrum`: [electrum](https://docs.rs/bdk/0.15.0/bdk/blockchain/electrum/index.html) client protocol for interacting with electrum servers
-* `esplora`: [esplora](https://docs.rs/bdk/0.15.0/bdk/blockchain/esplora/index.html) client protocol for interacting with blockstream [electrs](https://github.com/Blockstream/electrs) servers
-* `key-value-db`: key value [database](https://docs.rs/bdk/0.15.0/bdk/database/index.html) based on [sled](https://crates.io/crates/sled) for caching blockchain data
+* `compact_filters`: [compact_filters](https://docs.rs/bdk/latest/bdk/blockchain/compact_filters/index.html) client protocol for interacting with the bitcoin P2P network
+* `electrum`: [electrum](https://docs.rs/bdk/latest/bdk/blockchain/electrum/index.html) client protocol for interacting with electrum servers
+* `esplora`: [esplora](https://docs.rs/bdk/latest/bdk/blockchain/esplora/index.html) client protocol for interacting with blockstream [electrs](https://github.com/Blockstream/electrs) servers
+* `key-value-db`: key value [database](https://docs.rs/bdk/latest/bdk/database/index.html) based on [sled](https://crates.io/crates/sled) for caching blockchain data
 
 
 ## Playground
@@ -116,4 +116,4 @@ fn main() {
 }
 ```
 
-More information about each component used in the code can be found in [BDK Documentation](https://docs.rs/bdk/0.15.0/bdk/index.html).
+More information about each component used in the code can be found in [BDK Documentation](https://docs.rs/bdk/latest/bdk/index.html).
