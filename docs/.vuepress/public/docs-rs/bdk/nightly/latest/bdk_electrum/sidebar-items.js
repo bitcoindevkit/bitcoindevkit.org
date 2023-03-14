@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["ElectrumUpdate","The result of [`ElectrumExt::scan`]."]],"trait":[["ElectrumExt","Trait to extend [`electrum_client::Client`] functionality."]]};

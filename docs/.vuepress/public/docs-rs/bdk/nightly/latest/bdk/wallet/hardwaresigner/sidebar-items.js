@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["HWISigner","Custom signer for Hardware Wallets"]]};
