@@ -1,5 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/descriptor/policy.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>policy.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../bdk/index.html">
-                        <img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/bdk/src/descriptor/policy.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>policy.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../bdk/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1882,6 +1881,9 @@
 <a href="#1881" id="1881">1881</a>
 <a href="#1882" id="1882">1882</a>
 <a href="#1883" id="1883">1883</a>
+<a href="#1884" id="1884">1884</a>
+<a href="#1885" id="1885">1885</a>
+<a href="#1886" id="1886">1886</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1916,13 +1918,15 @@
 //!
 //! let signers = Arc::new(SignersContainer::build(key_map, &amp;extended_desc, &amp;secp));
 //! let policy = extended_desc.extract_policy(&amp;signers, BuildSatisfaction::None, &amp;secp)?;
-//! println!(&quot;policy: {}&quot;, serde_json::to_string(&amp;policy)?);
+//! println!(&quot;policy: {}&quot;, serde_json::to_string(&amp;policy).unwrap());
 //! # Ok::&lt;(), bdk::Error&gt;(())
 //! ```
 
-</span><span class="kw">use </span>std::cmp::max;
-<span class="kw">use </span>std::collections::{BTreeMap, HashSet, VecDeque};
-<span class="kw">use </span>std::fmt;
+</span><span class="kw">use </span><span class="kw">crate</span>::collections::{BTreeMap, HashSet, VecDeque};
+<span class="kw">use </span>alloc::string::String;
+<span class="kw">use </span>alloc::vec::Vec;
+<span class="kw">use </span>core::cmp::max;
+<span class="kw">use </span>core::fmt;
 
 <span class="kw">use </span>serde::ser::SerializeMap;
 <span class="kw">use </span>serde::{Serialize, Serializer};
@@ -2407,7 +2411,8 @@
     }
 }
 
-<span class="kw">impl </span>std::error::Error <span class="kw">for </span>PolicyError {}
+<span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+</span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>PolicyError {}
 
 <span class="kw">impl </span>Policy {
     <span class="kw">fn </span>new(item: SatisfiableItem) -&gt; <span class="self">Self </span>{
@@ -3030,12 +3035,12 @@
     <span class="kw">use </span><span class="kw">crate</span>::descriptor::policy::SatisfiableItem::{EcdsaSignature, Multisig, Thresh};
     <span class="kw">use </span><span class="kw">crate</span>::keys::{DescriptorKey, IntoDescriptorKey};
     <span class="kw">use </span><span class="kw">crate</span>::wallet::signer::SignersContainer;
+    <span class="kw">use </span>alloc::{string::ToString, sync::Arc};
     <span class="kw">use </span>assert_matches::assert_matches;
     <span class="kw">use </span>bitcoin::secp256k1::Secp256k1;
     <span class="kw">use </span>bitcoin::util::bip32;
     <span class="kw">use </span>bitcoin::Network;
-    <span class="kw">use </span>std::str::FromStr;
-    <span class="kw">use </span>std::sync::Arc;
+    <span class="kw">use </span>core::str::FromStr;
 
     <span class="kw">const </span>TPRV0_STR:<span class="kw-2">&amp;</span>str = <span class="string">&quot;tprv8ZgxMBicQKsPdZXrcHNLf5JAJWFAoJ2TrstMRdSKtEggz6PddbuSkvHKM9oKJyFgZV1B7rw8oChspxyYbtmEXYyg1AjfWbL3ho3XHDpHRZf&quot;</span>;
     <span class="kw">const </span>TPRV1_STR:<span class="kw-2">&amp;</span>str = <span class="string">&quot;tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N&quot;</span>;
@@ -3328,12 +3333,12 @@
             .into_wallet_descriptor(<span class="kw-2">&amp;</span>secp, Network::Testnet)
             .unwrap();
         <span class="kw">let </span>signers_container = Arc::new(SignersContainer::build(keymap, <span class="kw-2">&amp;</span>wallet_desc, <span class="kw-2">&amp;</span>secp));
-        <span class="kw">let </span>policy = wallet_desc
+        <span class="kw">let </span>_policy = wallet_desc
             .extract_policy(<span class="kw-2">&amp;</span>signers_container, BuildSatisfaction::None, <span class="kw-2">&amp;</span>secp)
             .unwrap()
             .unwrap();
-        <span class="macro">println!</span>(<span class="string">&quot;desc policy = {:?}&quot;</span>, policy); <span class="comment">// TODO remove
-                                                // TODO how should this fail with mixed timelocks?
+        <span class="comment">// println!(&quot;desc policy = {:?}&quot;, policy); // TODO remove
+        // TODO how should this fail with mixed timelocks?
     </span>}
 
     <span class="comment">// - multiple timelocks of the same type should be correctly merged together
@@ -3353,12 +3358,12 @@
             .into_wallet_descriptor(<span class="kw-2">&amp;</span>secp, Network::Testnet)
             .unwrap();
         <span class="kw">let </span>signers_container = Arc::new(SignersContainer::build(keymap, <span class="kw-2">&amp;</span>wallet_desc, <span class="kw-2">&amp;</span>secp));
-        <span class="kw">let </span>policy = wallet_desc
+        <span class="kw">let </span>_policy = wallet_desc
             .extract_policy(<span class="kw-2">&amp;</span>signers_container, BuildSatisfaction::None, <span class="kw-2">&amp;</span>secp)
             .unwrap()
             .unwrap();
-        <span class="macro">println!</span>(<span class="string">&quot;desc policy = {:?}&quot;</span>, policy); <span class="comment">// TODO remove
-                                                // TODO how should this merge timelocks?
+        <span class="comment">// println!(&quot;desc policy = {:?}&quot;, policy); // TODO remove
+        // TODO how should this merge timelocks?
         </span><span class="kw">let </span>(prvkey1, _pubkey1, _fingerprint1) = setup_keys(TPRV0_STR, PATH, <span class="kw-2">&amp;</span>secp);
         <span class="kw">let </span>locktime_seconds0 = <span class="number">500000100</span>;
         <span class="kw">let </span>locktime_seconds1 = <span class="number">500000200</span>;
@@ -3371,12 +3376,12 @@
             .into_wallet_descriptor(<span class="kw-2">&amp;</span>secp, Network::Testnet)
             .unwrap();
         <span class="kw">let </span>signers_container = Arc::new(SignersContainer::build(keymap, <span class="kw-2">&amp;</span>wallet_desc, <span class="kw-2">&amp;</span>secp));
-        <span class="kw">let </span>policy = wallet_desc
+        <span class="kw">let </span>_policy = wallet_desc
             .extract_policy(<span class="kw-2">&amp;</span>signers_container, BuildSatisfaction::None, <span class="kw-2">&amp;</span>secp)
             .unwrap()
             .unwrap();
 
-        <span class="macro">println!</span>(<span class="string">&quot;desc policy = {:?}&quot;</span>, policy); <span class="comment">// TODO remove
+        <span class="comment">// println!(&quot;desc policy = {:?}&quot;, policy); // TODO remove
 
         // TODO how should this merge timelocks?
     </span>}

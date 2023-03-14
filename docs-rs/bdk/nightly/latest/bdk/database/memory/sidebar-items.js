@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["MemoryDatabase","In-memory ephemeral database"]]};

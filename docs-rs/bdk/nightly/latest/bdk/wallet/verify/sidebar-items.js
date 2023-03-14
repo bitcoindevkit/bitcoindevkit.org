@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["VerifyError","Error during validation of a tx agains the consensus rules"]],"fn":[["verify_tx","Verify a transaction against the consensus rules"]]};

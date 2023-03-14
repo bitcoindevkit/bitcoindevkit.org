@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Additions","A structure that represents changes to a [`TxGraph`]."],["TxDescendants","An iterator that traverses transaction descendants."],["TxGraph","A graph of transactions and spends."]]};
