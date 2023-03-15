@@ -310,7 +310,7 @@
     ///
     /// - `local_chain`: the most recent block hashes present locally
     /// - `keychain_spks`: keychains that we want to scan transactions for
-    /// - `txids`: transactions that we want updated [`ChainPosition`]s for
+    /// - `txids`: transactions for which we want updated [`ChainPosition`]s
     /// - `outpoints`: transactions associated with these outpoints (residing, spending) that we
     ///     want to included in the update
     ///
@@ -396,7 +396,7 @@
         <span class="kw">if let </span><span class="prelude-val">Err</span>(failure) = update.insert_checkpoint(tip_at_start) {
             <span class="kw">match </span>failure {
                 sparse_chain::InsertCheckpointError::HashNotMatching { .. } =&gt; {
-                    <span class="comment">// there has been a re-org before we started scanning. We haven&#39;t consumed any iterators so it&#39;s safe to recursively call.
+                    <span class="comment">// there was a re-org before we started scanning. We haven&#39;t consumed any iterators, so calling this function recursively is safe.
                     </span><span class="kw">return </span>EsploraExt::scan(
                         <span class="self">self</span>,
                         local_chain,
@@ -427,7 +427,7 @@
 
                                 <span class="kw">let </span>n_confirmed =
                                     related_txs.iter().filter(|tx| tx.status.confirmed).count();
-                                <span class="comment">// esplora pages on 25 confirmed transactions. If there&#39;s 25 or more we
+                                <span class="comment">// esplora pages on 25 confirmed transactions. If there are 25 or more we
                                 // keep requesting to see if there&#39;s more.
                                 </span><span class="kw">if </span>n_confirmed &gt;= <span class="number">25 </span>{
                                     <span class="kw">loop </span>{
@@ -474,7 +474,7 @@
                                 }
                                 InsertTxError::Chain(TxMovedUnexpectedly { .. })
                                 | InsertTxError::UnresolvableConflict(<span class="kw">_</span>) =&gt; {
-                                    <span class="comment">/* implies reorg during scan. We deal with that below */
+                                    <span class="comment">/* implies reorg during a scan. We deal with that below */
                                 </span>}
                             }
                         }
@@ -507,7 +507,7 @@
                     }
                     InsertTxError::Chain(TxMovedUnexpectedly { .. })
                     | InsertTxError::UnresolvableConflict(<span class="kw">_</span>) =&gt; {
-                        <span class="comment">/* implies reorg during scan. We deal with that below */
+                        <span class="comment">/* implies reorg during a scan. We deal with that below */
                     </span>}
                 }
             }
@@ -542,7 +542,7 @@
                         }
                         InsertTxError::Chain(TxMovedUnexpectedly { .. })
                         | InsertTxError::UnresolvableConflict(<span class="kw">_</span>) =&gt; {
-                            <span class="comment">/* implies reorg during scan. We deal with that below */
+                            <span class="comment">/* implies reorg during a scan. We deal with that below */
                         </span>}
                     }
                 }
@@ -558,7 +558,7 @@
         };
 
         <span class="kw">if </span>reorg_occurred {
-            <span class="comment">// A reorg occurred so lets find out where all the txids we found are in the chain now.
+            <span class="comment">// A reorg occurred, so let&#39;s find out where all the txids we found are now in the chain.
             // XXX: collect required because of weird type naming issues
             </span><span class="kw">let </span>txids_found = update
                 .chain()

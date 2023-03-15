@@ -307,15 +307,15 @@
 <a href="#307" id="307">307</a>
 <a href="#308" id="308">308</a>
 <a href="#309" id="309">309</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Module for keychain based structures.
+</pre><pre class="rust"><code><span class="doccomment">//! Module for keychain related structures.
 //!
-//! A keychain here is a set of application defined indexes for a minscript descriptor where we can
+//! A keychain here is a set of application-defined indexes for a miniscript descriptor where we can
 //! derive script pubkeys at a particular derivation index. The application&#39;s index is simply
 //! anything that implements `Ord`.
 //!
 //! [`KeychainTxOutIndex`] indexes script pubkeys of keychains and scans in relevant outpoints (that
 //! has a `txout` containing an indexed script pubkey). Internally, this uses [`SpkTxOutIndex`], but
-//! also maintains &quot;revealed&quot; and &quot;lookahead&quot; index count per keychain.
+//! also maintains &quot;revealed&quot; and &quot;lookahead&quot; index counts per keychain.
 //!
 //! [`KeychainTracker`] combines [`ChainGraph`] and [`KeychainTxOutIndex`] and enforces atomic
 //! changes between both these structures. [`KeychainScan`] is a structure used to update to
@@ -372,7 +372,7 @@
         <span class="self">self</span>.<span class="number">0</span>.is_empty()
     }
 
-    <span class="doccomment">/// Get the inner map of keychain to its new derivation index.
+    <span class="doccomment">/// Get the inner map of the keychain to its new derivation index.
     </span><span class="kw">pub fn </span>as_inner(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeMap&lt;K, u32&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
     </span>}
@@ -381,8 +381,8 @@
 <span class="kw">impl</span>&lt;K: Ord&gt; DerivationAdditions&lt;K&gt; {
     <span class="doccomment">/// Append another [`DerivationAdditions`] into self.
     ///
-    /// If keychain already exists, increases the index when other&#39;s index &gt; self&#39;s index.
-    /// If keychain did not exist, append the new keychain.
+    /// If the keychain already exists, increase the index when the other&#39;s index &gt; self&#39;s index.
+    /// If the keychain did not exist, append the new keychain.
     </span><span class="kw">pub fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>other: <span class="self">Self</span>) {
         <span class="self">self</span>.<span class="number">0</span>.iter_mut().for_each(|(key, index)| {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(other_index) = other.<span class="number">0</span>.remove(key) {
@@ -471,11 +471,11 @@
         <span class="self">self</span>.chain_graph.is_empty() &amp;&amp; <span class="self">self</span>.derivation_indices.is_empty()
     }
 
-    <span class="doccomment">/// Appends the changes in `other` into `self` such that applying `self` afterwards has the same
+    <span class="doccomment">/// Appends the changes in `other` into `self` such that applying `self` afterward has the same
     /// effect as sequentially applying the original `self` and `other`.
     ///
-    /// Note the derivation indices cannot be decreased so `other` will only change the derivation
-    /// index for a keychain if it&#39;s entry is higher than the one in `self`.
+    /// Note the derivation indices cannot be decreased, so `other` will only change the derivation
+    /// index for a keychain, if it&#39;s value is higher than the one in `self`.
     </span><span class="kw">pub fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: KeychainChangeSet&lt;K, P&gt;)
     <span class="kw">where
         </span>K: Ord,
@@ -516,7 +516,7 @@
     }
 }
 
-<span class="doccomment">/// Balance differentiated in various categories.
+<span class="doccomment">/// Balance, differentiated into various categories.
 </span><span class="attr">#[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[cfg_attr(
     feature = <span class="string">&quot;serde&quot;</span>,
@@ -606,13 +606,13 @@
 
         lhs.append(rhs);
 
-        <span class="comment">// Exiting index doesn&#39;t update if new index in `other` is lower than `self`
+        <span class="comment">// Exiting index doesn&#39;t update if the new index in `other` is lower than `self`.
         </span><span class="macro">assert_eq!</span>(lhs.derivation_indices.<span class="number">0</span>.get(<span class="kw-2">&amp;</span>Keychain::One), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="number">7</span>));
-        <span class="comment">// Existing index updates if new index in `other` is higher than `self.
+        <span class="comment">// Existing index updates if the new index in `other` is higher than `self`.
         </span><span class="macro">assert_eq!</span>(lhs.derivation_indices.<span class="number">0</span>.get(<span class="kw-2">&amp;</span>Keychain::Two), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="number">5</span>));
-        <span class="comment">// Existing index unchanged, if keychain doesn&#39;t exist in `other`
+        <span class="comment">// Existing index is unchanged if keychain doesn&#39;t exist in `other`.
         </span><span class="macro">assert_eq!</span>(lhs.derivation_indices.<span class="number">0</span>.get(<span class="kw-2">&amp;</span>Keychain::Three), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="number">3</span>));
-        <span class="comment">// New keychain gets added if keychain is in `other`, but not in `self`.
+        <span class="comment">// New keychain gets added if the keychain is in `other` but not in `self`.
         </span><span class="macro">assert_eq!</span>(lhs.derivation_indices.<span class="number">0</span>.get(<span class="kw-2">&amp;</span>Keychain::Four), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="number">4</span>));
     }
 }

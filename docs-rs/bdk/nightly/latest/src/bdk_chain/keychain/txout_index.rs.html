@@ -608,9 +608,9 @@
 ///
 /// Descriptors are referenced by the provided keychain generic (`K`).
 ///
-/// Script pubkeys for a descriptor are revealed chronologically from index 0. I.e. If the last
-/// revealed index of a descriptor is 5, scripts of indices 0 to 4 are guaranteed to already be
-/// revealed. In addition to revealed scripts, we have a `lookahead` parameter for each keychain
+/// Script pubkeys for a descriptor are revealed chronologically from index 0. I.e., If the last
+/// revealed index of a descriptor is 5; scripts of indices 0 to 4 are guaranteed to be already
+/// revealed. In addition to revealed scripts, we have a `lookahead` parameter for each keychain,
 /// which defines the number of script pubkeys to store ahead of the last revealed index.
 ///
 /// Methods that could update the last revealed index will return [`DerivationAdditions`] to report
@@ -686,12 +686,12 @@
     /// the script pubkey&#39;s keychain and the [`DerivationAdditions`] returned will reflect the
     /// change.
     ///
-    /// Typically this method is used in two situations:
+    /// Typically, this method is used in two situations:
     ///
-    /// 1. After loading transaction data from disk you may scan over all the txouts to restore all
+    /// 1. After loading transaction data from the disk, you may scan over all the txouts to restore all
     /// your txouts.
-    /// 2. When getting new data from the chain you usually scan it before incorporating it into
-    /// your chain state (i.e. `SparseChain`, `ChainGraph`).
+    /// 2. When getting new data from the chain, you usually scan it before incorporating it into
+    /// your chain state (i.e., `SparseChain`, `ChainGraph`).
     ///
     /// See [`ForEachTxout`] for the types that support this.
     ///
@@ -704,7 +704,7 @@
 
     <span class="doccomment">/// Scan a single outpoint for a matching script pubkey.
     ///
-    /// If it matches the index will store and index it.
+    /// If it matches, this will store and index it.
     </span><span class="kw">pub fn </span>scan_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, op: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; DerivationAdditions&lt;K&gt; {
         <span class="kw">match </span><span class="self">self</span>.inner.scan_txout(op, txout).cloned() {
             <span class="prelude-val">Some</span>((keychain, index)) =&gt; <span class="self">self</span>.reveal_to_target(<span class="kw-2">&amp;</span>keychain, index).<span class="number">1</span>,
@@ -717,12 +717,12 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.inner
     }
 
-    <span class="doccomment">/// Return a reference to the internal map of keychain to descriptors.
+    <span class="doccomment">/// Return a reference to the internal map of the keychain to descriptors.
     </span><span class="kw">pub fn </span>keychains(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeMap&lt;K, Descriptor&lt;DescriptorPublicKey&gt;&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.keychains
     }
 
-    <span class="doccomment">/// Add a keychain to the tracker&#39;s `txout_index` with a descriptor to derive addresses for it.
+    <span class="doccomment">/// Add a keychain to the tracker&#39;s `txout_index` with a descriptor to derive addresses.
     ///
     /// Adding a keychain means you will be able to derive new script pubkeys under that keychain
     /// and the txout index will discover transaction outputs with those script pubkeys.
@@ -740,7 +740,7 @@
 
     <span class="doccomment">/// Return the lookahead setting for each keychain.
     ///
-    /// Refer to [`set_lookahead`] for a deeper explanation on `lookahead`.
+    /// Refer to [`set_lookahead`] for a deeper explanation of the `lookahead`.
     ///
     /// [`set_lookahead`]: Self::set_lookahead
     </span><span class="kw">pub fn </span>lookaheads(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeMap&lt;K, u32&gt; {
@@ -764,7 +764,7 @@
     ///
     /// # Panics
     ///
-    /// This will panic if `keychain` does not exist.
+    /// This will panic if the `keychain` does not exist.
     ///
     /// [`scan`]: Self::scan
     /// [`scan_txout`]: Self::scan_txout
@@ -840,12 +840,12 @@
             .collect()
     }
 
-    <span class="doccomment">/// Generates a script pubkey iterator for the given `keychain`&#39;s descriptor (if exists). The
+    <span class="doccomment">/// Generates a script pubkey iterator for the given `keychain`&#39;s descriptor (if it exists). The
     /// iterator iterates over all derivable scripts of the keychain&#39;s descriptor.
     ///
     /// # Panics
     ///
-    /// This will panic if `keychain` does not exist.
+    /// This will panic if the `keychain` does not exist.
     </span><span class="kw">pub fn </span>spks_of_keychain(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (u32, Script)&gt; + Clone {
         <span class="kw">let </span>descriptor = <span class="self">self
             </span>.keychains
@@ -879,7 +879,7 @@
             .map(|((<span class="kw">_</span>, derivation_index), spk)| (<span class="kw-2">*</span>derivation_index, spk))
     }
 
-    <span class="doccomment">/// Get the next derivation index for `keychain`. This is the index after the last revealed
+    <span class="doccomment">/// Get the next derivation index for `keychain`. The next index is the index after the last revealed
     /// derivation index.
     ///
     /// The second field in the returned tuple represents whether the next derivation index is new.
@@ -897,20 +897,20 @@
         <span class="kw">let </span>descriptor = <span class="self">self</span>.keychains.get(keychain).expect(<span class="string">&quot;keychain must exist&quot;</span>);
         <span class="kw">let </span>last_index = <span class="self">self</span>.last_revealed.get(keychain).cloned();
 
-        <span class="comment">// we can only get the next index if wildcard exists
+        <span class="comment">// we can only get the next index if the wildcard exists.
         </span><span class="kw">let </span>has_wildcard = descriptor.has_wildcard();
 
         <span class="kw">match </span>last_index {
-            <span class="comment">// if there is no index, next_index is always 0
+            <span class="comment">// if there is no index, next_index is always 0.
             </span><span class="prelude-val">None </span>=&gt; (<span class="number">0</span>, <span class="bool-val">true</span>),
-            <span class="comment">// descriptors without wildcards can only have one index
+            <span class="comment">// descriptors without wildcards can only have one index.
             </span><span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="kw">if </span>!has_wildcard =&gt; (<span class="number">0</span>, <span class="bool-val">false</span>),
-            <span class="comment">// derivation index must be &lt; 2^31 (BIP-32)
+            <span class="comment">// derivation index must be &lt; 2^31 (BIP-32).
             </span><span class="prelude-val">Some</span>(index) <span class="kw">if </span>index &gt; BIP32_MAX_INDEX =&gt; {
                 <span class="macro">unreachable!</span>(<span class="string">&quot;index is out of bounds&quot;</span>)
             }
             <span class="prelude-val">Some</span>(index) <span class="kw">if </span>index == BIP32_MAX_INDEX =&gt; (index, <span class="bool-val">false</span>),
-            <span class="comment">// get next derivation index
+            <span class="comment">// get the next derivation index.
             </span><span class="prelude-val">Some</span>(index) =&gt; (index + <span class="number">1</span>, <span class="bool-val">true</span>),
         }
     }
@@ -952,13 +952,13 @@
     <span class="doccomment">/// Reveals script pubkeys of the `keychain`&#39;s descriptor **up to and including** the
     /// `target_index`.
     ///
-    /// If the `target_index` cannot be reached (due to the descriptor having no wildcard, and/or
-    /// the `target_index` is in the hardened index range), this method will do a best-effort and
+    /// If the `target_index` cannot be reached (due to the descriptor having no wildcard and/or
+    /// the `target_index` is in the hardened index range), this method will make a best-effort and
     /// reveal up to the last possible index.
     ///
-    /// This returns an iterator of newly revealed indices (along side their scripts), and a
-    /// [`DerivationAdditions`] which reports updates to the latest revealed index. If no new script
-    /// pubkeys are revealed, both of these will be empty.
+    /// This returns an iterator of newly revealed indices (alongside their scripts) and a
+    /// [`DerivationAdditions`], which reports updates to the latest revealed index. If no new script
+    /// pubkeys are revealed, then both of these will be empty.
     ///
     /// # Panics
     ///
@@ -976,12 +976,12 @@
         <span class="kw">let </span>next_reveal_index = <span class="self">self</span>.last_revealed.get(keychain).map_or(<span class="number">0</span>, |v| <span class="kw-2">*</span>v + <span class="number">1</span>);
         <span class="kw">let </span>lookahead = <span class="self">self</span>.lookahead.get(keychain).map_or(<span class="number">0</span>, |v| <span class="kw-2">*</span>v);
 
-        <span class="comment">// if we are able to reveal new indexes, the latest revealed index goes here
+        <span class="comment">// if we can reveal new indexes, the latest revealed index goes here
         </span><span class="kw">let </span><span class="kw-2">mut </span>revealed_index = <span class="prelude-val">None</span>;
 
-        <span class="comment">// if target is already surpassed, we have nothing to reveal
+        <span class="comment">// if the target is already surpassed, we have nothing to reveal
         </span><span class="kw">if </span>next_reveal_index &lt;= target_index
-            <span class="comment">// if target is already stored (due to lookahead), this can be our new revealed index
+            <span class="comment">// if the target is already stored (due to lookahead), this can be our newly revealed index
             </span>&amp;&amp; target_index &lt; next_reveal_index + lookahead
         {
             revealed_index = <span class="prelude-val">Some</span>(target_index);
@@ -1051,13 +1051,13 @@
         ((next_index, script), additions)
     }
 
-    <span class="doccomment">/// Gets the next unused script pubkey in the keychain. I.e. the script pubkey with the lowest
+    <span class="doccomment">/// Gets the next unused script pubkey in the keychain. I.e., the script pubkey with the lowest
     /// index that has not been used yet.
     ///
     /// This will derive and reveal a new script pubkey if no more unused script pubkeys exist.
     ///
-    /// If the descriptor has no wildcard and already has a used script pubkey, or if a descriptor
-    /// has used all scripts up to the derivation bounds, the last derived script pubkey will be
+    /// If the descriptor has no wildcard and already has a used script pubkey or if a descriptor
+    /// has used all scripts up to the derivation bounds, then the last derived script pubkey will be
     /// returned.
     ///
     /// # Panics
@@ -1078,10 +1078,10 @@
         }
     }
 
-    <span class="doccomment">/// Marks the script pubkey at `index` as used even though it hasn&#39;t seen an output with it.
+    <span class="doccomment">/// Marks the script pubkey at `index` as used even though the tracker hasn&#39;t seen an output with it.
     /// This only has an effect when the `index` had been added to `self` already and was unused.
     ///
-    /// Returns whether the `index` was originally present as `unused`.
+    /// Returns whether the `index` was initially present as `unused`.
     ///
     /// This is useful when you want to reserve a script pubkey for something but don&#39;t want to add
     /// the transaction output using it to the index yet. Other callers will consider `index` on
@@ -1095,7 +1095,7 @@
     <span class="doccomment">/// Undoes the effect of [`mark_used`]. Returns whether the `index` is inserted back into
     /// `unused`.
     ///
-    /// Note that if `self` has scanned an output with this script pubkey then this will have no
+    /// Note that if `self` has scanned an output with this script pubkey, then this will have no
     /// effect.
     ///
     /// [`mark_used`]: Self::mark_used
@@ -1103,7 +1103,7 @@
         <span class="self">self</span>.inner.unmark_used(<span class="kw-2">&amp;</span>(keychain.clone(), index))
     }
 
-    <span class="doccomment">/// Iterates over all unused script pubkeys for a `keychain` that have been stored in the index.
+    <span class="doccomment">/// Iterates over all unused script pubkeys for a `keychain` stored in the index.
     </span><span class="kw">pub fn </span>unused_spks_of_keychain(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain: <span class="kw-2">&amp;</span>K,

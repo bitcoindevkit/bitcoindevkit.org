@@ -581,9 +581,9 @@
 <a href="#581" id="581">581</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
-//! [`TxGraph`] is a monotone structure that inserts transactions and indexes spends. The
-//! [`Additions`] structure reports changes of [`TxGraph`], but can also be applied on to a
-//! [`TxGraph`] as well. Lastly, [`TxDescendants`] is an [`Iterator`] which traverses descendants of
+//! [`TxGraph`] is a monotone structure that inserts transactions and indexes the spends. The
+//! [`Additions`] structure reports changes of [`TxGraph`] but can also be applied to a
+//! [`TxGraph`] as well. Lastly, [`TxDescendants`] is an [`Iterator`] that traverses descendants of
 //! a given transaction.
 //!
 //! Conflicting transactions are allowed to coexist within a [`TxGraph`]. This is useful for
@@ -592,7 +592,7 @@
 //! # Previewing and applying changes
 //!
 //! Methods that either preview or apply changes to [`TxGraph`] will return [`Additions`].
-//! [`Additions`] can be applied back on to a [`TxGraph`], or be used to inform persistent storage
+//! [`Additions`] can be applied back to a [`TxGraph`] or be used to inform persistent storage
 //! of the changes to [`TxGraph`].
 //!
 //! ```
@@ -623,7 +623,7 @@
 //! let mut graph = TxGraph::default();
 //! let update = TxGraph::new(vec![tx_a, tx_b]);
 //!
-//! // preview additions as result of the update
+//! // preview additions as the result of the update
 //! let additions = graph.determine_additions(&amp;update);
 //! // apply the additions
 //! graph.apply_additions(additions);
@@ -704,7 +704,7 @@
         }
     }
 
-    <span class="doccomment">/// Obtains a single tx output (if any) at specified outpoint.
+    <span class="doccomment">/// Obtains a single tx output (if any) at the specified outpoint.
     </span><span class="kw">pub fn </span>get_txout(<span class="kw-2">&amp;</span><span class="self">self</span>, outpoint: OutPoint) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>TxOut&gt; {
         <span class="kw">match </span><span class="self">self</span>.txs.get(<span class="kw-2">&amp;</span>outpoint.txid)<span class="question-mark">? </span>{
             TxNode::Whole(tx) =&gt; tx.output.get(outpoint.vout <span class="kw">as </span>usize),
@@ -730,7 +730,7 @@
 
     <span class="doccomment">/// Calculates the fee of a given transaction. Returns 0 if `tx` is a coinbase transaction.
     /// Returns `Some(_)` if we have all the `TxOut`s being spent by `tx` in the graph (either as
-    /// the full transactions or individual txouts). If the returned value is negative then the
+    /// the full transactions or individual txouts). If the returned value is negative, then the
     /// transaction is invalid according to the graph.
     ///
     /// Returns `None` if we&#39;re missing an input for the tx in the graph.
@@ -760,7 +760,7 @@
 }
 
 <span class="kw">impl </span>TxGraph {
-    <span class="doccomment">/// Contruct a new [`TxGraph`] from a list of transaction.
+    <span class="doccomment">/// Construct a new [`TxGraph`] from a list of transactions.
     </span><span class="kw">pub fn </span>new(txs: <span class="kw">impl </span>IntoIterator&lt;Item = Transaction&gt;) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>new = <span class="self">Self</span>::default();
         <span class="kw">for </span>tx <span class="kw">in </span>txs.into_iter() {
@@ -771,7 +771,7 @@
     <span class="doccomment">/// Inserts the given [`TxOut`] at [`OutPoint`].
     ///
     /// Note this will ignore the action if we already have the full transaction that the txout is
-    /// alledged to be on (even if it doesn&#39;t match it!).
+    /// alleged to be on (even if it doesn&#39;t match it!).
     </span><span class="kw">pub fn </span>insert_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: TxOut) -&gt; Additions {
         <span class="kw">let </span>additions = <span class="self">self</span>.insert_txout_preview(outpoint, txout);
         <span class="self">self</span>.apply_additions(additions.clone());
@@ -790,7 +790,7 @@
     <span class="doccomment">/// Extends this graph with another so that `self` becomes the union of the two sets of
     /// transactions.
     ///
-    /// The returned [`Additions`] is the set difference of `update` and `self` (transactions that
+    /// The returned [`Additions`] is the set difference between `update` and `self` (transactions that
     /// exist in `update` but not in `self`).
     </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: TxGraph) -&gt; Additions {
         <span class="kw">let </span>additions = <span class="self">self</span>.determine_additions(<span class="kw-2">&amp;</span>update);
@@ -817,7 +817,7 @@
                 <span class="macro">debug_assert_eq!</span>(
                     old_tx.txid(),
                     txid,
-                    <span class="string">&quot;old tx of same txid should not be different&quot;
+                    <span class="string">&quot;old tx of the same txid should not be different.&quot;
                 </span>);
             }
         }
@@ -839,7 +839,7 @@
 
     <span class="doccomment">/// Previews the resultant [`Additions`] when [`Self`] is updated against the `update` graph.
     ///
-    /// The [`Additions`] would be the set difference of `update` and `self` (transactions that
+    /// The [`Additions`] would be the set difference between `update` and `self` (transactions that
     /// exist in `update` but not in `self`).
     </span><span class="kw">pub fn </span>determine_additions(<span class="kw-2">&amp;</span><span class="self">self</span>, update: <span class="kw-2">&amp;</span>TxGraph) -&gt; Additions {
         <span class="kw">let </span><span class="kw-2">mut </span>additions = Additions::default();
@@ -873,7 +873,7 @@
     <span class="doccomment">/// Returns the resultant [`Additions`] if the given transaction is inserted. Does not actually
     /// mutate [`Self`].
     ///
-    /// The [`Additions`] result will be empty if `tx` already existed in `self`.
+    /// The [`Additions`] result will be empty if `tx` already exists in `self`.
     </span><span class="kw">pub fn </span>insert_tx_preview(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: Transaction) -&gt; Additions {
         <span class="kw">let </span><span class="kw-2">mut </span>update = <span class="self">Self</span>::default();
         update.txs.insert(tx.txid(), TxNode::Whole(tx));
@@ -899,7 +899,7 @@
     <span class="doccomment">/// The transactions spending from this output.
     ///
     /// `TxGraph` allows conflicting transactions within the graph. Obviously the transactions in
-    /// the returned will never be in the same blockchain.
+    /// the returned set will never be in the same active-chain.
     </span><span class="kw">pub fn </span>outspends(<span class="kw-2">&amp;</span><span class="self">self</span>, outpoint: OutPoint) -&gt; <span class="kw-2">&amp;</span>HashSet&lt;Txid&gt; {
         <span class="self">self</span>.spends.get(<span class="kw-2">&amp;</span>outpoint).unwrap_or(<span class="kw-2">&amp;</span><span class="self">self</span>.empty_outspends)
     }
@@ -909,7 +909,7 @@
     /// The iterator item is a union of `(vout, txid-set)` where:
     ///
     /// - `vout` is the provided `txid`&#39;s outpoint that is being spent
-    /// - `txid-set` is the set of txids that is spending the `vout`
+    /// - `txid-set` is the set of txids spending the `vout`.
     </span><span class="kw">pub fn </span>tx_outspends(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         txid: Txid,
@@ -932,12 +932,12 @@
         })
     }
 
-    <span class="doccomment">/// Creates an iterator that both filters and maps descendants from the starting `txid`.
+    <span class="doccomment">/// Creates an iterator that filters and maps descendants from the starting `txid`.
     ///
     /// The supplied closure takes in two inputs `(depth, descendant_txid)`:
     ///
-    /// * `depth` is the distance between the starting `txid` and the `descendant_txid`. I.e. if the
-    ///     descendant is spending an output of the starting `txid`, the `depth` will be 1.
+    /// * `depth` is the distance between the starting `txid` and the `descendant_txid`. I.e., if the
+    ///     descendant is spending an output of the starting `txid`; the `depth` will be 1.
     /// * `descendant_txid` is the descendant&#39;s txid which we are considering to walk.
     ///
     /// The supplied closure returns an `Option&lt;T&gt;`, allowing the caller to map each node it vists
@@ -961,7 +961,7 @@
         TxDescendants::from_multiple_include_root(<span class="self">self</span>, txids, walk_map)
     }
 
-    <span class="doccomment">/// Given a transaction, return an iterator of txids which directly conflict with the given
+    <span class="doccomment">/// Given a transaction, return an iterator of txids that directly conflict with the given
     /// transaction&#39;s inputs (spends). The conflicting txids are returned with the given
     /// transaction&#39;s vin (in which it conflicts).
     ///
@@ -988,7 +988,7 @@
 
 <span class="doccomment">/// A structure that represents changes to a [`TxGraph`].
 ///
-/// It is named &quot;additions&quot; because [`TxGraph`] is monotone so transactions can only be added and
+/// It is named &quot;additions&quot; because [`TxGraph`] is monotone, so transactions can only be added and
 /// not removed.
 ///
 /// Refer to [module-level documentation] for more.
@@ -1025,7 +1025,7 @@
             .chain(<span class="self">self</span>.txout.iter().map(|(op, txout)| (<span class="kw-2">*</span>op, txout)))
     }
 
-    <span class="doccomment">/// Appends the changes in `other` into self such that applying `self` afterwards has the same
+    <span class="doccomment">/// Appends the changes in `other` into self such that applying `self` afterward has the same
     /// effect as sequentially applying the original `self` and `other`.
     </span><span class="kw">pub fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>other: Additions) {
         <span class="self">self</span>.tx.append(<span class="kw-2">&amp;mut </span>other.tx);
@@ -1087,7 +1087,7 @@
         descendants
     }
 
-    <span class="doccomment">/// Creates a `TxDescendants` from multiple starting transactions that includes the starting
+    <span class="doccomment">/// Creates a `TxDescendants` from multiple starting transactions that include the starting
     /// `txid`s when iterating.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_multiple_include_root&lt;I&gt;(graph: <span class="kw-2">&amp;</span><span class="lifetime">&#39;g </span>TxGraph, txids: I, filter_map: F) -&gt; <span class="self">Self
     </span><span class="kw">where

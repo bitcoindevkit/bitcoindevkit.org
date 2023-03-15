@@ -318,17 +318,17 @@
 <span class="doccomment">/// An index storing [`TxOut`]s that have a script pubkey that matches those in a list.
 ///
 /// The basic idea is that you insert script pubkeys you care about into the index with
-/// [`insert_spk`] and then when you call [`scan`] the index will look at any txouts you pass in and
+/// [`insert_spk`] and then when you call [`scan`], the index will look at any txouts you pass in and
 /// store and index any txouts matching one of its script pubkeys.
 ///
-/// Each script pubkey is associated with a application defined index script index `I` which must be
-/// [`Ord`]. Usually this is used to associate the derivation index of the script pubkey or even a
+/// Each script pubkey is associated with an application-defined index script index `I`, which must be
+/// [`Ord`]. Usually, this is used to associate the derivation index of the script pubkey or even a
 /// combination of `(keychain, derivation_index)`.
 ///
 /// Note there is no harm in scanning transactions that disappear from the blockchain or were never
 /// in there in the first place. `SpkTxOutIndex` is intentionally *monotone* -- you cannot delete or
 /// modify txouts that have been indexed. To find out which txouts from the index are actually in the
-/// chain or unspent etc you must use other sources of information like a [`SparseChain`].
+/// chain or unspent, you must use other sources of information like a [`SparseChain`].
 ///
 /// [`TxOut`]: bitcoin::TxOut
 /// [`insert_spk`]: Self::insert_spk
@@ -361,9 +361,9 @@
     }
 }
 
-<span class="doccomment">/// This macro is used instead of a member function of `SpkTxOutIndex` which would result in a
+<span class="doccomment">/// This macro is used instead of a member function of `SpkTxOutIndex`, which would result in a
 /// compiler error[E0521]: &quot;borrowed data escapes out of closure&quot; when we attempt to take a
-/// reference out of the `FprEachTxOut` closure during scanning.
+/// reference out of the `ForEachTxOut` closure during scanning.
 </span><span class="macro">macro_rules! </span>scan_txout {
     (<span class="macro-nonterminal">$self</span>:ident, <span class="macro-nonterminal">$op</span>:expr, <span class="macro-nonterminal">$txout</span>:expr) =&gt; {{
         <span class="kw">let </span>spk_i = <span class="macro-nonterminal">$self</span>.spk_indices.get(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$txout</span>.script_pubkey);
@@ -379,11 +379,11 @@
 <span class="kw">impl</span>&lt;I: Clone + Ord&gt; SpkTxOutIndex&lt;I&gt; {
     <span class="doccomment">/// Scans an object containing many txouts.
     ///
-    /// Typically this is used in two situations:
+    /// Typically, this is used in two situations:
     ///
-    /// 1. After loading transaction data from disk you may scan over all the txouts to restore all
+    /// 1. After loading transaction data from the disk, you may scan over all the txouts to restore all
     /// your txouts.
-    /// 2. When getting new data from the chain you usually scan it before incorporating it into your chain state.
+    /// 2. When getting new data from the chain, you usually scan it before incorporating it into your chain state.
     ///
     /// See [`ForEachTxout`] for the types that support this.
     ///
@@ -400,7 +400,7 @@
         scanned_indices
     }
 
-    <span class="doccomment">/// Scan a single `TxOut` for a matching script pubkey, and returns the index that matched the
+    <span class="doccomment">/// Scan a single `TxOut` for a matching script pubkey and returns the index that matches the
     /// script pubkey (if any).
     </span><span class="kw">pub fn </span>scan_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, op: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>I&gt; {
         <span class="macro">scan_txout!</span>(<span class="self">self</span>, op, txout)
@@ -425,7 +425,7 @@
             .map(|(op, (index, txout))| (index, <span class="kw-2">*</span>op, txout))
     }
 
-    <span class="doccomment">/// Iterates over all outputs with script pubkeys in an index range.
+    <span class="doccomment">/// Iterates over all the outputs with script pubkeys in an index range.
     </span><span class="kw">pub fn </span>outputs_in_range(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         range: <span class="kw">impl </span>RangeBounds&lt;I&gt;,
@@ -467,19 +467,19 @@
 
     <span class="doccomment">/// Returns the script that has been inserted at the `index`.
     ///
-    /// If that index hasn&#39;t been inserted yet it will return `None`.
+    /// If that index hasn&#39;t been inserted yet, it will return `None`.
     </span><span class="kw">pub fn </span>spk_at_index(<span class="kw-2">&amp;</span><span class="self">self</span>, index: <span class="kw-2">&amp;</span>I) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Script&gt; {
         <span class="self">self</span>.spks.get(index)
     }
 
-    <span class="doccomment">/// The script pubkeys being tracked by the index.
+    <span class="doccomment">/// The script pubkeys that are being tracked by the index.
     </span><span class="kw">pub fn </span>all_spks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeMap&lt;I, Script&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.spks
     }
 
     <span class="doccomment">/// Adds a script pubkey to scan for. Returns `false` and does nothing if spk already exists in the map
     ///
-    /// the index will look for outputs spending to whenever it scans new data.
+    /// the index will look for outputs spending to this spk whenever it scans new data.
     </span><span class="kw">pub fn </span>insert_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, index: I, spk: Script) -&gt; bool {
         <span class="kw">match </span><span class="self">self</span>.spk_indices.entry(spk.clone()) {
             Entry::Vacant(value) =&gt; {
@@ -492,9 +492,9 @@
         }
     }
 
-    <span class="doccomment">/// Iterates over a unused script pubkeys in a index range.
+    <span class="doccomment">/// Iterates over all unused script pubkeys in an index range.
     ///
-    /// Here &quot;unused&quot; means that after the script pubkey was stored in the index, the index has
+    /// Here, &quot;unused&quot; means that after the script pubkey was stored in the index, the index has
     /// never scanned a transaction output with it.
     ///
     /// # Example
@@ -520,19 +520,19 @@
 
     <span class="doccomment">/// Returns whether the script pubkey at `index` has been used or not.
     ///
-    /// Here &quot;unused&quot; means that after the script pubkey was stored in the index, the index has
+    /// Here, &quot;unused&quot; means that after the script pubkey was stored in the index, the index has
     /// never scanned a transaction output with it.
     </span><span class="kw">pub fn </span>is_used(<span class="kw-2">&amp;</span><span class="self">self</span>, index: <span class="kw-2">&amp;</span>I) -&gt; bool {
         <span class="self">self</span>.unused.get(index).is_none()
     }
 
-    <span class="doccomment">/// Marks the script pubkey at `index` as used even though it hasn&#39;t seen an output with it.
-    /// This only has an effect when the `index` had been added to `self` already and was unused.
+    <span class="doccomment">/// Marks the script pubkey at `index` as used even though it hasn&#39;t seen an output spending to it.
+    /// This only affects when the `index` had already been added to `self` and was unused.
     ///
-    /// Returns whether the `index` was originally present as `unused`.
+    /// Returns whether the `index` was initially present as `unused`.
     ///
     /// This is useful when you want to reserve a script pubkey for something but don&#39;t want to add
-    /// the transaction output using it to the index yet. Other callers will consider `index` used
+    /// the transaction output using it to the index yet. Other callers will consider the `index` used
     /// until you call [`unmark_used`].
     ///
     /// [`unmark_used`]: Self::unmark_used
@@ -548,11 +548,11 @@
     ///
     /// [`mark_used`]: Self::mark_used
     </span><span class="kw">pub fn </span>unmark_used(<span class="kw-2">&amp;mut </span><span class="self">self</span>, index: <span class="kw-2">&amp;</span>I) -&gt; bool {
-        <span class="comment">// we cannot set index as unused when it does not exist
+        <span class="comment">// we cannot set the index as unused when it does not exist
         </span><span class="kw">if </span>!<span class="self">self</span>.spks.contains_key(index) {
             <span class="kw">return </span><span class="bool-val">false</span>;
         }
-        <span class="comment">// we cannot set index as unused when txouts are indexed under it
+        <span class="comment">// we cannot set the index as unused when txouts are indexed under it
         </span><span class="kw">if </span><span class="self">self</span>.outputs_in_range(index..=index).next().is_some() {
             <span class="kw">return </span><span class="bool-val">false</span>;
         }
@@ -564,10 +564,10 @@
         <span class="self">self</span>.spk_indices.get(script)
     }
 
-    <span class="doccomment">/// Computes total input value going from script pubkeys in the index (sent) and total output
+    <span class="doccomment">/// Computes total input value going from script pubkeys in the index (sent) and the total output
     /// value going to script pubkeys in the index (received) in `tx`. For the `sent` to be computed
-    /// correctly the output being spent must have already been scanned by the index. Calculating
-    /// received just uses the transaction outputs directly so will be correct even if it has not
+    /// correctly, the output being spent must have already been scanned by the index. Calculating
+    /// received just uses the transaction outputs directly, so it will be correct even if it has not
     /// been scanned.
     </span><span class="kw">pub fn </span>sent_and_received(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; (u64, u64) {
         <span class="kw">let </span><span class="kw-2">mut </span>sent = <span class="number">0</span>;
@@ -601,8 +601,8 @@
     /// matches one of our script pubkeys.
     ///
     /// It is easily possible to misuse this method and get false negatives by calling it before you
-    /// have scanned the `TxOut`s the transaction is spending. For example if you want to filter out
-    /// all the transactions in a block that are irrelevant you **must first scan all the
+    /// have scanned the `TxOut`s the transaction is spending. For example, if you want to filter out
+    /// all the transactions in a block that are irrelevant, you **must first scan all the
     /// transactions in the block** and only then use this method.
     </span><span class="kw">pub fn </span>is_relevant(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; bool {
         <span class="kw">let </span>input_matches = tx

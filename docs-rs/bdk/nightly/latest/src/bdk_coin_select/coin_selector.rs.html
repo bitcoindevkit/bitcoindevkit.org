@@ -613,7 +613,6 @@
 <a href="#613" id="613">613</a>
 <a href="#614" id="614">614</a>
 <a href="#615" id="615">615</a>
-<a href="#616" id="616">616</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// A [`WeightedValue`] represents an input candidate for [`CoinSelector`]. This can either be a
@@ -626,7 +625,7 @@
     /// `txin` fields: `prevout`, `nSequence`, `scriptSigLen`, `scriptSig`, `scriptWitnessLen`,
     /// `scriptWitness` should all be included.
     </span><span class="kw">pub </span>weight: u32,
-    <span class="doccomment">/// Total number of inputs; so we can calculate extra `varint` weight due to `vin` len changes.
+    <span class="doccomment">/// The total number of inputs; so we can calculate extra `varint` weight due to `vin` length changes.
     </span><span class="kw">pub </span>input_count: usize,
     <span class="doccomment">/// Whether this [`WeightedValue`] contains at least one segwit spend.
     </span><span class="kw">pub </span>is_segwit: bool,
@@ -649,7 +648,7 @@
 
     <span class="doccomment">/// Effective value of this input candidate: `actual_value - input_weight * feerate (sats/wu)`.
     </span><span class="kw">pub fn </span>effective_value(<span class="kw-2">&amp;</span><span class="self">self</span>, effective_feerate: f32) -&gt; i64 {
-        <span class="comment">// We prefer undershooting the candidate&#39;s effective value (so we over estimate the fee of a
+        <span class="comment">// We prefer undershooting the candidate&#39;s effective value (so we over-estimate the fee of a
         // candidate). If we overshoot the candidate&#39;s effective value, it may be possible to find a
         // solution which does not meet the target feerate.
         </span><span class="self">self</span>.value <span class="kw">as </span>i64 - (<span class="self">self</span>.weight <span class="kw">as </span>f32 * effective_feerate).ceil() <span class="kw">as </span>i64
@@ -659,8 +658,8 @@
 <span class="attr">#[derive(Debug, Clone, Copy)]
 </span><span class="kw">pub struct </span>CoinSelectorOpt {
     <span class="doccomment">/// The value we need to select.
-    /// If the value is `None` then the selection will be complete if it can pay for the drain
-    /// output and satisfy the other constraints (e.g. minimum fees).
+    /// If the value is `None`, then the selection will be complete if it can pay for the drain
+    /// output and satisfy the other constraints (e.g., minimum fees).
     </span><span class="kw">pub </span>target_value: <span class="prelude-ty">Option</span>&lt;u64&gt;,
     <span class="doccomment">/// Additional leeway for the target value.
     </span><span class="kw">pub </span>max_extra_target: u64, <span class="comment">// TODO: Maybe out of scope here?
@@ -669,10 +668,10 @@
     </span><span class="kw">pub </span>target_feerate: f32,
     <span class="doccomment">/// The feerate
     </span><span class="kw">pub </span>long_term_feerate: <span class="prelude-ty">Option</span>&lt;f32&gt;, <span class="comment">// TODO: Maybe out of scope? (waste)
-    </span><span class="doccomment">/// The minimum absolute fee. I.e. needed for RBF.
+    </span><span class="doccomment">/// The minimum absolute fee. I.e., needed for RBF.
     </span><span class="kw">pub </span>min_absolute_fee: u64,
 
-    <span class="doccomment">/// The weight of the template transaction including fixed fields and outputs.
+    <span class="doccomment">/// The weight of the template transaction, including fixed fields and outputs.
     </span><span class="kw">pub </span>base_weight: u32,
     <span class="doccomment">/// Additional weight if we include the drain (change) output.
     </span><span class="kw">pub </span>drain_weight: u32,
@@ -746,7 +745,7 @@
     }
 }
 
-<span class="doccomment">/// [`CoinSelector`] is responsible for selecting and deselecting from a set of canididates.
+<span class="doccomment">/// [`CoinSelector`] selects and deselects from a set of candidates.
 </span><span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>CoinSelector&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="kw">pub </span>opts: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>CoinSelectorOpt,
@@ -919,7 +918,7 @@
             <span class="kw">let </span>target_value = <span class="self">self</span>.opts.target_value.unwrap_or(<span class="number">0</span>);
             <span class="kw">let </span>selected = <span class="self">self</span>.selected_absolute_value();
 
-            <span class="comment">// find the largest unsatisfied constraint (if any), and return error of that constraint
+            <span class="comment">// find the largest unsatisfied constraint (if any), and return the error of that constraint
             // &quot;selected&quot; should always be greater than or equal to these selected values
             </span>[
                 (
@@ -937,8 +936,7 @@
                 (
                     SelectionConstraint::MinDrainValue,
                     <span class="comment">// when we have no target value (hence no recipient txouts), we need to ensure
-                    // the selected amount can satisfy requirements for a drain output (so we at
-                    // least have one txout)
+                    // the selected amount can satisfy requirements for a drain output (so we at least have one txout)
                     </span><span class="kw">if </span><span class="self">self</span>.opts.target_value.is_none() {
                         (fee_with_drain + <span class="self">self</span>.opts.min_drain_value).saturating_sub(selected)
                     } <span class="kw">else </span>{
@@ -970,8 +968,8 @@
         </span><span class="kw">let </span><span class="kw-2">mut </span>excess_strategies = HashMap::new();
 
         <span class="comment">// only allow `ToFee` and `ToRecipient` excess strategies when we have a `target_value`,
-        // otherwise we will result in a result with no txouts, or attempt to add value to an output
-        // that does not exist
+        // otherwise, we will result in a result with no txouts, or attempt to add value to an output
+        // that does not exist.
         </span><span class="kw">if </span><span class="self">self</span>.opts.target_value.is_some() {
             <span class="comment">// no drain, excess to fee
             </span>excess_strategies.insert(
@@ -985,7 +983,7 @@
                 },
             );
 
-            <span class="comment">// no drain, excess to recipient
+            <span class="comment">// no drain, send the excess to the recipient
             // if `excess == 0`, this result will be the same as the previous, so don&#39;t consider it
             // if `max_extra_target == 0`, there is no leeway for this strategy
             </span><span class="kw">if </span>excess_without_drain &gt; <span class="number">0 </span>&amp;&amp; <span class="self">self</span>.opts.max_extra_target &gt; <span class="number">0 </span>{
@@ -1023,7 +1021,7 @@
 
         <span class="macro">debug_assert!</span>(
             !excess_strategies.is_empty(),
-            <span class="string">&quot;should have at least one excess strategy&quot;
+            <span class="string">&quot;should have at least one excess strategy.&quot;
         </span>);
 
         <span class="prelude-val">Ok</span>(Selection {
@@ -1145,7 +1143,7 @@
 
     <span class="kw">use super</span>::{CoinSelector, CoinSelectorOpt, WeightedValue};
 
-    <span class="doccomment">/// Ensure `target_value` is respected. Can&#39;t have no disrespect.
+    <span class="doccomment">/// Ensure `target_value` is respected. Can&#39;t have any disrespect.
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>target_value_respected() {
         <span class="kw">let </span>target_value = <span class="number">1000_u64</span>;
@@ -1227,7 +1225,7 @@
     <span class="doccomment">/// TODO: Tests to add:
     /// * `finish` should ensure at least `target_value` is selected.
     /// * actual feerate should be equal or higher than `target_feerate`.
-    /// * actual drain value should be equal or higher than `min_drain_value` (or else no drain).
+    /// * actual drain value should be equal to or higher than `min_drain_value` (or else no drain).
     </span><span class="kw">fn </span>_todo() {}
 }
 </code></pre></div>

@@ -743,20 +743,20 @@
 </span><span class="kw">pub enum </span>Commands&lt;C: clap::Subcommand&gt; {
     <span class="attr">#[clap(flatten)]
     </span>ChainSpecific(C),
-    <span class="doccomment">/// Address generation and inspection
+    <span class="doccomment">/// Address generation and inspection.
     </span>Address {
         <span class="attr">#[clap(subcommand)]
         </span>addr_cmd: AddressCmd,
     },
-    <span class="doccomment">/// Get the wallet balance
+    <span class="doccomment">/// Get the wallet balance.
     </span>Balance,
-    <span class="doccomment">/// TxOut related commands
+    <span class="doccomment">/// TxOut related commands.
     </span><span class="attr">#[clap(name = <span class="string">&quot;txout&quot;</span>)]
     </span>TxOut {
         <span class="attr">#[clap(subcommand)]
         </span>txout_cmd: TxOutCmd,
     },
-    <span class="doccomment">/// Send coins to an address
+    <span class="doccomment">/// Send coins to an address.
     </span>Send {
         value: u64,
         address: Address,
@@ -815,9 +815,9 @@
 
 <span class="attr">#[derive(Subcommand, Debug, Clone)]
 </span><span class="kw">pub enum </span>AddressCmd {
-    <span class="doccomment">/// Get the next unused address
+    <span class="doccomment">/// Get the next unused address.
     </span>Next,
-    <span class="doccomment">/// Get a new address regardless if the existing ones haven&#39;t been used
+    <span class="doccomment">/// Get a new address regardless of the existing unused addresses.
     </span>New,
     <span class="doccomment">/// List all addresses
     </span>List {
@@ -830,16 +830,16 @@
 <span class="attr">#[derive(Subcommand, Debug, Clone)]
 </span><span class="kw">pub enum </span>TxOutCmd {
     List {
-        <span class="doccomment">/// Return only spent outputs
+        <span class="doccomment">/// Return only spent outputs.
         </span><span class="attr">#[clap(short, long)]
         </span>spent: bool,
-        <span class="doccomment">/// Return only unspent outputs
+        <span class="doccomment">/// Return only unspent outputs.
         </span><span class="attr">#[clap(short, long)]
         </span>unspent: bool,
-        <span class="doccomment">/// Return only confirmed outputs
+        <span class="doccomment">/// Return only confirmed outputs.
         </span><span class="attr">#[clap(long)]
         </span>confirmed: bool,
-        <span class="doccomment">/// Return only unconfirmed outputs
+        <span class="doccomment">/// Return only unconfirmed outputs.
         </span><span class="attr">#[clap(long)]
         </span>unconfirmed: bool,
     },
@@ -862,7 +862,7 @@
     }
 }
 
-<span class="doccomment">/// A structure defining output of a AddressCmd execution.
+<span class="doccomment">/// A structure defining the output of an [`AddressCmd`]` execution.
 </span><span class="attr">#[derive(serde::Serialize, serde::Deserialize)]
 </span><span class="kw">pub struct </span>AddrsOutput {
     keychain: String,
@@ -1040,7 +1040,7 @@
         CoinSelectionAlgo::BranchAndBound =&gt; {}
     }
 
-    <span class="comment">// turn the txos we chose into a weight and value
+    <span class="comment">// turn the txos we chose into weight and value
     </span><span class="kw">let </span>wv_candidates = candidates
         .iter()
         .map(|(plan, utxo)| {
@@ -1112,7 +1112,7 @@
     </span><span class="kw">let </span><span class="kw-2">mut </span>coin_selector = CoinSelector::new(<span class="kw-2">&amp;</span>wv_candidates, <span class="kw-2">&amp;</span>cs_opts);
 
     <span class="comment">// just select coins in the order provided until we have enough
-    // only use first result (least waste)
+    // only use the first result (least waste)
     </span><span class="kw">let </span>selection = <span class="kw">match </span>coin_select {
         CoinSelectionAlgo::BranchAndBound =&gt; {
             coin_select_bnb(Duration::from_secs(<span class="number">10</span>), coin_selector.clone())
@@ -1127,7 +1127,7 @@
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(drain_value) = selection_meta.drain_value {
         change_output.value = drain_value;
-        <span class="comment">// if the selection tells us to use change and the change value is sufficient we add it as an output
+        <span class="comment">// if the selection tells us to use change and the change value is sufficient, we add it as an output
         </span>outputs.push(change_output)
     }
 
@@ -1156,7 +1156,7 @@
         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
     <span class="kw">let </span>sighash_prevouts = Prevouts::All(<span class="kw-2">&amp;</span>prevouts);
 
-    <span class="comment">// first set tx values for plan so that we don&#39;t change them while signing
+    <span class="comment">// first, set tx values for the plan so that we don&#39;t change them while signing
     </span><span class="kw">for </span>(i, (plan, <span class="kw">_</span>)) <span class="kw">in </span>selected_txos.iter().enumerate() {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(sequence) = plan.required_sequence() {
             transaction.input[i].sequence = sequence
@@ -1172,7 +1172,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>auth_data = bdk_tmp_plan::SatisfactionMaterial::default();
         <span class="macro">assert!</span>(
             !requirements.requires_hash_preimages(),
-            <span class="string">&quot;can&#39;t have hash pre-images since we didn&#39;t provide any&quot;
+            <span class="string">&quot;can&#39;t have hash pre-images since we didn&#39;t provide any.&quot;
         </span>);
         <span class="macro">assert!</span>(
             requirements.signatures.sign_with_keymap(
@@ -1185,7 +1185,7 @@
                 <span class="kw-2">&amp;mut </span>auth_data,
                 <span class="kw-2">&amp;</span>Secp256k1::default(),
             )<span class="question-mark">?</span>,
-            <span class="string">&quot;we should have signed with this input&quot;
+            <span class="string">&quot;we should have signed with this input.&quot;
         </span>);
 
         <span class="kw">match </span>plan.try_complete(<span class="kw-2">&amp;</span>auth_data) {
@@ -1203,7 +1203,7 @@
             }
             bdk_tmp_plan::PlanState::Incomplete(<span class="kw">_</span>) =&gt; {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">anyhow!</span>(
-                    <span class="string">&quot;we weren&#39;t able to complete the plan with our keys&quot;
+                    <span class="string">&quot;we weren&#39;t able to complete the plan with our keys.&quot;
                 </span>));
             }
         }
@@ -1221,8 +1221,8 @@
 <span class="kw">pub fn </span>handle_commands&lt;C: clap::Subcommand, P&gt;(
     command: Commands&lt;C&gt;,
     broadcast: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;</span>Transaction) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;,
-    <span class="comment">// we Mutexes around these not because we need them for a simple CLI app but to demonsrate how
-    // all the stuff we&#39;re doing can be thread safe and also not keep locks up over an IO bound.
+    <span class="comment">// we Mutex around these not because we need them for a simple CLI app but to demonstrate how
+    // all the stuff we&#39;re doing can be made thread-safe and not keep locks up over an IO bound.
     </span>tracker: <span class="kw-2">&amp;</span>Mutex&lt;KeychainTracker&lt;Keychain, P&gt;&gt;,
     store: <span class="kw-2">&amp;</span>Mutex&lt;KeychainStore&lt;Keychain, P&gt;&gt;,
     network: Network,
@@ -1257,7 +1257,7 @@
                 <span class="kw">if let </span><span class="prelude-val">Some</span>((change_derivation_changes, (change_keychain, index))) = change_info {
                     <span class="comment">// We must first persist to disk the fact that we&#39;ve got a new address from the
                     // change keychain so future scans will find the tx we&#39;re about to broadcast.
-                    // If we&#39;re unable to persist this then we don&#39;t want to broadcast.
+                    // If we&#39;re unable to persist this, then we don&#39;t want to broadcast.
                     </span><span class="kw">let </span>store = <span class="kw-2">&amp;mut *</span>store.lock().unwrap();
                     store.append_changeset(<span class="kw-2">&amp;</span>change_derivation_changes.into())<span class="question-mark">?</span>;
 
@@ -1278,15 +1278,15 @@
                     <span class="kw">match </span>tracker.insert_tx(transaction.clone(), P::unconfirmed()) {
                         <span class="prelude-val">Ok</span>(changeset) =&gt; {
                             <span class="kw">let </span>store = <span class="kw-2">&amp;mut *</span>store.lock().unwrap();
-                            <span class="comment">// We know the tx is at least unconfirmed now. Note if persisting here
-                            // fails it&#39;s not a big deal since we can always find it again form
+                            <span class="comment">// We know the tx is at least unconfirmed now. Note if persisting here fails,
+                            // it&#39;s not a big deal since we can always find it again form
                             // blockchain.
                             </span>store.append_changeset(<span class="kw-2">&amp;</span>changeset)<span class="question-mark">?</span>;
                             <span class="prelude-val">Ok</span>(())
                         }
                         <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">match </span>e {
                             InsertTxError::Chain(e) =&gt; <span class="kw">match </span>e {
-                                <span class="comment">// TODO: add insert_unconfirmed_tx to chain graph and sparse chain
+                                <span class="comment">// TODO: add insert_unconfirmed_tx to the chaingraph and sparsechain
                                 </span>sparse_chain::InsertTxError::TxTooHigh { .. } =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;we are inserting at unconfirmed position&quot;</span>),
                                 sparse_chain::InsertTxError::TxMovedUnexpectedly { txid, original_pos, ..} =&gt; <span class="prelude-val">Err</span>(<span class="macro">anyhow!</span>(<span class="string">&quot;the tx we created {} has already been confirmed at block {:?}&quot;</span>, txid, original_pos)),
                             },
@@ -1297,7 +1297,7 @@
                 <span class="prelude-val">Err</span>(e) =&gt; {
                     <span class="kw">let </span>tracker = <span class="kw-2">&amp;mut *</span>tracker.lock().unwrap();
                     <span class="kw">if let </span><span class="prelude-val">Some</span>((keychain, index)) = change_index {
-                        <span class="comment">// We failed to broadcast so allow our change address to be used in the future
+                        <span class="comment">// We failed to broadcast, so allow our change address to be used in the future
                         </span>tracker.txout_index.unmark_used(<span class="kw-2">&amp;</span>keychain, index);
                     }
                     <span class="prelude-val">Err</span>(e)
@@ -1314,8 +1314,8 @@
 </span><span class="kw">pub fn </span>init&lt;C: clap::Subcommand, P&gt;() -&gt; anyhow::Result&lt;(
     Args&lt;C&gt;,
     KeyMap,
-    <span class="comment">// These don&#39;t need to have mutexes around them but we want the cli example code to make it obvious how they
-    // are thread safe so this forces the example developer to show where they would lock and unlock things.
+    <span class="comment">// These don&#39;t need to have mutexes around them, but we want the cli example code to make it obvious how they
+    // are thread-safe, forcing the example developers to show where they would lock and unlock things.
     </span>Mutex&lt;KeychainTracker&lt;Keychain, P&gt;&gt;,
     Mutex&lt;KeychainStore&lt;Keychain, P&gt;&gt;,
 )&gt;
