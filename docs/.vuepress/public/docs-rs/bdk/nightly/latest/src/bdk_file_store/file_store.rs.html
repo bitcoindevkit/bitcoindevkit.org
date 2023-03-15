@@ -402,9 +402,9 @@
 <a href="#402" id="402">402</a>
 <a href="#403" id="403">403</a>
 <a href="#404" id="404">404</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Module for persisting data on-disk.
+</pre><pre class="rust"><code><span class="doccomment">//! Module for persisting data on disk.
 //!
-//! The star of the show is [`KeychainStore`] which maintains an append-only file of
+//! The star of the show is [`KeychainStore`], which maintains an append-only file of
 //! [`KeychainChangeSet`]s which can be used to restore a [`KeychainTracker`].
 </span><span class="kw">use </span>bdk_chain::{
     keychain::{KeychainChangeSet, KeychainTracker},
@@ -444,7 +444,7 @@
 {
     <span class="doccomment">/// Creates a new store from a [`File`].
     ///
-    /// The file must have been opened with read, write permissions.
+    /// The file must have been opened with read and write permissions.
     ///
     /// [`File`]: std::fs::File
     </span><span class="kw">pub fn </span>new(<span class="kw-2">mut </span>file: File) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, FileError&gt; {
@@ -463,7 +463,7 @@
         })
     }
 
-    <span class="doccomment">/// Creates or loads a a store from `db_path`. If no file exists there it will be created.
+    <span class="doccomment">/// Creates or loads a store from `db_path`. If no file exists there, it will be created.
     </span><span class="kw">pub fn </span>new_from_path&lt;D: AsRef&lt;Path&gt;&gt;(db_path: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, FileError&gt; {
         <span class="kw">let </span>already_exists = db_path.as_ref().exists();
 
@@ -480,15 +480,15 @@
         <span class="self">Self</span>::new(db_file)
     }
 
-    <span class="doccomment">/// Iterates over the stored changeset from first to last changing the seek position at each
+    <span class="doccomment">/// Iterates over the stored changeset from first to last, changing the seek position at each
     /// iteration.
     ///
-    /// The iterator may fail to read an entry and therefore return an error. However the first time
-    /// it returns an error will be the last. After doing so the iterator will always yield `None`.
+    /// The iterator may fail to read an entry and therefore return an error. However, the first time
+    /// it returns an error will be the last. After doing so, the iterator will always yield `None`.
     ///
     /// **WARNING**: This method changes the write position in the underlying file. You should
     /// always iterate over all entries until `None` is returned if you want your next write to go
-    /// at the end, otherwise you will write over existing enties.
+    /// at the end; otherwise, you will write over existing entries.
     </span><span class="kw">pub fn </span>iter_changesets(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;EntryIter&lt;<span class="lifetime">&#39;_</span>, KeychainChangeSet&lt;K, P&gt;&gt;, io::Error&gt; {
         <span class="self">self</span>.db_file
             .seek(io::SeekFrom::Start(MAGIC_BYTES_LEN <span class="kw">as _</span>))<span class="question-mark">?</span>;
@@ -498,13 +498,13 @@
 
     <span class="doccomment">/// Loads all the changesets that have been stored as one giant changeset.
     ///
-    /// This function returns a tuple of the aggregate changeset and a result which indicates
+    /// This function returns a tuple of the aggregate changeset and a result that indicates
     /// whether an error occurred while reading or deserializing one of the entries. If so the
     /// changeset will consist of all of those it was able to read.
     ///
-    /// You should usually check the error. In many applications it may make sense to do a full
-    /// wallet scan with a stop gap after getting an error since it is likely that one of the
-    /// changesets it was unable to read changed the derivation indicies of the tracker.
+    /// You should usually check the error. In many applications, it may make sense to do a full
+    /// wallet scan with a stop-gap after getting an error, since it is likely that one of the
+    /// changesets it was unable to read changed the derivation indices of the tracker.
     ///
     /// **WARNING**: This method changes the write position of the underlying file. The next
     /// changeset will be written over the erroring entry (or the end of the file if none existed).
@@ -521,7 +521,7 @@
         (changeset, result)
     }
 
-    <span class="doccomment">/// Reads and applies all the changesets stored sequentially to tracker, stopping when it fails
+    <span class="doccomment">/// Reads and applies all the changesets stored sequentially to the tracker, stopping when it fails
     /// to read the next one.
     ///
     /// **WARNING**: This method changes the write position of the underlying file. The next
@@ -536,9 +536,9 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Append a new changeset to the file and truncate file to the end of the appended changeset.
+    <span class="doccomment">/// Append a new changeset to the file and truncate the file to the end of the appended changeset.
     ///
-    /// The truncation is to avoid the possibility of having a valid, but inconsistent changeset
+    /// The truncation is to avoid the possibility of having a valid but inconsistent changeset
     /// directly after the appended changeset.
     </span><span class="kw">pub fn </span>append_changeset(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
@@ -557,12 +557,12 @@
 
         <span class="comment">// truncate file after this changeset addition
         // if this is not done, data after this changeset may represent valid changesets, however
-        // applying those changesets on top of this one may result in inconsistent state
+        // applying those changesets on top of this one may result in an inconsistent state
         </span><span class="kw">let </span>pos = <span class="self">self</span>.db_file.stream_position()<span class="question-mark">?</span>;
         <span class="self">self</span>.db_file.set_len(pos)<span class="question-mark">?</span>;
 
-        <span class="comment">// We want to make sure that derivation indexe changes are written to disk as soon as
-        // possible so you know about the write failure before you give ou the address in the application.
+        <span class="comment">// We want to make sure that derivation indices changes are written to disk as soon as
+        // possible, so you know about the write failure before you give out the address in the application.
         </span><span class="kw">if </span>!changeset.derivation_indices.is_empty() {
             <span class="self">self</span>.db_file.sync_data()<span class="question-mark">?</span>;
         }
@@ -576,7 +576,7 @@
 </span><span class="kw">pub enum </span>FileError {
     <span class="doccomment">/// IO error, this may mean that the file is too short.
     </span>Io(io::Error),
-    <span class="doccomment">/// Magic bytes do not match expected.
+    <span class="doccomment">/// Magic bytes do not match what is expected.
     </span>InvalidMagicBytes([u8; MAGIC_BYTES_LEN]),
 }
 
@@ -604,9 +604,9 @@
 <span class="doccomment">/// Error type for [`EntryIter`].
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub enum </span>IterError {
-    <span class="doccomment">/// Failure to read from file.
+    <span class="doccomment">/// Failure to read from the file.
     </span>Io(io::Error),
-    <span class="doccomment">/// Failure to decode data from file.
+    <span class="doccomment">/// Failure to decode data from the file.
     </span>Bincode(bincode::ErrorKind),
 }
 

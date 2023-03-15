@@ -636,6 +636,7 @@
 <a href="#636" id="636">636</a>
 <a href="#637" id="637">637</a>
 <a href="#638" id="638">638</a>
+<a href="#639" id="639">639</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for structures that combine the features of [`sparse_chain`] and [`tx_graph`].
 </span><span class="kw">use crate</span>::{
     collections::HashSet,
@@ -649,14 +650,14 @@
 
 <span class="doccomment">/// A consistent combination of a [`SparseChain&lt;P&gt;`] and a [`TxGraph&lt;T&gt;`].
 ///
-/// `SparseChain` only keeps track of transaction ids and their position in the chain but you often
-/// want to store the full transactions as well. Additionally you want to make sure that everything
+/// `SparseChain` only keeps track of transaction ids and their position in the chain, but you often
+/// want to store the full transactions as well. Additionally, you want to make sure that everything
 /// in the chain is consistent with the full transaction data. `ChainGraph` enforces these two
 /// invariants:
 ///
 /// 1. Every transaction that is in the chain is also in the graph (you always have the full
 /// transaction).
-/// 2. No transactions in the chain conflict with each other i.e. they don&#39;t double spend each
+/// 2. No transactions in the chain conflict with each other, i.e., they don&#39;t double spend each
 /// other or have ancestors that double spend each other.
 ///
 /// Note that the `ChainGraph` guarantees a 1:1 mapping between transactions in the `chain` and
@@ -717,7 +718,7 @@
     ///
     /// 1. There is a transaction in the `chain` that does not have its corresponding full
     /// transaction in `graph`.
-    /// 2. The `chain` has two transactions that allegedly in it but they conflict in the `graph`
+    /// 2. The `chain` has two transactions that are allegedly in it, but they conflict in the `graph`
     /// (so could not possibly be in the same chain).
     </span><span class="kw">pub fn </span>new(chain: SparseChain&lt;P&gt;, graph: TxGraph) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, NewError&lt;P&gt;&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>missing = HashSet::default();
@@ -750,8 +751,8 @@
     /// got it from `self`.
     ///
     /// This is useful when interacting with services like an electrum server which returns a list
-    /// of txids and heights when calling [`script_get_history`] which can easily be inserted into a
-    /// [`SparseChain&lt;TxHeight&gt;`][`SparseChain`]. From there you need to figure out which full
+    /// of txids and heights when calling [`script_get_history`], which can easily be inserted into a
+    /// [`SparseChain&lt;TxHeight&gt;`][`SparseChain`]. From there, you need to figure out which full
     /// transactions you are missing in your chain graph and form `new_txs`. You then use
     /// `inflate_update` to turn this into an update `ChainGraph&lt;P, Cow&lt;Transaction&gt;&gt;` and finally
     /// use [`determine_changeset`] to generate the changeset from it.
@@ -776,7 +777,7 @@
 
         <span class="comment">// [TODO] @evanlinjin: These need better comments
         // - copy transactions that have changed positions into the graph
-        // - add new transactions to inflated chain
+        // - add new transactions to an inflated chain
         </span><span class="kw">for </span>(pos, txid) <span class="kw">in </span>update.txids() {
             <span class="kw">match </span><span class="self">self</span>.chain.tx_position(<span class="kw-2">*</span>txid) {
                 <span class="prelude-val">Some</span>(original_pos) =&gt; {
@@ -807,7 +808,7 @@
         ChainGraph::new(inflated_chain, inflated_graph)
     }
 
-    <span class="doccomment">/// Sets the checkpoint limit.
+    <span class="doccomment">/// Gets the checkpoint limit.
     ///
     /// Refer to [`SparseChain::checkpoint_limit`] for more.
     </span><span class="kw">pub fn </span>checkpoint_limit(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;usize&gt; {
@@ -844,9 +845,9 @@
         changeset
     }
 
-    <span class="doccomment">/// Get a transaction that is currently in the underlying [`SparseChain`].
+    <span class="doccomment">/// Get a transaction currently in the underlying [`SparseChain`].
     ///
-    /// This does not necessarily mean that it is *confirmed* in the blockchain, it might just be in
+    /// This does not necessarily mean that it is *confirmed* in the blockchain; it might just be in
     /// the unconfirmed transaction list within the [`SparseChain`].
     </span><span class="kw">pub fn </span>get_tx_in_chain(<span class="kw-2">&amp;</span><span class="self">self</span>, txid: Txid) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>P, <span class="kw-2">&amp;</span>Transaction)&gt; {
         <span class="kw">let </span>position = <span class="self">self</span>.chain.tx_position(txid)<span class="question-mark">?</span>;
@@ -872,7 +873,7 @@
         <span class="prelude-val">Ok</span>(changeset)
     }
 
-    <span class="doccomment">/// Inserts [`Transaction`] at given chain position.
+    <span class="doccomment">/// Inserts [`Transaction`] at the given chain position.
     ///
     /// This is equivalent to calling [`Self::insert_tx_preview`] and [`Self::apply_changeset`] in
     /// sequence.
@@ -903,8 +904,7 @@
     <span class="doccomment">/// Determines the changes required to insert a `block_id` (a height and block hash) into the
     /// chain.
     ///
-    /// If a checkpoint already exists at that height with a different hash this will return
-    /// an error.
+    /// If a checkpoint with a different hash already exists at that height, this will return an error.
     </span><span class="kw">pub fn </span>insert_checkpoint_preview(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         block_id: BlockId,
@@ -950,7 +950,7 @@
     }
 
     <span class="doccomment">/// Given a transaction, return an iterator of `txid`s that conflict with it (spends at least
-    /// one of the same inputs). This includes all descendants of conflicting transactions.
+    /// one of the same inputs). This iterator includes all descendants of conflicting transactions.
     ///
     /// This method only returns conflicts that exist in the [`SparseChain`] as transactions that
     /// are not included in [`SparseChain`] are already considered as evicted.
@@ -981,7 +981,7 @@
                     }
                     pos
                 }
-                <span class="comment">// Ignore txids that are being delted by the change (they can&#39;t conflict)
+                <span class="comment">// Ignore txids that are being deleted by the change (they can&#39;t conflict)
                 </span><span class="prelude-val">None </span>=&gt; <span class="kw">continue</span>,
             };
 
@@ -1008,7 +1008,7 @@
             // conflicting tx will be positioned as &quot;unconfirmed&quot; after the update is applied.
             // If so, we will modify the changeset to evict the conflicting txid.
 
-            // determine the position of the conflicting txid after current changeset is applied
+            // determine the position of the conflicting txid after the current changeset is applied
             </span><span class="kw">let </span>conflicting_new_pos = changeset
                 .chain
                 .txids
@@ -1022,7 +1022,7 @@
                 </span>}
                 <span class="prelude-val">Some</span>(existing_new_pos) =&gt; <span class="kw">match </span>existing_new_pos.height() {
                     TxHeight::Confirmed(<span class="kw">_</span>) =&gt; {
-                        <span class="comment">// the new postion of the conflicting tx is &quot;confirmed&quot;, therefore cannot be
+                        <span class="comment">// the new position of the conflicting tx is &quot;confirmed&quot;, therefore cannot be
                         // evicted, return error
                         </span><span class="kw">return </span><span class="prelude-val">Err</span>(UnresolvableConflict {
                             already_confirmed_tx: (conflicting_pos.clone(), conflicting_txid),
@@ -1043,8 +1043,8 @@
 
     <span class="doccomment">/// Applies `changeset` to `self`.
     ///
-    /// **Warning** this method assumes the changeset is assumed to be correctly formed. If it isn&#39;t
-    /// then the chain graph may not behave correctly in the future and may panic unexpectedly.
+    /// **Warning** this method assumes that the changeset is correctly formed. If it is not, the
+    /// chain graph may behave incorrectly in the future and panic unexpectedly.
     </span><span class="kw">pub fn </span>apply_changeset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: ChangeSet&lt;P&gt;) {
         <span class="self">self</span>.chain.apply_changeset(changeset.chain);
         <span class="self">self</span>.graph.apply_additions(changeset.graph);
@@ -1071,9 +1071,11 @@
             .map(<span class="kw">move </span>|(pos, txid)| (pos, <span class="self">self</span>.graph.get_tx(<span class="kw-2">*</span>txid).expect(<span class="string">&quot;must exist&quot;</span>)))
     }
 
-    <span class="doccomment">/// Finds the transaction in the chain that spends `outpoint` given the input/output
-    /// relationships in `graph`. Note that the transaction including `outpoint` does not need to be
-    /// in the `graph` or the `chain` for this to return `Some(_)`.
+    <span class="doccomment">/// Find the transaction in the chain that spends `outpoint`.
+    ///
+    /// This uses the input/output relationships in the internal `graph`. Note that the transaction
+    /// which includes `outpoint` does not need to be in the `graph` or the `chain` for this to
+    /// return `Some(_)`.
     </span><span class="kw">pub fn </span>spent_by(<span class="kw-2">&amp;</span><span class="self">self</span>, outpoint: OutPoint) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>P, Txid)&gt; {
         <span class="self">self</span>.chain.spent_by(<span class="kw-2">&amp;</span><span class="self">self</span>.graph, outpoint)
     }
@@ -1119,7 +1121,7 @@
             .any(|(<span class="kw">_</span>, new_pos)| new_pos.is_none())
     }
 
-    <span class="doccomment">/// Appends the changes in `other` into self such that applying `self` afterwards has the same
+    <span class="doccomment">/// Appends the changes in `other` into self such that applying `self` afterward has the same
     /// effect as sequentially applying the original `self` and `other`.
     </span><span class="kw">pub fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: ChangeSet&lt;P&gt;)
     <span class="kw">where

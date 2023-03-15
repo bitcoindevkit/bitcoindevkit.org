@@ -1103,9 +1103,9 @@
 </pre><pre class="rust"><code><span class="doccomment">//! Module for structures that maintain sparse (purposely incomplete) snapshots of blockchain data.
 //!
 //! [`SparseChain`] stores [`Txid`]s ordered by an index that implements [`ChainPosition`] (this
-//! represents the transaction&#39;s position in the blockchain, by default [`TxHeight`] is used).
+//! represents the transaction&#39;s position in the blockchain; by default, [`TxHeight`] is used).
 //! [`SparseChain`] also contains &quot;checkpoints&quot; which relate block height to block hash. Changes to
-//! a [`SparseChain`] are reported by returning [`ChangeSet`]s.
+//! a [`SparseChain`] is reported by returning [`ChangeSet`]s.
 //!
 //! # Updating [`SparseChain`]
 //!
@@ -1168,7 +1168,7 @@
 //! # let hash_b = new_hash::&lt;BlockHash&gt;(&quot;b&quot;);
 //! # let hash_c = new_hash::&lt;BlockHash&gt;(&quot;c&quot;);
 //! # let hash_d = new_hash::&lt;BlockHash&gt;(&quot;d&quot;);
-//! // our sparsechain has 2 checkpoints
+//! // our sparsechain has two checkpoints
 //! let chain = SparseChain::&lt;TxHeight&gt;::from_checkpoints(vec![
 //!     BlockId {
 //!         height: 1,
@@ -1201,7 +1201,7 @@
 //! /* Example of an update that completely misses the point */
 //!
 //! let disconnected_update = SparseChain::from_checkpoints(vec![
-//!     // the last checkpoint in chain is 2, so 3 and 4 do not connect
+//!     // the last checkpoint in the chain is 2, so 3 and 4 do not connect
 //!     BlockId {
 //!         height: 3,
 //!         hash: hash_c,
@@ -1228,7 +1228,7 @@
 //! # let hash_b = new_hash::&lt;BlockHash&gt;(&quot;b&quot;);
 //! # let hash_c = new_hash::&lt;BlockHash&gt;(&quot;c&quot;);
 //! # let hash_d = new_hash::&lt;BlockHash&gt;(&quot;d&quot;);
-//! // our chain has a single checkpoint at height 11
+//! // our chain has a single checkpoint at height 11.
 //! let mut chain = SparseChain::&lt;TxHeight&gt;::from_checkpoints(vec![BlockId {
 //!     height: 11,
 //!     hash: hash_a,
@@ -1249,10 +1249,10 @@
 //!     .apply_update(update)
 //!     .expect(&quot;we can evict/replace checkpoint 11 since it is the only checkpoint&quot;);
 //!
-//! // now our `chain` has 2 checkpoints (11:hash_b &amp; 12:hash_c)
-//! // we detect another reorg, this time at height 12...
+//! // now our `chain` has two checkpoints (11:hash_b &amp; 12:hash_c)
+//! // we detect another reorg, this time at height 12.
 //! let update = SparseChain::from_checkpoints(vec![
-//!     // we connect at checkpoint 11 as this is our &quot;point of agreement&quot;
+//!     // we connect at checkpoint 11 as this is our &quot;point of agreement&quot;.
 //!     BlockId {
 //!         height: 11,
 //!         hash: hash_b,
@@ -1289,10 +1289,10 @@
 //! # Custom [`ChainPosition`]
 //!
 //! [`SparseChain`] maintains a list of txids ordered by [`ChainPosition`]. By default, [`TxHeight`]
-//! is used, however additional data can be incorporated into the implementation.
+//! is used; however, additional data can be incorporated into the implementation.
 //!
 //! For example, we can have &quot;perfect ordering&quot; of transactions if our positional index is a
-//! combination of block height and transaction position in block.
+//! combination of block height and transaction position in a block.
 //!
 //! ```
 //! # use bdk_chain::{BlockId, TxHeight, sparse_chain::*, example_utils::*};
@@ -1439,7 +1439,7 @@
     </span>ordered_txids: BTreeSet&lt;(P, Txid)&gt;,
     <span class="doccomment">/// Confirmation heights of txids.
     </span>txid_to_pos: HashMap&lt;Txid, P&gt;,
-    <span class="doccomment">/// Limit number of checkpoints.
+    <span class="doccomment">/// Limit the number of checkpoints.
     </span>checkpoint_limit: <span class="prelude-ty">Option</span>&lt;usize&gt;,
 }
 
@@ -1463,13 +1463,13 @@
 <span class="doccomment">/// Represents a failure when trying to insert a [`Txid`] into [`SparseChain`].
 </span><span class="attr">#[derive(Clone, Debug, PartialEq)]
 </span><span class="kw">pub enum </span>InsertTxError&lt;P&gt; {
-    <span class="doccomment">/// Occurs when the [`Txid`] is to be inserted at a hight higher than the [`SparseChain`]&#39;s tip.
+    <span class="doccomment">/// Occurs when the [`Txid`] is to be inserted at a height higher than the [`SparseChain`]&#39;s tip.
     </span>TxTooHigh {
         txid: Txid,
         tx_height: u32,
         tip_height: <span class="prelude-ty">Option</span>&lt;u32&gt;,
     },
-    <span class="doccomment">/// Occurs when the [`Txid`] is already in the [`SparseChain`] and the insertion would result in
+    <span class="doccomment">/// Occurs when the [`Txid`] is already in the [`SparseChain`], and the insertion would result in
     /// an unexpected move in [`ChainPosition`].
     </span>TxMovedUnexpectedly {
         txid: Txid,
@@ -1509,7 +1509,7 @@
 <span class="doccomment">/// Represents a failure when trying to insert a checkpoint into [`SparseChain`].
 </span><span class="attr">#[derive(Clone, Debug, PartialEq)]
 </span><span class="kw">pub enum </span>InsertCheckpointError {
-    <span class="doccomment">/// Occurs when checkpoint of the same height already exists with a different [`BlockHash`].
+    <span class="doccomment">/// Occurs when a checkpoint of the same height already exists with a different [`BlockHash`].
     </span>HashNotMatching {
         height: u32,
         original_hash: BlockHash,
@@ -1533,7 +1533,7 @@
     /// connect to the existing chain. This error case contains the checkpoint height to include so
     /// that the chains can connect.
     </span>NotConnected(u32),
-    <span class="doccomment">/// The update contains inconsistent tx states (e.g. it changed the transaction&#39;s height). This
+    <span class="doccomment">/// The update contains inconsistent tx states (e.g., it changed the transaction&#39;s height). This
     /// error is usually the inconsistency found.
     </span>TxInconsistent {
         txid: Txid,
@@ -1591,7 +1591,7 @@
 
     <span class="doccomment">/// Return the [`ChainPosition`] of a `txid`.
     ///
-    /// This returns [`None`] if the transation does not exist.
+    /// This returns [`None`] if the transaction does not exist.
     </span><span class="kw">pub fn </span>tx_position(<span class="kw-2">&amp;</span><span class="self">self</span>, txid: Txid) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>P&gt; {
         <span class="self">self</span>.txid_to_pos.get(<span class="kw-2">&amp;</span>txid)
     }
@@ -1620,8 +1620,8 @@
     /// but different hash. Invalidated checkpoints result in invalidated transactions becoming
     /// &quot;unconfirmed&quot;.
     ///
-    /// An error will be returned if an update will result in inconsistencies or if the update does
-    /// not properly connect with `self`.
+    /// An error will be returned if an update results in inconsistencies or if the update does
+    /// not correctly connect with `self`.
     ///
     /// Refer to [module-level documentation] for more.
     ///
@@ -1638,7 +1638,7 @@
 
         <span class="comment">// the lower bound of the invalidation range
         </span><span class="kw">let </span>invalid_lb = <span class="kw">if </span>last_update_cp.is_none() || last_update_cp == agreement_point {
-            <span class="comment">// if agreement point is the last update checkpoint, or there is no update checkpoints,
+            <span class="comment">// if the agreement point is the last update checkpoint, or there are no update checkpoints,
             // no invalidation is required
             </span>u32::MAX
         } <span class="kw">else </span>{
@@ -1671,7 +1671,7 @@
             }
         }
 
-        <span class="comment">// create initial change-set, based on checkpoints and txids that are to be &quot;invalidated&quot;
+        <span class="comment">// create initial change-set based on checkpoints and txids that are to be &quot;invalidated&quot;.
         </span><span class="kw">let </span><span class="kw-2">mut </span>changeset = invalid_from
             .map(|from_height| <span class="self">self</span>.invalidate_checkpoints_preview(from_height))
             .unwrap_or_default();
@@ -1827,7 +1827,7 @@
 
     <span class="doccomment">/// Determines the resultant [`ChangeSet`] if [`Txid`] was inserted at position `pos`.
     ///
-    /// Changes to the [`Txid`]&#39;s position is allowed (under the rules noted in
+    /// Changes to the [`Txid`]&#39;s position are allowed (under the rules noted in
     /// [module-level documentation]) and will be reflected in the [`ChangeSet`].
     ///
     /// [module-level documentation]: crate::sparse_chain
@@ -1917,7 +1917,7 @@
 
     <span class="doccomment">/// Insert a checkpoint ([`BlockId`]).
     ///
-    /// This is equivilant to calling [`insert_checkpoint_preview`] and [`apply_changeset`] in
+    /// This is equivalent to calling [`insert_checkpoint_preview`] and [`apply_changeset`] in
     /// sequence.
     ///
     /// [`insert_checkpoint_preview`]: Self::insert_checkpoint_preview
@@ -1972,7 +1972,7 @@
         ))
     }
 
-    <span class="doccomment">/// Iterate over a sub-range of positioned [`Txid`]s, where the range is define by [`TxHeight`]
+    <span class="doccomment">/// Iterate over a sub-range of positioned [`Txid`]s, where the range is defined by [`TxHeight`]
     /// only.
     </span><span class="kw">pub fn </span>range_txids_by_height&lt;R&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -2057,7 +2057,7 @@
     <span class="kw">fn </span>prune_checkpoints(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;BTreeMap&lt;u32, BlockHash&gt;&gt; {
         <span class="kw">let </span>limit = <span class="self">self</span>.checkpoint_limit<span class="question-mark">?</span>;
 
-        <span class="comment">// find last height to be pruned
+        <span class="comment">// find the last height to be pruned
         </span><span class="kw">let </span>last_height = <span class="kw-2">*</span><span class="self">self</span>.checkpoints.keys().rev().nth(limit)<span class="question-mark">?</span>;
         <span class="comment">// first height to be kept
         </span><span class="kw">let </span>keep_height = last_height + <span class="number">1</span>;
@@ -2112,7 +2112,7 @@
 }
 
 <span class="kw">impl</span>&lt;P&gt; ChangeSet&lt;P&gt; {
-    <span class="doccomment">/// Appends the changes in `other` into self such that applying `self` afterwards has the same
+    <span class="doccomment">/// Appends the changes of `other` into self such that applying `self` afterward has the same
     /// effect as sequentially applying the original `self` and `other`.
     </span><span class="kw">pub fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>other: <span class="self">Self</span>)
     <span class="kw">where
@@ -2136,16 +2136,16 @@
     Txid::from_inner([<span class="number">0xff</span>; <span class="number">32</span>])
 }
 
-<span class="doccomment">/// Represents an position in which transactions are ordered in [`SparseChain`].
+<span class="doccomment">/// Represents a position in which transactions are ordered in [`SparseChain`].
 ///
 /// [`ChainPosition`] implementations must be [`Ord`] by [`TxHeight`] first.
 </span><span class="kw">pub trait </span>ChainPosition:
     core::fmt::Debug + Clone + Eq + PartialOrd + Ord + core::hash::Hash + Send + Sync + <span class="lifetime">&#39;static
 </span>{
-    <span class="doccomment">/// Get the transaction height of the positon.
+    <span class="doccomment">/// Get the transaction height of the position.
     </span><span class="kw">fn </span>height(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TxHeight;
 
-    <span class="doccomment">/// Get the positon&#39;s upper bound of a given height.
+    <span class="doccomment">/// Get the position&#39;s upper bound of a given height.
     </span><span class="kw">fn </span>max_ord_of_height(height: TxHeight) -&gt; <span class="self">Self</span>;
 
     <span class="doccomment">/// Get the position&#39;s lower bound of a given height.

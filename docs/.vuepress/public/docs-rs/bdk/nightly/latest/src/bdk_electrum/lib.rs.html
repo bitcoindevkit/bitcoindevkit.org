@@ -640,7 +640,7 @@
     ///
     /// - `local_chain`: the most recent block hashes present locally
     /// - `keychain_spks`: keychains that we want to scan transactions for
-    /// - `txids`: transactions that we want updated [`ChainPosition`]s for
+    /// - `txids`: transactions for which we want the updated [`ChainPosition`]s
     /// - `outpoints`: transactions associated with these outpoints (residing, spending) that we
     ///     want to included in the update
     </span><span class="kw">fn </span>scan&lt;K: Ord + Clone&gt;(
@@ -793,7 +793,7 @@
 </span><span class="kw">pub struct </span>ElectrumUpdate&lt;K, P&gt; {
     <span class="doccomment">/// The internal [`SparseChain`] update.
     </span><span class="kw">pub </span>chain_update: SparseChain&lt;P&gt;,
-    <span class="doccomment">/// The last keychain script pubkey indices which had transaction histories.
+    <span class="doccomment">/// The last keychain script pubkey indices, which had transaction histories.
     </span><span class="kw">pub </span>last_active_indices: BTreeMap&lt;K, u32&gt;,
 }
 
@@ -827,7 +827,7 @@
             .collect()
     }
 
-    <span class="doccomment">/// Transform the [`ElectrumUpdate`] into a [`KeychainScan`] which can be applied to a
+    <span class="doccomment">/// Transform the [`ElectrumUpdate`] into a [`KeychainScan`], which can be applied to a
     /// `tracker`.
     ///
     /// This will fail if there are missing full transactions not provided via `new_txs`.
@@ -922,7 +922,7 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;SparseChain, Error&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>update = SparseChain::default();
 
-    <span class="comment">// Find local chain block that is still there so our update can connect to the local chain.
+    <span class="comment">// Find the local chain block that is still there so our update can connect to the local chain.
     </span><span class="kw">for </span>(<span class="kw-2">&amp;</span>existing_height, <span class="kw-2">&amp;</span>existing_hash) <span class="kw">in </span>local_chain.iter().rev() {
         <span class="comment">// TODO: a batch request may be safer, as a reorg that happens when we are obtaining
         //       `block_header`s will result in inconsistencies
@@ -939,7 +939,7 @@
         }
     }
 
-    <span class="comment">// Insert the new tip so new transactions will be accepted into the sparse chain.
+    <span class="comment">// Insert the new tip so new transactions will be accepted into the sparsechain.
     </span><span class="kw">let </span>tip = {
         <span class="kw">let </span>(height, hash) = get_tip(client)<span class="question-mark">?</span>;
         BlockId { height, hash }
@@ -957,10 +957,10 @@
     <span class="prelude-val">Ok</span>(update)
 }
 
-<span class="doccomment">/// This atrocity is required because electrum thinks height of 0 means &quot;unconfirmed&quot;, but there is
+<span class="doccomment">/// This atrocity is required because electrum thinks a height of 0 means &quot;unconfirmed&quot;, but there is
 /// such thing as a genesis block.
 ///
-/// We contain an expection for the genesis coinbase txid to always have a chain position of
+/// We contain an expectation for the genesis coinbase txid to always have a chain position of
 /// [`TxHeight::Confirmed(0)`].
 </span><span class="kw">fn </span>determine_tx_height(raw_height: i32, tip_height: u32, txid: Txid) -&gt; TxHeight {
     <span class="kw">if </span>txid
@@ -993,8 +993,8 @@
 /// of the provided `outpoints` (this is the tx which contains the outpoint and the one spending the
 /// outpoint).
 ///
-/// Unfortunately this is awkward to implement as electrum does not provide such an API. Instead, we
-/// will get the tx history of the outpoint&#39;s spk, and try to find the containing tx and the
+/// Unfortunately, this is awkward to implement as electrum does not provide such an API. Instead, we
+/// will get the tx history of the outpoint&#39;s spk and try to find the containing tx and the
 /// spending tx.
 </span><span class="kw">fn </span>populate_with_outpoints(
     client: <span class="kw-2">&amp;</span>Client,
@@ -1115,7 +1115,7 @@
 }
 
 <span class="doccomment">/// Populate an update [`SparseChain`] with transactions (and associated block positions) from
-/// the transaction history of the provided `spks`.
+/// the transaction history of the provided `spk`s.
 </span><span class="kw">fn </span>populate_with_spks&lt;K, I, S&gt;(
     client: <span class="kw-2">&amp;</span>Client,
     update: <span class="kw-2">&amp;mut </span>SparseChain,

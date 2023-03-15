@@ -649,7 +649,7 @@
 </span><span class="kw">pub enum </span>BranchStrategy {
     <span class="doccomment">/// We continue exploring subtrees of this node, starting with the inclusion branch.
     </span>Continue,
-    <span class="doccomment">/// We continue exploring ONY the omission branch of this node, skipping the inclusion branch.
+    <span class="doccomment">/// We continue exploring ONLY the omission branch of this node, skipping the inclusion branch.
     </span>SkipInclusion,
     <span class="doccomment">/// We skip both the inclusion and omission branches of this node.
     </span>SkipBoth,
@@ -699,7 +699,7 @@
     <span class="doccomment">/// Turns our [`Bnb`] state into an iterator.
     ///
     /// `strategy` should assess our current selection/node and determine the branching strategy and
-    /// whether this selection is a candidate solution (if so, return the score of the selection).
+    /// whether this selection is a candidate solution (if so, return the selection score).
     </span><span class="kw">pub fn </span>into_iter&lt;<span class="lifetime">&#39;f</span>&gt;(<span class="self">self</span>, strategy: <span class="kw-2">&amp;</span><span class="lifetime">&#39;f </span>DecideStrategy&lt;<span class="lifetime">&#39;c</span>, S&gt;) -&gt; BnbIter&lt;<span class="lifetime">&#39;c</span>, <span class="lifetime">&#39;f</span>, S&gt; {
         BnbIter {
             state: <span class="self">self</span>,
@@ -715,7 +715,7 @@
             <span class="kw">let </span>(index, candidate) = <span class="self">self</span>.pool[pos];
 
             <span class="kw">if </span><span class="self">self</span>.selection.is_selected(index) {
-                <span class="comment">// deselect last `pos`, so next round will check omission branch
+                <span class="comment">// deselect the last `pos`, so the next round will check the omission branch
                 </span><span class="self">self</span>.pool_pos = pos;
                 <span class="self">self</span>.selection.deselect(index);
                 <span class="bool-val">true
@@ -727,7 +727,7 @@
         })
     }
 
-    <span class="doccomment">/// Continue down this branch, skip inclusion branch if specified.
+    <span class="doccomment">/// Continue down this branch and skip the inclusion branch if specified.
     </span><span class="kw">pub fn </span>forward(<span class="kw-2">&amp;mut </span><span class="self">self</span>, skip: bool) {
         <span class="kw">let </span>(index, candidate) = <span class="self">self</span>.pool[<span class="self">self</span>.pool_pos];
         <span class="self">self</span>.rem_abs -= candidate.value;
@@ -738,7 +738,7 @@
         }
     }
 
-    <span class="doccomment">/// Compare advertised score with current best. New best will be the smaller value. Return true
+    <span class="doccomment">/// Compare the advertised score with the current best. The new best will be the smaller value. Return true
     /// if best is replaced.
     </span><span class="kw">pub fn </span>advertise_new_score(<span class="kw-2">&amp;mut </span><span class="self">self</span>, score: S) -&gt; bool {
         <span class="kw">if </span>score &lt;= <span class="self">self</span>.best_score {
@@ -753,7 +753,7 @@
     state: Bnb&lt;<span class="lifetime">&#39;c</span>, S&gt;,
     done: bool,
 
-    <span class="doccomment">/// Check our current selection (node), and returns the branching strategy, alongside a score
+    <span class="doccomment">/// Check our current selection (node) and returns the branching strategy alongside a score
     /// (if the current selection is a candidate solution).
     </span>strategy: <span class="kw-2">&amp;</span><span class="lifetime">&#39;f </span>DecideStrategy&lt;<span class="lifetime">&#39;c</span>, S&gt;,
 }
@@ -778,7 +778,7 @@
 
         <span class="macro">debug_assert!</span>(
             !strategy.will_continue() || <span class="self">self</span>.state.pool_pos &lt; <span class="self">self</span>.state.pool.len(),
-            <span class="string">&quot;Faulty strategy implementation! Strategy suggested that we continue traversing, however we have already reached the end of the candidates pool! pool_len={}, pool_pos={}&quot;</span>,
+            <span class="string">&quot;Faulty strategy implementation! Strategy suggested that we continue traversing, however, we have already reached the end of the candidates pool! pool_len={}, pool_pos={}&quot;</span>,
             <span class="self">self</span>.state.pool.len(), <span class="self">self</span>.state.pool_pos,
         );
 
@@ -832,15 +832,15 @@
 /// in Bitcoin Core).
 ///
 /// The differences are as follows:
-/// * In additional to working with effective values, we also work with absolute values.
-///   This way, we can use bounds of absolute values to enforce `min_absolute_fee` (which is used by
+/// * In addition to working with effective values, we also work with absolute values.
+///   This way, we can use bounds of the absolute values to enforce `min_absolute_fee` (which is used by
 ///   RBF), and `max_extra_target` (which can be used to increase the possible solution set, given
 ///   that the sender is okay with sending extra to the receiver).
 ///
 /// Murch&#39;s Master Thesis: &lt;https://murch.one/wp-content/uploads/2016/11/erhardt2016coinselection.pdf&gt;
 /// Bitcoin Core Implementation: &lt;https://github.com/bitcoin/bitcoin/blob/23.x/src/wallet/coinselection.cpp#L65&gt;
 ///
-/// TODO: Another optimization we could do is figure out candidate with smallest waste, and
+/// TODO: Another optimization we could do is figure out candidates with the smallest waste, and
 /// if we find a result with waste equal to this, we can just break.
 </span><span class="kw">pub fn </span>coin_select_bnb&lt;L&gt;(limit: L, selector: CoinSelector) -&gt; <span class="prelude-ty">Option</span>&lt;CoinSelector&gt;
 <span class="kw">where
@@ -848,7 +848,7 @@
 {
     <span class="kw">let </span>opts = selector.opts;
 
-    <span class="comment">// prepare pool of candidates to select from:
+    <span class="comment">// prepare the pool of candidates to select from:
     // * filter out candidates with negative/zero effective values
     // * sort candidates by descending effective value
     </span><span class="kw">let </span>pool = {
@@ -876,12 +876,12 @@
         <span class="kw">let </span>selected_abs = bnb.selection.selected_absolute_value();
         <span class="kw">let </span>selected_eff = bnb.selection.selected_effective_value();
 
-        <span class="comment">// backtrack if remaining value is not enough to reach target
+        <span class="comment">// backtrack if the remaining value is not enough to reach the target
         </span><span class="kw">if </span>selected_abs + bnb.rem_abs &lt; target_abs || selected_eff + bnb.rem_eff &lt; target_eff {
             <span class="kw">return </span>(BranchStrategy::SkipBoth, <span class="prelude-val">None</span>);
         }
 
-        <span class="comment">// backtrack if selected value already surpassed upper bounds
+        <span class="comment">// backtrack if the selected value has already surpassed upper bounds
         </span><span class="kw">if </span>selected_abs &gt; upper_bound_abs &amp;&amp; selected_eff &gt; upper_bound_eff {
             <span class="kw">return </span>(BranchStrategy::SkipBoth, <span class="prelude-val">None</span>);
         }
@@ -889,7 +889,7 @@
         <span class="kw">let </span>selected_waste = bnb.selection.selected_waste();
 
         <span class="comment">// when feerate decreases, waste without excess is guaranteed to increase with each
-        // selection. So if we have already surpassed best score, we can backtrack.
+        // selection. So if we have already surpassed the best score, we can backtrack.
         </span><span class="kw">if </span>feerate_decreases &amp;&amp; selected_waste &gt; bnb.best_score {
             <span class="kw">return </span>(BranchStrategy::SkipBoth, <span class="prelude-val">None</span>);
         }
@@ -915,11 +915,11 @@
             }
         }
 
-        <span class="comment">// check out inclusion branch first
+        <span class="comment">// check out the inclusion branch first
         </span>(BranchStrategy::Continue, <span class="prelude-val">None</span>)
     };
 
-    <span class="comment">// determine sum of absolute and effective values for current selection
+    <span class="comment">// determine the sum of absolute and effective values for the current selection
     </span><span class="kw">let </span>(selected_abs, selected_eff) = selector.selected().fold((<span class="number">0</span>, <span class="number">0</span>), |(abs, eff), (<span class="kw">_</span>, c)| {
         (
             abs + c.value,
@@ -1021,7 +1021,7 @@
         </span>);
     }
 
-    <span class="doccomment">/// `cost_of_change` acts as the upper-bound in Bnb, we check whether these boundaries are
+    <span class="doccomment">/// `cost_of_change` acts as the upper-bound in Bnb; we check whether these boundaries are
     /// enforced in code
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>cost_of_change() {
@@ -1057,7 +1057,7 @@
             (lowest_opts, highest_opts)
         };
 
-        <span class="comment">// test lowest possible target we are able to select
+        <span class="comment">// test lowest possible target we can select
         </span><span class="kw">let </span>lowest_eval = evaluate_bnb(CoinSelector::new(<span class="kw-2">&amp;</span>candidates, <span class="kw-2">&amp;</span>lowest_opts), <span class="number">10_000</span>);
         <span class="macro">assert!</span>(lowest_eval.is_ok());
         <span class="kw">let </span>lowest_eval = lowest_eval.unwrap();
@@ -1071,7 +1071,7 @@
             <span class="number">0.0
         </span>);
 
-        <span class="comment">// test highest possible target we are able to select
+        <span class="comment">// test the highest possible target we can select
         </span><span class="kw">let </span>highest_eval = evaluate_bnb(CoinSelector::new(<span class="kw-2">&amp;</span>candidates, <span class="kw-2">&amp;</span>highest_opts), <span class="number">10_000</span>);
         <span class="macro">assert!</span>(highest_eval.is_ok());
         <span class="kw">let </span>highest_eval = highest_eval.unwrap();
@@ -1232,8 +1232,8 @@
         });
     }
 
-    <span class="doccomment">/// For a decreasing feerate (longterm feerate is lower than effective feerate), we should
-    /// select less. For increasing feerate (longterm feerate is higher than effective feerate), we
+    <span class="doccomment">/// For a decreasing feerate (long-term feerate is lower than effective feerate), we should
+    /// select less. For increasing feerate (long-term feerate is higher than effective feerate), we
     /// should select more.
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>feerate_difference() {
@@ -1284,7 +1284,7 @@
     ///     * We should only have `ExcessStrategy::ToDrain` when `drain_value &gt;= min_drain_value`.
     /// * Fuzz
     ///     * Solution feerate should never be lower than target feerate
-    ///     * Solution fee should never be lower than `min_absolute_fee`
+    ///     * Solution fee should never be lower than `min_absolute_fee`.
     ///     * Preselected should always remain selected
     </span><span class="kw">fn </span>_todo() {}
 }
