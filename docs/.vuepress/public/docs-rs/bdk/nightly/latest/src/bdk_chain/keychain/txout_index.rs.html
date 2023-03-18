@@ -588,7 +588,6 @@
 <a href="#588" id="588">588</a>
 <a href="#589" id="589">589</a>
 <a href="#590" id="590">590</a>
-<a href="#591" id="591">591</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     collections::<span class="kw-2">*</span>,
     miniscript::{Descriptor, DescriptorPublicKey},
@@ -654,7 +653,7 @@
     inner: SpkTxOutIndex&lt;(K, u32)&gt;,
     <span class="comment">// descriptors of each keychain
     </span>keychains: BTreeMap&lt;K, Descriptor&lt;DescriptorPublicKey&gt;&gt;,
-    <span class="comment">// last stored indexes
+    <span class="comment">// last revealed indexes
     </span>last_revealed: BTreeMap&lt;K, u32&gt;,
     <span class="comment">// lookahead settings for each keychain
     </span>lookahead: BTreeMap&lt;K, u32&gt;,
@@ -972,40 +971,39 @@
         <span class="kw">let </span>has_wildcard = descriptor.has_wildcard();
 
         <span class="kw">let </span>target_index = <span class="kw">if </span>has_wildcard { target_index } <span class="kw">else </span>{ <span class="number">0 </span>};
-        <span class="kw">let </span>next_store_index = <span class="self">self</span>.next_store_index(keychain);
         <span class="kw">let </span>next_reveal_index = <span class="self">self</span>.last_revealed.get(keychain).map_or(<span class="number">0</span>, |v| <span class="kw-2">*</span>v + <span class="number">1</span>);
         <span class="kw">let </span>lookahead = <span class="self">self</span>.lookahead.get(keychain).map_or(<span class="number">0</span>, |v| <span class="kw-2">*</span>v);
 
-        <span class="comment">// if we can reveal new indexes, the latest revealed index goes here
-        </span><span class="kw">let </span><span class="kw-2">mut </span>revealed_index = <span class="prelude-val">None</span>;
+        <span class="macro">debug_assert_eq!</span>(
+            next_reveal_index + lookahead,
+            <span class="self">self</span>.next_store_index(keychain)
+        );
 
-        <span class="comment">// if the target is already surpassed, we have nothing to reveal
-        </span><span class="kw">if </span>next_reveal_index &lt;= target_index
-            <span class="comment">// if the target is already stored (due to lookahead), this can be our newly revealed index
-            </span>&amp;&amp; target_index &lt; next_reveal_index + lookahead
-        {
-            revealed_index = <span class="prelude-val">Some</span>(target_index);
+        <span class="comment">// if we need to reveal new indices, the latest revealed index goes here
+        </span><span class="kw">let </span><span class="kw-2">mut </span>reveal_to_index = <span class="prelude-val">None</span>;
+
+        <span class="comment">// if the target is not yet revealed, but is already stored (due to lookahead), we need to
+        // set the `reveal_to_index` as target here (as the `for` loop below only updates
+        // `reveal_to_index` for indexes that are NOT stored)
+        </span><span class="kw">if </span>next_reveal_index &lt;= target_index &amp;&amp; target_index &lt; next_reveal_index + lookahead {
+            reveal_to_index = <span class="prelude-val">Some</span>(target_index);
         }
 
         <span class="comment">// we range over indexes that are not stored
         </span><span class="kw">let </span>range = next_reveal_index + lookahead..=target_index + lookahead;
-
         <span class="kw">for </span>(new_index, new_spk) <span class="kw">in </span>range_descriptor_spks(Cow::Borrowed(descriptor), range) {
-            <span class="comment">// no need to store if already stored
-            </span><span class="kw">if </span>new_index &gt;= next_store_index {
-                <span class="kw">let </span>_inserted = <span class="self">self
-                    </span>.inner
-                    .insert_spk((keychain.clone(), new_index), new_spk);
-                <span class="macro">debug_assert!</span>(_inserted, <span class="string">&quot;must not have existing spk&quot;</span>,);
-            }
+            <span class="kw">let </span>_inserted = <span class="self">self
+                </span>.inner
+                .insert_spk((keychain.clone(), new_index), new_spk);
+            <span class="macro">debug_assert!</span>(_inserted, <span class="string">&quot;must not have existing spk&quot;</span>,);
 
             <span class="comment">// everything after `target_index` is stored for lookahead only
             </span><span class="kw">if </span>new_index &lt;= target_index {
-                revealed_index = <span class="prelude-val">Some</span>(new_index);
+                reveal_to_index = <span class="prelude-val">Some</span>(new_index);
             }
         }
 
-        <span class="kw">match </span>revealed_index {
+        <span class="kw">match </span>reveal_to_index {
             <span class="prelude-val">Some</span>(index) =&gt; {
                 <span class="kw">let </span>_old_index = <span class="self">self</span>.last_revealed.insert(keychain.clone(), index);
                 <span class="macro">debug_assert!</span>(_old_index &lt; <span class="prelude-val">Some</span>(index));
