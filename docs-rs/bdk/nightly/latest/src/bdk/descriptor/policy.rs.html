@@ -1884,6 +1884,11 @@
 <a href="#1884" id="1884">1884</a>
 <a href="#1885" id="1885">1885</a>
 <a href="#1886" id="1886">1886</a>
+<a href="#1887" id="1887">1887</a>
+<a href="#1888" id="1888">1888</a>
+<a href="#1889" id="1889">1889</a>
+<a href="#1890" id="1890">1890</a>
+<a href="#1891" id="1891">1891</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2548,11 +2553,11 @@
                 (<span class="number">0</span>..<span class="kw-2">*</span>threshold).collect()
             }
             SatisfiableItem::Multisig { keys, .. } =&gt; (<span class="number">0</span>..keys.len()).collect(),
-            <span class="kw">_ </span>=&gt; <span class="macro">vec!</span>[],
+            <span class="kw">_ </span>=&gt; HashSet::new(),
         };
-        <span class="kw">let </span>selected = <span class="kw">match </span>path.get(<span class="kw-2">&amp;</span><span class="self">self</span>.id) {
-            <span class="prelude-val">Some</span>(arr) =&gt; arr,
-            <span class="kw">_ </span>=&gt; <span class="kw-2">&amp;</span>default,
+        <span class="kw">let </span>selected: HashSet&lt;<span class="kw">_</span>&gt; = <span class="kw">match </span>path.get(<span class="kw-2">&amp;</span><span class="self">self</span>.id) {
+            <span class="prelude-val">Some</span>(arr) =&gt; arr.iter().copied().collect(),
+            <span class="kw">_ </span>=&gt; default,
         };
 
         <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.item {
@@ -2560,12 +2565,22 @@
                 <span class="kw">let </span>mapped_req = items
                     .iter()
                     .map(|i| i.get_condition(path))
-                    .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;, <span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
+                    .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
                 <span class="comment">// if all the requirements are null we don&#39;t care about `selected` because there
                 // are no requirements
-                </span><span class="kw">if </span>mapped_req.iter().all(Condition::is_null) {
+                </span><span class="kw">if </span>mapped_req
+                    .iter()
+                    .all(|cond| <span class="macro">matches!</span>(cond, <span class="prelude-val">Ok</span>(c) <span class="kw">if </span>c.is_null()))
+                {
                     <span class="kw">return </span><span class="prelude-val">Ok</span>(Condition::default());
+                }
+
+                <span class="comment">// make sure all the indexes in the `selected` list are within range
+                </span><span class="kw">for </span>index <span class="kw">in </span><span class="kw-2">&amp;</span>selected {
+                    <span class="kw">if </span><span class="kw-2">*</span>index &gt;= items.len() {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(PolicyError::IndexOutOfRange(<span class="kw-2">*</span>index));
+                    }
                 }
 
                 <span class="comment">// if we have something, make sure we have enough items. note that the user can set
@@ -2576,23 +2591,18 @@
                 }
 
                 <span class="comment">// check the selected items, see if there are conflicting requirements
-                </span><span class="kw">let </span><span class="kw-2">mut </span>requirements = Condition::default();
-                <span class="kw">for </span>item_index <span class="kw">in </span>selected {
-                    requirements = requirements.merge(
-                        mapped_req
-                            .get(<span class="kw-2">*</span>item_index)
-                            .ok_or(PolicyError::IndexOutOfRange(<span class="kw-2">*</span>item_index))<span class="question-mark">?</span>,
-                    )<span class="question-mark">?</span>;
-                }
-
-                <span class="prelude-val">Ok</span>(requirements)
+                </span>mapped_req
+                    .into_iter()
+                    .enumerate()
+                    .filter(|(index, <span class="kw">_</span>)| selected.contains(index))
+                    .try_fold(Condition::default(), |acc, (<span class="kw">_</span>, cond)| acc.merge(<span class="kw-2">&amp;</span>cond<span class="question-mark">?</span>))
             }
             SatisfiableItem::Multisig { keys, threshold } =&gt; {
                 <span class="kw">if </span>selected.len() &lt; <span class="kw-2">*</span>threshold {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(PolicyError::NotEnoughItemsSelected(<span class="self">self</span>.id.clone()));
                 }
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(item) = selected.iter().find(|i| <span class="kw-2">**</span>i &gt;= keys.len()) {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(PolicyError::IndexOutOfRange(<span class="kw-2">*</span>item));
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(item) = selected.into_iter().find(|<span class="kw-2">&amp;</span>i| i &gt;= keys.len()) {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(PolicyError::IndexOutOfRange(item));
                 }
 
                 <span class="prelude-val">Ok</span>(Condition::default())
