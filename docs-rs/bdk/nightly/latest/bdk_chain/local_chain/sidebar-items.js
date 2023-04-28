@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["LocalChain","This is a local implementation of [`ChainOracle`]."],["UpdateNotConnectedError","Represents an update failure of [`LocalChain`] due to the update not connecting to the original chain."]],"type":[["ChangeSet","This is the return value of `determine_changeset` and represents changes to [`LocalChain`]."]]};
