@@ -588,14 +588,46 @@
 <a href="#588" id="588">588</a>
 <a href="#589" id="589">589</a>
 <a href="#590" id="590">590</a>
+<a href="#591" id="591">591</a>
+<a href="#592" id="592">592</a>
+<a href="#593" id="593">593</a>
+<a href="#594" id="594">594</a>
+<a href="#595" id="595">595</a>
+<a href="#596" id="596">596</a>
+<a href="#597" id="597">597</a>
+<a href="#598" id="598">598</a>
+<a href="#599" id="599">599</a>
+<a href="#600" id="600">600</a>
+<a href="#601" id="601">601</a>
+<a href="#602" id="602">602</a>
+<a href="#603" id="603">603</a>
+<a href="#604" id="604">604</a>
+<a href="#605" id="605">605</a>
+<a href="#606" id="606">606</a>
+<a href="#607" id="607">607</a>
+<a href="#608" id="608">608</a>
+<a href="#609" id="609">609</a>
+<a href="#610" id="610">610</a>
+<a href="#611" id="611">611</a>
+<a href="#612" id="612">612</a>
+<a href="#613" id="613">613</a>
+<a href="#614" id="614">614</a>
+<a href="#615" id="615">615</a>
+<a href="#616" id="616">616</a>
+<a href="#617" id="617">617</a>
+<a href="#618" id="618">618</a>
+<a href="#619" id="619">619</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     collections::<span class="kw-2">*</span>,
+    indexed_tx_graph::{Indexer, OwnedIndexer},
     miniscript::{Descriptor, DescriptorPublicKey},
     ForEachTxOut, SpkTxOutIndex,
 };
 <span class="kw">use </span>alloc::{borrow::Cow, vec::Vec};
 <span class="kw">use </span>bitcoin::{secp256k1::Secp256k1, OutPoint, Script, TxOut};
 <span class="kw">use </span>core::{fmt::Debug, ops::Deref};
+
+<span class="kw">use </span><span class="kw">crate</span>::Append;
 
 <span class="kw">use </span><span class="kw">super</span>::DerivationAdditions;
 
@@ -675,6 +707,32 @@
 
     <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Target {
         <span class="kw-2">&amp;</span><span class="self">self</span>.inner
+    }
+}
+
+<span class="kw">impl</span>&lt;K: Clone + Ord + Debug + <span class="lifetime">&#39;static</span>&gt; Indexer <span class="kw">for </span>KeychainTxOutIndex&lt;K&gt; {
+    <span class="kw">type </span>Additions = DerivationAdditions&lt;K&gt;;
+
+    <span class="kw">fn </span>index_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="self">Self</span>::Additions {
+        <span class="self">self</span>.scan_txout(outpoint, txout)
+    }
+
+    <span class="kw">fn </span>index_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>bitcoin::Transaction) -&gt; <span class="self">Self</span>::Additions {
+        <span class="self">self</span>.scan(tx)
+    }
+
+    <span class="kw">fn </span>apply_additions(<span class="kw-2">&amp;mut </span><span class="self">self</span>, additions: <span class="self">Self</span>::Additions) {
+        <span class="self">self</span>.apply_additions(additions)
+    }
+
+    <span class="kw">fn </span>is_tx_relevant(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>bitcoin::Transaction) -&gt; bool {
+        <span class="self">self</span>.is_relevant(tx)
+    }
+}
+
+<span class="kw">impl</span>&lt;K: Clone + Ord + Debug + <span class="lifetime">&#39;static</span>&gt; OwnedIndexer <span class="kw">for </span>KeychainTxOutIndex&lt;K&gt; {
+    <span class="kw">fn </span>is_spk_owned(<span class="kw-2">&amp;</span><span class="self">self</span>, spk: <span class="kw-2">&amp;</span>Script) -&gt; bool {
+        <span class="self">self</span>.inner().is_spk_owned(spk)
     }
 }
 

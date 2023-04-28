@@ -307,10 +307,40 @@
 <a href="#307" id="307">307</a>
 <a href="#308" id="308">308</a>
 <a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
 </pre><pre class="rust"><code><span class="kw">use </span>core::ops::RangeBounds;
 
 <span class="kw">use crate</span>::{
     collections::{hash_map::Entry, BTreeMap, BTreeSet, HashMap},
+    indexed_tx_graph::{Indexer, OwnedIndexer},
     ForEachTxOut,
 };
 <span class="kw">use </span>bitcoin::{<span class="self">self</span>, OutPoint, Script, Transaction, TxOut, Txid};
@@ -358,6 +388,34 @@
             spk_txouts: Default::default(),
             unused: Default::default(),
         }
+    }
+}
+
+<span class="kw">impl</span>&lt;I: Clone + Ord + <span class="lifetime">&#39;static</span>&gt; Indexer <span class="kw">for </span>SpkTxOutIndex&lt;I&gt; {
+    <span class="kw">type </span>Additions = ();
+
+    <span class="kw">fn </span>index_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="self">Self</span>::Additions {
+        <span class="self">self</span>.scan_txout(outpoint, txout);
+        Default::default()
+    }
+
+    <span class="kw">fn </span>index_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="self">Self</span>::Additions {
+        <span class="self">self</span>.scan(tx);
+        Default::default()
+    }
+
+    <span class="kw">fn </span>apply_additions(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _additions: <span class="self">Self</span>::Additions) {
+        <span class="comment">// This applies nothing.
+    </span>}
+
+    <span class="kw">fn </span>is_tx_relevant(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; bool {
+        <span class="self">self</span>.is_relevant(tx)
+    }
+}
+
+<span class="kw">impl</span>&lt;I: Clone + Ord + <span class="lifetime">&#39;static</span>&gt; OwnedIndexer <span class="kw">for </span>SpkTxOutIndex&lt;I&gt; {
+    <span class="kw">fn </span>is_spk_owned(<span class="kw-2">&amp;</span><span class="self">self</span>, spk: <span class="kw-2">&amp;</span>Script) -&gt; bool {
+        <span class="self">self</span>.spk_indices.get(spk).is_some()
     }
 }
 
