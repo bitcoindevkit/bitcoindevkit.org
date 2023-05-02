@@ -584,55 +584,20 @@
 <a href="#584" id="584">584</a>
 <a href="#585" id="585">585</a>
 <a href="#586" id="586">586</a>
-<a href="#587" id="587">587</a>
-<a href="#588" id="588">588</a>
-<a href="#589" id="589">589</a>
-<a href="#590" id="590">590</a>
-<a href="#591" id="591">591</a>
-<a href="#592" id="592">592</a>
-<a href="#593" id="593">593</a>
-<a href="#594" id="594">594</a>
-<a href="#595" id="595">595</a>
-<a href="#596" id="596">596</a>
-<a href="#597" id="597">597</a>
-<a href="#598" id="598">598</a>
-<a href="#599" id="599">599</a>
-<a href="#600" id="600">600</a>
-<a href="#601" id="601">601</a>
-<a href="#602" id="602">602</a>
-<a href="#603" id="603">603</a>
-<a href="#604" id="604">604</a>
-<a href="#605" id="605">605</a>
-<a href="#606" id="606">606</a>
-<a href="#607" id="607">607</a>
-<a href="#608" id="608">608</a>
-<a href="#609" id="609">609</a>
-<a href="#610" id="610">610</a>
-<a href="#611" id="611">611</a>
-<a href="#612" id="612">612</a>
-<a href="#613" id="613">613</a>
-<a href="#614" id="614">614</a>
-<a href="#615" id="615">615</a>
-<a href="#616" id="616">616</a>
-<a href="#617" id="617">617</a>
-<a href="#618" id="618">618</a>
-<a href="#619" id="619">619</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     collections::<span class="kw-2">*</span>,
     indexed_tx_graph::{Indexer, OwnedIndexer},
     miniscript::{Descriptor, DescriptorPublicKey},
-    ForEachTxOut, SpkTxOutIndex,
+    spk_iter::BIP32_MAX_INDEX,
+    ForEachTxOut, SpkIterator, SpkTxOutIndex,
 };
-<span class="kw">use </span>alloc::{borrow::Cow, vec::Vec};
-<span class="kw">use </span>bitcoin::{secp256k1::Secp256k1, OutPoint, Script, TxOut};
+<span class="kw">use </span>alloc::vec::Vec;
+<span class="kw">use </span>bitcoin::{OutPoint, Script, TxOut};
 <span class="kw">use </span>core::{fmt::Debug, ops::Deref};
 
 <span class="kw">use </span><span class="kw">crate</span>::Append;
 
 <span class="kw">use </span><span class="kw">super</span>::DerivationAdditions;
-
-<span class="doccomment">/// Maximum [BIP32](https://bips.xyz/32) derivation index.
-</span><span class="kw">pub const </span>BIP32_MAX_INDEX: u32 = (<span class="number">1 </span>&lt;&lt; <span class="number">31</span>) - <span class="number">1</span>;
 
 <span class="doccomment">/// A convenient wrapper around [`SpkTxOutIndex`] that relates script pubkeys to miniscript public
 /// [`Descriptor`]s.
@@ -862,10 +827,9 @@
         <span class="kw">let </span>next_reveal_index = <span class="self">self</span>.last_revealed.get(keychain).map_or(<span class="number">0</span>, |v| <span class="kw-2">*</span>v + <span class="number">1</span>);
         <span class="kw">let </span>lookahead = <span class="self">self</span>.lookahead.get(keychain).map_or(<span class="number">0</span>, |v| <span class="kw-2">*</span>v);
 
-        <span class="kw">for </span>(new_index, new_spk) <span class="kw">in </span>range_descriptor_spks(
-            Cow::Borrowed(descriptor),
-            next_store_index..next_reveal_index + lookahead,
-        ) {
+        <span class="kw">for </span>(new_index, new_spk) <span class="kw">in
+            </span>SpkIterator::new_with_range(descriptor, next_store_index..next_reveal_index + lookahead)
+        {
             <span class="kw">let </span>_inserted = <span class="self">self
                 </span>.inner
                 .insert_spk((keychain.clone(), new_index), new_spk);
@@ -885,13 +849,13 @@
     /// derivable script pubkeys.
     </span><span class="kw">pub fn </span>spks_of_all_keychains(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; BTreeMap&lt;K, <span class="kw">impl </span>Iterator&lt;Item = (u32, Script)&gt; + Clone&gt; {
+    ) -&gt; BTreeMap&lt;K, SpkIterator&lt;Descriptor&lt;DescriptorPublicKey&gt;&gt;&gt; {
         <span class="self">self</span>.keychains
             .iter()
             .map(|(keychain, descriptor)| {
                 (
                     keychain.clone(),
-                    range_descriptor_spks(Cow::Owned(descriptor.clone()), <span class="number">0</span>..),
+                    SpkIterator::new_with_range(descriptor.clone(), <span class="number">0</span>..),
                 )
             })
             .collect()
@@ -903,13 +867,13 @@
     /// # Panics
     ///
     /// This will panic if the `keychain` does not exist.
-    </span><span class="kw">pub fn </span>spks_of_keychain(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (u32, Script)&gt; + Clone {
+    </span><span class="kw">pub fn </span>spks_of_keychain(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; SpkIterator&lt;Descriptor&lt;DescriptorPublicKey&gt;&gt; {
         <span class="kw">let </span>descriptor = <span class="self">self
             </span>.keychains
             .get(keychain)
             .expect(<span class="string">&quot;keychain must exist&quot;</span>)
             .clone();
-        range_descriptor_spks(Cow::Owned(descriptor), <span class="number">0</span>..)
+        SpkIterator::new_with_range(descriptor, <span class="number">0</span>..)
     }
 
     <span class="doccomment">/// Convenience method to get [`revealed_spks_of_keychain`] of all keychains.
@@ -989,7 +953,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         keychains: <span class="kw-2">&amp;</span>BTreeMap&lt;K, u32&gt;,
     ) -&gt; (
-        BTreeMap&lt;K, <span class="kw">impl </span>Iterator&lt;Item = (u32, Script)&gt;&gt;,
+        BTreeMap&lt;K, SpkIterator&lt;Descriptor&lt;DescriptorPublicKey&gt;&gt;&gt;,
         DerivationAdditions&lt;K&gt;,
     ) {
         <span class="kw">let </span><span class="kw-2">mut </span>additions = DerivationAdditions::default();
@@ -999,7 +963,7 @@
             <span class="kw">let </span>(new_spks, new_additions) = <span class="self">self</span>.reveal_to_target(keychain, index);
             <span class="kw">if </span>!new_additions.is_empty() {
                 spks.insert(keychain.clone(), new_spks);
-                additions.append(new_additions);
+                additions.append(new_additions.clone());
             }
         }
 
@@ -1024,7 +988,10 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         keychain: <span class="kw-2">&amp;</span>K,
         target_index: u32,
-    ) -&gt; (<span class="kw">impl </span>Iterator&lt;Item = (u32, Script)&gt;, DerivationAdditions&lt;K&gt;) {
+    ) -&gt; (
+        SpkIterator&lt;Descriptor&lt;DescriptorPublicKey&gt;&gt;,
+        DerivationAdditions&lt;K&gt;,
+    ) {
         <span class="kw">let </span>descriptor = <span class="self">self</span>.keychains.get(keychain).expect(<span class="string">&quot;keychain must exist&quot;</span>);
         <span class="kw">let </span>has_wildcard = descriptor.has_wildcard();
 
@@ -1049,7 +1016,7 @@
 
         <span class="comment">// we range over indexes that are not stored
         </span><span class="kw">let </span>range = next_reveal_index + lookahead..=target_index + lookahead;
-        <span class="kw">for </span>(new_index, new_spk) <span class="kw">in </span>range_descriptor_spks(Cow::Borrowed(descriptor), range) {
+        <span class="kw">for </span>(new_index, new_spk) <span class="kw">in </span>SpkIterator::new_with_range(descriptor, range) {
             <span class="kw">let </span>_inserted = <span class="self">self
                 </span>.inner
                 .insert_spk((keychain.clone(), new_index), new_spk);
@@ -1066,16 +1033,13 @@
                 <span class="kw">let </span>_old_index = <span class="self">self</span>.last_revealed.insert(keychain.clone(), index);
                 <span class="macro">debug_assert!</span>(_old_index &lt; <span class="prelude-val">Some</span>(index));
                 (
-                    range_descriptor_spks(
-                        Cow::Owned(descriptor.clone()),
-                        next_reveal_index..index + <span class="number">1</span>,
-                    ),
+                    SpkIterator::new_with_range(descriptor.clone(), next_reveal_index..index + <span class="number">1</span>),
                     DerivationAdditions(core::iter::once((keychain.clone(), index)).collect()),
                 )
             }
             <span class="prelude-val">None </span>=&gt; (
-                range_descriptor_spks(
-                    Cow::Owned(descriptor.clone()),
+                SpkIterator::new_with_range(
+                    descriptor.clone(),
                     next_reveal_index..next_reveal_index,
                 ),
                 DerivationAdditions::default(),
@@ -1205,36 +1169,6 @@
     </span><span class="kw">pub fn </span>apply_additions(<span class="kw-2">&amp;mut </span><span class="self">self</span>, additions: DerivationAdditions&lt;K&gt;) {
         <span class="kw">let _ </span>= <span class="self">self</span>.reveal_to_target_multi(<span class="kw-2">&amp;</span>additions.<span class="number">0</span>);
     }
-}
-
-<span class="kw">fn </span>range_descriptor_spks&lt;<span class="lifetime">&#39;a</span>, R&gt;(
-    descriptor: Cow&lt;<span class="lifetime">&#39;a</span>, Descriptor&lt;DescriptorPublicKey&gt;&gt;,
-    range: R,
-) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (u32, Script)&gt; + Clone + Send + <span class="lifetime">&#39;a
-</span><span class="kw">where
-    </span>R: Iterator&lt;Item = u32&gt; + Clone + Send + <span class="lifetime">&#39;a</span>,
-{
-    <span class="kw">let </span>secp = Secp256k1::verification_only();
-    <span class="kw">let </span>has_wildcard = descriptor.has_wildcard();
-    range
-        .into_iter()
-        <span class="comment">// non-wildcard descriptors can only have one derivation index (0)
-        </span>.take_while(<span class="kw">move </span>|<span class="kw-2">&amp;</span>index| has_wildcard || index == <span class="number">0</span>)
-        <span class="comment">// we can only iterate over non-hardened indices
-        </span>.take_while(|<span class="kw-2">&amp;</span>index| index &lt;= BIP32_MAX_INDEX)
-        .map(
-            <span class="kw">move </span>|index| -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, miniscript::descriptor::ConversionError&gt; {
-                <span class="prelude-val">Ok</span>((
-                    index,
-                    descriptor
-                        .at_derivation_index(index)
-                        .derived_descriptor(<span class="kw-2">&amp;</span>secp)<span class="question-mark">?
-                        </span>.script_pubkey(),
-                ))
-            },
-        )
-        .take_while(Result::is_ok)
-        .map(Result::unwrap)
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
