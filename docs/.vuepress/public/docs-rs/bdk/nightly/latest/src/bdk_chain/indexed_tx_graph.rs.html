@@ -323,6 +323,9 @@
 <a href="#323" id="323">323</a>
 <a href="#324" id="324">324</a>
 <a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
 </pre><pre class="rust"><code><span class="kw">use </span>core::convert::Infallible;
 
 <span class="kw">use </span>alloc::vec::Vec;
@@ -337,6 +340,7 @@
 <span class="doccomment">/// A struct that combines [`TxGraph`] and an [`Indexer`] implementation.
 ///
 /// This structure ensures that [`TxGraph`] and [`Indexer`] are updated atomically.
+</span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>IndexedTxGraph&lt;A, I&gt; {
     <span class="doccomment">/// Transaction index.
     </span><span class="kw">pub </span>index: I,
@@ -352,12 +356,14 @@
     }
 }
 
-<span class="kw">impl</span>&lt;A: Anchor, I: Indexer&gt; IndexedTxGraph&lt;A, I&gt; {
+<span class="kw">impl</span>&lt;A, I&gt; IndexedTxGraph&lt;A, I&gt; {
     <span class="doccomment">/// Get a reference of the internal transaction graph.
     </span><span class="kw">pub fn </span>graph(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>TxGraph&lt;A&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.graph
     }
+}
 
+<span class="kw">impl</span>&lt;A: Anchor, I: Indexer&gt; IndexedTxGraph&lt;A, I&gt; {
     <span class="doccomment">/// Applies the [`IndexedAdditions`] to the [`IndexedTxGraph`].
     </span><span class="kw">pub fn </span>apply_additions(<span class="kw-2">&amp;mut </span><span class="self">self</span>, additions: IndexedAdditions&lt;A, I::Additions&gt;) {
         <span class="kw">let </span>IndexedAdditions {
@@ -542,7 +548,7 @@
         </span>C: ChainOracle,
         F: FnMut(<span class="kw-2">&amp;</span>Script) -&gt; bool,
     {
-        <span class="kw">let </span>tip_height = chain_tip.anchor_block().height;
+        <span class="kw">let </span>tip_height = chain_tip.height;
 
         <span class="kw">let </span><span class="kw-2">mut </span>immature = <span class="number">0</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>trusted_pending = <span class="number">0</span>;
