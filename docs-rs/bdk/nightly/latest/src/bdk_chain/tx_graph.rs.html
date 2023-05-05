@@ -1077,18 +1077,6 @@
 <a href="#1077" id="1077">1077</a>
 <a href="#1078" id="1078">1078</a>
 <a href="#1079" id="1079">1079</a>
-<a href="#1080" id="1080">1080</a>
-<a href="#1081" id="1081">1081</a>
-<a href="#1082" id="1082">1082</a>
-<a href="#1083" id="1083">1083</a>
-<a href="#1084" id="1084">1084</a>
-<a href="#1085" id="1085">1085</a>
-<a href="#1086" id="1086">1086</a>
-<a href="#1087" id="1087">1087</a>
-<a href="#1088" id="1088">1088</a>
-<a href="#1089" id="1089">1089</a>
-<a href="#1090" id="1090">1090</a>
-<a href="#1091" id="1091">1091</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
 //! [`TxGraph`] is a monotone structure that inserts transactions and indexes the spends. The
@@ -1440,6 +1428,11 @@
             .filter(<span class="kw">move </span>|(<span class="kw">_</span>, conflicting_txid)| <span class="kw-2">*</span>conflicting_txid != txid)
     }
 
+    <span class="doccomment">/// Get all transaction anchors known by [`TxGraph`].
+    </span><span class="kw">pub fn </span>all_anchors(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeSet&lt;(A, Txid)&gt; {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.anchors
+    }
+
     <span class="doccomment">/// Whether the graph has any transactions or outputs in it.
     </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.txs.is_empty()
@@ -1683,21 +1676,6 @@
 }
 
 <span class="kw">impl</span>&lt;A: Anchor&gt; TxGraph&lt;A&gt; {
-    <span class="doccomment">/// Get all heights that are relevant to the graph.
-    </span><span class="kw">pub fn </span>relevant_heights(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = u32&gt; + <span class="lifetime">&#39;_ </span>{
-        <span class="kw">let </span><span class="kw-2">mut </span>last_height = <span class="prelude-ty">Option</span>::&lt;u32&gt;::None;
-        <span class="self">self</span>.anchors
-            .iter()
-            .map(|(a, <span class="kw">_</span>)| a.anchor_block().height)
-            .filter(<span class="kw">move </span>|<span class="kw-2">&amp;</span>height| {
-                <span class="kw">let </span>is_unique = <span class="prelude-val">Some</span>(height) != last_height;
-                <span class="kw">if </span>is_unique {
-                    last_height = <span class="prelude-val">Some</span>(height);
-                }
-                is_unique
-            })
-    }
-
     <span class="doccomment">/// Get the position of the transaction in `chain` with tip `chain_tip`.
     ///
     /// If the given transaction of `txid` does not exist in the chain of `chain_tip`, `None` is
@@ -1715,11 +1693,9 @@
         chain_tip: BlockId,
         txid: Txid,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;ObservedAs&lt;<span class="kw-2">&amp;</span>A&gt;&gt;, C::Error&gt; {
-        <span class="kw">let </span>(tx_node, anchors, <span class="kw-2">&amp;</span>last_seen) = <span class="kw">match </span><span class="self">self</span>.txs.get(<span class="kw-2">&amp;</span>txid) {
-            <span class="prelude-val">Some</span>((tx, anchors, last_seen)) <span class="kw">if </span>!(anchors.is_empty() &amp;&amp; <span class="kw-2">*</span>last_seen == <span class="number">0</span>) =&gt; {
-                (tx, anchors, last_seen)
-            }
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+        <span class="kw">let </span>(tx_node, anchors, last_seen) = <span class="kw">match </span><span class="self">self</span>.txs.get(<span class="kw-2">&amp;</span>txid) {
+            <span class="prelude-val">Some</span>(v) =&gt; v,
+            <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         };
 
         <span class="kw">for </span>anchor <span class="kw">in </span>anchors {
@@ -1748,12 +1724,12 @@
                     </span><span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
                 }
             }
-            <span class="kw">if </span>conflicting_tx.last_seen_unconfirmed &gt; last_seen {
+            <span class="kw">if </span>conflicting_tx.last_seen_unconfirmed &gt; <span class="kw-2">*</span>last_seen {
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(ObservedAs::Unconfirmed(last_seen)))
+        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(ObservedAs::Unconfirmed(<span class="kw-2">*</span>last_seen)))
     }
 
     <span class="doccomment">/// Get the position of the transaction in `chain` with tip `chain_tip`.
