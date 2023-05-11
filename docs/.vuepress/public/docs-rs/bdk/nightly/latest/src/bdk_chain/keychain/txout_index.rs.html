@@ -583,10 +583,9 @@
 <a href="#583" id="583">583</a>
 <a href="#584" id="584">584</a>
 <a href="#585" id="585">585</a>
-<a href="#586" id="586">586</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     collections::<span class="kw-2">*</span>,
-    indexed_tx_graph::{Indexer, OwnedIndexer},
+    indexed_tx_graph::Indexer,
     miniscript::{Descriptor, DescriptorPublicKey},
     spk_iter::BIP32_MAX_INDEX,
     ForEachTxOut, SpkIterator, SpkTxOutIndex,
@@ -695,12 +694,6 @@
     }
 }
 
-<span class="kw">impl</span>&lt;K: Clone + Ord + Debug&gt; OwnedIndexer <span class="kw">for </span>KeychainTxOutIndex&lt;K&gt; {
-    <span class="kw">fn </span>is_spk_owned(<span class="kw-2">&amp;</span><span class="self">self</span>, spk: <span class="kw-2">&amp;</span>Script) -&gt; bool {
-        <span class="self">self</span>.index_of_spk(spk).is_some()
-    }
-}
-
 <span class="kw">impl</span>&lt;K: Clone + Ord + Debug&gt; KeychainTxOutIndex&lt;K&gt; {
     <span class="doccomment">/// Scans an object for relevant outpoints, which are stored and indexed internally.
     ///
@@ -737,6 +730,11 @@
     <span class="doccomment">/// Return a reference to the internal [`SpkTxOutIndex`].
     </span><span class="kw">pub fn </span>inner(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>SpkTxOutIndex&lt;(K, u32)&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.inner
+    }
+
+    <span class="doccomment">/// Get a reference to the set of indexed outpoints.
+    </span><span class="kw">pub fn </span>outpoints(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeSet&lt;((K, u32), OutPoint)&gt; {
+        <span class="self">self</span>.inner.outpoints()
     }
 
     <span class="doccomment">/// Return a reference to the internal map of the keychain to descriptors.
