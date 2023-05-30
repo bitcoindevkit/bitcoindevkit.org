@@ -28,7 +28,7 @@ This tutorial will explore `bdk-flutter` usage and the API it provides. This gui
 
 The tutorial will focus on bitcoin concepts and `bdk-flutter` API. So it will gloss over Flutter and Dart. If you are interested in learning more about Flutter and Dart please refer to the Flutter [learning portal](https://flutter.dev/learn). The code for this tutorial is available on the [LtbLightning GitHub](https://github.com/LtbLightning/bdk-flutter-quickstart)
 
-<img src="./exploring_bdk_flutter/bdk_flutter_complete_app.png" style="display: block; margin: 0 auto; zoom: 50%;" />
+<img src="./exploring_bdk_flutter/bdk_flutter_complete_app.png" style="display: block; margin: 0 auto; zoom: 25%;" />
 
 ### Prerequisites
 
@@ -76,6 +76,9 @@ Paste the following code in your `pubspec.yaml` file, assets section.
 
     - assets/
 
+Please make sure your assets section looks like the screenshot below.
+<img src="./exploring_bdk_flutter/assets_section.png"  alt="BDK Flutter Quick Start" style="display: block; margin: 0 auto; zoom: 60%;" />
+
 Once done let's run a `get` command from the pub tool commands, this will get all the required dependencies for our project.
 
 ```shell
@@ -88,7 +91,7 @@ Under `screens` create a `home.dart` file, this will be where most of the code w
 
 Once done the file structure should look like this:
 
-<img src="./exploring_bdk_flutter/folder_structure.png" style="display: block; margin: 0px auto; zoom: 67%;" />
+<img src="./exploring_bdk_flutter/folder_structure.png" style="display: block; margin: 0px auto; zoom: 60%;" />
 
 <br/>Locate `main.dart` in the project root, this will have the default code added by `flutter create`, let's delete all contents of `main.dart` and replace it with the following code to use `home.dart` as our main screen. This will probably crash the app but that's fine, it will be up and running once we add code to `home.dart` in the next few steps
 
@@ -131,7 +134,7 @@ This will add a line like this to your package's `pubspec.yaml` and this will al
 
 ```shell
 dependencies:
-  bdk_flutter: ^0.3.0
+  bdk_flutter: ^0.28.0
 ```
 
 ## Configuring
@@ -367,7 +370,7 @@ and finally, let's add the component to display the output under ` /* Result */`
 
 We should now have a working "Generate Mnemonic" button that displays the new mnemonic
 
-<img src="./exploring_bdk_flutter/bdk_flutter_tutorial_screen_mnemonic.png" style="display: block; margin: 0 auto; zoom:50%;" />
+<img src="./exploring_bdk_flutter/bdk_flutter_tutorial_screen_mnemonic.png" style="display: block; margin: 0 auto; zoom:25%;" />
 
 A quick recap, we added a button to call a click handler (`generateMnemonicHandler`) which calls `generateMnemonic` API of `bdk-flutter`. The click handler also sets the state for the app and also updates the `displayText` variable to display the output of the call in the display section. We will follow this pattern for the remaining calls to `bdk-flutter`.
 
@@ -391,17 +394,9 @@ Just below `/* Balance */` and above `/* Result */` add the following UI compone
 
 ```dart
          /* Balance */
-         StyledContainer(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("Balance: ",
-                            style: Theme.of(context).textTheme.headline2),
-                        Text(" ${balance ?? "0"} Sats",
-                            style: Theme.of(context).textTheme.bodyText1),
-                      ],
-                    )
-                  ),
+         BalanceContainer(
+                  text: "${balance ?? "0"} Sats",
+                ),
         /* Result */
 ```
 
@@ -411,7 +406,7 @@ Just below `/* Balance */` and above `/* Result */` add the following UI compone
 
 Let's add some code to create a simple `wpkh` descriptor object by using the `BIP84` template. This template will create a descriptor in the format `wpkh(key/84'/{0,1}'/0'/{0,1}/*)`
 
-This descriptor will create receive (`KeychainKind.External`) and change descriptor (` KeycChainKind.Internal`) for a specified mnemonic.
+This descriptor will create receive (`KeyChainKind.External`) and change descriptor (` KeyChainKind.Internal`) for a specified mnemonic.
 
 ```dart
 Future<List<Descriptor>> getDescriptors(String mnemonic) async {
@@ -490,7 +485,7 @@ The response returned by `create()` is a `Wallet` object.
 
 The App should now be creating a wallet when we click **Create Mnemonic** followed by **Create Wallet**.
 
-<img src="./exploring_bdk_flutter/bdk_flutter_tutorial_screen_createwallet.png" style="display: block; margin: 0 auto; zoom:50%;" />
+<img src="./exploring_bdk_flutter/bdk_flutter_tutorial_screen_createwallet.png" style="display: block; margin: 0 auto; zoom:25%;" />
 
 Before going forward, we need to create a `Blockchain` object as well. The Blockchain object will encapsulate the bitcoin node configuration which the wallet will use for syncing blocks and broadcasting transactions.
 
@@ -574,7 +569,7 @@ Let's add two internal functions for syncing UTXOs and compute balance.
 
 We should now be able to create a wallet, sync UTXOs, and get the balance
 
-<img src="./exploring_bdk_flutter/bdk_flutter_get_balance.png" style="display: block; margin: 0 auto; zoom:50%;" />
+<img src="./exploring_bdk_flutter/bdk_flutter_get_balance.png" style="display: block; margin: 0 auto; zoom:25%;" />
 
 We can use a public testnet faucet to send testnet coins to the wallet and check that the UTXO sync and balance fetch are working correctly. Before we do that add one more method to generate a new address we can then use this address to get testnet coins from a faucet.
 
@@ -603,7 +598,7 @@ And a **Get Address** button below the existing **Get Balance** button:
 
 We should now have the following, and **Get Address** will be able to display a new address.
 
-<img src="./exploring_bdk_flutter/bdk_flutter_get_address.png" style="display: block; margin: 0px auto; zoom: 50%;" />
+<img src="./exploring_bdk_flutter/bdk_flutter_get_address.png" style="display: block; margin: 0px auto; zoom: 25%;" />
 
 Now that we are able to generate a receive address we can get some testnet bitcoin from one of the public [testnet faucets](https://coinfaucet.eu/en/btc-testnet/)
 
@@ -617,7 +612,7 @@ This text field below the `Generate Mnemonic` button will also display the mnemo
 
 We can now use our mnemonic and use it to restore a wallet. This will come in handy if we have a wallet with testnet bitcoin as these are hard to come by.
 
-<img src="./exploring_bdk_flutter/bdk_flutter_get_restore.png" style="display: block; margin: 0px auto; zoom: 50%;" />
+<img src="./exploring_bdk_flutter/bdk_flutter_get_restore.png" style="display: block; margin: 0px auto; zoom: 25%;" />
 
 ## Sending bitcoin
 
@@ -669,12 +664,13 @@ Let's make an internal function to send a bitcoin transaction, using `Wallet`, `
       final txBuilder = TxBuilder();
       final address = await Address.create(address: addressStr);
       final script = await address.scriptPubKey();
-      final psbt = await txBuilder
+      final txBuilderResult = await txBuilder
           .addRecipient(script, amount)
           .feeRate(1.0)
           .finish(wallet);
-      final sbt = await wallet.sign(psbt);
-      await blockchain.broadcast(sbt);
+      final sbt = await wallet.sign(psbt: txBuilderResult.psbt);
+      final tx = await sbt.extractTx();
+      await blockchain.broadcast(tx);
       setState(() {
         displayText = "Successfully broadcast $amount Sats to $addressStr";
       });
@@ -754,7 +750,7 @@ Let's add the send transaction section and UI components below `/* Send Transact
 
 We should now be able to send a transaction as long as there is sufficient balance.
 
-<img src="./exploring_bdk_flutter/bdk_flutter_send.png" style="display: block; margin: 0px auto; zoom: 50%;" />
+<img src="./exploring_bdk_flutter/bdk_flutter_send.png" style="display: block; margin: 0px auto; zoom: 25%;" />
 
 ## Conclusion
 
