@@ -58,7 +58,7 @@ const tutorialSidebar = [
       '/tutorials/spending_policy_demo',
       '/tutorials/exploring_bdk_rn',
       '/tutorials/using_bdk_with_hardware_wallets',
-      '/tutorials/exploring_bdk_flutter'
+      '/tutorials/exploring_bdk_flutter',
     ],
   }
 ]
