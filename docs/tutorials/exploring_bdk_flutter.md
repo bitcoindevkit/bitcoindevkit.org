@@ -134,7 +134,7 @@ This will add a line like this to your package's `pubspec.yaml` and this will al
 
 ```shell
 dependencies:
-  bdk_flutter: ^0.28.0
+  bdk_flutter: ^0.28.2
 ```
 
 ## Configuring
