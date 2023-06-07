@@ -1,3 +1,8 @@
+---
+layout: ReviewClubLayout
+title: BDK Weekly PR review club
+---
+
 ### A weekly review club for BDK PRs
 
 <span class="question">What is this?</span> &nbsp;A weekly club for reviewing
@@ -66,3 +71,5 @@ See all [meetings](/meetings/).
     - [Contributing to Bitcoin Core - a Personal Account (John Newbery)](https://bitcointechtalk.com/contributing-to-bitcoin-core-a-personal-account-35f3a594340b)
     - [Onboarding to Bitcoin Core (Amiti Uttarwar)](https://medium.com/@amitiu/onboarding-to-bitcoin-core-7c1a83b20365)
     - [How to Review Pull Requests in Bitcoin Core (Jon Atack)](https://jonatack.github.io/articles/how-to-review-pull-requests-in-bitcoin-core)
+
+

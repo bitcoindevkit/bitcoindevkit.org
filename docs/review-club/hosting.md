@@ -1,3 +1,8 @@
+---
+layout: ReviewClubLayout
+title: Hosting Review Club
+---
+
 # Hosting a BDK Review Club Meeting
 
 ## How to Choose a PR

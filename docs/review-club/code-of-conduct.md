@@ -1,3 +1,8 @@
+---
+layout: ReviewClubLayout
+title: Code Of Conduct
+---
+
 # Code of Conduct
 
 The PR Review Club is designed to be a safe, respectful, and productive
