@@ -212,7 +212,7 @@ Let us first generate an XPRV and create the wpkh wallet descriptor
 ```bash
 XPRV=$(bdk-cli key generate | jq -r '.xprv')
 EX_DESC="wpkh($XPRV/86'/1'/0'/0/*)"
-EX_DESC_CS=$(elcli getdescriptorinfo $EX_DESC | jq -r '.checksum')
+EX_DESC_CS=$(bitcoin-cli getdescriptorinfo $EX_DESC | jq -r '.checksum')
 EX_DESC=$EX_DESC#$EX_DESC_CS
 
 # Set this descriptor in a wallet in bitcoin-cli
