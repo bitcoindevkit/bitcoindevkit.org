@@ -107,6 +107,10 @@ module.exports = {
         link: '/blog/'
       },
       {
+        text: 'Review Club',
+        link: '/review-club/'
+      },
+      {
         text: 'Discord',
         link: discordUrl
       },
