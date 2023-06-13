@@ -20,7 +20,7 @@ export default {
   },
   components: {
     ReviewClubHeader
-  }
+  },
 }
 </script>
 
@@ -60,5 +60,25 @@ export default {
 
 .body-container a {
   text-decoration: underline;
+}
+
+.meeting-list-container .meeting-list {
+    list-style-type: none;
+}
+
+#meeting-link {
+    color: #0000f0;
+}
+
+#meeting-link:hover {
+    color: #fcc603;
+}
+
+#meeting-link:visited {
+    color: #551b8c;
+}
+
+#text-separator {
+    font-weight: bold;
 }
 </style>
