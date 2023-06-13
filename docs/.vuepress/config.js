@@ -106,6 +106,10 @@ module.exports = {
         link: '/tutorials/hello-world'
       },
       {
+        text: 'Case Studies',
+        link: '/case-studies'
+      },
+      {
         text: 'Blog',
         link: '/blog/'
       },
