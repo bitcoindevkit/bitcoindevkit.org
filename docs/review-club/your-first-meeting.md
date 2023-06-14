@@ -9,7 +9,7 @@ If you’re thinking about attending PR Review Club, welcome! We love new
 participants. Below is information to help you get started as a first-timer.
 
 The club meets on {{ $meetingDay }}s at {{ $meetingTime }} in
-{{ $meetingPlace }}. Every other week, a BDK
+<a :href="$meetingPlace">Libera.chat</a>. Every other week, a BDK
 developer will host a 60-minute discussion on a BDK pull request. [The
 code of conduct](/review-club/code-of-conduct) details the
 behavior we expect from all participants.

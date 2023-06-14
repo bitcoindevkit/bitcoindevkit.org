@@ -10,7 +10,7 @@ export default ({ Vue }) => {
         created() {
             this.$meetingTime = "15:00 UTC";
             this.$meetingDay = "Thursday";
-            this.$meetingPlace = "";
+            this.$meetingPlace = 'https://web.libera.chat/#bdk-pr-reviews';
         },
     };
   
