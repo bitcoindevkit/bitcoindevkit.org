@@ -24,7 +24,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 header {
     font-family: "Helvetica",sans-serif;
     line-height: 1.5;

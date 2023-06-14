@@ -77,7 +77,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .log-time{
   color: #0000f0;
   padding-left: 6px;

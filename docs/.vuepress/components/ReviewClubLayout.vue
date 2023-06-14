@@ -24,7 +24,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .body-container {
   color: #000;
   box-sizing: border-box;
