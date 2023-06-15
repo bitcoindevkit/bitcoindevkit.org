@@ -85,9 +85,9 @@ Once done let's run a `get` command from the pub tool commands, this will get al
 flutter pub get
 ```
 
-To make this quick you can download the styles and images used in the tutorial from the repository. The `theme.dart` file has the styled widgets we will use and this can be taken from [here](https://github.com/LtbLightning/bdk-flutter-quickstart/blob/master/lib/styles/theme.dart) and moved to the styles folder. The image assets can be taken from [here](https://github.com/LtbLightning/bdk-flutter-quickstart/tree/master/assets)  Alternatively, you can write your theme and use your images if you intend to style the app differently.
+To make this quick you can download the theme, styled widgets and images used in the tutorial from the repository. The `theme.dart` file has the theme we will use and this can be taken from [here](https://github.com/LtbLightning/bdk-flutter-quickstart/blob/master/lib/styles/theme.dart) and moved to the styles folder. The `widgets.dart` file has the styled widgets we will use and these can be taken from [here](https://github.com/LtbLightning/bdk-flutter-quickstart/blob/master/lib/widgets/widgets.dart) and moved to the widgets folder. The image assets can be taken from [here](https://github.com/LtbLightning/bdk-flutter-quickstart/tree/master/assets)  Alternatively, you can write your theme, widgets and use your images if you intend to style the app differently.
 
-In addition to the the theme and assets. We also need to create a `screens` folder and create a `home.dart` file inside it, this will be where most of the code will be added.
+In addition to the the theme, widgets and assets. We also need to create a `screens` folder and create a `home.dart` file inside it, this will be where most of the code will be added.
 
 Once done the file structure should look like this:
 
