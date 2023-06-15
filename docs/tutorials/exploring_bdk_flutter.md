@@ -85,9 +85,9 @@ Once done let's run a `get` command from the pub tool commands, this will get al
 flutter pub get
 ```
 
-To make this quick you can download the styles and images used in the tutorial from the repository. The image assets and `theme. dart` can be taken from [here](https://github.com/LtbLightning/bdk-flutter-quickstart/tree/main/lib) and moved to the folders as shown. Alternatively, you can write your theme and use your images if you intend to style the app differently.
+To make this quick you can download the styles and images used in the tutorial from the repository. The `theme.dart` file has the styled widgets we will use and this can be taken from [here](https://github.com/LtbLightning/bdk-flutter-quickstart/blob/master/lib/styles/theme.dart) and moved to the styles folder. The image assets can be taken from [here](https://github.com/LtbLightning/bdk-flutter-quickstart/tree/master/assets)  Alternatively, you can write your theme and use your images if you intend to style the app differently.
 
-Under `screens` create a `home.dart` file, this will be where most of the code will be added.
+In addition to the the theme and assets. We also need to create a `screens` folder and create a `home.dart` file inside it, this will be where most of the code will be added.
 
 Once done the file structure should look like this:
 
@@ -260,7 +260,7 @@ var res = await Mnemonic.create(WordCount.Words12);
 We can generate a mnemonic of longer length by passing in a wordCount argument of required length.
 
 To create a mnemonic with a `WordCount` of 18 words, we can use `(WordCount.Words18)`
-Refer to the readme file on [GitHub](https://github.com/LtbLightning/bdk-flutter#generateMnemonic) for more details.
+Refer to the API docs on [pub.dev](https://pub.dev/documentation/bdk_flutter/latest/bdk_flutter/bdk_flutter-library.html) for more details.
 
 ```dart
   var res = await Mnemonic.create(WordCount.Words18);
