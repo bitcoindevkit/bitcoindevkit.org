@@ -3,10 +3,11 @@ layout: ReviewClubLayout
 title: BDK Weekly PR review club
 ---
 
-### A fortnightly review club for BitcoinDevKit(BDK) PRs
+### A review club for BitcoinDevKit(BDK) PRs
 
-<span class="question">What is this?</span> &nbsp;A fortnightly review club for BitcoinDevKit (BDK) PRs at **{{ $meetingTime }} on {{ $meetingDay }}s** in the #bdk-pr-reviews IRC channel on
-<a :href="$meetingPlace">Libera.chat</a>.
+<span class="question">What is this?</span> &nbsp;A review club for BitcoinDevKit (BDK) PRs at **{{ $meetingTime }} on {{ $meetingDay }}s** in the #review-club-meeting channel on
+<a :href="$meetingPlace">Discord</a>. Sessions are organized on 
+a need Basis (Follow the #review-club-org channel for those conversations) 
 
 <span class="question">What's it for?</span> &nbsp;To help newer contributors
 learn about the BDK review process. The review club is *not* primarily

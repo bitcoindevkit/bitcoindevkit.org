@@ -8,9 +8,9 @@ export default ({ Vue }) => {
     // Create a mixin
     const customPropertyMixin = {
         created() {
-            this.$meetingTime = "15:00 UTC";
+            this.$meetingTime = "13:00 UTC";
             this.$meetingDay = "Thursday";
-            this.$meetingPlace = 'https://web.libera.chat/#bdk-pr-reviews';
+            this.$meetingPlace = 'https://discord.gg/dstn4dQ';
         },
     };
   
