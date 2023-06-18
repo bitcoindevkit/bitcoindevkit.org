@@ -40,7 +40,7 @@ title: Hosting Review Club
   you more context. They may even want to join the meeting themselves.
 
 - Post an announcement for your PR as soon as you can - preferably 2 weeks
-  before the meeting.  See the [Making a New Post](#making-a-new-post) section
+  before the meeting on the **#review-club-org**.  See the [Making a New Post](#making-a-new-post) section
   below for how to make an announcement post.
 
 - Post notes and questions on the Friday the week before the meeting.
@@ -96,15 +96,28 @@ title: Hosting Review Club
 To make a new post, run the following command from the website directory (replace YYYY-MM-DD with next meeting data and PR_NUMBER with the number of the PR being reviewed):
 
 ```shell
-cd ./docs/review-club/meetings && touch YYYY-MM-DD-#PR_NUMBER.md
+cd ./docs/review-club/meetings && touch YYYY-MM-DD-PR_NUMBER.md
 ```
 
 The above command will create a markdown file in the 
 `./docs/review-club/meetings` directory of the website repository
 
-At the top of that file. Add the following frontmatter content
+At the top of that file. Add the following frontmatter content and 
+change the different properties to match your post. `commitLink` refers to the commit head of the PR.
 
 ```
+---
+layout: ReviewClubMeetingLayout
+date: 2023-03-22
+title: "Sample Meeting"
+pr: https://github.com/bitcoindevkit/bdk/pull/1004
+authors: [dergoegge]
+components: ["p2p", "validation"]
+host: vladimirfomene
+status: past
+commit: 1429da5078c436f04203213133736605f907cb15
+commitLink: https://github.com/danielabrozzoni/bdk/commit/1429da5078c436f04203213133736605f907cb15
+---
 ```
 
 Inspire yourself from the previous meetings markdown document structure to 
