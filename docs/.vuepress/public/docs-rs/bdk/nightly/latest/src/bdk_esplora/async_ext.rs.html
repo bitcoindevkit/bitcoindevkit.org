@@ -267,66 +267,17 @@
 <a href="#267" id="267">267</a>
 <a href="#268" id="268">268</a>
 <a href="#269" id="269">269</a>
-<a href="#270" id="270">270</a>
-<a href="#271" id="271">271</a>
-<a href="#272" id="272">272</a>
-<a href="#273" id="273">273</a>
-<a href="#274" id="274">274</a>
-<a href="#275" id="275">275</a>
-<a href="#276" id="276">276</a>
-<a href="#277" id="277">277</a>
-<a href="#278" id="278">278</a>
-<a href="#279" id="279">279</a>
-<a href="#280" id="280">280</a>
-<a href="#281" id="281">281</a>
-<a href="#282" id="282">282</a>
-<a href="#283" id="283">283</a>
-<a href="#284" id="284">284</a>
-<a href="#285" id="285">285</a>
-<a href="#286" id="286">286</a>
-<a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
-<a href="#307" id="307">307</a>
-<a href="#308" id="308">308</a>
-<a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
-<a href="#312" id="312">312</a>
-<a href="#313" id="313">313</a>
-<a href="#314" id="314">314</a>
-<a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeMap;
-
-<span class="kw">use </span>async_trait::async_trait;
+</pre><pre class="rust"><code><span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>bdk_chain::{
     bitcoin::{BlockHash, OutPoint, Script, Txid},
-    chain_graph::ChainGraph,
-    keychain::KeychainScan,
-    sparse_chain, BlockId, ConfirmationTime,
+    collections::BTreeMap,
+    keychain::LocalUpdate,
+    BlockId, ConfirmationTimeAnchor,
 };
-<span class="kw">use </span>esplora_client::{Error, OutputStatus};
-<span class="kw">use </span>futures::stream::{FuturesOrdered, TryStreamExt};
+<span class="kw">use </span>esplora_client::{Error, OutputStatus, TxStatus};
+<span class="kw">use </span>futures::{stream::FuturesOrdered, TryStreamExt};
 
-<span class="kw">use </span><span class="kw">crate</span>::map_confirmation_time;
+<span class="kw">use </span><span class="kw">crate</span>::map_confirmation_time_anchor;
 
 <span class="doccomment">/// Trait to extend [`esplora_client::AsyncClient`] functionality.
 ///
@@ -335,23 +286,21 @@
 ///
 /// [`EsploraExt`]: crate::EsploraExt
 /// [crate-level documentation]: crate
-</span><span class="attr">#[cfg(feature = <span class="string">&quot;async&quot;</span>)]
-#[cfg_attr(target_arch = <span class="string">&quot;wasm32&quot;</span>, async_trait(<span class="question-mark">?</span>Send))]
+</span><span class="attr">#[cfg_attr(target_arch = <span class="string">&quot;wasm32&quot;</span>, async_trait(<span class="question-mark">?</span>Send))]
 #[cfg_attr(not(target_arch = <span class="string">&quot;wasm32&quot;</span>), async_trait)]
 </span><span class="kw">pub trait </span>EsploraAsyncExt {
-    <span class="doccomment">/// Scan the blockchain (via esplora) for the data specified and returns a [`KeychainScan`].
+    <span class="doccomment">/// Scan the blockchain (via esplora) for the data specified and returns a
+    /// [`LocalUpdate&lt;K, ConfirmationTimeAnchor&gt;`].
     ///
     /// - `local_chain`: the most recent block hashes present locally
     /// - `keychain_spks`: keychains that we want to scan transactions for
-    /// - `txids`: transactions for which we want updated [`ChainPosition`]s
+    /// - `txids`: transactions for which we want updated [`ConfirmationTimeAnchor`]s
     /// - `outpoints`: transactions associated with these outpoints (residing, spending) that we
     ///     want to included in the update
     ///
     /// The scan for each keychain stops after a gap of `stop_gap` script pubkeys with no associated
     /// transactions. `parallel_requests` specifies the max number of HTTP requests to make in
     /// parallel.
-    ///
-    /// [`ChainPosition`]: bdk_chain::sparse_chain::ChainPosition
     </span><span class="attr">#[allow(clippy::result_large_err)] </span><span class="comment">// FIXME
     </span><span class="kw">async fn </span>scan&lt;K: Ord + Clone + Send&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -364,7 +313,7 @@
         outpoints: <span class="kw">impl </span>IntoIterator&lt;IntoIter = <span class="kw">impl </span>Iterator&lt;Item = OutPoint&gt; + Send&gt; + Send,
         stop_gap: usize,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;KeychainScan&lt;K, ConfirmationTime&gt;, Error&gt;;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;LocalUpdate&lt;K, ConfirmationTimeAnchor&gt;, Error&gt;;
 
     <span class="doccomment">/// Convenience method to call [`scan`] without requiring a keychain.
     ///
@@ -377,31 +326,27 @@
         txids: <span class="kw">impl </span>IntoIterator&lt;IntoIter = <span class="kw">impl </span>Iterator&lt;Item = Txid&gt; + Send&gt; + Send,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;IntoIter = <span class="kw">impl </span>Iterator&lt;Item = OutPoint&gt; + Send&gt; + Send,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;ChainGraph&lt;ConfirmationTime&gt;, Error&gt; {
-        <span class="kw">let </span>wallet_scan = <span class="self">self
-            </span>.scan(
-                local_chain,
-                [(
-                    (),
-                    misc_spks
-                        .into_iter()
-                        .enumerate()
-                        .map(|(i, spk)| (i <span class="kw">as </span>u32, spk)),
-                )]
-                .into(),
-                txids,
-                outpoints,
-                usize::MAX,
-                parallel_requests,
-            )
-            .<span class="kw">await</span><span class="question-mark">?</span>;
-
-        <span class="prelude-val">Ok</span>(wallet_scan.update)
-    }
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;LocalUpdate&lt;(), ConfirmationTimeAnchor&gt;, Error&gt; {
+        <span class="self">self</span>.scan(
+            local_chain,
+            [(
+                (),
+                misc_spks
+                    .into_iter()
+                    .enumerate()
+                    .map(|(i, spk)| (i <span class="kw">as </span>u32, spk)),
+            )]
+            .into(),
+            txids,
+            outpoints,
+            usize::MAX,
+            parallel_requests,
+        )
+        .<span class="kw">await
+    </span>}
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;async&quot;</span>)]
-#[cfg_attr(target_arch = <span class="string">&quot;wasm32&quot;</span>, async_trait(<span class="question-mark">?</span>Send))]
+<span class="attr">#[cfg_attr(target_arch = <span class="string">&quot;wasm32&quot;</span>, async_trait(<span class="question-mark">?</span>Send))]
 #[cfg_attr(not(target_arch = <span class="string">&quot;wasm32&quot;</span>), async_trait)]
 </span><span class="kw">impl </span>EsploraAsyncExt <span class="kw">for </span>esplora_client::AsyncClient {
     <span class="attr">#[allow(clippy::result_large_err)] </span><span class="comment">// FIXME
@@ -416,47 +361,35 @@
         outpoints: <span class="kw">impl </span>IntoIterator&lt;IntoIter = <span class="kw">impl </span>Iterator&lt;Item = OutPoint&gt; + Send&gt; + Send,
         stop_gap: usize,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;KeychainScan&lt;K, ConfirmationTime&gt;, Error&gt; {
-        <span class="kw">let </span>txids = txids.into_iter();
-        <span class="kw">let </span>outpoints = outpoints.into_iter();
-        <span class="kw">let </span>parallel_requests = parallel_requests.max(<span class="number">1</span>);
-        <span class="kw">let </span><span class="kw-2">mut </span>scan = KeychainScan::default();
-        <span class="kw">let </span>update = <span class="kw-2">&amp;mut </span>scan.update;
-        <span class="kw">let </span>last_active_indices = <span class="kw-2">&amp;mut </span>scan.last_active_indices;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;LocalUpdate&lt;K, ConfirmationTimeAnchor&gt;, Error&gt; {
+        <span class="kw">let </span>parallel_requests = Ord::max(parallel_requests, <span class="number">1</span>);
 
-        <span class="kw">for </span>(<span class="kw-2">&amp;</span>height, <span class="kw-2">&amp;</span>original_hash) <span class="kw">in </span>local_chain.iter().rev() {
-            <span class="kw">let </span>update_block_id = BlockId {
-                height,
-                hash: <span class="self">self</span>.get_block_hash(height).<span class="kw">await</span><span class="question-mark">?</span>,
-            };
-            <span class="kw">let _ </span>= update
-                .insert_checkpoint(update_block_id)
-                .expect(<span class="string">&quot;cannot repeat height here&quot;</span>);
-            <span class="kw">if </span>update_block_id.hash == original_hash {
-                <span class="kw">break</span>;
-            }
-        }
-        <span class="kw">let </span>tip_at_start = BlockId {
-            height: <span class="self">self</span>.get_height().<span class="kw">await</span><span class="question-mark">?</span>,
-            hash: <span class="self">self</span>.get_tip_hash().<span class="kw">await</span><span class="question-mark">?</span>,
-        };
-        <span class="kw">if let </span><span class="prelude-val">Err</span>(failure) = update.insert_checkpoint(tip_at_start) {
-            <span class="kw">match </span>failure {
-                sparse_chain::InsertCheckpointError::HashNotMatching { .. } =&gt; {
-                    <span class="comment">// there was a re-org before we started scanning. We haven&#39;t consumed any iterators, so calling this function recursively is safe.
-                    </span><span class="kw">return </span>EsploraAsyncExt::scan(
-                        <span class="self">self</span>,
-                        local_chain,
-                        keychain_spks,
-                        txids,
-                        outpoints,
-                        stop_gap,
-                        parallel_requests,
-                    )
-                    .<span class="kw">await</span>;
+        <span class="kw">let </span>(<span class="kw-2">mut </span>update, tip_at_start) = <span class="kw">loop </span>{
+            <span class="kw">let </span><span class="kw-2">mut </span>update = LocalUpdate::&lt;K, ConfirmationTimeAnchor&gt;::default();
+
+            <span class="kw">for </span>(<span class="kw-2">&amp;</span>height, <span class="kw-2">&amp;</span>original_hash) <span class="kw">in </span>local_chain.iter().rev() {
+                <span class="kw">let </span>update_block_id = BlockId {
+                    height,
+                    hash: <span class="self">self</span>.get_block_hash(height).<span class="kw">await</span><span class="question-mark">?</span>,
+                };
+                <span class="kw">let _ </span>= update
+                    .chain
+                    .insert_block(update_block_id)
+                    .expect(<span class="string">&quot;cannot repeat height here&quot;</span>);
+                <span class="kw">if </span>update_block_id.hash == original_hash {
+                    <span class="kw">break</span>;
                 }
             }
-        }
+
+            <span class="kw">let </span>tip_at_start = BlockId {
+                height: <span class="self">self</span>.get_height().<span class="kw">await</span><span class="question-mark">?</span>,
+                hash: <span class="self">self</span>.get_tip_hash().<span class="kw">await</span><span class="question-mark">?</span>,
+            };
+
+            <span class="kw">if </span>update.chain.insert_block(tip_at_start).is_ok() {
+                <span class="kw">break </span>(update, tip_at_start);
+            }
+        };
 
         <span class="kw">for </span>(keychain, spks) <span class="kw">in </span>keychain_spks {
             <span class="kw">let </span><span class="kw-2">mut </span>spks = spks.into_iter();
@@ -465,7 +398,7 @@
             <span class="kw">type </span>IndexWithTxs = (u32, Vec&lt;esplora_client::Tx&gt;);
 
             <span class="kw">loop </span>{
-                <span class="kw">let </span>futures: FuturesOrdered&lt;<span class="kw">_</span>&gt; = (<span class="number">0</span>..parallel_requests)
+                <span class="kw">let </span>futures = (<span class="number">0</span>..parallel_requests)
                     .filter_map(|<span class="kw">_</span>| {
                         <span class="kw">let </span>(index, script) = spks.next()<span class="question-mark">?</span>;
                         <span class="kw">let </span>client = <span class="self">self</span>.clone();
@@ -496,13 +429,11 @@
                             <span class="prelude-ty">Result</span>::&lt;<span class="kw">_</span>, esplora_client::Error&gt;::Ok((index, related_txs))
                         })
                     })
-                    .collect();
+                    .collect::&lt;FuturesOrdered&lt;<span class="kw">_</span>&gt;&gt;();
 
                 <span class="kw">let </span>n_futures = futures.len();
 
-                <span class="kw">let </span>idx_with_tx: Vec&lt;IndexWithTxs&gt; = futures.try_collect().<span class="kw">await</span><span class="question-mark">?</span>;
-
-                <span class="kw">for </span>(index, related_txs) <span class="kw">in </span>idx_with_tx {
+                <span class="kw">for </span>(index, related_txs) <span class="kw">in </span>futures.try_collect::&lt;Vec&lt;IndexWithTxs&gt;&gt;().<span class="kw">await</span><span class="question-mark">? </span>{
                     <span class="kw">if </span>related_txs.is_empty() {
                         empty_scripts += <span class="number">1</span>;
                     } <span class="kw">else </span>{
@@ -510,22 +441,11 @@
                         empty_scripts = <span class="number">0</span>;
                     }
                     <span class="kw">for </span>tx <span class="kw">in </span>related_txs {
-                        <span class="kw">let </span>confirmation_time =
-                            map_confirmation_time(<span class="kw-2">&amp;</span>tx.status, tip_at_start.height);
+                        <span class="kw">let </span>anchor = map_confirmation_time_anchor(<span class="kw-2">&amp;</span>tx.status, tip_at_start);
 
-                        <span class="kw">if let </span><span class="prelude-val">Err</span>(failure) = update.insert_tx(tx.to_tx(), confirmation_time) {
-                            <span class="kw">use </span>bdk_chain::{
-                                chain_graph::InsertTxError, sparse_chain::InsertTxError::<span class="kw-2">*</span>,
-                            };
-                            <span class="kw">match </span>failure {
-                                InsertTxError::Chain(TxTooHigh { .. }) =&gt; {
-                                    <span class="macro">unreachable!</span>(<span class="string">&quot;chain position already checked earlier&quot;</span>)
-                                }
-                                InsertTxError::Chain(TxMovedUnexpectedly { .. })
-                                | InsertTxError::UnresolvableConflict(<span class="kw">_</span>) =&gt; {
-                                    <span class="comment">/* implies reorg during a scan. We deal with that below */
-                                </span>}
-                            }
+                        <span class="kw">let _ </span>= update.graph.insert_tx(tx.to_tx());
+                        <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor {
+                            <span class="kw">let _ </span>= update.graph.insert_anchor(tx.txid, anchor);
                         }
                     }
                 }
@@ -536,36 +456,37 @@
             }
 
             <span class="kw">if let </span><span class="prelude-val">Some</span>(last_active_index) = last_active_index {
-                last_active_indices.insert(keychain, last_active_index);
+                update.keychain.insert(keychain, last_active_index);
             }
         }
 
-        <span class="kw">for </span>txid <span class="kw">in </span>txids {
-            <span class="kw">let </span>(tx, tx_status) =
-                <span class="kw">match </span>(<span class="self">self</span>.get_tx(<span class="kw-2">&amp;</span>txid).<span class="kw">await</span><span class="question-mark">?</span>, <span class="self">self</span>.get_tx_status(<span class="kw-2">&amp;</span>txid).<span class="kw">await</span><span class="question-mark">?</span>) {
-                    (<span class="prelude-val">Some</span>(tx), <span class="prelude-val">Some</span>(tx_status)) =&gt; (tx, tx_status),
-                    <span class="kw">_ </span>=&gt; <span class="kw">continue</span>,
-                };
-
-            <span class="kw">let </span>confirmation_time = map_confirmation_time(<span class="kw-2">&amp;</span>tx_status, tip_at_start.height);
-
-            <span class="kw">if let </span><span class="prelude-val">Err</span>(failure) = update.insert_tx(tx, confirmation_time) {
-                <span class="kw">use </span>bdk_chain::{chain_graph::InsertTxError, sparse_chain::InsertTxError::<span class="kw-2">*</span>};
-                <span class="kw">match </span>failure {
-                    InsertTxError::Chain(TxTooHigh { .. }) =&gt; {
-                        <span class="macro">unreachable!</span>(<span class="string">&quot;chain position already checked earlier&quot;</span>)
+        <span class="kw">for </span>txid <span class="kw">in </span>txids.into_iter() {
+            <span class="kw">if </span>update.graph.get_tx(txid).is_none() {
+                <span class="kw">match </span><span class="self">self</span>.get_tx(<span class="kw-2">&amp;</span>txid).<span class="kw">await</span><span class="question-mark">? </span>{
+                    <span class="prelude-val">Some</span>(tx) =&gt; {
+                        <span class="kw">let _ </span>= update.graph.insert_tx(tx);
                     }
-                    InsertTxError::Chain(TxMovedUnexpectedly { .. })
-                    | InsertTxError::UnresolvableConflict(<span class="kw">_</span>) =&gt; {
-                        <span class="comment">/* implies reorg during a scan. We deal with that below */
-                    </span>}
+                    <span class="prelude-val">None </span>=&gt; <span class="kw">continue</span>,
                 }
             }
+            <span class="kw">match </span><span class="self">self</span>.get_tx_status(<span class="kw-2">&amp;</span>txid).<span class="kw">await</span><span class="question-mark">? </span>{
+                tx_status <span class="kw">if </span>tx_status.confirmed =&gt; {
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = map_confirmation_time_anchor(<span class="kw-2">&amp;</span>tx_status, tip_at_start) {
+                        <span class="kw">let _ </span>= update.graph.insert_anchor(txid, anchor);
+                    }
+                }
+                <span class="kw">_ </span>=&gt; <span class="kw">continue</span>,
+            }
         }
 
-        <span class="kw">for </span>op <span class="kw">in </span>outpoints {
+        <span class="kw">for </span>op <span class="kw">in </span>outpoints.into_iter() {
             <span class="kw">let </span><span class="kw-2">mut </span>op_txs = Vec::with_capacity(<span class="number">2</span>);
-            <span class="kw">if let </span>(<span class="prelude-val">Some</span>(tx), <span class="prelude-val">Some</span>(tx_status)) = (
+            <span class="kw">if let </span>(
+                <span class="prelude-val">Some</span>(tx),
+                tx_status @ TxStatus {
+                    confirmed: <span class="bool-val">true</span>, ..
+                },
+            ) = (
                 <span class="self">self</span>.get_tx(<span class="kw-2">&amp;</span>op.txid).<span class="kw">await</span><span class="question-mark">?</span>,
                 <span class="self">self</span>.get_tx_status(<span class="kw-2">&amp;</span>op.txid).<span class="kw">await</span><span class="question-mark">?</span>,
             ) {
@@ -583,40 +504,24 @@
             }
 
             <span class="kw">for </span>(tx, status) <span class="kw">in </span>op_txs {
-                <span class="kw">let </span>confirmation_time = map_confirmation_time(<span class="kw-2">&amp;</span>status, tip_at_start.height);
+                <span class="kw">let </span>txid = tx.txid();
+                <span class="kw">let </span>anchor = map_confirmation_time_anchor(<span class="kw-2">&amp;</span>status, tip_at_start);
 
-                <span class="kw">if let </span><span class="prelude-val">Err</span>(failure) = update.insert_tx(tx, confirmation_time) {
-                    <span class="kw">use </span>bdk_chain::{chain_graph::InsertTxError, sparse_chain::InsertTxError::<span class="kw-2">*</span>};
-                    <span class="kw">match </span>failure {
-                        InsertTxError::Chain(TxTooHigh { .. }) =&gt; {
-                            <span class="macro">unreachable!</span>(<span class="string">&quot;chain position already checked earlier&quot;</span>)
-                        }
-                        InsertTxError::Chain(TxMovedUnexpectedly { .. })
-                        | InsertTxError::UnresolvableConflict(<span class="kw">_</span>) =&gt; {
-                            <span class="comment">/* implies reorg during a scan. We deal with that below */
-                        </span>}
-                    }
+                <span class="kw">let _ </span>= update.graph.insert_tx(tx);
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor {
+                    <span class="kw">let _ </span>= update.graph.insert_anchor(txid, anchor);
                 }
             }
         }
 
-        <span class="kw">let </span>reorg_occurred = {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(checkpoint) = update.chain().latest_checkpoint() {
-                <span class="self">self</span>.get_block_hash(checkpoint.height).<span class="kw">await</span><span class="question-mark">? </span>!= checkpoint.hash
-            } <span class="kw">else </span>{
-                <span class="bool-val">false
-            </span>}
-        };
-
-        <span class="kw">if </span>reorg_occurred {
-            <span class="comment">// A reorg occurred, so let&#39;s find out where all the txids we found are in the chain now.
-            // XXX: collect required because of weird type naming issues
+        <span class="kw">if </span>tip_at_start.hash != <span class="self">self</span>.get_block_hash(tip_at_start.height).<span class="kw">await</span><span class="question-mark">? </span>{
+            <span class="comment">// A reorg occurred, so let&#39;s find out where all the txids we found are now in the chain
             </span><span class="kw">let </span>txids_found = update
-                .chain()
-                .txids()
-                .map(|(<span class="kw">_</span>, txid)| <span class="kw-2">*</span>txid)
+                .graph
+                .full_txs()
+                .map(|tx_node| tx_node.txid)
                 .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-            scan.update = EsploraAsyncExt::scan_without_keychain(
+            update.chain = EsploraAsyncExt::scan_without_keychain(
                 <span class="self">self</span>,
                 local_chain,
                 [],
@@ -624,10 +529,11 @@
                 [],
                 parallel_requests,
             )
-            .<span class="kw">await</span><span class="question-mark">?</span>;
+            .<span class="kw">await</span><span class="question-mark">?
+            </span>.chain;
         }
 
-        <span class="prelude-val">Ok</span>(scan)
+        <span class="prelude-val">Ok</span>(update)
     }
 }
 </code></pre></div>

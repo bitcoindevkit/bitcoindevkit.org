@@ -238,9 +238,21 @@
 <a href="#238" id="238">238</a>
 <a href="#239" id="239">239</a>
 <a href="#240" id="240">240</a>
-</pre><pre class="rust"><code><span class="kw">use </span>core::convert::Infallible;
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+</pre><pre class="rust"><code><span class="doccomment">//! The [`LocalChain`] is a local implementation of [`ChainOracle`].
 
-<span class="kw">use </span>alloc::collections::{BTreeMap, BTreeSet};
+</span><span class="kw">use </span>core::convert::Infallible;
+
+<span class="kw">use </span>alloc::collections::BTreeMap;
 <span class="kw">use </span>bitcoin::BlockHash;
 
 <span class="kw">use crate</span>::{BlockId, ChainOracle};
@@ -274,6 +286,10 @@
             },
         )
     }
+
+    <span class="kw">fn </span>get_chain_tip(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;BlockId&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.tip())
+    }
 }
 
 <span class="kw">impl </span>AsRef&lt;BTreeMap&lt;u32, BlockHash&gt;&gt; <span class="kw">for </span>LocalChain {
@@ -295,7 +311,8 @@
 }
 
 <span class="kw">impl </span>LocalChain {
-    <span class="kw">pub fn </span>from_blocks&lt;B&gt;(blocks: B) -&gt; <span class="self">Self
+    <span class="doccomment">/// Contruct a [`LocalChain`] from a list of [`BlockId`]s.
+    </span><span class="kw">pub fn </span>from_blocks&lt;B&gt;(blocks: B) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span>B: IntoIterator&lt;Item = BlockId&gt;,
     {
@@ -309,7 +326,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.blocks
     }
 
-    <span class="kw">pub fn </span>tip(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;BlockId&gt; {
+    <span class="doccomment">/// Get the chain tip.
+    </span><span class="kw">pub fn </span>tip(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;BlockId&gt; {
         <span class="self">self</span>.blocks
             .iter()
             .last()
@@ -394,15 +412,14 @@
         <span class="prelude-val">Ok</span>(changeset)
     }
 
-    <span class="kw">pub fn </span>initial_changeset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ChangeSet {
+    <span class="doccomment">/// Derives a [`ChangeSet`] that assumes that there are no preceding changesets.
+    ///
+    /// The changeset returned will record additions of all blocks included in [`Self`].
+    </span><span class="kw">pub fn </span>initial_changeset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ChangeSet {
         <span class="self">self</span>.blocks
             .iter()
             .map(|(<span class="kw-2">&amp;</span>height, <span class="kw-2">&amp;</span>hash)| (height, <span class="prelude-val">Some</span>(hash)))
             .collect()
-    }
-
-    <span class="kw">pub fn </span>heights(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; BTreeSet&lt;u32&gt; {
-        <span class="self">self</span>.blocks.keys().cloned().collect()
     }
 
     <span class="doccomment">/// Insert a block of [`BlockId`] into the [`LocalChain`].
@@ -461,9 +478,12 @@
 <span class="doccomment">/// Represents a failure when trying to insert a checkpoint into [`LocalChain`].
 </span><span class="attr">#[derive(Clone, Debug, PartialEq)]
 </span><span class="kw">pub struct </span>InsertBlockNotMatchingError {
-    <span class="kw">pub </span>height: u32,
-    <span class="kw">pub </span>original_hash: BlockHash,
-    <span class="kw">pub </span>update_hash: BlockHash,
+    <span class="doccomment">/// The checkpoints&#39; height.
+    </span><span class="kw">pub </span>height: u32,
+    <span class="doccomment">/// Original checkpoint&#39;s block hash.
+    </span><span class="kw">pub </span>original_hash: BlockHash,
+    <span class="doccomment">/// Update checkpoint&#39;s block hash.
+    </span><span class="kw">pub </span>update_hash: BlockHash,
 }
 
 <span class="kw">impl </span>core::fmt::Display <span class="kw">for </span>InsertBlockNotMatchingError {

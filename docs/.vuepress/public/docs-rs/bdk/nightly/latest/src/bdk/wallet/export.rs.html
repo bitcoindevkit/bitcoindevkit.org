@@ -338,6 +338,7 @@
 <a href="#338" id="338">338</a>
 <a href="#339" id="339">339</a>
 <a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -396,7 +397,6 @@
 </span><span class="kw">use </span>core::str::FromStr;
 
 <span class="kw">use </span>alloc::string::{String, ToString};
-<span class="kw">use </span>bdk_chain::sparse_chain::ChainPosition;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 
 <span class="kw">use </span>miniscript::descriptor::{ShInner, WshInner};
@@ -470,8 +470,10 @@
             wallet
                 .transactions()
                 .next()
-                .and_then(|(pos, <span class="kw">_</span>)| pos.height().into())
-                .unwrap_or(<span class="number">0</span>)
+                .map_or(<span class="number">0</span>, |canonical_tx| <span class="kw">match </span>canonical_tx.observed_as {
+                    bdk_chain::ChainPosition::Confirmed(a) =&gt; a.confirmation_height,
+                    bdk_chain::ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; <span class="number">0</span>,
+                })
         } <span class="kw">else </span>{
             <span class="number">0
         </span>};
