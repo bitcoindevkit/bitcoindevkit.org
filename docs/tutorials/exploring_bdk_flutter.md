@@ -100,7 +100,7 @@ Once done the file structure should look like this:
 
 import 'package:bdk_flutter_quickstart/screens/home.dart';
 import 'package:bdk_flutter_quickstart/styles/theme.dart';
-import 'package: flutter/material.dart';
+import 'package:flutter/material.dart';
 
 void main() {
  runApp(const MyApp());
@@ -282,7 +282,7 @@ class _HomeState extends State<Home> {
   late Blockchain blockchain;
   TextEditingController mnemonic = TextEditingController();
 
-  generateMnemonicHandler() async {
+  Future<void> generateMnemonicHandler() async {
    var res = await Mnemonic.create(WordCount.Words12);
     setState(() {
      mnemonic.text = res.asString();
@@ -299,7 +299,7 @@ class _HomeState extends State<Home> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Column(
-              children: const [
+              children: [
                  /* Balance */
 
                    /* Result */
@@ -349,7 +349,7 @@ String? displayText;
 
 // modify the generateMnemonicHandler method to also set mnemonic as displayText
 
- generateMnemonicHandler() async {
+ Future<void> generateMnemonicHandler() async {
     var res = await Mnemonic.create(WordCount.Words12);
     setState(() {
       mnemonic.text = res.asString();
@@ -418,9 +418,11 @@ Future<List<Descriptor>> getDescriptors(String mnemonic) async {
           network: Network.Testnet,
           mnemonic: mnemonicObj,
         );
-        final secretKey = descriptorSecretKey.asString();
         final descriptor = await Descriptor.newBip84(
-            secretKey: secretKey, network: Network.Testnet, keyChainKind: e);
+            secretKey: descriptorSecretKey, 
+            network: Network.Testnet, 
+            keychain: e,
+        );
         descriptors.add(descriptor);
       }
       return descriptors;
@@ -440,8 +442,8 @@ To create a wallet with `bdk-flutter` call the `create` constructor with `descri
 Following our pattern of a button, click handler and bdk-flutter API call, Let's add an internal method which will serve as the click handler for the "Create Wallet" button. We want to see the output of this call so let's use `setState()` to set the `wallet` object created and the `displayText` variable with the wallet's first receive address.
 
 ```dart
-  createOrRestoreWallet(
-      String mnemonic, Network network, String? password, String path) async {
+  Future<void> createOrRestoreWallet(
+      String mnemonic, Network network, String? password) async {
     try {
       final descriptors = await getDescriptors(mnemonic);
       final res = await Wallet.create(
@@ -449,7 +451,7 @@ Following our pattern of a button, click handler and bdk-flutter API call, Let's
           changeDescriptor: descriptors[1],
           network: network,
           databaseConfig: const DatabaseConfig.memory());
-      var addressInfo = await res.getAddress(addressIndex: AddressIndex.New);
+      var addressInfo = await res.getAddress(addressIndex: const AddressIndex());
       setState(() {
         address = addressInfo.address;
         wallet = res;
@@ -471,12 +473,11 @@ Let's add a new button just below the mnemonic `TextFieldContainer`
 SubmitButton(
             text: "Create Wallet",
             callback: () async {
-              final res =  await createOrRestoreWallet(mnemonic.text, Network.TESTNET,
-               "password");
-              setState(() {
-                displayText = "Wallet Created: ${wallet?.address ?? "Error"}";
-                wallet = res;
-              });
+              await createOrRestoreWallet(
+                mnemonic.text, 
+                Network.Testnet,
+               "password",
+              );
           },
         ),
 ```
@@ -492,7 +493,7 @@ Before going forward, we need to create a `Blockchain` object as well. The Block
 Let's add an internal method to create and initialize the `Blockchain` object.
 
 ```dart
-  blockchainInit() async {
+  Future<void> blockchainInit() async {
     blockchain = await Blockchain.create(
         config: BlockchainConfig.electrum(
             config: ElectrumConfig(
@@ -551,7 +552,7 @@ Earlier we have already added a variable for `balance`. Now we will add buttons 
 Let's add two internal functions for syncing UTXOs and compute balance.
 
 ```dart
-   getBalance() async {
+   Future<void> getBalance() async {
     final balanceObj = await wallet.getBalance();
     final res = "Total Balance: ${balanceObj.total.toString()}";
     print(res);
@@ -561,7 +562,7 @@ Let's add two internal functions for syncing UTXOs and compute balance.
     });
   }
 
-  syncWallet() async {
+  Future<void> syncWallet() async {
     wallet.sync(blockchain);
   }
 
@@ -578,8 +579,8 @@ Let's use the `address` variable that was created before for this, we need to ad
 Add a new `getNewAddress` function below the `syncWallet()` function:
 
 ```dart
- getNewAddress() async {
-    final res = await wallet.getAddress(addressIndex: AddressIndex.New);
+ Future<void> getNewAddress() async {
+    final res = await wallet.getAddress(addressIndex: const AddressIndex());
     setState(() {
       displayText = res.address;
       address = res.address;
@@ -659,7 +660,7 @@ We will need textfield controllers for the recipient address, amount, and for tr
 Let's make an internal function to send a bitcoin transaction, using `Wallet`, `Blockchain` and `TxBuilder `.
 
 ```dart
-  sendTx(String addressStr, int amount) async {
+  Future<void> sendTx(String addressStr, int amount) async {
     try {
       final txBuilder = TxBuilder();
       final address = await Address.create(address: addressStr);
