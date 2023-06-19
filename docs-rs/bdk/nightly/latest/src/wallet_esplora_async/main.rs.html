@@ -95,8 +95,6 @@
 <a href="#95" id="95">95</a>
 <a href="#96" id="96">96</a>
 <a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{io::Write, str::FromStr};
 
 <span class="kw">use </span>bdk::{
@@ -105,16 +103,17 @@
     SignOptions, Wallet,
 };
 <span class="kw">use </span>bdk_esplora::{esplora_client, EsploraAsyncExt};
-<span class="kw">use </span>bdk_file_store::KeychainStore;
+<span class="kw">use </span>bdk_file_store::Store;
 
+<span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">&quot;bdk_wallet_esplora_async_example&quot;</span>;
 <span class="kw">const </span>SEND_AMOUNT: u64 = <span class="number">5000</span>;
 <span class="kw">const </span>STOP_GAP: usize = <span class="number">50</span>;
 <span class="kw">const </span>PARALLEL_REQUESTS: usize = <span class="number">5</span>;
 
 <span class="attr">#[tokio::main]
 </span><span class="kw">async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
-    <span class="kw">let </span>db_path = std::env::temp_dir().join(<span class="string">&quot;bdk-esplora-example&quot;</span>);
-    <span class="kw">let </span>db = KeychainStore::new_from_path(db_path)<span class="question-mark">?</span>;
+    <span class="kw">let </span>db_path = std::env::temp_dir().join(<span class="string">&quot;bdk-esplora-async-example&quot;</span>);
+    <span class="kw">let </span>db = Store::&lt;bdk::wallet::ChangeSet&gt;::new_from_path(DB_MAGIC.as_bytes(), db_path)<span class="question-mark">?</span>;
     <span class="kw">let </span>external_descriptor = <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84&#39;/0&#39;/0&#39;/0/*)&quot;</span>;
     <span class="kw">let </span>internal_descriptor = <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84&#39;/0&#39;/0&#39;/1/*)&quot;</span>;
 
@@ -132,34 +131,31 @@
     <span class="macro">println!</span>(<span class="string">&quot;Wallet balance before syncing: {} sats&quot;</span>, balance.total());
 
     <span class="macro">print!</span>(<span class="string">&quot;Syncing...&quot;</span>);
-    <span class="comment">// Scanning the blockchain
-    </span><span class="kw">let </span>esplora_url = <span class="string">&quot;https://mempool.space/testnet/api&quot;</span>;
-    <span class="kw">let </span>client = esplora_client::Builder::new(esplora_url).build_async()<span class="question-mark">?</span>;
-    <span class="kw">let </span>checkpoints = wallet.checkpoints();
-    <span class="kw">let </span>spks = wallet
+    <span class="kw">let </span>client =
+        esplora_client::Builder::new(<span class="string">&quot;https://blockstream.info/testnet/api&quot;</span>).build_async()<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>local_chain = wallet.checkpoints();
+    <span class="kw">let </span>keychain_spks = wallet
         .spks_of_all_keychains()
         .into_iter()
-        .map(|(k, spks)| {
-            <span class="kw">let </span><span class="kw-2">mut </span>first = <span class="bool-val">true</span>;
-            (
-                k,
-                spks.inspect(<span class="kw">move </span>|(spk_i, <span class="kw">_</span>)| {
-                    <span class="kw">if </span>first {
-                        first = <span class="bool-val">false</span>;
-                        <span class="macro">print!</span>(<span class="string">&quot;\nScanning keychain [{:?}]:&quot;</span>, k);
-                    }
-                    <span class="macro">print!</span>(<span class="string">&quot; {}&quot;</span>, spk_i);
-                    <span class="kw">let _ </span>= std::io::stdout().flush();
-                }),
-            )
+        .map(|(k, k_spks)| {
+            <span class="kw">let </span><span class="kw-2">mut </span>once = <span class="prelude-val">Some</span>(());
+            <span class="kw">let </span><span class="kw-2">mut </span>stdout = std::io::stdout();
+            <span class="kw">let </span>k_spks = k_spks
+                .inspect(<span class="kw">move </span>|(spk_i, <span class="kw">_</span>)| <span class="kw">match </span>once.take() {
+                    <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="macro">print!</span>(<span class="string">&quot;\nScanning keychain [{:?}]&quot;</span>, k),
+                    <span class="prelude-val">None </span>=&gt; <span class="macro">print!</span>(<span class="string">&quot; {:&lt;3}&quot;</span>, spk_i),
+                })
+                .inspect(<span class="kw">move </span>|<span class="kw">_</span>| stdout.flush().expect(<span class="string">&quot;must flush&quot;</span>));
+            (k, k_spks)
         })
         .collect();
     <span class="kw">let </span>update = client
         .scan(
-            checkpoints,
-            spks,
-            std::iter::empty(),
-            std::iter::empty(),
+            local_chain,
+            keychain_spks,
+            [],
+            [],
             STOP_GAP,
             PARALLEL_REQUESTS,
         )

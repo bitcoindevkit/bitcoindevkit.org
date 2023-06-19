@@ -1179,6 +1179,10 @@
 <a href="#1179" id="1179">1179</a>
 <a href="#1180" id="1180">1180</a>
 <a href="#1181" id="1181">1181</a>
+<a href="#1182" id="1182">1182</a>
+<a href="#1183" id="1183">1183</a>
+<a href="#1184" id="1184">1184</a>
+<a href="#1185" id="1185">1185</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
 //! [`TxGraph`] is a monotone structure that inserts transactions and indexes the spends. The
@@ -1237,8 +1241,8 @@
 //! ```
 
 </span><span class="kw">use crate</span>::{
-    collections::<span class="kw-2">*</span>, keychain::Balance, Anchor, Append, BlockId, ChainOracle, ForEachTxOut,
-    FullTxOut, ObservedAs,
+    collections::<span class="kw-2">*</span>, keychain::Balance, Anchor, Append, BlockId, ChainOracle, ChainPosition,
+    ForEachTxOut, FullTxOut,
 };
 <span class="kw">use </span>alloc::vec::Vec;
 <span class="kw">use </span>bitcoin::{OutPoint, Script, Transaction, TxOut, Txid};
@@ -1316,7 +1320,7 @@
 </span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 </span><span class="kw">pub struct </span>CanonicalTx&lt;<span class="lifetime">&#39;a</span>, T, A&gt; {
     <span class="doccomment">/// How the transaction is observed as (confirmed or unconfirmed).
-    </span><span class="kw">pub </span>observed_as: ObservedAs&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>A&gt;,
+    </span><span class="kw">pub </span>observed_as: ChainPosition&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>A&gt;,
     <span class="doccomment">/// The transaction node (as part of the graph).
     </span><span class="kw">pub </span>node: TxNode&lt;<span class="lifetime">&#39;a</span>, T, A&gt;,
 }
@@ -1663,7 +1667,7 @@
 
     <span class="doccomment">/// Applies [`Additions`] to [`TxGraph`].
     </span><span class="kw">pub fn </span>apply_additions(<span class="kw-2">&amp;mut </span><span class="self">self</span>, additions: Additions&lt;A&gt;) {
-        <span class="kw">for </span>tx <span class="kw">in </span>additions.tx {
+        <span class="kw">for </span>tx <span class="kw">in </span>additions.txs {
             <span class="kw">let </span>txid = tx.txid();
 
             tx.input
@@ -1694,7 +1698,7 @@
             }
         }
 
-        <span class="kw">for </span>(outpoint, txout) <span class="kw">in </span>additions.txout {
+        <span class="kw">for </span>(outpoint, txout) <span class="kw">in </span>additions.txouts {
             <span class="kw">let </span>tx_entry = <span class="self">self
                 </span>.txs
                 .entry(outpoint.txid)
@@ -1734,11 +1738,11 @@
         <span class="kw">for </span>(<span class="kw-2">&amp;</span>txid, (update_tx_node, <span class="kw">_</span>, update_last_seen)) <span class="kw">in </span><span class="kw-2">&amp;</span>update.txs {
             <span class="kw">let </span>prev_last_seen: u64 = <span class="kw">match </span>(<span class="self">self</span>.txs.get(<span class="kw-2">&amp;</span>txid), update_tx_node) {
                 (<span class="prelude-val">None</span>, TxNodeInternal::Whole(update_tx)) =&gt; {
-                    additions.tx.insert(update_tx.clone());
+                    additions.txs.insert(update_tx.clone());
                     <span class="number">0
                 </span>}
                 (<span class="prelude-val">None</span>, TxNodeInternal::Partial(update_txos)) =&gt; {
-                    additions.txout.extend(
+                    additions.txouts.extend(
                         update_txos
                             .iter()
                             .map(|(<span class="kw-2">&amp;</span>vout, txo)| (OutPoint::new(txid, vout), txo.clone())),
@@ -1750,14 +1754,14 @@
                     <span class="prelude-val">Some</span>((TxNodeInternal::Partial(<span class="kw">_</span>), <span class="kw">_</span>, last_seen)),
                     TxNodeInternal::Whole(update_tx),
                 ) =&gt; {
-                    additions.tx.insert(update_tx.clone());
+                    additions.txs.insert(update_tx.clone());
                     <span class="kw-2">*</span>last_seen
                 }
                 (
                     <span class="prelude-val">Some</span>((TxNodeInternal::Partial(txos), <span class="kw">_</span>, last_seen)),
                     TxNodeInternal::Partial(update_txos),
                 ) =&gt; {
-                    additions.txout.extend(
+                    additions.txouts.extend(
                         update_txos
                             .iter()
                             .filter(|(vout, <span class="kw">_</span>)| !txos.contains_key(<span class="kw-2">*</span>vout))
@@ -1795,7 +1799,7 @@
         chain: <span class="kw-2">&amp;</span>C,
         chain_tip: BlockId,
         txid: Txid,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;ObservedAs&lt;<span class="kw-2">&amp;</span>A&gt;&gt;, C::Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;ChainPosition&lt;<span class="kw-2">&amp;</span>A&gt;&gt;, C::Error&gt; {
         <span class="kw">let </span>(tx_node, anchors, last_seen) = <span class="kw">match </span><span class="self">self</span>.txs.get(<span class="kw-2">&amp;</span>txid) {
             <span class="prelude-val">Some</span>(v) =&gt; v,
             <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
@@ -1803,7 +1807,7 @@
 
         <span class="kw">for </span>anchor <span class="kw">in </span>anchors {
             <span class="kw">match </span>chain.is_block_in_chain(anchor.anchor_block(), chain_tip)<span class="question-mark">? </span>{
-                <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(ObservedAs::Confirmed(anchor))),
+                <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(ChainPosition::Confirmed(anchor))),
                 <span class="kw">_ </span>=&gt; <span class="kw">continue</span>,
             }
         }
@@ -1832,7 +1836,7 @@
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(ObservedAs::Unconfirmed(<span class="kw-2">*</span>last_seen)))
+        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(ChainPosition::Unconfirmed(<span class="kw-2">*</span>last_seen)))
     }
 
     <span class="doccomment">/// Get the position of the transaction in `chain` with tip `chain_tip`.
@@ -1845,7 +1849,7 @@
         chain: <span class="kw-2">&amp;</span>C,
         chain_tip: BlockId,
         txid: Txid,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;ObservedAs&lt;<span class="kw-2">&amp;</span>A&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;ChainPosition&lt;<span class="kw-2">&amp;</span>A&gt;&gt; {
         <span class="self">self</span>.try_get_chain_position(chain, chain_tip, txid)
             .expect(<span class="string">&quot;error is infallible&quot;</span>)
     }
@@ -1867,7 +1871,7 @@
         chain: <span class="kw-2">&amp;</span>C,
         chain_tip: BlockId,
         outpoint: OutPoint,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;(ObservedAs&lt;<span class="kw-2">&amp;</span>A&gt;, Txid)&gt;, C::Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;(ChainPosition&lt;<span class="kw-2">&amp;</span>A&gt;, Txid)&gt;, C::Error&gt; {
         <span class="kw">if </span><span class="self">self
             </span>.try_get_chain_position(chain, chain_tip, outpoint.txid)<span class="question-mark">?
             </span>.is_none()
@@ -1895,7 +1899,7 @@
         chain: <span class="kw-2">&amp;</span>C,
         static_block: BlockId,
         outpoint: OutPoint,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;(ObservedAs&lt;<span class="kw-2">&amp;</span>A&gt;, Txid)&gt; {
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;(ChainPosition&lt;<span class="kw-2">&amp;</span>A&gt;, Txid)&gt; {
         <span class="self">self</span>.try_get_chain_spend(chain, static_block, outpoint)
             .expect(<span class="string">&quot;error is infallible&quot;</span>)
     }
@@ -1967,7 +1971,7 @@
         chain: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>C,
         chain_tip: BlockId,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = (OI, OutPoint)&gt; + <span class="lifetime">&#39;a</span>,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="prelude-ty">Result</span>&lt;(OI, FullTxOut&lt;ObservedAs&lt;A&gt;&gt;), C::Error&gt;&gt; + <span class="lifetime">&#39;a </span>{
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="prelude-ty">Result</span>&lt;(OI, FullTxOut&lt;A&gt;), C::Error&gt;&gt; + <span class="lifetime">&#39;a </span>{
         outpoints
             .into_iter()
             .map(
@@ -2018,7 +2022,7 @@
         chain: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>C,
         chain_tip: BlockId,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = (OI, OutPoint)&gt; + <span class="lifetime">&#39;a</span>,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (OI, FullTxOut&lt;ObservedAs&lt;A&gt;&gt;)&gt; + <span class="lifetime">&#39;a </span>{
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (OI, FullTxOut&lt;A&gt;)&gt; + <span class="lifetime">&#39;a </span>{
         <span class="self">self</span>.try_filter_chain_txouts(chain, chain_tip, outpoints)
             .map(|r| r.expect(<span class="string">&quot;oracle is infallible&quot;</span>))
     }
@@ -2046,7 +2050,7 @@
         chain: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>C,
         chain_tip: BlockId,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = (OI, OutPoint)&gt; + <span class="lifetime">&#39;a</span>,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="prelude-ty">Result</span>&lt;(OI, FullTxOut&lt;ObservedAs&lt;A&gt;&gt;), C::Error&gt;&gt; + <span class="lifetime">&#39;a </span>{
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="prelude-ty">Result</span>&lt;(OI, FullTxOut&lt;A&gt;), C::Error&gt;&gt; + <span class="lifetime">&#39;a </span>{
         <span class="self">self</span>.try_filter_chain_txouts(chain, chain_tip, outpoints)
             .filter(|r| <span class="kw">match </span>r {
                 <span class="comment">// keep unspents, drop spents
@@ -2067,7 +2071,7 @@
         chain: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>C,
         chain_tip: BlockId,
         txouts: <span class="kw">impl </span>IntoIterator&lt;Item = (OI, OutPoint)&gt; + <span class="lifetime">&#39;a</span>,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (OI, FullTxOut&lt;ObservedAs&lt;A&gt;&gt;)&gt; + <span class="lifetime">&#39;a </span>{
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (OI, FullTxOut&lt;A&gt;)&gt; + <span class="lifetime">&#39;a </span>{
         <span class="self">self</span>.try_filter_chain_unspents(chain, chain_tip, txouts)
             .map(|r| r.expect(<span class="string">&quot;oracle is infallible&quot;</span>))
     }
@@ -2100,14 +2104,14 @@
             <span class="kw">let </span>(spk_i, txout) = res<span class="question-mark">?</span>;
 
             <span class="kw">match </span><span class="kw-2">&amp;</span>txout.chain_position {
-                ObservedAs::Confirmed(<span class="kw">_</span>) =&gt; {
+                ChainPosition::Confirmed(<span class="kw">_</span>) =&gt; {
                     <span class="kw">if </span>txout.is_confirmed_and_spendable(chain_tip.height) {
                         confirmed += txout.txout.value;
                     } <span class="kw">else if </span>!txout.is_mature(chain_tip.height) {
                         immature += txout.txout.value;
                     }
                 }
-                ObservedAs::Unconfirmed(<span class="kw">_</span>) =&gt; {
+                ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; {
                     <span class="kw">if </span>trust_predicate(<span class="kw-2">&amp;</span>spk_i, <span class="kw-2">&amp;</span>txout.txout.script_pubkey) {
                         trusted_pending += txout.txout.value;
                     } <span class="kw">else </span>{
@@ -2164,17 +2168,21 @@
 )]
 #[must_use]
 </span><span class="kw">pub struct </span>Additions&lt;A = ()&gt; {
-    <span class="kw">pub </span>tx: BTreeSet&lt;Transaction&gt;,
-    <span class="kw">pub </span>txout: BTreeMap&lt;OutPoint, TxOut&gt;,
-    <span class="kw">pub </span>anchors: BTreeSet&lt;(A, Txid)&gt;,
-    <span class="kw">pub </span>last_seen: BTreeMap&lt;Txid, u64&gt;,
+    <span class="doccomment">/// Added transactions.
+    </span><span class="kw">pub </span>txs: BTreeSet&lt;Transaction&gt;,
+    <span class="doccomment">/// Added txouts.
+    </span><span class="kw">pub </span>txouts: BTreeMap&lt;OutPoint, TxOut&gt;,
+    <span class="doccomment">/// Added anchors.
+    </span><span class="kw">pub </span>anchors: BTreeSet&lt;(A, Txid)&gt;,
+    <span class="doccomment">/// Added last-seen unix timestamps of transactions.
+    </span><span class="kw">pub </span>last_seen: BTreeMap&lt;Txid, u64&gt;,
 }
 
 <span class="kw">impl</span>&lt;A&gt; Default <span class="kw">for </span>Additions&lt;A&gt; {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            tx: Default::default(),
-            txout: Default::default(),
+            txs: Default::default(),
+            txouts: Default::default(),
             anchors: Default::default(),
             last_seen: Default::default(),
         }
@@ -2184,12 +2192,12 @@
 <span class="kw">impl</span>&lt;A&gt; Additions&lt;A&gt; {
     <span class="doccomment">/// Returns true if the [`Additions`] is empty (no transactions or txouts).
     </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.tx.is_empty() &amp;&amp; <span class="self">self</span>.txout.is_empty()
+        <span class="self">self</span>.txs.is_empty() &amp;&amp; <span class="self">self</span>.txouts.is_empty()
     }
 
     <span class="doccomment">/// Iterates over all outpoints contained within [`Additions`].
     </span><span class="kw">pub fn </span>txouts(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (OutPoint, <span class="kw-2">&amp;</span>TxOut)&gt; {
-        <span class="self">self</span>.tx
+        <span class="self">self</span>.txs
             .iter()
             .flat_map(|tx| {
                 tx.output
@@ -2197,14 +2205,14 @@
                     .enumerate()
                     .map(<span class="kw">move </span>|(vout, txout)| (OutPoint::new(tx.txid(), vout <span class="kw">as _</span>), txout))
             })
-            .chain(<span class="self">self</span>.txout.iter().map(|(op, txout)| (<span class="kw-2">*</span>op, txout)))
+            .chain(<span class="self">self</span>.txouts.iter().map(|(op, txout)| (<span class="kw-2">*</span>op, txout)))
     }
 }
 
 <span class="kw">impl</span>&lt;A: Ord&gt; Append <span class="kw">for </span>Additions&lt;A&gt; {
     <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>other: <span class="self">Self</span>) {
-        <span class="self">self</span>.tx.append(<span class="kw-2">&amp;mut </span>other.tx);
-        <span class="self">self</span>.txout.append(<span class="kw-2">&amp;mut </span>other.txout);
+        <span class="self">self</span>.txs.append(<span class="kw-2">&amp;mut </span>other.txs);
+        <span class="self">self</span>.txouts.append(<span class="kw-2">&amp;mut </span>other.txouts);
         <span class="self">self</span>.anchors.append(<span class="kw-2">&amp;mut </span>other.anchors);
 
         <span class="comment">// last_seen timestamps should only increase
@@ -2218,8 +2226,8 @@
     }
 
     <span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.tx.is_empty()
-            &amp;&amp; <span class="self">self</span>.txout.is_empty()
+        <span class="self">self</span>.txs.is_empty()
+            &amp;&amp; <span class="self">self</span>.txouts.is_empty()
             &amp;&amp; <span class="self">self</span>.anchors.is_empty()
             &amp;&amp; <span class="self">self</span>.last_seen.is_empty()
     }

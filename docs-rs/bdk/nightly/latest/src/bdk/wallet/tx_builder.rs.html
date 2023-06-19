@@ -986,7 +986,7 @@
 </span><span class="kw">use </span><span class="kw">crate</span>::collections::BTreeMap;
 <span class="kw">use </span><span class="kw">crate</span>::collections::HashSet;
 <span class="kw">use </span>alloc::{boxed::Box, rc::Rc, string::String, vec::Vec};
-<span class="kw">use </span>bdk_chain::ConfirmationTime;
+<span class="kw">use </span>bdk_chain::PersistBackend;
 <span class="kw">use </span>core::cell::RefCell;
 <span class="kw">use </span>core::marker::PhantomData;
 
@@ -994,7 +994,7 @@
 <span class="kw">use </span>bitcoin::{LockTime, OutPoint, Script, Sequence, Transaction};
 
 <span class="kw">use </span><span class="kw">super</span>::coin_selection::{CoinSelectionAlgorithm, DefaultCoinSelectionAlgorithm};
-<span class="kw">use </span><span class="kw">super</span>::persist;
+<span class="kw">use </span><span class="kw">super</span>::ChangeSet;
 <span class="kw">use crate</span>::{
     types::{FeeRate, KeychainKind, LocalUtxo, WeightedUtxo},
     TransactionDetails,
@@ -1476,7 +1476,7 @@
     /// [`BIP174`]: https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki
     </span><span class="kw">pub fn </span>finish(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(Psbt, TransactionDetails), Error&gt;
     <span class="kw">where
-        </span>D: persist::PersistBackend&lt;KeychainKind, ConfirmationTime&gt;,
+        </span>D: PersistBackend&lt;ChangeSet&gt;,
     {
         <span class="self">self</span>.wallet
             .borrow_mut()
@@ -1831,7 +1831,7 @@
                 txout: Default::default(),
                 keychain: KeychainKind::External,
                 is_spent: <span class="bool-val">false</span>,
-                confirmation_time: ConfirmationTime::Unconfirmed,
+                confirmation_time: ConfirmationTime::Unconfirmed { last_seen: <span class="number">0 </span>},
                 derivation_index: <span class="number">0</span>,
             },
             LocalUtxo {

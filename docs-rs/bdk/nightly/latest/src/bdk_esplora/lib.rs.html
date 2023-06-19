@@ -25,8 +25,10 @@
 <a href="#25" id="25">25</a>
 <a href="#26" id="26">26</a>
 <a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
 </pre><pre class="rust"><code><span class="attr">#![doc = <span class="macro">include_str!</span>(<span class="string">&quot;../README.md&quot;</span>)]
-</span><span class="kw">use </span>bdk_chain::ConfirmationTime;
+</span><span class="kw">use </span>bdk_chain::{BlockId, ConfirmationTimeAnchor};
 <span class="kw">use </span>esplora_client::TxStatus;
 
 <span class="kw">pub use </span>esplora_client;
@@ -41,15 +43,17 @@
 <span class="attr">#[cfg(feature = <span class="string">&quot;async&quot;</span>)]
 </span><span class="kw">pub use </span>async_ext::<span class="kw-2">*</span>;
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>map_confirmation_time(
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>map_confirmation_time_anchor(
     tx_status: <span class="kw-2">&amp;</span>TxStatus,
-    height_at_start: u32,
-) -&gt; ConfirmationTime {
+    tip_at_start: BlockId,
+) -&gt; <span class="prelude-ty">Option</span>&lt;ConfirmationTimeAnchor&gt; {
     <span class="kw">match </span>(tx_status.block_time, tx_status.block_height) {
-        (<span class="prelude-val">Some</span>(time), <span class="prelude-val">Some</span>(height)) <span class="kw">if </span>height &lt;= height_at_start =&gt; {
-            ConfirmationTime::Confirmed { height, time }
-        }
-        <span class="kw">_ </span>=&gt; ConfirmationTime::Unconfirmed,
+        (<span class="prelude-val">Some</span>(confirmation_time), <span class="prelude-val">Some</span>(confirmation_height)) =&gt; <span class="prelude-val">Some</span>(ConfirmationTimeAnchor {
+            anchor_block: tip_at_start,
+            confirmation_height,
+            confirmation_time,
+        }),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
     }
 }
 </code></pre></div>
