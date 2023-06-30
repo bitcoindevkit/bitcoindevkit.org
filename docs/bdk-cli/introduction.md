@@ -8,6 +8,6 @@ This can also be used as an example application to create your own command line 
 
 <!-- `bdk-cli` comes with `regtest-*` features that can automatically deploy a regtest backend with a connected `bdk` wallet in background. This can be useful If you don't want to setup your own regtest node or try out quick tests, especially in `repl` mode. -->
 
-Check out [project documentation](https://docs.rs/bdk-cli/0.3.0/bdk_cli/) for more details.
+Check out [project documentation](https://docs.rs/bdk-cli/0.5.0/bdk_cli/) for more details.
 
 The following sections goes into more details on the installation and usage of `bdk-cli`.
