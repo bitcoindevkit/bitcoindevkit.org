@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["ElectrumUpdate",""]],"trait":[["ElectrumExt",""]]};
+window.SIDEBAR_ITEMS = {"struct":[["ElectrumUpdate","Represents an update fetched from an Electrum server, but excludes full transactions."]],"trait":[["ElectrumExt","Trait to extend [`Client`] functionality."]]};
