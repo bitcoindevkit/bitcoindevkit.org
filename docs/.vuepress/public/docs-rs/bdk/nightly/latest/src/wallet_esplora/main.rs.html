@@ -92,15 +92,20 @@
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
 </pre><pre class="rust"><code><span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">&quot;bdk_wallet_esplora_example&quot;</span>;
-<span class="kw">const </span>SEND_AMOUNT: u64 = <span class="number">5000</span>;
-<span class="kw">const </span>STOP_GAP: usize = <span class="number">50</span>;
-<span class="kw">const </span>PARALLEL_REQUESTS: usize = <span class="number">5</span>;
+<span class="kw">const </span>SEND_AMOUNT: u64 = <span class="number">1000</span>;
+<span class="kw">const </span>STOP_GAP: usize = <span class="number">5</span>;
+<span class="kw">const </span>PARALLEL_REQUESTS: usize = <span class="number">1</span>;
 
 <span class="kw">use </span>std::{io::Write, str::FromStr};
 
 <span class="kw">use </span>bdk::{
     bitcoin::{Address, Network},
+    chain::keychain::LocalUpdate,
     wallet::AddressIndex,
     SignOptions, Wallet,
 };
@@ -130,7 +135,7 @@
     <span class="kw">let </span>client =
         esplora_client::Builder::new(<span class="string">&quot;https://blockstream.info/testnet/api&quot;</span>).build_blocking()<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>local_chain = wallet.checkpoints();
+    <span class="kw">let </span>prev_tip = wallet.latest_checkpoint();
     <span class="kw">let </span>keychain_spks = wallet
         .spks_of_all_keychains()
         .into_iter()
@@ -146,17 +151,20 @@
             (k, k_spks)
         })
         .collect();
-    <span class="kw">let </span>update = client.scan(
-        local_chain,
-        keychain_spks,
-        <span class="prelude-val">None</span>,
-        <span class="prelude-val">None</span>,
-        STOP_GAP,
-        PARALLEL_REQUESTS,
-    )<span class="question-mark">?</span>;
-    <span class="macro">println!</span>();
+
+    <span class="kw">let </span>(update_graph, last_active_indices) =
+        client.update_tx_graph(keychain_spks, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, STOP_GAP, PARALLEL_REQUESTS)<span class="question-mark">?</span>;
+    <span class="kw">let </span>missing_heights = wallet.tx_graph().missing_heights(wallet.local_chain());
+    <span class="kw">let </span>chain_update = client.update_local_chain(prev_tip, missing_heights)<span class="question-mark">?</span>;
+    <span class="kw">let </span>update = LocalUpdate {
+        last_active_indices,
+        graph: update_graph,
+        ..LocalUpdate::new(chain_update)
+    };
+
     wallet.apply_update(update)<span class="question-mark">?</span>;
     wallet.commit()<span class="question-mark">?</span>;
+    <span class="macro">println!</span>();
 
     <span class="kw">let </span>balance = wallet.get_balance();
     <span class="macro">println!</span>(<span class="string">&quot;Wallet balance after syncing: {} sats&quot;</span>, balance.total());

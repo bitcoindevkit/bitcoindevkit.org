@@ -300,22 +300,6 @@
 <a href="#300" id="300">300</a>
 <a href="#301" id="301">301</a>
 <a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
-<a href="#307" id="307">307</a>
-<a href="#308" id="308">308</a>
-<a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
-<a href="#312" id="312">312</a>
-<a href="#313" id="313">313</a>
-<a href="#314" id="314">314</a>
-<a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::BTreeMap,
     io::{<span class="self">self</span>, Write},
@@ -323,7 +307,7 @@
 };
 
 <span class="kw">use </span>bdk_chain::{
-    bitcoin::{Address, BlockHash, Network, OutPoint, Txid},
+    bitcoin::{Address, Network, OutPoint, Txid},
     indexed_tx_graph::{IndexedAdditions, IndexedTxGraph},
     keychain::LocalChangeSet,
     local_chain::LocalChain,
@@ -340,8 +324,7 @@
 };
 
 <span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;bdk_example_electrum&quot;</span>;
-<span class="kw">const </span>DB_PATH: <span class="kw-2">&amp;</span>str = <span class="string">&quot;.bdk_electrum_example.db&quot;</span>;
-<span class="kw">const </span>ASSUME_FINAL_DEPTH: usize = <span class="number">10</span>;
+<span class="kw">const </span>DB_PATH: <span class="kw-2">&amp;</span>str = <span class="string">&quot;.bdk_example_electrum.db&quot;</span>;
 
 <span class="attr">#[derive(Subcommand, Debug, Clone)]
 </span><span class="kw">enum </span>ElectrumCommands {
@@ -391,11 +374,7 @@
         graph
     });
 
-    <span class="kw">let </span>chain = Mutex::new({
-        <span class="kw">let </span><span class="kw-2">mut </span>chain = LocalChain::default();
-        chain.apply_changeset(init_changeset.chain_changeset);
-        chain
-    });
+    <span class="kw">let </span>chain = Mutex::new(LocalChain::from_changeset(init_changeset.chain_changeset));
 
     <span class="kw">let </span>electrum_url = <span class="kw">match </span>args.network {
         Network::Bitcoin =&gt; <span class="string">&quot;ssl://electrum.blockstream.info:50002&quot;</span>,
@@ -437,7 +416,7 @@
             stop_gap,
             scan_options,
         } =&gt; {
-            <span class="kw">let </span>(keychain_spks, local_chain) = {
+            <span class="kw">let </span>(keychain_spks, tip) = {
                 <span class="kw">let </span>graph = <span class="kw-2">&amp;*</span>graph.lock().unwrap();
                 <span class="kw">let </span>chain = <span class="kw-2">&amp;*</span>chain.lock().unwrap();
 
@@ -460,20 +439,13 @@
                     })
                     .collect::&lt;BTreeMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;&gt;();
 
-                <span class="kw">let </span>c = chain
-                    .blocks()
-                    .iter()
-                    .rev()
-                    .take(ASSUME_FINAL_DEPTH)
-                    .map(|(k, v)| (<span class="kw-2">*</span>k, <span class="kw-2">*</span>v))
-                    .collect::&lt;BTreeMap&lt;u32, BlockHash&gt;&gt;();
-
-                (keychain_spks, c)
+                <span class="kw">let </span>tip = chain.tip();
+                (keychain_spks, tip)
             };
 
             client
                 .scan(
-                    <span class="kw-2">&amp;</span>local_chain,
+                    tip,
                     keychain_spks,
                     core::iter::empty(),
                     core::iter::empty(),
@@ -492,7 +464,7 @@
             <span class="comment">// Get a short lock on the tracker to get the spks we&#39;re interested in
             </span><span class="kw">let </span>graph = graph.lock().unwrap();
             <span class="kw">let </span>chain = chain.lock().unwrap();
-            <span class="kw">let </span>chain_tip = chain.tip().unwrap_or_default();
+            <span class="kw">let </span>chain_tip = chain.tip().map(|cp| cp.block_id()).unwrap_or_default();
 
             <span class="kw">if </span>!(all_spks || unused_spks || utxos || unconfirmed) {
                 unused_spks = <span class="bool-val">true</span>;
@@ -572,23 +544,17 @@
                 }));
             }
 
-            <span class="kw">let </span>c = chain
-                .blocks()
-                .iter()
-                .rev()
-                .take(ASSUME_FINAL_DEPTH)
-                .map(|(k, v)| (<span class="kw-2">*</span>k, <span class="kw-2">*</span>v))
-                .collect::&lt;BTreeMap&lt;u32, BlockHash&gt;&gt;();
+            <span class="kw">let </span>tip = chain.tip();
 
             <span class="comment">// drop lock on graph and chain
             </span>drop((graph, chain));
 
             <span class="kw">let </span>update = client
-                .scan_without_keychain(<span class="kw-2">&amp;</span>c, spks, txids, outpoints, scan_options.batch_size)
+                .scan_without_keychain(tip, spks, txids, outpoints, scan_options.batch_size)
                 .context(<span class="string">&quot;scanning the blockchain&quot;</span>)<span class="question-mark">?</span>;
             ElectrumUpdate {
                 graph_update: update.graph_update,
-                chain_update: update.chain_update,
+                new_tip: update.new_tip,
                 keychain_update: BTreeMap::new(),
             }
         }
@@ -614,7 +580,9 @@
 
         <span class="kw">let </span>indexed_additions = {
             <span class="kw">let </span><span class="kw-2">mut </span>additions = IndexedAdditions::&lt;ConfirmationHeightAnchor, <span class="kw">_</span>&gt;::default();
-            <span class="kw">let </span>(<span class="kw">_</span>, index_additions) = graph.index.reveal_to_target_multi(<span class="kw-2">&amp;</span>final_update.keychain);
+            <span class="kw">let </span>(<span class="kw">_</span>, index_additions) = graph
+                .index
+                .reveal_to_target_multi(<span class="kw-2">&amp;</span>final_update.last_active_indices);
             additions.append(IndexedAdditions {
                 index_additions,
                 ..Default::default()

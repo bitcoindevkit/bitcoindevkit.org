@@ -249,57 +249,145 @@
 <a href="#249" id="249">249</a>
 <a href="#250" id="250">250</a>
 <a href="#251" id="251">251</a>
-</pre><pre class="rust"><code><span class="kw">use </span>bdk_chain::bitcoin::{BlockHash, OutPoint, Script, Txid};
-<span class="kw">use </span>bdk_chain::collections::BTreeMap;
-<span class="kw">use </span>bdk_chain::BlockId;
-<span class="kw">use </span>bdk_chain::{keychain::LocalUpdate, ConfirmationTimeAnchor};
-<span class="kw">use </span>esplora_client::{Error, OutputStatus, TxStatus};
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+</pre><pre class="rust"><code><span class="kw">use </span>std::thread::JoinHandle;
 
-<span class="kw">use </span><span class="kw">crate</span>::map_confirmation_time_anchor;
+<span class="kw">use </span>bdk_chain::bitcoin::{OutPoint, Txid};
+<span class="kw">use </span>bdk_chain::collections::btree_map;
+<span class="kw">use </span>bdk_chain::collections::{BTreeMap, BTreeSet};
+<span class="kw">use </span>bdk_chain::{
+    bitcoin::{BlockHash, Script},
+    local_chain::{<span class="self">self</span>, CheckPoint},
+    BlockId, ConfirmationTimeAnchor, TxGraph,
+};
+<span class="kw">use </span>esplora_client::{Error, TxStatus};
 
-<span class="doccomment">/// Trait to extend [`esplora_client::BlockingClient`] functionality.
+<span class="kw">use crate</span>::{anchor_from_status, ASSUME_FINAL_DEPTH};
+
+<span class="doccomment">/// Trait to extend the functionality of [`esplora_client::BlockingClient`].
 ///
 /// Refer to [crate-level documentation] for more.
 ///
 /// [crate-level documentation]: crate
 </span><span class="kw">pub trait </span>EsploraExt {
-    <span class="doccomment">/// Scan the blockchain (via esplora) for the data specified and returns a
-    /// [`LocalUpdate&lt;K, ConfirmationTimeAnchor&gt;`].
+    <span class="doccomment">/// Prepare an [`LocalChain`] update with blocks fetched from Esplora.
     ///
-    /// - `local_chain`: the most recent block hashes present locally
-    /// - `keychain_spks`: keychains that we want to scan transactions for
-    /// - `txids`: transactions for which we want updated [`ConfirmationTimeAnchor`]s
-    /// - `outpoints`: transactions associated with these outpoints (residing, spending) that we
-    ///     want to included in the update
+    /// * `prev_tip` is the previous tip of [`LocalChain::tip`].
+    /// * `get_heights` is the block heights that we are interested in fetching from Esplora.
+    ///
+    /// The result of this method can be applied to [`LocalChain::apply_update`].
+    ///
+    /// [`LocalChain`]: bdk_chain::local_chain::LocalChain
+    /// [`LocalChain::tip`]: bdk_chain::local_chain::LocalChain::tip
+    /// [`LocalChain::apply_update`]: bdk_chain::local_chain::LocalChain::apply_update
+    </span><span class="attr">#[allow(clippy::result_large_err)]
+    </span><span class="kw">fn </span>update_local_chain(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        local_tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
+        request_heights: <span class="kw">impl </span>IntoIterator&lt;Item = u32&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;local_chain::Update, Error&gt;;
+
+    <span class="doccomment">/// Scan Esplora for the data specified and return a [`TxGraph`] and a map of last active
+    /// indices.
+    ///
+    /// * `keychain_spks`: keychains that we want to scan transactions for
+    /// * `txids`: transactions for which we want updated [`ConfirmationTimeAnchor`]s
+    /// * `outpoints`: transactions associated with these outpoints (residing, spending) that we
+    ///     want to include in the update
     ///
     /// The scan for each keychain stops after a gap of `stop_gap` script pubkeys with no associated
     /// transactions. `parallel_requests` specifies the max number of HTTP requests to make in
     /// parallel.
-    </span><span class="attr">#[allow(clippy::result_large_err)] </span><span class="comment">// FIXME
-    </span><span class="kw">fn </span>scan&lt;K: Ord + Clone&gt;(
+    </span><span class="attr">#[allow(clippy::result_large_err)]
+    </span><span class="kw">fn </span>update_tx_graph&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        local_chain: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, BlockHash&gt;,
         keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, Script)&gt;&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         stop_gap: usize,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;LocalUpdate&lt;K, ConfirmationTimeAnchor&gt;, Error&gt;;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationTimeAnchor&gt;, BTreeMap&lt;K, u32&gt;), Error&gt;;
 
-    <span class="doccomment">/// Convenience method to call [`scan`] without requiring a keychain.
+    <span class="doccomment">/// Convenience method to call [`update_tx_graph`] without requiring a keychain.
     ///
-    /// [`scan`]: EsploraExt::scan
-    </span><span class="attr">#[allow(clippy::result_large_err)] </span><span class="comment">// FIXME
-    </span><span class="kw">fn </span>scan_without_keychain(
+    /// [`update_tx_graph`]: EsploraExt::update_tx_graph
+    </span><span class="attr">#[allow(clippy::result_large_err)]
+    </span><span class="kw">fn </span>update_tx_graph_without_keychain(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        local_chain: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, BlockHash&gt;,
         misc_spks: <span class="kw">impl </span>IntoIterator&lt;Item = Script&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;LocalUpdate&lt;(), ConfirmationTimeAnchor&gt;, Error&gt; {
-        <span class="self">self</span>.scan(
-            local_chain,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationTimeAnchor&gt;, Error&gt; {
+        <span class="self">self</span>.update_tx_graph(
             [(
                 (),
                 misc_spks
@@ -313,191 +401,241 @@
             usize::MAX,
             parallel_requests,
         )
+        .map(|(g, <span class="kw">_</span>)| g)
     }
 }
 
 <span class="kw">impl </span>EsploraExt <span class="kw">for </span>esplora_client::BlockingClient {
-    <span class="kw">fn </span>scan&lt;K: Ord + Clone&gt;(
+    <span class="kw">fn </span>update_local_chain(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        local_chain: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, BlockHash&gt;,
+        local_tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
+        request_heights: <span class="kw">impl </span>IntoIterator&lt;Item = u32&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;local_chain::Update, Error&gt; {
+        <span class="kw">let </span>request_heights = request_heights.into_iter().collect::&lt;BTreeSet&lt;<span class="kw">_</span>&gt;&gt;();
+        <span class="kw">let </span>new_tip_height = <span class="self">self</span>.get_height()<span class="question-mark">?</span>;
+
+        <span class="comment">// atomically fetch blocks from esplora
+        </span><span class="kw">let </span><span class="kw-2">mut </span>fetched_blocks = {
+            <span class="kw">let </span>heights = (<span class="number">0</span>..=new_tip_height).rev();
+            <span class="kw">let </span>hashes = <span class="self">self
+                </span>.get_blocks(<span class="prelude-val">Some</span>(new_tip_height))<span class="question-mark">?
+                </span>.into_iter()
+                .map(|b| b.id);
+            heights.zip(hashes).collect::&lt;BTreeMap&lt;u32, BlockHash&gt;&gt;()
+        };
+
+        <span class="comment">// fetch heights that the caller is interested in
+        </span><span class="kw">for </span>height <span class="kw">in </span>request_heights {
+            <span class="comment">// do not fetch blocks higher than remote tip
+            </span><span class="kw">if </span>height &gt; new_tip_height {
+                <span class="kw">continue</span>;
+            }
+            <span class="comment">// only fetch what is missing
+            </span><span class="kw">if let </span>btree_map::Entry::Vacant(entry) = fetched_blocks.entry(height) {
+                <span class="kw">let </span>hash = <span class="self">self</span>.get_block_hash(height)<span class="question-mark">?</span>;
+                entry.insert(hash);
+            }
+        }
+
+        <span class="comment">// find the earliest point of agreement between local chain and fetched chain
+        </span><span class="kw">let </span>earliest_agreement_cp = {
+            <span class="kw">let </span><span class="kw-2">mut </span>earliest_agreement_cp = <span class="prelude-ty">Option</span>::&lt;CheckPoint&gt;::None;
+
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(local_tip) = local_tip {
+                <span class="kw">let </span>local_tip_height = local_tip.height();
+                <span class="kw">for </span>local_cp <span class="kw">in </span>local_tip.iter() {
+                    <span class="kw">let </span>local_block = local_cp.block_id();
+
+                    <span class="comment">// the updated hash (block hash at this height after the update), can either be:
+                    // 1. a block that already existed in `fetched_blocks`
+                    // 2. a block that exists locally and atleast has a depth of ASSUME_FINAL_DEPTH
+                    // 3. otherwise we can freshly fetch the block from remote, which is safe as it
+                    //    is guaranteed that this would be at or below ASSUME_FINAL_DEPTH from the
+                    //    remote tip
+                    </span><span class="kw">let </span>updated_hash = <span class="kw">match </span>fetched_blocks.entry(local_block.height) {
+                        btree_map::Entry::Occupied(entry) =&gt; <span class="kw-2">*</span>entry.get(),
+                        btree_map::Entry::Vacant(entry) =&gt; <span class="kw-2">*</span>entry.insert(
+                            <span class="kw">if </span>local_tip_height - local_block.height &gt;= ASSUME_FINAL_DEPTH {
+                                local_block.hash
+                            } <span class="kw">else </span>{
+                                <span class="self">self</span>.get_block_hash(local_block.height)<span class="question-mark">?
+                            </span>},
+                        ),
+                    };
+
+                    <span class="comment">// since we may introduce blocks below the point of agreement, we cannot break
+                    // here unconditionally - we only break if we guarantee there are no new heights
+                    // below our current local checkpoint
+                    </span><span class="kw">if </span>local_block.hash == updated_hash {
+                        earliest_agreement_cp = <span class="prelude-val">Some</span>(local_cp);
+
+                        <span class="kw">let </span>first_new_height = <span class="kw-2">*</span>fetched_blocks
+                            .keys()
+                            .next()
+                            .expect(<span class="string">&quot;must have atleast one new block&quot;</span>);
+                        <span class="kw">if </span>first_new_height &gt;= local_block.height {
+                            <span class="kw">break</span>;
+                        }
+                    }
+                }
+            }
+
+            earliest_agreement_cp
+        };
+
+        <span class="kw">let </span>tip = {
+            <span class="comment">// first checkpoint to use for the update chain
+            </span><span class="kw">let </span>first_cp = <span class="kw">match </span>earliest_agreement_cp {
+                <span class="prelude-val">Some</span>(cp) =&gt; cp,
+                <span class="prelude-val">None </span>=&gt; {
+                    <span class="kw">let </span>(<span class="kw-2">&amp;</span>height, <span class="kw-2">&amp;</span>hash) = fetched_blocks
+                        .iter()
+                        .next()
+                        .expect(<span class="string">&quot;must have atleast one new block&quot;</span>);
+                    CheckPoint::new(BlockId { height, hash })
+                }
+            };
+            <span class="comment">// transform fetched chain into the update chain
+            </span>fetched_blocks
+                <span class="comment">// we exclude anything at or below the first cp of the update chain otherwise
+                // building the chain will fail
+                </span>.split_off(<span class="kw-2">&amp;</span>(first_cp.height() + <span class="number">1</span>))
+                .into_iter()
+                .map(|(height, hash)| BlockId { height, hash })
+                .fold(first_cp, |prev_cp, block| {
+                    prev_cp.push(block).expect(<span class="string">&quot;must extend checkpoint&quot;</span>)
+                })
+        };
+
+        <span class="prelude-val">Ok</span>(local_chain::Update {
+            tip,
+            introduce_older_blocks: <span class="bool-val">true</span>,
+        })
+    }
+
+    <span class="kw">fn </span>update_tx_graph&lt;K: Ord + Clone&gt;(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, Script)&gt;&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         stop_gap: usize,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;LocalUpdate&lt;K, ConfirmationTimeAnchor&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationTimeAnchor&gt;, BTreeMap&lt;K, u32&gt;), Error&gt; {
+        <span class="kw">type </span>TxsOfSpkIndex = (u32, Vec&lt;esplora_client::Tx&gt;);
         <span class="kw">let </span>parallel_requests = Ord::max(parallel_requests, <span class="number">1</span>);
-
-        <span class="kw">let </span>(<span class="kw-2">mut </span>update, tip_at_start) = <span class="kw">loop </span>{
-            <span class="kw">let </span><span class="kw-2">mut </span>update = LocalUpdate::&lt;K, ConfirmationTimeAnchor&gt;::default();
-
-            <span class="kw">for </span>(<span class="kw-2">&amp;</span>height, <span class="kw-2">&amp;</span>original_hash) <span class="kw">in </span>local_chain.iter().rev() {
-                <span class="kw">let </span>update_block_id = BlockId {
-                    height,
-                    hash: <span class="self">self</span>.get_block_hash(height)<span class="question-mark">?</span>,
-                };
-                <span class="kw">let _ </span>= update
-                    .chain
-                    .insert_block(update_block_id)
-                    .expect(<span class="string">&quot;cannot repeat height here&quot;</span>);
-                <span class="kw">if </span>update_block_id.hash == original_hash {
-                    <span class="kw">break</span>;
-                }
-            }
-
-            <span class="kw">let </span>tip_at_start = BlockId {
-                height: <span class="self">self</span>.get_height()<span class="question-mark">?</span>,
-                hash: <span class="self">self</span>.get_tip_hash()<span class="question-mark">?</span>,
-            };
-
-            <span class="kw">if </span>update.chain.insert_block(tip_at_start).is_ok() {
-                <span class="kw">break </span>(update, tip_at_start);
-            }
-        };
+        <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::&lt;ConfirmationTimeAnchor&gt;::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>last_active_indexes = BTreeMap::&lt;K, u32&gt;::new();
 
         <span class="kw">for </span>(keychain, spks) <span class="kw">in </span>keychain_spks {
             <span class="kw">let </span><span class="kw-2">mut </span>spks = spks.into_iter();
-            <span class="kw">let </span><span class="kw-2">mut </span>last_active_index = <span class="prelude-val">None</span>;
-            <span class="kw">let </span><span class="kw-2">mut </span>empty_scripts = <span class="number">0</span>;
-            <span class="kw">type </span>IndexWithTxs = (u32, Vec&lt;esplora_client::Tx&gt;);
+            <span class="kw">let </span><span class="kw-2">mut </span>last_index = <span class="prelude-ty">Option</span>::&lt;u32&gt;::None;
+            <span class="kw">let </span><span class="kw-2">mut </span>last_active_index = <span class="prelude-ty">Option</span>::&lt;u32&gt;::None;
 
             <span class="kw">loop </span>{
-                <span class="kw">let </span>handles = (<span class="number">0</span>..parallel_requests)
-                    .filter_map(
-                        |<span class="kw">_</span>| -&gt; <span class="prelude-ty">Option</span>&lt;std::thread::JoinHandle&lt;<span class="prelude-ty">Result</span>&lt;IndexWithTxs, <span class="kw">_</span>&gt;&gt;&gt; {
-                            <span class="kw">let </span>(index, script) = spks.next()<span class="question-mark">?</span>;
+                <span class="kw">let </span>handles = spks
+                    .by_ref()
+                    .take(parallel_requests)
+                    .map(|(spk_index, spk)| {
+                        std::thread::spawn({
                             <span class="kw">let </span>client = <span class="self">self</span>.clone();
-                            <span class="prelude-val">Some</span>(std::thread::spawn(<span class="kw">move </span>|| {
-                                <span class="kw">let </span><span class="kw-2">mut </span>related_txs = client.scripthash_txs(<span class="kw-2">&amp;</span>script, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
-
-                                <span class="kw">let </span>n_confirmed =
-                                    related_txs.iter().filter(|tx| tx.status.confirmed).count();
-                                <span class="comment">// esplora pages on 25 confirmed transactions. If there are 25 or more we
-                                // keep requesting to see if there&#39;s more.
-                                </span><span class="kw">if </span>n_confirmed &gt;= <span class="number">25 </span>{
-                                    <span class="kw">loop </span>{
-                                        <span class="kw">let </span>new_related_txs = client.scripthash_txs(
-                                            <span class="kw-2">&amp;</span>script,
-                                            <span class="prelude-val">Some</span>(related_txs.last().unwrap().txid),
-                                        )<span class="question-mark">?</span>;
-                                        <span class="kw">let </span>n = new_related_txs.len();
-                                        related_txs.extend(new_related_txs);
-                                        <span class="comment">// we&#39;ve reached the end
-                                        </span><span class="kw">if </span>n &lt; <span class="number">25 </span>{
-                                            <span class="kw">break</span>;
-                                        }
+                            <span class="kw">move </span>|| -&gt; <span class="prelude-ty">Result</span>&lt;TxsOfSpkIndex, Error&gt; {
+                                <span class="kw">let </span><span class="kw-2">mut </span>last_seen = <span class="prelude-val">None</span>;
+                                <span class="kw">let </span><span class="kw-2">mut </span>spk_txs = Vec::new();
+                                <span class="kw">loop </span>{
+                                    <span class="kw">let </span>txs = client.scripthash_txs(<span class="kw-2">&amp;</span>spk, last_seen)<span class="question-mark">?</span>;
+                                    <span class="kw">let </span>tx_count = txs.len();
+                                    last_seen = txs.last().map(|tx| tx.txid);
+                                    spk_txs.extend(txs);
+                                    <span class="kw">if </span>tx_count &lt; <span class="number">25 </span>{
+                                        <span class="kw">break </span><span class="prelude-val">Ok</span>((spk_index, spk_txs));
                                     }
                                 }
+                            }
+                        })
+                    })
+                    .collect::&lt;Vec&lt;JoinHandle&lt;<span class="prelude-ty">Result</span>&lt;TxsOfSpkIndex, Error&gt;&gt;&gt;&gt;();
 
-                                <span class="prelude-ty">Result</span>::&lt;<span class="kw">_</span>, esplora_client::Error&gt;::Ok((index, related_txs))
-                            }))
-                        },
-                    )
-                    .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-
-                <span class="kw">let </span>n_handles = handles.len();
+                <span class="kw">if </span>handles.is_empty() {
+                    <span class="kw">break</span>;
+                }
 
                 <span class="kw">for </span>handle <span class="kw">in </span>handles {
-                    <span class="kw">let </span>(index, related_txs) = handle.join().unwrap()<span class="question-mark">?</span>; <span class="comment">// TODO: don&#39;t unwrap
-                    </span><span class="kw">if </span>related_txs.is_empty() {
-                        empty_scripts += <span class="number">1</span>;
-                    } <span class="kw">else </span>{
+                    <span class="kw">let </span>(index, txs) = handle.join().expect(<span class="string">&quot;thread must not panic&quot;</span>)<span class="question-mark">?</span>;
+                    last_index = <span class="prelude-val">Some</span>(index);
+                    <span class="kw">if </span>!txs.is_empty() {
                         last_active_index = <span class="prelude-val">Some</span>(index);
-                        empty_scripts = <span class="number">0</span>;
                     }
-                    <span class="kw">for </span>tx <span class="kw">in </span>related_txs {
-                        <span class="kw">let </span>anchor = map_confirmation_time_anchor(<span class="kw-2">&amp;</span>tx.status, tip_at_start);
-
-                        <span class="kw">let _ </span>= update.graph.insert_tx(tx.to_tx());
-                        <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor {
-                            <span class="kw">let _ </span>= update.graph.insert_anchor(tx.txid, anchor);
+                    <span class="kw">for </span>tx <span class="kw">in </span>txs {
+                        <span class="kw">let _ </span>= graph.insert_tx(tx.to_tx());
+                        <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor_from_status(<span class="kw-2">&amp;</span>tx.status) {
+                            <span class="kw">let _ </span>= graph.insert_anchor(tx.txid, anchor);
                         }
                     }
                 }
 
-                <span class="kw">if </span>n_handles == <span class="number">0 </span>|| empty_scripts &gt;= stop_gap {
+                <span class="kw">if </span>last_index &gt; last_active_index.map(|i| i + stop_gap <span class="kw">as </span>u32) {
                     <span class="kw">break</span>;
                 }
             }
 
             <span class="kw">if let </span><span class="prelude-val">Some</span>(last_active_index) = last_active_index {
-                update.keychain.insert(keychain, last_active_index);
+                last_active_indexes.insert(keychain, last_active_index);
             }
         }
 
-        <span class="kw">for </span>txid <span class="kw">in </span>txids.into_iter() {
-            <span class="kw">if </span>update.graph.get_tx(txid).is_none() {
-                <span class="kw">match </span><span class="self">self</span>.get_tx(<span class="kw-2">&amp;</span>txid)<span class="question-mark">? </span>{
-                    <span class="prelude-val">Some</span>(tx) =&gt; {
-                        <span class="kw">let _ </span>= update.graph.insert_tx(tx);
-                    }
-                    <span class="prelude-val">None </span>=&gt; <span class="kw">continue</span>,
-                }
+        <span class="kw">let </span><span class="kw-2">mut </span>txids = txids.into_iter();
+        <span class="kw">loop </span>{
+            <span class="kw">let </span>handles = txids
+                .by_ref()
+                .take(parallel_requests)
+                .filter(|<span class="kw-2">&amp;</span>txid| graph.get_tx(txid).is_none())
+                .map(|txid| {
+                    std::thread::spawn({
+                        <span class="kw">let </span>client = <span class="self">self</span>.clone();
+                        <span class="kw">move </span>|| client.get_tx_status(<span class="kw-2">&amp;</span>txid).map(|s| (txid, s))
+                    })
+                })
+                .collect::&lt;Vec&lt;JoinHandle&lt;<span class="prelude-ty">Result</span>&lt;(Txid, TxStatus), Error&gt;&gt;&gt;&gt;();
+
+            <span class="kw">if </span>handles.is_empty() {
+                <span class="kw">break</span>;
             }
-            <span class="kw">match </span><span class="self">self</span>.get_tx_status(<span class="kw-2">&amp;</span>txid)<span class="question-mark">? </span>{
-                tx_status @ TxStatus {
-                    confirmed: <span class="bool-val">true</span>, ..
-                } =&gt; {
-                    <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = map_confirmation_time_anchor(<span class="kw-2">&amp;</span>tx_status, tip_at_start) {
-                        <span class="kw">let _ </span>= update.graph.insert_anchor(txid, anchor);
-                    }
+
+            <span class="kw">for </span>handle <span class="kw">in </span>handles {
+                <span class="kw">let </span>(txid, status) = handle.join().expect(<span class="string">&quot;thread must not panic&quot;</span>)<span class="question-mark">?</span>;
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor_from_status(<span class="kw-2">&amp;</span>status) {
+                    <span class="kw">let _ </span>= graph.insert_anchor(txid, anchor);
                 }
-                <span class="kw">_ </span>=&gt; <span class="kw">continue</span>,
             }
         }
 
         <span class="kw">for </span>op <span class="kw">in </span>outpoints.into_iter() {
-            <span class="kw">let </span><span class="kw-2">mut </span>op_txs = Vec::with_capacity(<span class="number">2</span>);
-            <span class="kw">if let </span>(
-                <span class="prelude-val">Some</span>(tx),
-                tx_status @ TxStatus {
-                    confirmed: <span class="bool-val">true</span>, ..
-                },
-            ) = (<span class="self">self</span>.get_tx(<span class="kw-2">&amp;</span>op.txid)<span class="question-mark">?</span>, <span class="self">self</span>.get_tx_status(<span class="kw-2">&amp;</span>op.txid)<span class="question-mark">?</span>)
-            {
-                op_txs.push((tx, tx_status));
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(OutputStatus {
-                    txid: <span class="prelude-val">Some</span>(txid),
-                    status: <span class="prelude-val">Some</span>(spend_status),
-                    ..
-                }) = <span class="self">self</span>.get_output_status(<span class="kw-2">&amp;</span>op.txid, op.vout <span class="kw">as _</span>)<span class="question-mark">?
-                </span>{
-                    <span class="kw">if let </span><span class="prelude-val">Some</span>(spend_tx) = <span class="self">self</span>.get_tx(<span class="kw-2">&amp;</span>txid)<span class="question-mark">? </span>{
-                        op_txs.push((spend_tx, spend_status));
+            <span class="kw">if </span>graph.get_tx(op.txid).is_none() {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(tx) = <span class="self">self</span>.get_tx(<span class="kw-2">&amp;</span>op.txid)<span class="question-mark">? </span>{
+                    <span class="kw">let _ </span>= graph.insert_tx(tx);
+                }
+                <span class="kw">let </span>status = <span class="self">self</span>.get_tx_status(<span class="kw-2">&amp;</span>op.txid)<span class="question-mark">?</span>;
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor_from_status(<span class="kw-2">&amp;</span>status) {
+                    <span class="kw">let _ </span>= graph.insert_anchor(op.txid, anchor);
+                }
+            }
+
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(op_status) = <span class="self">self</span>.get_output_status(<span class="kw-2">&amp;</span>op.txid, op.vout <span class="kw">as _</span>)<span class="question-mark">? </span>{
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(txid) = op_status.txid {
+                    <span class="kw">if </span>graph.get_tx(txid).is_none() {
+                        <span class="kw">if let </span><span class="prelude-val">Some</span>(tx) = <span class="self">self</span>.get_tx(<span class="kw-2">&amp;</span>txid)<span class="question-mark">? </span>{
+                            <span class="kw">let _ </span>= graph.insert_tx(tx);
+                        }
+                        <span class="kw">let </span>status = <span class="self">self</span>.get_tx_status(<span class="kw-2">&amp;</span>txid)<span class="question-mark">?</span>;
+                        <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor_from_status(<span class="kw-2">&amp;</span>status) {
+                            <span class="kw">let _ </span>= graph.insert_anchor(txid, anchor);
+                        }
                     }
                 }
             }
-
-            <span class="kw">for </span>(tx, status) <span class="kw">in </span>op_txs {
-                <span class="kw">let </span>txid = tx.txid();
-                <span class="kw">let </span>anchor = map_confirmation_time_anchor(<span class="kw-2">&amp;</span>status, tip_at_start);
-
-                <span class="kw">let _ </span>= update.graph.insert_tx(tx);
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor {
-                    <span class="kw">let _ </span>= update.graph.insert_anchor(txid, anchor);
-                }
-            }
         }
 
-        <span class="kw">if </span>tip_at_start.hash != <span class="self">self</span>.get_block_hash(tip_at_start.height)<span class="question-mark">? </span>{
-            <span class="comment">// A reorg occurred, so let&#39;s find out where all the txids we found are now in the chain
-            </span><span class="kw">let </span>txids_found = update
-                .graph
-                .full_txs()
-                .map(|tx_node| tx_node.txid)
-                .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-            update.chain = EsploraExt::scan_without_keychain(
-                <span class="self">self</span>,
-                local_chain,
-                [],
-                txids_found,
-                [],
-                parallel_requests,
-            )<span class="question-mark">?
-            </span>.chain;
-        }
-
-        <span class="prelude-val">Ok</span>(update)
+        <span class="prelude-val">Ok</span>((graph, last_active_indexes))
     }
 }
 </code></pre></div>

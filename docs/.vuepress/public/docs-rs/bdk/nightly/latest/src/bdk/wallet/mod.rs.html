@@ -1903,7 +1903,6 @@
 <a href="#1902" id="1902">1902</a>
 <a href="#1903" id="1903">1903</a>
 <a href="#1904" id="1904">1904</a>
-<a href="#1905" id="1905">1905</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1929,7 +1928,7 @@
 <span class="kw">use </span>bdk_chain::{
     indexed_tx_graph::IndexedAdditions,
     keychain::{KeychainTxOutIndex, LocalChangeSet, LocalUpdate},
-    local_chain::{<span class="self">self</span>, LocalChain, UpdateNotConnectedError},
+    local_chain::{<span class="self">self</span>, CannotConnectError, CheckPoint, CheckPointIter, LocalChain},
     tx_graph::{CanonicalTx, TxGraph},
     Append, BlockId, ChainPosition, ConfirmationTime, ConfirmationTimeAnchor, FullTxOut,
     IndexedTxGraph, Persist, PersistBackend,
@@ -1938,8 +1937,8 @@
 <span class="kw">use </span>bitcoin::secp256k1::Secp256k1;
 <span class="kw">use </span>bitcoin::util::psbt;
 <span class="kw">use </span>bitcoin::{
-    Address, BlockHash, EcdsaSighashType, LockTime, Network, OutPoint, SchnorrSighashType, Script,
-    Sequence, Transaction, TxOut, Txid, Witness,
+    Address, EcdsaSighashType, LockTime, Network, OutPoint, SchnorrSighashType, Script, Sequence,
+    Transaction, TxOut, Txid, Witness,
 };
 <span class="kw">use </span>core::fmt;
 <span class="kw">use </span>core::ops::Deref;
@@ -2151,7 +2150,7 @@
         };
 
         <span class="kw">let </span>changeset = db.load_from_persistence().map_err(NewError::Persist)<span class="question-mark">?</span>;
-        chain.apply_changeset(changeset.chain_changeset);
+        chain.apply_changeset(<span class="kw-2">&amp;</span>changeset.chain_changeset);
         indexed_graph.apply_additions(changeset.indexed_additions);
 
         <span class="kw">let </span>persist = Persist::new(db);
@@ -2276,19 +2275,19 @@
             .graph()
             .filter_chain_unspents(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
-                <span class="self">self</span>.chain.tip().unwrap_or_default(),
+                <span class="self">self</span>.chain.tip().map(|cp| cp.block_id()).unwrap_or_default(),
                 <span class="self">self</span>.indexed_graph.index.outpoints().iter().cloned(),
             )
             .map(|((k, i), full_txo)| new_local_utxo(k, i, full_txo))
     }
 
     <span class="doccomment">/// Get all the checkpoints the wallet is currently storing indexed by height.
-    </span><span class="kw">pub fn </span>checkpoints(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeMap&lt;u32, BlockHash&gt; {
-        <span class="self">self</span>.chain.blocks()
+    </span><span class="kw">pub fn </span>checkpoints(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; CheckPointIter {
+        <span class="self">self</span>.chain.iter_checkpoints()
     }
 
     <span class="doccomment">/// Returns the latest checkpoint.
-    </span><span class="kw">pub fn </span>latest_checkpoint(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;BlockId&gt; {
+    </span><span class="kw">pub fn </span>latest_checkpoint(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;CheckPoint&gt; {
         <span class="self">self</span>.chain.tip()
     }
 
@@ -2326,7 +2325,7 @@
             .graph()
             .filter_chain_unspents(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
-                <span class="self">self</span>.chain.tip().unwrap_or_default(),
+                <span class="self">self</span>.chain.tip().map(|cp| cp.block_id()).unwrap_or_default(),
                 core::iter::once((spk_i, op)),
             )
             .map(|((k, i), full_txo)| new_local_utxo(k, i, full_txo))
@@ -2343,7 +2342,7 @@
         <span class="kw">let </span>canonical_tx = CanonicalTx {
             observed_as: graph.get_chain_position(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
-                <span class="self">self</span>.chain.tip().unwrap_or_default(),
+                <span class="self">self</span>.chain.tip().map(|cp| cp.block_id()).unwrap_or_default(),
                 txid,
             )<span class="question-mark">?</span>,
             node: graph.get_tx_node(txid)<span class="question-mark">?</span>,
@@ -2366,7 +2365,7 @@
     </span><span class="kw">pub fn </span>insert_checkpoint(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         block_id: BlockId,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, local_chain::InsertBlockNotMatchingError&gt;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, local_chain::InsertBlockError&gt;
     <span class="kw">where
         </span>D: PersistBackend&lt;ChangeSet&gt;,
     {
@@ -2410,13 +2409,13 @@
                     .range(height..)
                     .next()
                     .ok_or(InsertTxError::ConfirmationHeightCannotBeGreaterThanTip {
-                        tip_height: <span class="self">self</span>.chain.tip().map(|b| b.height),
+                        tip_height: <span class="self">self</span>.chain.tip().map(|b| b.height()),
                         tx_height: height,
                     })
-                    .map(|(<span class="kw-2">&amp;</span>anchor_height, <span class="kw-2">&amp;</span>anchor_hash)| ConfirmationTimeAnchor {
+                    .map(|(<span class="kw-2">&amp;</span>anchor_height, <span class="kw-2">&amp;</span>hash)| ConfirmationTimeAnchor {
                         anchor_block: BlockId {
                             height: anchor_height,
-                            hash: anchor_hash,
+                            hash,
                         },
                         confirmation_height: height,
                         confirmation_time: time,
@@ -2437,9 +2436,10 @@
     </span><span class="kw">pub fn </span>transactions(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
     ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = CanonicalTx&lt;<span class="lifetime">&#39;_</span>, Transaction, ConfirmationTimeAnchor&gt;&gt; + <span class="lifetime">&#39;_ </span>{
-        <span class="self">self</span>.indexed_graph
-            .graph()
-            .list_chain_txs(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, <span class="self">self</span>.chain.tip().unwrap_or_default())
+        <span class="self">self</span>.indexed_graph.graph().list_chain_txs(
+            <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
+            <span class="self">self</span>.chain.tip().map(|cp| cp.block_id()).unwrap_or_default(),
+        )
     }
 
     <span class="doccomment">/// Return the balance, separated into available, trusted-pending, untrusted-pending and immature
@@ -2447,7 +2447,7 @@
     </span><span class="kw">pub fn </span>get_balance(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Balance {
         <span class="self">self</span>.indexed_graph.graph().balance(
             <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
-            <span class="self">self</span>.chain.tip().unwrap_or_default(),
+            <span class="self">self</span>.chain.tip().map(|cp| cp.block_id()).unwrap_or_default(),
             <span class="self">self</span>.indexed_graph.index.outpoints().iter().cloned(),
             |<span class="kw-2">&amp;</span>(k, <span class="kw">_</span>), <span class="kw">_</span>| k == KeychainKind::Internal,
         )
@@ -2621,8 +2621,7 @@
             </span><span class="prelude-val">None </span>=&gt; <span class="self">self
                 </span>.chain
                 .tip()
-                .and_then(|cp| cp.height.into())
-                .map(|height| LockTime::from_height(height).expect(<span class="string">&quot;Invalid height&quot;</span>)),
+                .map(|cp| LockTime::from_height(cp.height()).expect(<span class="string">&quot;Invalid height&quot;</span>)),
             h =&gt; h,
         };
 
@@ -2936,7 +2935,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;TxBuilder&lt;<span class="lifetime">&#39;_</span>, D, DefaultCoinSelectionAlgorithm, BumpFee&gt;, Error&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.indexed_graph.graph();
         <span class="kw">let </span>txout_index = <span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index;
-        <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().unwrap_or_default();
+        <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().map(|cp| cp.block_id()).unwrap_or_default();
 
         <span class="kw">let </span><span class="kw-2">mut </span>tx = graph
             .get_tx(txid)
@@ -3171,7 +3170,7 @@
         psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
         sign_options: SignOptions,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, Error&gt; {
-        <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().unwrap_or_default();
+        <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().map(|cp| cp.block_id()).unwrap_or_default();
 
         <span class="kw">let </span>tx = <span class="kw-2">&amp;</span>psbt.unsigned_tx;
         <span class="kw">let </span><span class="kw-2">mut </span>finished = <span class="bool-val">true</span>;
@@ -3194,7 +3193,7 @@
                 });
             <span class="kw">let </span>current_height = sign_options
                 .assume_height
-                .or(<span class="self">self</span>.chain.tip().map(|b| b.height));
+                .or(<span class="self">self</span>.chain.tip().map(|b| b.height()));
 
             <span class="macro">debug!</span>(
                 <span class="string">&quot;Input #{} - {}, using `confirmation_height` = {:?}, `current_height` = {:?}&quot;</span>,
@@ -3339,7 +3338,7 @@
         must_only_use_confirmed_tx: bool,
         current_height: <span class="prelude-ty">Option</span>&lt;u32&gt;,
     ) -&gt; (Vec&lt;WeightedUtxo&gt;, Vec&lt;WeightedUtxo&gt;) {
-        <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().unwrap_or_default();
+        <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().map(|cp| cp.block_id()).unwrap_or_default();
         <span class="comment">//    must_spend &lt;- manually selected utxos
         //    may_spend  &lt;- all other available utxos
         </span><span class="kw">let </span><span class="kw-2">mut </span>may_spend = <span class="self">self</span>.get_available_utxos();
@@ -3604,27 +3603,26 @@
 
     <span class="doccomment">/// Applies an update to the wallet and stages the changes (but does not [`commit`] them).
     ///
-    /// This returns whether the `update` resulted in any changes.
-    ///
     /// Usually you create an `update` by interacting with some blockchain data source and inserting
     /// transactions related to your wallet into it.
     ///
     /// [`commit`]: Self::commit
-    </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: Update) -&gt; <span class="prelude-ty">Result</span>&lt;bool, UpdateNotConnectedError&gt;
+    </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: Update) -&gt; <span class="prelude-ty">Result</span>&lt;(), CannotConnectError&gt;
     <span class="kw">where
         </span>D: PersistBackend&lt;ChangeSet&gt;,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>changeset: ChangeSet = <span class="self">self</span>.chain.apply_update(update.chain)<span class="question-mark">?</span>.into();
+        <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::from(<span class="self">self</span>.chain.apply_update(update.chain)<span class="question-mark">?</span>);
         <span class="kw">let </span>(<span class="kw">_</span>, index_additions) = <span class="self">self
             </span>.indexed_graph
             .index
-            .reveal_to_target_multi(<span class="kw-2">&amp;</span>update.keychain);
+            .reveal_to_target_multi(<span class="kw-2">&amp;</span>update.last_active_indices);
         changeset.append(ChangeSet::from(IndexedAdditions::from(index_additions)));
-        changeset.append(<span class="self">self</span>.indexed_graph.apply_update(update.graph).into());
+        changeset.append(ChangeSet::from(
+            <span class="self">self</span>.indexed_graph.apply_update(update.graph),
+        ));
 
-        <span class="kw">let </span>changed = !changeset.is_empty();
         <span class="self">self</span>.persist.stage(changeset);
-        <span class="prelude-val">Ok</span>(changed)
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Commits all curently [`staged`] changed to the persistence backend returning and error when

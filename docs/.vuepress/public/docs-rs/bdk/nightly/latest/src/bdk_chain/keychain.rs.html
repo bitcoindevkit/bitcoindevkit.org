@@ -260,6 +260,14 @@
 <a href="#260" id="260">260</a>
 <a href="#261" id="261">261</a>
 <a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for keychain related structures.
 //!
 //! A keychain here is a set of application-defined indexes for a miniscript descriptor where we can
@@ -273,10 +281,7 @@
 //! [`SpkTxOutIndex`]: crate::SpkTxOutIndex
 
 </span><span class="kw">use crate</span>::{
-    collections::BTreeMap,
-    indexed_tx_graph::IndexedAdditions,
-    local_chain::{<span class="self">self</span>, LocalChain},
-    tx_graph::TxGraph,
+    collections::BTreeMap, indexed_tx_graph::IndexedAdditions, local_chain, tx_graph::TxGraph,
     Anchor, Append,
 };
 
@@ -347,24 +352,33 @@
     </span>}
 }
 
-<span class="doccomment">/// A structure to update [`KeychainTxOutIndex`], [`TxGraph`] and [`LocalChain`]
-/// atomically.
-</span><span class="attr">#[derive(Debug, Clone, PartialEq)]
+<span class="doccomment">/// A structure to update [`KeychainTxOutIndex`], [`TxGraph`] and [`LocalChain`] atomically.
+///
+/// [`LocalChain`]: local_chain::LocalChain
+</span><span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>LocalUpdate&lt;K, A&gt; {
-    <span class="doccomment">/// Last active derivation index per keychain (`K`).
-    </span><span class="kw">pub </span>keychain: BTreeMap&lt;K, u32&gt;,
+    <span class="doccomment">/// Contains the last active derivation indices per keychain (`K`), which is used to update the
+    /// [`KeychainTxOutIndex`].
+    </span><span class="kw">pub </span>last_active_indices: BTreeMap&lt;K, u32&gt;,
+
     <span class="doccomment">/// Update for the [`TxGraph`].
     </span><span class="kw">pub </span>graph: TxGraph&lt;A&gt;,
+
     <span class="doccomment">/// Update for the [`LocalChain`].
-    </span><span class="kw">pub </span>chain: LocalChain,
+    ///
+    /// [`LocalChain`]: local_chain::LocalChain
+    </span><span class="kw">pub </span>chain: local_chain::Update,
 }
 
-<span class="kw">impl</span>&lt;K, A&gt; Default <span class="kw">for </span>LocalUpdate&lt;K, A&gt; {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;K, A&gt; LocalUpdate&lt;K, A&gt; {
+    <span class="doccomment">/// Construct a [`LocalUpdate`] with a given [`local_chain::Update`].
+    ///
+    /// [`CheckPoint`]: local_chain::CheckPoint
+    </span><span class="kw">pub fn </span>new(chain_update: local_chain::Update) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            keychain: Default::default(),
-            graph: Default::default(),
-            chain: Default::default(),
+            last_active_indices: BTreeMap::new(),
+            graph: TxGraph::default(),
+            chain: chain_update,
         }
     }
 }
@@ -384,6 +398,8 @@
 )]
 </span><span class="kw">pub struct </span>LocalChangeSet&lt;K, A&gt; {
     <span class="doccomment">/// Changes to the [`LocalChain`].
+    ///
+    /// [`LocalChain`]: local_chain::LocalChain
     </span><span class="kw">pub </span>chain_changeset: local_chain::ChangeSet,
 
     <span class="doccomment">/// Additions to [`IndexedTxGraph`].
