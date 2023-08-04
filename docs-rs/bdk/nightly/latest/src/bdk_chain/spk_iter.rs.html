@@ -212,9 +212,8 @@
 <a href="#212" id="212">212</a>
 <a href="#213" id="213">213</a>
 <a href="#214" id="214">214</a>
-<a href="#215" id="215">215</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
-    bitcoin::{secp256k1::Secp256k1, Script},
+    bitcoin::{secp256k1::Secp256k1, ScriptBuf},
     miniscript::{Descriptor, DescriptorPublicKey},
 };
 <span class="kw">use </span>core::{borrow::Borrow, ops::Bound, ops::RangeBounds};
@@ -237,9 +236,9 @@
 /// # use std::str::FromStr;
 /// # let secp = bitcoin::secp256k1::Secp256k1::signing_only();
 /// # let (descriptor, _) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(&amp;secp, &quot;wpkh([73c5da0a/86&#39;/0&#39;/0&#39;]xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/1/0)&quot;).unwrap();
-/// # let external_spk_0 = descriptor.at_derivation_index(0).script_pubkey();
-/// # let external_spk_3 = descriptor.at_derivation_index(3).script_pubkey();
-/// # let external_spk_4 = descriptor.at_derivation_index(4).script_pubkey();
+/// # let external_spk_0 = descriptor.at_derivation_index(0).unwrap().script_pubkey();
+/// # let external_spk_3 = descriptor.at_derivation_index(3).unwrap().script_pubkey();
+/// # let external_spk_4 = descriptor.at_derivation_index(4).unwrap().script_pubkey();
 ///
 /// // Creates a new script pubkey iterator starting at 0 from a descriptor.
 /// let mut spk_iter = SpkIterator::new(&amp;descriptor);
@@ -299,7 +298,7 @@
 <span class="kw">where
     </span>D: Borrow&lt;Descriptor&lt;DescriptorPublicKey&gt;&gt;,
 {
-    <span class="kw">type </span>Item = (u32, Script);
+    <span class="kw">type </span>Item = (u32, ScriptBuf);
 
     <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
         <span class="comment">// For non-wildcard descriptors, we expect the first element to be Some((0, spk)), then None after.
@@ -311,8 +310,7 @@
         <span class="kw">let </span>script = <span class="self">self
             </span>.descriptor
             .borrow()
-            .at_derivation_index(<span class="self">self</span>.next_index)
-            .derived_descriptor(<span class="kw-2">&amp;</span><span class="self">self</span>.secp)
+            .derived_descriptor(<span class="kw-2">&amp;</span><span class="self">self</span>.secp, <span class="self">self</span>.next_index)
             .expect(<span class="string">&quot;the descriptor cannot need hardened derivation&quot;</span>)
             .script_pubkey();
         <span class="kw">let </span>output = (<span class="self">self</span>.next_index, script);
@@ -364,15 +362,14 @@
 
     <span class="attr">#[test]
     #[allow(clippy::iter_nth_zero)]
+    #[rustfmt::skip]
     </span><span class="kw">fn </span>test_spkiterator_wildcard() {
         <span class="kw">let </span>(<span class="kw">_</span>, external_desc, <span class="kw">_</span>) = init_txout_index();
-        <span class="kw">let </span>external_spk_0 = external_desc.at_derivation_index(<span class="number">0</span>).script_pubkey();
-        <span class="kw">let </span>external_spk_16 = external_desc.at_derivation_index(<span class="number">16</span>).script_pubkey();
-        <span class="kw">let </span>external_spk_20 = external_desc.at_derivation_index(<span class="number">20</span>).script_pubkey();
-        <span class="kw">let </span>external_spk_21 = external_desc.at_derivation_index(<span class="number">21</span>).script_pubkey();
-        <span class="kw">let </span>external_spk_max = external_desc
-            .at_derivation_index(BIP32_MAX_INDEX)
-            .script_pubkey();
+        <span class="kw">let </span>external_spk_0 = external_desc.at_derivation_index(<span class="number">0</span>).unwrap().script_pubkey();
+        <span class="kw">let </span>external_spk_16 = external_desc.at_derivation_index(<span class="number">16</span>).unwrap().script_pubkey();
+        <span class="kw">let </span>external_spk_20 = external_desc.at_derivation_index(<span class="number">20</span>).unwrap().script_pubkey();
+        <span class="kw">let </span>external_spk_21 = external_desc.at_derivation_index(<span class="number">21</span>).unwrap().script_pubkey();
+        <span class="kw">let </span>external_spk_max = external_desc.at_derivation_index(BIP32_MAX_INDEX).unwrap().script_pubkey();
 
         <span class="kw">let </span><span class="kw-2">mut </span>external_spk = SpkIterator::new(<span class="kw-2">&amp;</span>external_desc);
         <span class="kw">let </span>max_index = BIP32_MAX_INDEX - <span class="number">22</span>;
@@ -402,6 +399,7 @@
         <span class="kw">let </span>(no_wildcard_descriptor, <span class="kw">_</span>) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(<span class="kw-2">&amp;</span>secp, <span class="string">&quot;wpkh([73c5da0a/86&#39;/0&#39;/0&#39;]xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/1/0)&quot;</span>).unwrap();
         <span class="kw">let </span>external_spk_0 = no_wildcard_descriptor
             .at_derivation_index(<span class="number">0</span>)
+            .unwrap()
             .script_pubkey();
 
         <span class="kw">let </span><span class="kw-2">mut </span>external_spk = SpkIterator::new(<span class="kw-2">&amp;</span>no_wildcard_descriptor);

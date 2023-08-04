@@ -342,7 +342,7 @@
     indexed_tx_graph::Indexer,
     ForEachTxOut,
 };
-<span class="kw">use </span>bitcoin::{<span class="self">self</span>, OutPoint, Script, Transaction, TxOut, Txid};
+<span class="kw">use </span>bitcoin::{<span class="self">self</span>, OutPoint, Script, ScriptBuf, Transaction, TxOut, Txid};
 
 <span class="doccomment">/// An index storing [`TxOut`]s that have a script pubkey that matches those in a list.
 ///
@@ -367,9 +367,9 @@
 </span><span class="attr">#[derive(Clone, Debug)]
 </span><span class="kw">pub struct </span>SpkTxOutIndex&lt;I&gt; {
     <span class="doccomment">/// script pubkeys ordered by index
-    </span>spks: BTreeMap&lt;I, Script&gt;,
+    </span>spks: BTreeMap&lt;I, ScriptBuf&gt;,
     <span class="doccomment">/// A reverse lookup from spk to spk index
-    </span>spk_indices: HashMap&lt;Script, I&gt;,
+    </span>spk_indices: HashMap&lt;ScriptBuf, I&gt;,
     <span class="doccomment">/// The set of unused indexes.
     </span>unused: BTreeSet&lt;I&gt;,
     <span class="doccomment">/// Lookup index and txout by outpoint.
@@ -489,11 +489,11 @@
         <span class="kw">use </span>bitcoin::hashes::Hash;
         <span class="kw">use </span>core::ops::Bound::<span class="kw-2">*</span>;
         <span class="kw">let </span>min_op = OutPoint {
-            txid: Txid::from_inner([<span class="number">0x00</span>; <span class="number">32</span>]),
+            txid: Txid::all_zeros(),
             vout: u32::MIN,
         };
         <span class="kw">let </span>max_op = OutPoint {
-            txid: Txid::from_inner([<span class="number">0xff</span>; <span class="number">32</span>]),
+            txid: Txid::from_byte_array([<span class="number">0xff</span>; Txid::LEN]),
             vout: u32::MAX,
         };
 
@@ -525,18 +525,18 @@
     ///
     /// If that index hasn&#39;t been inserted yet, it will return `None`.
     </span><span class="kw">pub fn </span>spk_at_index(<span class="kw-2">&amp;</span><span class="self">self</span>, index: <span class="kw-2">&amp;</span>I) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Script&gt; {
-        <span class="self">self</span>.spks.get(index)
+        <span class="self">self</span>.spks.get(index).map(|s| s.as_script())
     }
 
     <span class="doccomment">/// The script pubkeys that are being tracked by the index.
-    </span><span class="kw">pub fn </span>all_spks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeMap&lt;I, Script&gt; {
+    </span><span class="kw">pub fn </span>all_spks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeMap&lt;I, ScriptBuf&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.spks
     }
 
     <span class="doccomment">/// Adds a script pubkey to scan for. Returns `false` and does nothing if spk already exists in the map
     ///
     /// the index will look for outputs spending to this spk whenever it scans new data.
-    </span><span class="kw">pub fn </span>insert_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, index: I, spk: Script) -&gt; bool {
+    </span><span class="kw">pub fn </span>insert_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, index: I, spk: ScriptBuf) -&gt; bool {
         <span class="kw">match </span><span class="self">self</span>.spk_indices.entry(spk.clone()) {
             Entry::Vacant(value) =&gt; {
                 value.insert(index.clone());

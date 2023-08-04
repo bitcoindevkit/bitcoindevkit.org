@@ -1020,8 +1020,8 @@
 
 <span class="kw">use </span>bitcoin::secp256k1::{<span class="self">self</span>, Secp256k1, Signing};
 
-<span class="kw">use </span>bitcoin::util::bip32;
-<span class="kw">use </span>bitcoin::{Network, PrivateKey, PublicKey, XOnlyPublicKey};
+<span class="kw">use </span>bitcoin::bip32;
+<span class="kw">use </span>bitcoin::{key::XOnlyPublicKey, Network, PrivateKey, PublicKey};
 
 <span class="kw">use </span>miniscript::descriptor::{Descriptor, DescriptorXKey, Wildcard};
 <span class="kw">pub use </span>miniscript::descriptor::{
@@ -1386,12 +1386,12 @@
 ///
 /// ```
 /// use bdk::bitcoin;
-/// use bdk::bitcoin::util::bip32;
+/// use bdk::bitcoin::bip32;
 /// use bdk::keys::{DerivableKey, ExtendedKey, KeyError, ScriptContext};
 ///
 /// struct MyCustomKeyType {
 ///     key_data: bitcoin::PrivateKey,
-///     chain_code: Vec&lt;u8&gt;,
+///     chain_code: [u8; 32],
 ///     network: bitcoin::Network,
 /// }
 ///
@@ -1402,7 +1402,7 @@
 ///             depth: 0,
 ///             parent_fingerprint: bip32::Fingerprint::default(),
 ///             private_key: self.key_data.inner,
-///             chain_code: bip32::ChainCode::from(self.chain_code.as_ref()),
+///             chain_code: bip32::ChainCode::from(&amp;self.chain_code),
 ///             child_number: bip32::ChildNumber::Normal { index: 0 },
 ///         };
 ///
@@ -1417,14 +1417,14 @@
 ///
 /// ```
 /// use bdk::bitcoin;
-/// use bdk::bitcoin::util::bip32;
+/// use bdk::bitcoin::bip32;
 /// use bdk::keys::{
 ///     any_network, DerivableKey, DescriptorKey, ExtendedKey, KeyError, ScriptContext,
 /// };
 ///
 /// struct MyCustomKeyType {
 ///     key_data: bitcoin::PrivateKey,
-///     chain_code: Vec&lt;u8&gt;,
+///     chain_code: [u8; 32],
 /// }
 ///
 /// impl&lt;Ctx: ScriptContext&gt; DerivableKey&lt;Ctx&gt; for MyCustomKeyType {
@@ -1434,7 +1434,7 @@
 ///             depth: 0,
 ///             parent_fingerprint: bip32::Fingerprint::default(),
 ///             private_key: self.key_data.inner,
-///             chain_code: bip32::ChainCode::from(self.chain_code.as_ref()),
+///             chain_code: bip32::ChainCode::from(&amp;self.chain_code),
 ///             child_number: bip32::ChildNumber::Normal { index: 0 },
 ///         };
 ///
@@ -1925,13 +1925,13 @@ let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
     </span>Message(String),
 
     <span class="doccomment">/// BIP32 error
-    </span>Bip32(bitcoin::util::bip32::Error),
+    </span>Bip32(bitcoin::bip32::Error),
     <span class="doccomment">/// Miniscript error
     </span>Miniscript(miniscript::Error),
 }
 
 <span class="macro">impl_error!</span>(miniscript::Error, Miniscript, KeyError);
-<span class="macro">impl_error!</span>(bitcoin::util::bip32::Error, Bip32, KeyError);
+<span class="macro">impl_error!</span>(bitcoin::bip32::Error, Bip32, KeyError);
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>KeyError {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
@@ -1951,7 +1951,7 @@ let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">pub mod </span>test {
-    <span class="kw">use </span>bitcoin::util::bip32;
+    <span class="kw">use </span>bitcoin::bip32;
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 

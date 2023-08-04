@@ -435,6 +435,11 @@
 <a href="#435" id="435">435</a>
 <a href="#436" id="436">436</a>
 <a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
 </pre><pre class="rust"><code><span class="attr">#![allow(unused)]
 #![allow(missing_docs)]
 #![allow(clippy::all)] </span><span class="comment">// FIXME
@@ -453,15 +458,15 @@
 //! witness/script_sig for the input.
 </span><span class="kw">use </span>bdk_chain::{bitcoin, collections::<span class="kw-2">*</span>, miniscript};
 <span class="kw">use </span>bitcoin::{
-    blockdata::{locktime::LockTime, transaction::Sequence},
+    absolute,
+    address::WitnessVersion,
+    bip32::{DerivationPath, Fingerprint, KeySource},
+    blockdata::transaction::Sequence,
+    ecdsa,
     hashes::{hash160, ripemd160, sha256},
     secp256k1::Secp256k1,
-    util::{
-        address::WitnessVersion,
-        bip32::{DerivationPath, Fingerprint, KeySource},
-        taproot::{LeafVersion, TapBranchHash, TapLeafHash},
-    },
-    EcdsaSig, SchnorrSig, Script, TxIn, Witness,
+    taproot::{<span class="self">self</span>, LeafVersion, TapLeafHash},
+    ScriptBuf, TxIn, Witness,
 };
 <span class="kw">use </span>miniscript::{
     descriptor::{InnerXKey, Tr},
@@ -483,7 +488,7 @@
 </span><span class="kw">enum </span>TrSpend {
     KeySpend,
     LeafSpend {
-        script: Script,
+        script: ScriptBuf,
         leaf_version: LeafVersion,
     },
 }
@@ -492,7 +497,7 @@
 </span><span class="kw">enum </span>Target {
     Legacy,
     Segwitv0 {
-        script_code: Script,
+        script_code: ScriptBuf,
     },
     Segwitv1 {
         tr: Tr&lt;DefiniteDescriptorKey&gt;,
@@ -509,7 +514,7 @@
 </span><span class="kw">pub struct </span>Plan&lt;AK&gt; {
     template: Vec&lt;TemplateItem&lt;AK&gt;&gt;,
     target: Target,
-    set_locktime: <span class="prelude-ty">Option</span>&lt;LockTime&gt;,
+    set_locktime: <span class="prelude-ty">Option</span>&lt;absolute::LockTime&gt;,
     set_sequence: <span class="prelude-ty">Option</span>&lt;Sequence&gt;,
 }
 
@@ -523,9 +528,9 @@
 </span><span class="doccomment">/// Signatures and hash pre-images that can be used to complete a plan.
 </span><span class="kw">pub struct </span>SatisfactionMaterial {
     <span class="doccomment">/// Schnorr signautres under their keys
-    </span><span class="kw">pub </span>schnorr_sigs: BTreeMap&lt;DefiniteDescriptorKey, SchnorrSig&gt;,
+    </span><span class="kw">pub </span>schnorr_sigs: BTreeMap&lt;DefiniteDescriptorKey, taproot::Signature&gt;,
     <span class="doccomment">/// ECDSA signatures under their keys
-    </span><span class="kw">pub </span>ecdsa_sigs: BTreeMap&lt;DefiniteDescriptorKey, EcdsaSig&gt;,
+    </span><span class="kw">pub </span>ecdsa_sigs: BTreeMap&lt;DefiniteDescriptorKey, ecdsa::Signature&gt;,
     <span class="doccomment">/// SHA256 pre-images under their images
     </span><span class="kw">pub </span>sha256_preimages: BTreeMap&lt;sha256::Hash, Vec&lt;u8&gt;&gt;,
     <span class="doccomment">/// hash160 pre-images under their images
@@ -638,7 +643,7 @@
                     ..
                 } =&gt; PlanState::Complete {
                     final_script_sig: <span class="prelude-val">None</span>,
-                    final_script_witness: <span class="prelude-val">Some</span>(Witness::from_vec(witness)),
+                    final_script_witness: <span class="prelude-val">Some</span>(Witness::from(witness)),
                 },
                 Target::Segwitv1 {
                     tr,
@@ -657,7 +662,7 @@
 
                     PlanState::Complete {
                         final_script_sig: <span class="prelude-val">None</span>,
-                        final_script_witness: <span class="prelude-val">Some</span>(Witness::from_vec(witness)),
+                        final_script_witness: <span class="prelude-val">Some</span>(Witness::from(witness)),
                     }
                 }
             }
@@ -743,7 +748,7 @@
     }
 
     <span class="doccomment">/// The minimum required locktime height or time on the transaction using the plan.
-    </span><span class="kw">pub fn </span>required_locktime(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;LockTime&gt; {
+    </span><span class="kw">pub fn </span>required_locktime(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;absolute::LockTime&gt; {
         <span class="self">self</span>.set_locktime.clone()
     }
 
@@ -767,7 +772,7 @@
     <span class="doccomment">/// The plan is complete
     </span>Complete {
         <span class="doccomment">/// The script sig that should be set on the input
-        </span>final_script_sig: <span class="prelude-ty">Option</span>&lt;Script&gt;,
+        </span>final_script_sig: <span class="prelude-ty">Option</span>&lt;ScriptBuf&gt;,
         <span class="doccomment">/// The witness that should be set on the input
         </span>final_script_witness: <span class="prelude-ty">Option</span>&lt;Witness&gt;,
     },
@@ -778,7 +783,7 @@
 </span><span class="kw">pub struct </span>Assets&lt;K&gt; {
     <span class="kw">pub </span>keys: Vec&lt;K&gt;,
     <span class="kw">pub </span>txo_age: <span class="prelude-ty">Option</span>&lt;Sequence&gt;,
-    <span class="kw">pub </span>max_locktime: <span class="prelude-ty">Option</span>&lt;LockTime&gt;,
+    <span class="kw">pub </span>max_locktime: <span class="prelude-ty">Option</span>&lt;absolute::LockTime&gt;,
     <span class="kw">pub </span>sha256: Vec&lt;sha256::Hash&gt;,
     <span class="kw">pub </span>hash256: Vec&lt;hash256::Hash&gt;,
     <span class="kw">pub </span>ripemd160: Vec&lt;ripemd160::Hash&gt;,
@@ -816,6 +821,11 @@
                 });
 
                 path_to_child(<span class="self">self</span>, <span class="kw-2">&amp;</span>origin, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>dxk.derivation_path))
+            }
+            DescriptorPublicKey::MultiXPub(<span class="kw">_</span>) =&gt; {
+                <span class="comment">// This crate will be replaced by
+                // https://github.com/rust-bitcoin/rust-miniscript/pull/481 anyways
+                </span><span class="macro">todo!</span>();
             }
         }
     }

@@ -88,6 +88,12 @@
 <a href="#87" id="87">87</a>
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -112,6 +118,8 @@
     </span>InvalidDescriptorChecksum,
     <span class="doccomment">/// The descriptor contains hardened derivation steps on public extended keys
     </span>HardenedDerivationXpub,
+    <span class="doccomment">/// The descriptor contains multipath keys
+    </span>MultiPath,
 
     <span class="doccomment">/// Error thrown while working with [`keys`](crate::keys)
     </span>Key(<span class="kw">crate</span>::keys::KeyError),
@@ -122,11 +130,11 @@
     </span>InvalidDescriptorCharacter(u8),
 
     <span class="doccomment">/// BIP32 error
-    </span>Bip32(bitcoin::util::bip32::Error),
+    </span>Bip32(bitcoin::bip32::Error),
     <span class="doccomment">/// Error during base58 decoding
-    </span>Base58(bitcoin::util::base58::Error),
+    </span>Base58(bitcoin::base58::Error),
     <span class="doccomment">/// Key-related error
-    </span>Pk(bitcoin::util::key::Error),
+    </span>Pk(bitcoin::key::Error),
     <span class="doccomment">/// Miniscript error
     </span>Miniscript(miniscript::Error),
     <span class="doccomment">/// Hex decoding error
@@ -154,6 +162,10 @@
                 f,
                 <span class="string">&quot;The descriptor contains hardened derivation steps on public extended keys&quot;
             </span>),
+            <span class="self">Self</span>::MultiPath =&gt; <span class="macro">write!</span>(
+                f,
+                <span class="string">&quot;The descriptor contains multipath keys, which are not supported yet&quot;
+            </span>),
             <span class="self">Self</span>::Key(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Key error: {}&quot;</span>, err),
             <span class="self">Self</span>::Policy(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Policy error: {}&quot;</span>, err),
             <span class="self">Self</span>::InvalidDescriptorCharacter(char) =&gt; {
@@ -171,9 +183,9 @@
 <span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>Error {}
 
-<span class="macro">impl_error!</span>(bitcoin::util::bip32::Error, Bip32);
-<span class="macro">impl_error!</span>(bitcoin::util::base58::Error, Base58);
-<span class="macro">impl_error!</span>(bitcoin::util::key::Error, Pk);
+<span class="macro">impl_error!</span>(bitcoin::bip32::Error, Bip32);
+<span class="macro">impl_error!</span>(bitcoin::base58::Error, Base58);
+<span class="macro">impl_error!</span>(bitcoin::key::Error, Pk);
 <span class="macro">impl_error!</span>(miniscript::Error, Miniscript);
 <span class="macro">impl_error!</span>(bitcoin::hashes::hex::Error, Hex);
 <span class="macro">impl_error!</span>(<span class="kw">crate</span>::descriptor::policy::PolicyError, Policy);

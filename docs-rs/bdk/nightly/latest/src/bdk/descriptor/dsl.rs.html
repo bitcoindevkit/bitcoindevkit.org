@@ -1216,11 +1216,6 @@
 <a href="#1215" id="1215">1215</a>
 <a href="#1216" id="1216">1216</a>
 <a href="#1217" id="1217">1217</a>
-<a href="#1218" id="1218">1218</a>
-<a href="#1219" id="1219">1219</a>
-<a href="#1220" id="1220">1220</a>
-<a href="#1221" id="1221">1221</a>
-<a href="#1222" id="1222">1222</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1739,13 +1734,14 @@
         <span class="kw">use </span><span class="macro-nonterminal">$crate::miniscript::descriptor</span>::{Descriptor, DescriptorPublicKey};
 
         <span class="macro-nonterminal">$</span><span class="macro">crate::impl_top_level_pk!</span>(<span class="macro-nonterminal">Pkh</span>, <span class="macro-nonterminal">$crate::miniscript::Legacy</span>, <span class="macro-nonterminal">$key</span>)
+            .and_then(|(a, b, c)| <span class="prelude-val">Ok</span>((a.map_err(|e| miniscript::Error::from(e))<span class="question-mark">?</span>, b, c)))
             .map(|(a, b, c)| (Descriptor::&lt;DescriptorPublicKey&gt;::Pkh(a), b, c))
     });
     ( wpkh ( <span class="macro-nonterminal">$key</span>:expr ) ) =&gt; ({
         <span class="kw">use </span><span class="macro-nonterminal">$crate::miniscript::descriptor</span>::{Descriptor, DescriptorPublicKey};
 
         <span class="macro-nonterminal">$</span><span class="macro">crate::impl_top_level_pk!</span>(<span class="macro-nonterminal">Wpkh</span>, <span class="macro-nonterminal">$crate::miniscript::Segwitv0</span>, <span class="macro-nonterminal">$key</span>)
-            .and_then(|(a, b, c)| <span class="prelude-val">Ok</span>((a<span class="question-mark">?</span>, b, c)))
+            .and_then(|(a, b, c)| <span class="prelude-val">Ok</span>((a.map_err(|e| miniscript::Error::from(e))<span class="question-mark">?</span>, b, c)))
             .map(|(a, b, c)| (Descriptor::&lt;DescriptorPublicKey&gt;::Wpkh(a), b, c))
     });
     ( sh ( wpkh ( <span class="macro-nonterminal">$key</span>:expr ) ) ) =&gt; ({
@@ -1755,7 +1751,7 @@
         <span class="kw">use </span><span class="macro-nonterminal">$crate::miniscript::descriptor</span>::{Descriptor, DescriptorPublicKey, Sh};
 
         <span class="macro-nonterminal">$</span><span class="macro">crate::impl_top_level_pk!</span>(<span class="macro-nonterminal">Wpkh</span>, <span class="macro-nonterminal">$crate::miniscript::Segwitv0</span>, <span class="macro-nonterminal">$key</span>)
-            .and_then(|(a, b, c)| <span class="prelude-val">Ok</span>((a<span class="question-mark">?</span>, b, c)))
+            .and_then(|(a, b, c)| <span class="prelude-val">Ok</span>((a.map_err(|e| miniscript::Error::from(e))<span class="question-mark">?</span>, b, c)))
             .and_then(|(a, b, c)| <span class="prelude-val">Ok</span>((Descriptor::&lt;DescriptorPublicKey&gt;::Sh(Sh::new_wpkh(a.into_inner())<span class="question-mark">?</span>), b, c)))
     });
     ( sh ( $( <span class="macro-nonterminal">$minisc</span>:tt )* ) ) =&gt; ({
@@ -1925,8 +1921,8 @@
         <span class="macro-nonterminal">$crate::keys::make_pkh</span>(<span class="macro-nonterminal">$key</span>, <span class="kw-2">&amp;</span>secp)
     });
     ( after ( <span class="macro-nonterminal">$value</span>:expr ) ) =&gt; ({
-        <span class="macro-nonterminal">$</span><span class="macro">crate::impl_leaf_opcode_value!</span>(<span class="macro-nonterminal">After</span>, <span class="macro-nonterminal">$crate::bitcoin::PackedLockTime</span>(<span class="macro-nonterminal">$value</span>)) <span class="comment">// TODO!! https://github.com/rust-bitcoin/rust-bitcoin/issues/1302
-    </span>});
+        <span class="macro-nonterminal">$</span><span class="macro">crate::impl_leaf_opcode_value!</span>(<span class="macro-nonterminal">After</span>, <span class="macro-nonterminal">$crate::miniscript::AbsLockTime::from_consensus</span>(<span class="macro-nonterminal">$value</span>))
+    });
     ( older ( <span class="macro-nonterminal">$value</span>:expr ) ) =&gt; ({
         <span class="macro-nonterminal">$</span><span class="macro">crate::impl_leaf_opcode_value!</span>(<span class="macro-nonterminal">Older</span>, <span class="macro-nonterminal">$crate::bitcoin::Sequence</span>(<span class="macro-nonterminal">$value</span>)) <span class="comment">// TODO!!
     </span>});
@@ -2019,7 +2015,6 @@
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>test {
     <span class="kw">use </span>alloc::string::ToString;
-    <span class="kw">use </span>bitcoin::hashes::hex::ToHex;
     <span class="kw">use </span>bitcoin::secp256k1::Secp256k1;
     <span class="kw">use </span>miniscript::descriptor::{DescriptorPublicKey, KeyMap};
     <span class="kw">use </span>miniscript::{Descriptor, Legacy, Segwitv0};
@@ -2028,8 +2023,8 @@
 
     <span class="kw">use </span><span class="kw">crate</span>::descriptor::{DescriptorError, DescriptorMeta};
     <span class="kw">use </span><span class="kw">crate</span>::keys::{DescriptorKey, IntoDescriptorKey, ValidNetworks};
+    <span class="kw">use </span>bitcoin::bip32;
     <span class="kw">use </span>bitcoin::network::constants::Network::{Bitcoin, Regtest, Signet, Testnet};
-    <span class="kw">use </span>bitcoin::util::bip32;
     <span class="kw">use </span>bitcoin::PrivateKey;
 
     <span class="comment">// test the descriptor!() macro
@@ -2045,18 +2040,15 @@
         <span class="macro">assert_eq!</span>(desc.is_witness(), is_witness);
         <span class="macro">assert_eq!</span>(!desc.has_wildcard(), is_fixed);
         <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..expected.len() {
-            <span class="kw">let </span>index = i <span class="kw">as </span>u32;
-            <span class="kw">let </span>child_desc = <span class="kw">if </span>!desc.has_wildcard() {
-                desc.at_derivation_index(<span class="number">0</span>)
-            } <span class="kw">else </span>{
-                desc.at_derivation_index(index)
-            };
+            <span class="kw">let </span>child_desc = desc
+                .at_derivation_index(i <span class="kw">as </span>u32)
+                .expect(<span class="string">&quot;i is not hardened&quot;</span>);
             <span class="kw">let </span>address = child_desc.address(Regtest);
             <span class="kw">if let </span><span class="prelude-val">Ok</span>(address) = address {
                 <span class="macro">assert_eq!</span>(address.to_string(), <span class="kw-2">*</span>expected.get(i).unwrap());
             } <span class="kw">else </span>{
                 <span class="kw">let </span>script = child_desc.script_pubkey();
-                <span class="macro">assert_eq!</span>(script.to_hex().as_str(), <span class="kw-2">*</span>expected.get(i).unwrap());
+                <span class="macro">assert_eq!</span>(script.to_hex_string(), <span class="kw-2">*</span>expected.get(i).unwrap());
             }
         }
     }
@@ -2401,9 +2393,7 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(
-        expected = <span class="string">&quot;Miniscript(ContextError(CompressedOnly(\&quot;04b4632d08485ff1df2db55b9dafd23347d1c47a457072a1e87be26896549a87378ec38ff91d43e8c2092ebda601780485263da089465619e0358a5c1be7ac91f4\&quot;)))&quot;
-    </span>)]
+    #[should_panic(expected = <span class="string">&quot;Miniscript(ContextError(UncompressedKeysNotAllowed))&quot;</span>)]
     </span><span class="kw">fn </span>test_dsl_miniscript_checks() {
         <span class="kw">let </span><span class="kw-2">mut </span>uncompressed_pk =
             PrivateKey::from_wif(<span class="string">&quot;L5EZftvrYaSudiozVRzTqLcHLNDoVn7H5HSfM9BAN6tMJX8oTWz6&quot;</span>).unwrap();

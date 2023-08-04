@@ -14,17 +14,21 @@
 <a href="#14" id="14">14</a>
 <a href="#15" id="15">15</a>
 <a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::miniscript::{Descriptor, DescriptorPublicKey};
 
 <span class="doccomment">/// A trait to extend the functionality of a miniscript descriptor.
 </span><span class="kw">pub trait </span>DescriptorExt {
     <span class="doccomment">/// Returns the minimum value (in satoshis) at which an output is broadcastable.
+    /// Panics if the descriptor wildcard is hardened.
     </span><span class="kw">fn </span>dust_value(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64;
 }
 
 <span class="kw">impl </span>DescriptorExt <span class="kw">for </span>Descriptor&lt;DescriptorPublicKey&gt; {
     <span class="kw">fn </span>dust_value(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
         <span class="self">self</span>.at_derivation_index(<span class="number">0</span>)
+            .expect(<span class="string">&quot;descriptor can&#39;t have hardened derivation&quot;</span>)
             .script_pubkey()
             .dust_value()
             .to_sat()

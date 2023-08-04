@@ -734,6 +734,8 @@
 <a href="#734" id="734">734</a>
 <a href="#735" id="735">735</a>
 <a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
 </pre><pre class="rust"><code><span class="kw">pub use </span>anyhow;
 <span class="kw">use </span>anyhow::Context;
 <span class="kw">use </span>bdk_coin_select::{coin_select_bnb, CoinSelector, CoinSelectorOpt, WeightedValue};
@@ -743,7 +745,7 @@
 
 <span class="kw">use </span>bdk_chain::{
     bitcoin::{
-        psbt::Prevouts, secp256k1::Secp256k1, util::sighash::SighashCache, Address, LockTime,
+        absolute, address, psbt::Prevouts, secp256k1::Secp256k1, sighash::SighashCache, Address,
         Network, Sequence, Transaction, TxIn, TxOut,
     },
     indexed_tx_graph::{IndexedAdditions, IndexedTxGraph},
@@ -806,7 +808,7 @@
     <span class="doccomment">/// Send coins to an address.
     </span>Send {
         value: u64,
-        address: Address,
+        address: Address&lt;address::NetworkUnchecked&gt;,
         <span class="attr">#[clap(short, default_value = <span class="string">&quot;bnb&quot;</span>)]
         </span>coin_select: CoinSelectionAlgo,
     },
@@ -1193,7 +1195,7 @@
     additions.append(change_additions);
 
     <span class="comment">// Clone to drop the immutable reference.
-    </span><span class="kw">let </span>change_script = change_script.clone();
+    </span><span class="kw">let </span>change_script = change_script.into();
 
     <span class="kw">let </span>change_plan = bdk_tmp_plan::plan_satisfaction(
         <span class="kw-2">&amp;</span>graph
@@ -1201,7 +1203,8 @@
             .keychains()
             .get(<span class="kw-2">&amp;</span>internal_keychain)
             .expect(<span class="string">&quot;must exist&quot;</span>)
-            .at_derivation_index(change_index),
+            .at_derivation_index(change_index)
+            .expect(<span class="string">&quot;change_index can&#39;t be hardened&quot;</span>),
         <span class="kw-2">&amp;</span>assets,
     )
     .expect(<span class="string">&quot;failed to obtain change plan&quot;</span>);
@@ -1256,9 +1259,8 @@
         // tip as the `lock_time` for anti-fee-sniping purposes
         </span>lock_time: chain
             .get_chain_tip()<span class="question-mark">?
-            </span>.and_then(|block_id| LockTime::from_height(block_id.height).ok())
-            .unwrap_or(LockTime::ZERO)
-            .into(),
+            </span>.and_then(|block_id| absolute::LockTime::from_height(block_id.height).ok())
+            .unwrap_or(absolute::LockTime::ZERO),
         input: selected_txos
             .iter()
             .map(|(<span class="kw">_</span>, utxo)| TxIn {
@@ -1361,7 +1363,8 @@
                     .keychains()
                     .get(<span class="kw-2">&amp;</span>k)
                     .expect(<span class="string">&quot;keychain must exist&quot;</span>)
-                    .at_derivation_index(i);
+                    .at_derivation_index(i)
+                    .expect(<span class="string">&quot;i can&#39;t be hardened&quot;</span>);
                 <span class="kw">let </span>plan = bdk_tmp_plan::plan_satisfaction(<span class="kw-2">&amp;</span>desc, assets)<span class="question-mark">?</span>;
                 <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((plan, full_txo)))
             },
@@ -1404,6 +1407,7 @@
             coin_select,
         } =&gt; {
             <span class="kw">let </span>chain = <span class="kw-2">&amp;*</span>chain.lock().unwrap();
+            <span class="kw">let </span>address = address.require_network(network)<span class="question-mark">?</span>;
             run_send_cmd(
                 graph,
                 db,

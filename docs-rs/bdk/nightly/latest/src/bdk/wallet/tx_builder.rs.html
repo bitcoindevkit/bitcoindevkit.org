@@ -946,6 +946,17 @@
 <a href="#945" id="945">945</a>
 <a href="#946" id="946">946</a>
 <a href="#947" id="947">947</a>
+<a href="#948" id="948">948</a>
+<a href="#949" id="949">949</a>
+<a href="#950" id="950">950</a>
+<a href="#951" id="951">951</a>
+<a href="#952" id="952">952</a>
+<a href="#953" id="953">953</a>
+<a href="#954" id="954">954</a>
+<a href="#955" id="955">955</a>
+<a href="#956" id="956">956</a>
+<a href="#957" id="957">957</a>
+<a href="#958" id="958">958</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -966,7 +977,7 @@
 //! # use bitcoin::*;
 //! # use bdk::*;
 //! # use bdk::wallet::tx_builder::CreateTx;
-//! # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();
+//! # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap().assume_checked();
 //! # let mut wallet = doctest_wallet!();
 //! // create a TxBuilder from a wallet
 //! let mut tx_builder = wallet.build_tx();
@@ -975,7 +986,7 @@
 //!     // Create a transaction with one output to `to_address` of 50_000 satoshi
 //!     .add_recipient(to_address.script_pubkey(), 50_000)
 //!     // With a custom fee rate of 5.0 satoshi/vbyte
-//!     .fee_rate(FeeRate::from_sat_per_vb(5.0))
+//!     .fee_rate(bdk::FeeRate::from_sat_per_vb(5.0))
 //!     // Only spend non-change outputs
 //!     .do_not_spend_change()
 //!     // Turn on RBF signaling
@@ -991,8 +1002,8 @@
 <span class="kw">use </span>core::cell::RefCell;
 <span class="kw">use </span>core::marker::PhantomData;
 
-<span class="kw">use </span>bitcoin::util::psbt::{<span class="self">self</span>, PartiallySignedTransaction <span class="kw">as </span>Psbt};
-<span class="kw">use </span>bitcoin::{LockTime, OutPoint, Script, Sequence, Transaction};
+<span class="kw">use </span>bitcoin::psbt::{<span class="self">self</span>, PartiallySignedTransaction <span class="kw">as </span>Psbt};
+<span class="kw">use </span>bitcoin::{absolute, script::PushBytes, OutPoint, ScriptBuf, Sequence, Transaction};
 
 <span class="kw">use </span><span class="kw">super</span>::coin_selection::{CoinSelectionAlgorithm, DefaultCoinSelectionAlgorithm};
 <span class="kw">use </span><span class="kw">super</span>::ChangeSet;
@@ -1030,7 +1041,7 @@
 /// # use bitcoin::*;
 /// # use core::str::FromStr;
 /// # let mut wallet = doctest_wallet!();
-/// # let addr1 = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();
+/// # let addr1 = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap().assume_checked();
 /// # let addr2 = addr1.clone();
 /// // chaining
 /// let (psbt1, details) = {
@@ -1077,9 +1088,9 @@
 </span><span class="comment">//TODO: TxParams should eventually be exposed publicly.
 </span><span class="attr">#[derive(Default, Debug, Clone)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>TxParams {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) recipients: Vec&lt;(Script, u64)&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) recipients: Vec&lt;(ScriptBuf, u64)&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) drain_wallet: bool,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) drain_to: <span class="prelude-ty">Option</span>&lt;Script&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) drain_to: <span class="prelude-ty">Option</span>&lt;ScriptBuf&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) fee_policy: <span class="prelude-ty">Option</span>&lt;FeePolicy&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) internal_policy_path: <span class="prelude-ty">Option</span>&lt;BTreeMap&lt;String, Vec&lt;usize&gt;&gt;&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) external_policy_path: <span class="prelude-ty">Option</span>&lt;BTreeMap&lt;String, Vec&lt;usize&gt;&gt;&gt;,
@@ -1088,7 +1099,7 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) manually_selected_only: bool,
     <span class="kw">pub</span>(<span class="kw">crate</span>) sighash: <span class="prelude-ty">Option</span>&lt;psbt::PsbtSighashType&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) ordering: TxOrdering,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) locktime: <span class="prelude-ty">Option</span>&lt;LockTime&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) locktime: <span class="prelude-ty">Option</span>&lt;absolute::LockTime&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) rbf: <span class="prelude-ty">Option</span>&lt;RbfValue&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) version: <span class="prelude-ty">Option</span>&lt;Version&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) change_policy: ChangeSpendPolicy,
@@ -1096,7 +1107,7 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) add_global_xpubs: bool,
     <span class="kw">pub</span>(<span class="kw">crate</span>) include_output_redeem_witness_script: bool,
     <span class="kw">pub</span>(<span class="kw">crate</span>) bumping_fee: <span class="prelude-ty">Option</span>&lt;PreviousFee&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) current_height: <span class="prelude-ty">Option</span>&lt;LockTime&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) current_height: <span class="prelude-ty">Option</span>&lt;absolute::LockTime&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) allow_dust: bool,
 }
 
@@ -1193,7 +1204,10 @@
     /// # use std::collections::BTreeMap;
     /// # use bitcoin::*;
     /// # use bdk::*;
-    /// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();
+    /// # let to_address =
+    /// Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;)
+    ///     .unwrap()
+    ///     .assume_checked();
     /// # let mut wallet = doctest_wallet!();
     /// let mut path = BTreeMap::new();
     /// path.insert(&quot;aabbccdd&quot;.to_string(), vec![0, 1]);
@@ -1235,7 +1249,8 @@
 
             <span class="kw">for </span>utxo <span class="kw">in </span>utxos {
                 <span class="kw">let </span>descriptor = wallet.get_descriptor_for_keychain(utxo.keychain);
-                <span class="kw">let </span>satisfaction_weight = descriptor.max_satisfaction_weight().unwrap();
+                <span class="attr">#[allow(deprecated)]
+                </span><span class="kw">let </span>satisfaction_weight = descriptor.max_satisfaction_weight().unwrap();
                 <span class="self">self</span>.params.utxos.push(WeightedUtxo {
                     satisfaction_weight,
                     utxo: Utxo::Local(utxo),
@@ -1379,7 +1394,7 @@
     <span class="doccomment">/// Use a specific nLockTime while creating the transaction
     ///
     /// This can cause conflicts if the wallet&#39;s descriptors contain an &quot;after&quot; (OP_CLTV) operator.
-    </span><span class="kw">pub fn </span>nlocktime(<span class="kw-2">&amp;mut </span><span class="self">self</span>, locktime: LockTime) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>nlocktime(<span class="kw-2">&amp;mut </span><span class="self">self</span>, locktime: absolute::LockTime) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.locktime = <span class="prelude-val">Some</span>(locktime);
         <span class="self">self
     </span>}
@@ -1418,7 +1433,7 @@
         <span class="self">self
     </span>}
 
-    <span class="doccomment">/// Only Fill-in the [`psbt::Input::witness_utxo`](bitcoin::util::psbt::Input::witness_utxo) field when spending from
+    <span class="doccomment">/// Only Fill-in the [`psbt::Input::witness_utxo`](bitcoin::psbt::Input::witness_utxo) field when spending from
     /// SegWit descriptors.
     ///
     /// This reduces the size of the PSBT, but some signers might reject them due to the lack of
@@ -1428,8 +1443,8 @@
         <span class="self">self
     </span>}
 
-    <span class="doccomment">/// Fill-in the [`psbt::Output::redeem_script`](bitcoin::util::psbt::Output::redeem_script) and
-    /// [`psbt::Output::witness_script`](bitcoin::util::psbt::Output::witness_script) fields.
+    <span class="doccomment">/// Fill-in the [`psbt::Output::redeem_script`](bitcoin::psbt::Output::redeem_script) and
+    /// [`psbt::Output::witness_script`](bitcoin::psbt::Output::witness_script) fields.
     ///
     /// This is useful for signers which always require it, like ColdCard hardware wallets.
     </span><span class="kw">pub fn </span>include_output_redeem_witness_script(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
@@ -1516,7 +1531,8 @@
     ///
     /// In both cases, if you don&#39;t provide a current height, we use the last sync height.
     </span><span class="kw">pub fn </span>current_height(<span class="kw-2">&amp;mut </span><span class="self">self</span>, height: u32) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
-        <span class="self">self</span>.params.current_height = <span class="prelude-val">Some</span>(LockTime::from_height(height).expect(<span class="string">&quot;Invalid height&quot;</span>));
+        <span class="self">self</span>.params.current_height =
+            <span class="prelude-val">Some</span>(absolute::LockTime::from_height(height).expect(<span class="string">&quot;Invalid height&quot;</span>));
         <span class="self">self
     </span>}
 
@@ -1531,20 +1547,20 @@
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, D, Cs: CoinSelectionAlgorithm&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, D, Cs, CreateTx&gt; {
     <span class="doccomment">/// Replace the recipients already added with a new list
-    </span><span class="kw">pub fn </span>set_recipients(<span class="kw-2">&amp;mut </span><span class="self">self</span>, recipients: Vec&lt;(Script, u64)&gt;) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>set_recipients(<span class="kw-2">&amp;mut </span><span class="self">self</span>, recipients: Vec&lt;(ScriptBuf, u64)&gt;) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.recipients = recipients;
         <span class="self">self
     </span>}
 
     <span class="doccomment">/// Add a recipient to the internal list
-    </span><span class="kw">pub fn </span>add_recipient(<span class="kw-2">&amp;mut </span><span class="self">self</span>, script_pubkey: Script, amount: u64) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>add_recipient(<span class="kw-2">&amp;mut </span><span class="self">self</span>, script_pubkey: ScriptBuf, amount: u64) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.recipients.push((script_pubkey, amount));
         <span class="self">self
     </span>}
 
     <span class="doccomment">/// Add data as an output, using OP_RETURN
-    </span><span class="kw">pub fn </span>add_data(<span class="kw-2">&amp;mut </span><span class="self">self</span>, data: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
-        <span class="kw">let </span>script = Script::new_op_return(data);
+    </span><span class="kw">pub fn </span>add_data&lt;T: AsRef&lt;PushBytes&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, data: <span class="kw-2">&amp;</span>T) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
+        <span class="kw">let </span>script = ScriptBuf::new_op_return(data);
         <span class="self">self</span>.add_recipient(script, <span class="number">0u64</span>);
         <span class="self">self
     </span>}
@@ -1574,7 +1590,10 @@
     /// # use bitcoin::*;
     /// # use bdk::*;
     /// # use bdk::wallet::tx_builder::CreateTx;
-    /// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();
+    /// # let to_address =
+    /// Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;)
+    ///     .unwrap()
+    ///     .assume_checked();
     /// # let mut wallet = doctest_wallet!();
     /// let mut tx_builder = wallet.build_tx();
     ///
@@ -1583,7 +1602,7 @@
     ///     .drain_wallet()
     ///     // Send the excess (which is all the coins minus the fee) to this address.
     ///     .drain_to(to_address.script_pubkey())
-    ///     .fee_rate(FeeRate::from_sat_per_vb(5.0))
+    ///     .fee_rate(bdk::FeeRate::from_sat_per_vb(5.0))
     ///     .enable_rbf();
     /// let (psbt, tx_details) = tx_builder.finish()?;
     /// # Ok::&lt;(), bdk::Error&gt;(())
@@ -1593,7 +1612,7 @@
     /// [`add_recipient`]: Self::add_recipient
     /// [`add_utxos`]: Self::add_utxos
     /// [`drain_wallet`]: Self::drain_wallet
-    </span><span class="kw">pub fn </span>drain_to(<span class="kw-2">&amp;mut </span><span class="self">self</span>, script_pubkey: Script) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>drain_to(<span class="kw-2">&amp;mut </span><span class="self">self</span>, script_pubkey: ScriptBuf) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.drain_to = <span class="prelude-val">Some</span>(script_pubkey);
         <span class="self">self
     </span>}
@@ -1611,7 +1630,7 @@
     ///
     /// Returns an `Err` if `script_pubkey` can&#39;t be found among the recipients of the
     /// transaction we are bumping.
-    </span><span class="kw">pub fn </span>allow_shrinking(<span class="kw-2">&amp;mut </span><span class="self">self</span>, script_pubkey: Script) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>, Error&gt; {
+    </span><span class="kw">pub fn </span>allow_shrinking(<span class="kw-2">&amp;mut </span><span class="self">self</span>, script_pubkey: ScriptBuf) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>, Error&gt; {
         <span class="kw">match </span><span class="self">self
             </span>.params
             .recipients
@@ -1816,8 +1835,11 @@
         );
 
         <span class="macro">assert_eq!</span>(tx.output[<span class="number">0</span>].value, <span class="number">800</span>);
-        <span class="macro">assert_eq!</span>(tx.output[<span class="number">1</span>].script_pubkey, From::from(<span class="macro">vec!</span>[<span class="number">0xAA</span>]));
-        <span class="macro">assert_eq!</span>(tx.output[<span class="number">2</span>].script_pubkey, From::from(<span class="macro">vec!</span>[<span class="number">0xAA</span>, <span class="number">0xEE</span>]));
+        <span class="macro">assert_eq!</span>(tx.output[<span class="number">1</span>].script_pubkey, ScriptBuf::from(<span class="macro">vec!</span>[<span class="number">0xAA</span>]));
+        <span class="macro">assert_eq!</span>(
+            tx.output[<span class="number">2</span>].script_pubkey,
+            ScriptBuf::from(<span class="macro">vec!</span>[<span class="number">0xAA</span>, <span class="number">0xEE</span>])
+        );
     }
 
     <span class="kw">fn </span>get_test_utxos() -&gt; Vec&lt;LocalUtxo&gt; {
@@ -1826,7 +1848,7 @@
         <span class="macro">vec!</span>[
             LocalUtxo {
                 outpoint: OutPoint {
-                    txid: bitcoin::Txid::from_inner([<span class="number">0</span>; <span class="number">32</span>]),
+                    txid: bitcoin::Txid::from_slice(<span class="kw-2">&amp;</span>[<span class="number">0</span>; <span class="number">32</span>]).unwrap(),
                     vout: <span class="number">0</span>,
                 },
                 txout: Default::default(),
@@ -1837,7 +1859,7 @@
             },
             LocalUtxo {
                 outpoint: OutPoint {
-                    txid: bitcoin::Txid::from_inner([<span class="number">0</span>; <span class="number">32</span>]),
+                    txid: bitcoin::Txid::from_slice(<span class="kw-2">&amp;</span>[<span class="number">0</span>; <span class="number">32</span>]).unwrap(),
                     vout: <span class="number">1</span>,
                 },
                 txout: Default::default(),

@@ -16,12 +16,12 @@ rules regarding script context and valid networks apply.</p>
 an <a href="(bip32::ExtendedPubKey)"><code>ExtendedPubKey</code></a> can implement only the required <code>into_extended_key()</code> method.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>bdk::bitcoin;
-<span class="kw">use </span>bdk::bitcoin::util::bip32;
+<span class="kw">use </span>bdk::bitcoin::bip32;
 <span class="kw">use </span>bdk::keys::{DerivableKey, ExtendedKey, KeyError, ScriptContext};
 
 <span class="kw">struct </span>MyCustomKeyType {
     key_data: bitcoin::PrivateKey,
-    chain_code: Vec&lt;u8&gt;,
+    chain_code: [u8; <span class="number">32</span>],
     network: bitcoin::Network,
 }
 
@@ -32,7 +32,7 @@ an <a href="(bip32::ExtendedPubKey)"><code>ExtendedPubKey</code></a> can impleme
             depth: <span class="number">0</span>,
             parent_fingerprint: bip32::Fingerprint::default(),
             private_key: <span class="self">self</span>.key_data.inner,
-            chain_code: bip32::ChainCode::from(<span class="self">self</span>.chain_code.as_ref()),
+            chain_code: bip32::ChainCode::from(<span class="kw-2">&amp;</span><span class="self">self</span>.chain_code),
             child_number: bip32::ChildNumber::Normal { index: <span class="number">0 </span>},
         };
 
@@ -44,14 +44,14 @@ steps to override the set of valid networks, otherwise only the network specifie
 <a href="(bip32::ExtendedPrivKey)"><code>ExtendedPrivKey</code></a> or <a href="(bip32::ExtendedPubKey)"><code>ExtendedPubKey</code></a> will be considered valid.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>bdk::bitcoin;
-<span class="kw">use </span>bdk::bitcoin::util::bip32;
+<span class="kw">use </span>bdk::bitcoin::bip32;
 <span class="kw">use </span>bdk::keys::{
     any_network, DerivableKey, DescriptorKey, ExtendedKey, KeyError, ScriptContext,
 };
 
 <span class="kw">struct </span>MyCustomKeyType {
     key_data: bitcoin::PrivateKey,
-    chain_code: Vec&lt;u8&gt;,
+    chain_code: [u8; <span class="number">32</span>],
 }
 
 <span class="kw">impl</span>&lt;Ctx: ScriptContext&gt; DerivableKey&lt;Ctx&gt; <span class="kw">for </span>MyCustomKeyType {
@@ -61,7 +61,7 @@ steps to override the set of valid networks, otherwise only the network specifie
             </span>depth: <span class="number">0</span>,
             parent_fingerprint: bip32::Fingerprint::default(),
             private_key: <span class="self">self</span>.key_data.inner,
-            chain_code: bip32::ChainCode::from(<span class="self">self</span>.chain_code.as_ref()),
+            chain_code: bip32::ChainCode::from(<span class="kw-2">&amp;</span><span class="self">self</span>.chain_code),
             child_number: bip32::ChildNumber::Normal { index: <span class="number">0 </span>},
         };
 
