@@ -545,8 +545,10 @@
 <a href="#545" id="545">545</a>
 <a href="#546" id="546">546</a>
 <a href="#547" id="547">547</a>
+<a href="#548" id="548">548</a>
+<a href="#549" id="549">549</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bdk_chain::{
-    bitcoin::{hashes::hex::FromHex, OutPoint, Script, Transaction, Txid},
+    bitcoin::{OutPoint, ScriptBuf, Transaction, Txid},
     keychain::LocalUpdate,
     local_chain::{<span class="self">self</span>, CheckPoint},
     tx_graph::{<span class="self">self</span>, TxGraph},
@@ -556,6 +558,7 @@
 <span class="kw">use </span>std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     fmt::Debug,
+    str::FromStr,
 };
 
 <span class="doccomment">/// We assume that a block of this depth and deeper cannot be reorged.
@@ -714,7 +717,7 @@
     </span><span class="kw">fn </span>scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         prev_tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
-        keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, Script)&gt;&gt;,
+        keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, ScriptBuf)&gt;&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         stop_gap: usize,
@@ -727,7 +730,7 @@
     </span><span class="kw">fn </span>scan_without_keychain(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         prev_tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
-        misc_spks: <span class="kw">impl </span>IntoIterator&lt;Item = Script&gt;,
+        misc_spks: <span class="kw">impl </span>IntoIterator&lt;Item = ScriptBuf&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         batch_size: usize,
@@ -752,7 +755,7 @@
     <span class="kw">fn </span>scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         prev_tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
-        keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, Script)&gt;&gt;,
+        keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, ScriptBuf)&gt;&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         stop_gap: usize,
@@ -762,7 +765,7 @@
             .into_iter()
             .map(|(k, s)| (k, s.into_iter()))
             .collect::&lt;BTreeMap&lt;K, <span class="kw">_</span>&gt;&gt;();
-        <span class="kw">let </span><span class="kw-2">mut </span>scanned_spks = BTreeMap::&lt;(K, u32), (Script, bool)&gt;::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>scanned_spks = BTreeMap::&lt;(K, u32), (ScriptBuf, bool)&gt;::new();
 
         <span class="kw">let </span>txids = txids.into_iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
         <span class="kw">let </span>outpoints = outpoints.into_iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
@@ -922,7 +925,7 @@
     // transactions residing in the genesis block to have height 0, then interpret a height of 0 as
     // unconfirmed for all other transactions.
     </span><span class="kw">if </span>txid
-        == Txid::from_hex(<span class="string">&quot;4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b&quot;</span>)
+        == Txid::from_str(<span class="string">&quot;4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b&quot;</span>)
             .expect(<span class="string">&quot;must deserialize genesis coinbase txid&quot;</span>)
     {
         <span class="kw">let </span>anchor_block = cps.values().next()<span class="question-mark">?</span>.block_id();
@@ -1053,10 +1056,10 @@
     client: <span class="kw-2">&amp;</span>Client,
     cps: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, CheckPoint&gt;,
     update: <span class="kw-2">&amp;mut </span>ElectrumUpdate&lt;K, ConfirmationHeightAnchor&gt;,
-    spks: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Iterator&lt;Item = (I, Script)&gt;,
+    spks: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Iterator&lt;Item = (I, ScriptBuf)&gt;,
     stop_gap: usize,
     batch_size: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;BTreeMap&lt;I, (Script, bool)&gt;, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;BTreeMap&lt;I, (ScriptBuf, bool)&gt;, Error&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>unused_spk_count = <span class="number">0_usize</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>scanned_spks = BTreeMap::new();
 
@@ -1068,7 +1071,8 @@
             <span class="kw">return </span><span class="prelude-val">Ok</span>(scanned_spks);
         }
 
-        <span class="kw">let </span>spk_histories = client.batch_script_get_history(spks.iter().map(|(<span class="kw">_</span>, s)| s))<span class="question-mark">?</span>;
+        <span class="kw">let </span>spk_histories =
+            client.batch_script_get_history(spks.iter().map(|(<span class="kw">_</span>, s)| s.as_script()))<span class="question-mark">?</span>;
 
         <span class="kw">for </span>((spk_index, spk), spk_history) <span class="kw">in </span>spks.into_iter().zip(spk_histories) {
             <span class="kw">if </span>spk_history.is_empty() {

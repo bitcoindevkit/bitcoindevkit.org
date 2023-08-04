@@ -321,8 +321,10 @@
 <a href="#321" id="321">321</a>
 <a href="#322" id="322">322</a>
 <a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bdk_chain::{bitcoin, miniscript};
-<span class="kw">use </span>bitcoin::locktime::{Height, Time};
+<span class="kw">use </span>bitcoin::locktime::absolute;
 <span class="kw">use </span>miniscript::Terminal;
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -477,7 +479,7 @@
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">struct </span>TermPlan&lt;Ak&gt; {
-    <span class="kw">pub </span>min_locktime: <span class="prelude-ty">Option</span>&lt;LockTime&gt;,
+    <span class="kw">pub </span>min_locktime: <span class="prelude-ty">Option</span>&lt;absolute::LockTime&gt;,
     <span class="kw">pub </span>min_sequence: <span class="prelude-ty">Option</span>&lt;Sequence&gt;,
     <span class="kw">pub </span>template: Vec&lt;TemplateItem&lt;Ak&gt;&gt;,
 }
@@ -539,10 +541,12 @@
         </span>}
         Terminal::After(locktime) =&gt; {
             <span class="kw">let </span>max_locktime = assets.max_locktime<span class="question-mark">?</span>;
-            <span class="kw">let </span>locktime = LockTime::from(locktime);
+            <span class="kw">let </span>locktime = absolute::LockTime::from(<span class="kw-2">*</span>locktime);
             <span class="kw">let </span>(height, time) = <span class="kw">match </span>max_locktime {
-                LockTime::Blocks(height) =&gt; (height, Time::from_consensus(<span class="number">0</span>).unwrap()),
-                LockTime::Seconds(seconds) =&gt; (Height::from_consensus(<span class="number">0</span>).unwrap(), seconds),
+                absolute::LockTime::Blocks(height) =&gt; {
+                    (height, absolute::Time::from_consensus(<span class="number">0</span>).unwrap())
+                }
+                absolute::LockTime::Seconds(seconds) =&gt; (absolute::Height::ZERO, seconds),
             };
             <span class="kw">if </span>max_locktime.is_satisfied_by(height, time) {
                 <span class="prelude-val">Some</span>(TermPlan {

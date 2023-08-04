@@ -613,6 +613,8 @@
 <a href="#613" id="613">613</a>
 <a href="#614" id="614">614</a>
 <a href="#615" id="615">615</a>
+<a href="#616" id="616">616</a>
+<a href="#617" id="617">617</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// A [`WeightedValue`] represents an input candidate for [`CoinSelector`]. This can either be a
@@ -712,11 +714,13 @@
         <span class="kw">let </span><span class="kw-2">mut </span>tx = Transaction {
             input: <span class="macro">vec!</span>[],
             version: <span class="number">1</span>,
-            lock_time: LockTime::ZERO.into(),
+            lock_time: absolute::LockTime::ZERO,
             output: txouts.to_vec(),
         };
         <span class="kw">let </span>base_weight = tx.weight();
-        <span class="comment">// this awkward calculation is necessary since TxOut doesn&#39;t have \.weight()
+        <span class="comment">// Calculating drain_weight like this instead of using .weight()
+        // allows us to take into account the output len varint increase that
+        // might happen when adding a new output
         </span><span class="kw">let </span>drain_weight = {
             tx.output.push(drain_output.clone());
             tx.weight() - base_weight
@@ -728,8 +732,8 @@
                 <span class="prelude-val">Some</span>(txouts.iter().map(|txout| txout.value).sum())
             },
             ..<span class="self">Self</span>::from_weights(
-                base_weight <span class="kw">as </span>u32,
-                drain_weight <span class="kw">as </span>u32,
+                base_weight.to_wu() <span class="kw">as </span>u32,
+                drain_weight.to_wu() <span class="kw">as </span>u32,
                 TXIN_BASE_WEIGHT + drain_satisfaction_weight,
             )
         }

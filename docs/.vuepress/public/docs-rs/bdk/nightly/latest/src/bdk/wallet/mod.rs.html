@@ -1903,6 +1903,15 @@
 <a href="#1902" id="1902">1902</a>
 <a href="#1903" id="1903">1903</a>
 <a href="#1904" id="1904">1904</a>
+<a href="#1905" id="1905">1905</a>
+<a href="#1906" id="1906">1906</a>
+<a href="#1907" id="1907">1907</a>
+<a href="#1908" id="1908">1908</a>
+<a href="#1909" id="1909">1909</a>
+<a href="#1910" id="1910">1910</a>
+<a href="#1911" id="1911">1911</a>
+<a href="#1912" id="1912">1912</a>
+<a href="#1913" id="1913">1913</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1934,11 +1943,12 @@
     IndexedTxGraph, Persist, PersistBackend,
 };
 <span class="kw">use </span>bitcoin::consensus::encode::serialize;
+<span class="kw">use </span>bitcoin::psbt;
 <span class="kw">use </span>bitcoin::secp256k1::Secp256k1;
-<span class="kw">use </span>bitcoin::util::psbt;
+<span class="kw">use </span>bitcoin::sighash::{EcdsaSighashType, TapSighashType};
 <span class="kw">use </span>bitcoin::{
-    Address, EcdsaSighashType, LockTime, Network, OutPoint, SchnorrSighashType, Script, Sequence,
-    Transaction, TxOut, Txid, Witness,
+    absolute, Address, Network, OutPoint, Script, ScriptBuf, Sequence, Transaction, TxOut, Txid,
+    Weight, Witness,
 };
 <span class="kw">use </span>core::fmt;
 <span class="kw">use </span>core::ops::Deref;
@@ -2227,11 +2237,11 @@
         <span class="kw">let </span>(index, spk, additions) = <span class="kw">match </span>address_index {
             AddressIndex::New =&gt; {
                 <span class="kw">let </span>((index, spk), index_additions) = txout_index.reveal_next_spk(<span class="kw-2">&amp;</span>keychain);
-                (index, spk.clone(), <span class="prelude-val">Some</span>(index_additions))
+                (index, spk.into(), <span class="prelude-val">Some</span>(index_additions))
             }
             AddressIndex::LastUnused =&gt; {
                 <span class="kw">let </span>((index, spk), index_additions) = txout_index.next_unused_spk(<span class="kw-2">&amp;</span>keychain);
-                (index, spk.clone(), <span class="prelude-val">Some</span>(index_additions))
+                (index, spk.into(), <span class="prelude-val">Some</span>(index_additions))
             }
             AddressIndex::Peek(index) =&gt; {
                 <span class="kw">let </span>(index, spk) = txout_index
@@ -2301,7 +2311,7 @@
     /// script pubkeys the wallet is storing internally).
     </span><span class="kw">pub fn </span>spks_of_all_keychains(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; BTreeMap&lt;KeychainKind, <span class="kw">impl </span>Iterator&lt;Item = (u32, Script)&gt; + Clone&gt; {
+    ) -&gt; BTreeMap&lt;KeychainKind, <span class="kw">impl </span>Iterator&lt;Item = (u32, ScriptBuf)&gt; + Clone&gt; {
         <span class="self">self</span>.indexed_graph.index.spks_of_all_keychains()
     }
 
@@ -2313,7 +2323,7 @@
     </span><span class="kw">pub fn </span>spks_of_keychain(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain: KeychainKind,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (u32, Script)&gt; + Clone {
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (u32, ScriptBuf)&gt; + Clone {
         <span class="self">self</span>.indexed_graph.index.spks_of_keychain(<span class="kw-2">&amp;</span>keychain)
     }
 
@@ -2504,7 +2514,7 @@
     /// # use bdk::*;
     /// # let descriptor = &quot;wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)&quot;;
     /// # let mut wallet = doctest_wallet!();
-    /// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();
+    /// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap().assume_checked();
     /// let (psbt, details) = {
     ///    let mut builder =  wallet.build_tx();
     ///    builder
@@ -2621,7 +2631,7 @@
             </span><span class="prelude-val">None </span>=&gt; <span class="self">self
                 </span>.chain
                 .tip()
-                .map(|cp| LockTime::from_height(cp.height()).expect(<span class="string">&quot;Invalid height&quot;</span>)),
+                .map(|cp| absolute::LockTime::from_height(cp.height()).expect(<span class="string">&quot;Invalid height&quot;</span>)),
             h =&gt; h,
         };
 
@@ -2631,7 +2641,7 @@
                 <span class="comment">// Fee sniping can be partially prevented by setting the timelock
                 // to current_height. If we don&#39;t know the current_height,
                 // we default to 0.
-                </span><span class="kw">let </span>fee_sniping_height = current_height.unwrap_or(LockTime::ZERO);
+                </span><span class="kw">let </span>fee_sniping_height = current_height.unwrap_or(absolute::LockTime::ZERO);
 
                 <span class="comment">// We choose the biggest between the required nlocktime and the fee sniping
                 // height
@@ -2639,7 +2649,7 @@
                     <span class="comment">// No requirement, just use the fee_sniping_height
                     </span><span class="prelude-val">None </span>=&gt; fee_sniping_height,
                     <span class="comment">// There&#39;s a block-based requirement, but the value is lower than the fee_sniping_height
-                    </span><span class="prelude-val">Some</span>(value @ LockTime::Blocks(<span class="kw">_</span>)) <span class="kw">if </span>value &lt; fee_sniping_height =&gt; fee_sniping_height,
+                    </span><span class="prelude-val">Some</span>(value @ absolute::LockTime::Blocks(<span class="kw">_</span>)) <span class="kw">if </span>value &lt; fee_sniping_height =&gt; fee_sniping_height,
                     <span class="comment">// There&#39;s a time-based requirement or a block-based requirement greater
                     // than the fee_sniping_height use that value
                     </span><span class="prelude-val">Some</span>(value) =&gt; value,
@@ -2655,7 +2665,9 @@
 
         <span class="kw">let </span>n_sequence = <span class="kw">match </span>(params.rbf, requirements.csv) {
             <span class="comment">// No RBF or CSV but there&#39;s an nLockTime, so the nSequence cannot be final
-            </span>(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="kw">if </span>lock_time != LockTime::ZERO =&gt; Sequence::ENABLE_LOCKTIME_NO_RBF,
+            </span>(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="kw">if </span>lock_time != absolute::LockTime::ZERO =&gt; {
+                Sequence::ENABLE_LOCKTIME_NO_RBF
+            }
             <span class="comment">// No RBF, CSV or nLockTime, make the transaction final
             </span>(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; Sequence::MAX,
 
@@ -2718,7 +2730,7 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>tx = Transaction {
             version,
-            lock_time: lock_time.into(),
+            lock_time,
             input: <span class="macro">vec!</span>[],
             output: <span class="macro">vec!</span>[],
         };
@@ -2766,7 +2778,7 @@
         // end up with a transaction with a slightly higher fee rate than the requested one.
         // If, instead, we undershoot, we may end up with a feerate lower than the requested one
         // - we might come up with non broadcastable txs!
-        </span>fee_amount += fee_rate.fee_wu(<span class="number">2</span>);
+        </span>fee_amount += fee_rate.fee_wu(Weight::from_wu(<span class="number">2</span>));
 
         <span class="kw">if </span>params.change_policy != tx_builder::ChangeSpendPolicy::ChangeAllowed
             &amp;&amp; internal_descriptor.is_none()
@@ -2783,7 +2795,7 @@
             params.drain_wallet,
             params.manually_selected_only,
             params.bumping_fee.is_some(), <span class="comment">// we mandate confirmed transactions if we&#39;re bumping the fee
-            </span>current_height.map(LockTime::to_consensus_u32),
+            </span>current_height.map(absolute::LockTime::to_consensus_u32),
         );
 
         <span class="comment">// get drain script
@@ -2793,7 +2805,7 @@
                 <span class="kw">let </span>change_keychain = <span class="self">self</span>.map_keychain(KeychainKind::Internal);
                 <span class="kw">let </span>((index, spk), index_additions) =
                     <span class="self">self</span>.indexed_graph.index.next_unused_spk(<span class="kw-2">&amp;</span>change_keychain);
-                <span class="kw">let </span>spk = spk.clone();
+                <span class="kw">let </span>spk = spk.into();
                 <span class="self">self</span>.indexed_graph.index.mark_used(<span class="kw-2">&amp;</span>change_keychain, index);
                 <span class="self">self</span>.persist
                     .stage(ChangeSet::from(IndexedAdditions::from(index_additions)));
@@ -2817,7 +2829,7 @@
             .iter()
             .map(|u| bitcoin::TxIn {
                 previous_output: u.outpoint(),
-                script_sig: Script::default(),
+                script_sig: ScriptBuf::default(),
                 sequence: n_sequence,
                 witness: Witness::new(),
             })
@@ -2905,7 +2917,7 @@
     /// # use bdk::*;
     /// # let descriptor = &quot;wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)&quot;;
     /// # let mut wallet = doctest_wallet!();
-    /// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();
+    /// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap().assume_checked();
     /// let (mut psbt, _) = {
     ///     let mut builder = wallet.build_tx();
     ///     builder
@@ -2919,7 +2931,7 @@
     /// let (mut psbt, _) =  {
     ///     let mut builder = wallet.build_fee_bump(tx.txid())?;
     ///     builder
-    ///         .fee_rate(FeeRate::from_sat_per_vb(5.0));
+    ///         .fee_rate(bdk::FeeRate::from_sat_per_vb(5.0));
     ///     builder.finish()?
     /// };
     ///
@@ -2983,7 +2995,8 @@
 
                 <span class="kw">let </span>weighted_utxo = <span class="kw">match </span>txout_index.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
                     <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(keychain, derivation_index)) =&gt; {
-                        <span class="kw">let </span>satisfaction_weight = <span class="self">self
+                        <span class="attr">#[allow(deprecated)]
+                        </span><span class="kw">let </span>satisfaction_weight = <span class="self">self
                             </span>.get_descriptor_for_keychain(keychain)
                             .max_satisfaction_weight()
                             .unwrap();
@@ -3075,7 +3088,7 @@
     /// # use bdk::*;
     /// # let descriptor = &quot;wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)&quot;;
     /// # let mut wallet = doctest_wallet!();
-    /// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();
+    /// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap().assume_checked();
     /// let (mut psbt, _) = {
     ///     let mut builder = wallet.build_tx();
     ///     builder.add_recipient(to_address.script_pubkey(), 50_000);
@@ -3112,8 +3125,8 @@
             &amp;&amp; !psbt.inputs.iter().all(|i| {
                 i.sighash_type.is_none()
                     || i.sighash_type == <span class="prelude-val">Some</span>(EcdsaSighashType::All.into())
-                    || i.sighash_type == <span class="prelude-val">Some</span>(SchnorrSighashType::All.into())
-                    || i.sighash_type == <span class="prelude-val">Some</span>(SchnorrSighashType::Default.into())
+                    || i.sighash_type == <span class="prelude-val">Some</span>(TapSighashType::All.into())
+                    || i.sighash_type == <span class="prelude-val">Some</span>(TapSighashType::Default.into())
             })
         {
             <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Signer(signer::SignerError::NonStandardSighash));
@@ -3308,14 +3321,15 @@
             .index
             .index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey)<span class="question-mark">?</span>;
         <span class="kw">let </span>descriptor = <span class="self">self</span>.get_descriptor_for_keychain(keychain);
-        <span class="prelude-val">Some</span>(descriptor.at_derivation_index(child))
+        descriptor.at_derivation_index(child).ok()
     }
 
     <span class="kw">fn </span>get_available_utxos(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;(LocalUtxo, usize)&gt; {
         <span class="self">self</span>.list_unspent()
             .map(|utxo| {
                 <span class="kw">let </span>keychain = utxo.keychain;
-                (
+                <span class="attr">#[allow(deprecated)]
+                </span>(
                     utxo,
                     <span class="self">self</span>.get_descriptor_for_keychain(keychain)
                         .max_satisfaction_weight()
@@ -3525,7 +3539,9 @@
         };
 
         <span class="kw">let </span>desc = <span class="self">self</span>.get_descriptor_for_keychain(keychain);
-        <span class="kw">let </span>derived_descriptor = desc.at_derivation_index(child);
+        <span class="kw">let </span>derived_descriptor = desc
+            .at_derivation_index(child)
+            .expect(<span class="string">&quot;child can&#39;t be hardened&quot;</span>);
 
         psbt_input
             .update_with_descriptor_unchecked(<span class="kw-2">&amp;</span>derived_descriptor)
@@ -3574,7 +3590,9 @@
                 );
 
                 <span class="kw">let </span>desc = <span class="self">self</span>.get_descriptor_for_keychain(keychain);
-                <span class="kw">let </span>desc = desc.at_derivation_index(child);
+                <span class="kw">let </span>desc = desc
+                    .at_derivation_index(child)
+                    .expect(<span class="string">&quot;child can&#39;t be hardened&quot;</span>);
 
                 <span class="kw">if </span>is_input {
                     psbt.update_input_with_descriptor(index, <span class="kw-2">&amp;</span>desc)
@@ -3776,7 +3794,7 @@
 </span><span class="doccomment">/// Macro for getting a wallet for use in a doctest
 </span><span class="macro">macro_rules! </span>doctest_wallet {
     () =&gt; {{
-        <span class="kw">use </span><span class="macro-nonterminal">$crate::bitcoin</span>::{BlockHash, Transaction, PackedLockTime, TxOut, Network, hashes::Hash};
+        <span class="kw">use </span><span class="macro-nonterminal">$crate::bitcoin</span>::{BlockHash, Transaction, absolute, TxOut, Network, hashes::Hash};
         <span class="kw">use </span><span class="macro-nonterminal">$crate::chain</span>::{ConfirmationTime, BlockId};
         <span class="kw">use </span><span class="macro-nonterminal">$crate::wallet</span>::{AddressIndex, Wallet};
         <span class="kw">let </span>descriptor = <span class="string">&quot;tr([73c5da0a/86&#39;/0&#39;/0&#39;]tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/0/*)&quot;</span>;
@@ -3791,7 +3809,7 @@
         <span class="kw">let </span>address = wallet.get_address(AddressIndex::New).address;
         <span class="kw">let </span>tx = Transaction {
             version: <span class="number">1</span>,
-            lock_time: PackedLockTime(<span class="number">0</span>),
+            lock_time: absolute::LockTime::ZERO,
             input: <span class="macro">vec!</span>[],
             output: <span class="macro">vec!</span>[TxOut {
                 value: <span class="number">500_000</span>,

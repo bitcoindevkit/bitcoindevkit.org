@@ -1890,6 +1890,22 @@
 <a href="#1889" id="1889">1889</a>
 <a href="#1890" id="1890">1890</a>
 <a href="#1891" id="1891">1891</a>
+<a href="#1892" id="1892">1892</a>
+<a href="#1893" id="1893">1893</a>
+<a href="#1894" id="1894">1894</a>
+<a href="#1895" id="1895">1895</a>
+<a href="#1896" id="1896">1896</a>
+<a href="#1897" id="1897">1897</a>
+<a href="#1898" id="1898">1898</a>
+<a href="#1899" id="1899">1899</a>
+<a href="#1900" id="1900">1900</a>
+<a href="#1901" id="1901">1901</a>
+<a href="#1902" id="1902">1902</a>
+<a href="#1903" id="1903">1903</a>
+<a href="#1904" id="1904">1904</a>
+<a href="#1905" id="1905">1905</a>
+<a href="#1906" id="1906">1906</a>
+<a href="#1907" id="1907">1907</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1937,9 +1953,9 @@
 <span class="kw">use </span>serde::ser::SerializeMap;
 <span class="kw">use </span>serde::{Serialize, Serializer};
 
+<span class="kw">use </span>bitcoin::bip32::Fingerprint;
 <span class="kw">use </span>bitcoin::hashes::{hash160, ripemd160, sha256};
-<span class="kw">use </span>bitcoin::util::bip32::Fingerprint;
-<span class="kw">use </span>bitcoin::{LockTime, PublicKey, Sequence, XOnlyPublicKey};
+<span class="kw">use </span>bitcoin::{absolute, key::XOnlyPublicKey, PublicKey, Sequence};
 
 <span class="kw">use </span>miniscript::descriptor::{
     DescriptorPublicKey, ShInner, SinglePub, SinglePubKey, SortedMultiVec, WshInner,
@@ -1960,7 +1976,7 @@
 <span class="kw">use </span><span class="kw">super</span>::checksum::calc_checksum;
 <span class="kw">use </span><span class="kw">super</span>::error::Error;
 <span class="kw">use </span><span class="kw">super</span>::XKeyUtils;
-<span class="kw">use </span>bitcoin::util::psbt::{Input <span class="kw">as </span>PsbtInput, PartiallySignedTransaction <span class="kw">as </span>Psbt};
+<span class="kw">use </span>bitcoin::psbt::{<span class="self">self</span>, Psbt};
 <span class="kw">use </span>miniscript::psbt::PsbtInputSatisfier;
 
 <span class="doccomment">/// A unique identifier for a key
@@ -1987,6 +2003,9 @@
                 ..
             }) =&gt; PkOrF::XOnlyPubkey(<span class="kw-2">*</span>pk),
             DescriptorPublicKey::XPub(xpub) =&gt; PkOrF::Fingerprint(xpub.root_fingerprint(secp)),
+            DescriptorPublicKey::MultiXPub(multi) =&gt; {
+                PkOrF::Fingerprint(multi.root_fingerprint(secp))
+            }
         }
     }
 }
@@ -2023,7 +2042,7 @@
     <span class="doccomment">/// Absolute timeclock timestamp
     </span>AbsoluteTimelock {
         <span class="doccomment">/// The timelock value
-        </span>value: LockTime,
+        </span>value: absolute::LockTime,
     },
     <span class="doccomment">/// Relative timelock locktime
     </span>RelativeTimelock {
@@ -2343,11 +2362,14 @@
     </span><span class="kw">pub </span>csv: <span class="prelude-ty">Option</span>&lt;Sequence&gt;,
     <span class="doccomment">/// Optional timelock condition
     </span><span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
-    </span><span class="kw">pub </span>timelock: <span class="prelude-ty">Option</span>&lt;LockTime&gt;,
+    </span><span class="kw">pub </span>timelock: <span class="prelude-ty">Option</span>&lt;absolute::LockTime&gt;,
 }
 
 <span class="kw">impl </span>Condition {
-    <span class="kw">fn </span>merge_nlocktime(a: LockTime, b: LockTime) -&gt; <span class="prelude-ty">Result</span>&lt;LockTime, PolicyError&gt; {
+    <span class="kw">fn </span>merge_nlocktime(
+        a: absolute::LockTime,
+        b: absolute::LockTime,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;absolute::LockTime, PolicyError&gt; {
         <span class="kw">if </span>!a.is_same_unit(b) {
             <span class="prelude-val">Err</span>(PolicyError::MixedTimelockUnits)
         } <span class="kw">else if </span>a &gt; b {
@@ -2641,6 +2663,7 @@
             ..
         }) =&gt; pk.to_pubkeyhash(SigType::Ecdsa).into(),
         DescriptorPublicKey::XPub(xpub) =&gt; xpub.root_fingerprint(secp).into(),
+        DescriptorPublicKey::MultiXPub(xpub) =&gt; xpub.root_fingerprint(secp).into(),
     }
 }
 
@@ -2678,9 +2701,9 @@
 <span class="kw">fn </span>generic_sig_in_psbt&lt;
     <span class="comment">// C is for &quot;check&quot;, it&#39;s a closure we use to *check* if a psbt input contains the signature
     // for a specific key
-    </span>C: Fn(<span class="kw-2">&amp;</span>PsbtInput, <span class="kw-2">&amp;</span>SinglePubKey) -&gt; bool,
+    </span>C: Fn(<span class="kw-2">&amp;</span>psbt::Input, <span class="kw-2">&amp;</span>SinglePubKey) -&gt; bool,
     <span class="comment">// E is for &quot;extract&quot;, it extracts a key from the bip32 derivations found in the psbt input
-    </span>E: Fn(<span class="kw-2">&amp;</span>PsbtInput, Fingerprint) -&gt; <span class="prelude-ty">Option</span>&lt;SinglePubKey&gt;,
+    </span>E: Fn(<span class="kw-2">&amp;</span>psbt::Input, Fingerprint) -&gt; <span class="prelude-ty">Option</span>&lt;SinglePubKey&gt;,
 &gt;(
     psbt: <span class="kw-2">&amp;</span>Psbt,
     key: <span class="kw-2">&amp;</span>DescriptorPublicKey,
@@ -2692,6 +2715,13 @@
     </span>psbt.inputs.iter().all(|input| <span class="kw">match </span>key {
         DescriptorPublicKey::Single(SinglePub { key, .. }) =&gt; check(input, key),
         DescriptorPublicKey::XPub(xpub) =&gt; {
+            <span class="comment">//TODO check actual derivation matches
+            </span><span class="kw">match </span>extract(input, xpub.root_fingerprint(secp)) {
+                <span class="prelude-val">Some</span>(pubkey) =&gt; check(input, <span class="kw-2">&amp;</span>pubkey),
+                <span class="prelude-val">None </span>=&gt; <span class="bool-val">false</span>,
+            }
+        }
+        DescriptorPublicKey::MultiXPub(xpub) =&gt; {
             <span class="comment">//TODO check actual derivation matches
             </span><span class="kw">match </span>extract(input, xpub.root_fingerprint(secp)) {
                 <span class="prelude-val">Some</span>(pubkey) =&gt; check(input, <span class="kw-2">&amp;</span>pubkey),
@@ -2803,12 +2833,12 @@
             }
             Terminal::After(value) =&gt; {
                 <span class="kw">let </span><span class="kw-2">mut </span>policy: Policy = SatisfiableItem::AbsoluteTimelock {
-                    value: value.into(),
+                    value: (<span class="kw-2">*</span>value).into(),
                 }
                 .into();
                 policy.contribution = Satisfaction::Complete {
                     condition: Condition {
-                        timelock: <span class="prelude-val">Some</span>(value.into()),
+                        timelock: <span class="prelude-val">Some</span>((<span class="kw-2">*</span>value).into()),
                         csv: <span class="prelude-val">None</span>,
                     },
                 };
@@ -2820,9 +2850,9 @@
                 {
                     <span class="kw">let </span>after = After::new(<span class="prelude-val">Some</span>(current_height), <span class="bool-val">false</span>);
                     <span class="kw">let </span>after_sat =
-                        Satisfier::&lt;bitcoin::PublicKey&gt;::check_after(<span class="kw-2">&amp;</span>after, value.into());
+                        Satisfier::&lt;bitcoin::PublicKey&gt;::check_after(<span class="kw-2">&amp;</span>after, (<span class="kw-2">*</span>value).into());
                     <span class="kw">let </span>inputs_sat = psbt_inputs_sat(psbt).all(|sat| {
-                        Satisfier::&lt;bitcoin::PublicKey&gt;::check_after(<span class="kw-2">&amp;</span>sat, value.into())
+                        Satisfier::&lt;bitcoin::PublicKey&gt;::check_after(<span class="kw-2">&amp;</span>sat, (<span class="kw-2">*</span>value).into())
                     });
                     <span class="kw">if </span>after_sat &amp;&amp; inputs_sat {
                         policy.satisfaction = policy.contribution.clone();
@@ -3048,8 +3078,8 @@
     <span class="kw">use </span><span class="kw">crate</span>::wallet::signer::SignersContainer;
     <span class="kw">use </span>alloc::{string::ToString, sync::Arc};
     <span class="kw">use </span>assert_matches::assert_matches;
+    <span class="kw">use </span>bitcoin::bip32;
     <span class="kw">use </span>bitcoin::secp256k1::Secp256k1;
-    <span class="kw">use </span>bitcoin::util::bip32;
     <span class="kw">use </span>bitcoin::Network;
     <span class="kw">use </span>core::str::FromStr;
 
@@ -3467,6 +3497,7 @@
 
         <span class="kw">let </span>addr = wallet_desc
             .at_derivation_index(<span class="number">0</span>)
+            .unwrap()
             .address(Network::Testnet)
             .unwrap();
         <span class="macro">assert_eq!</span>(
@@ -3533,6 +3564,7 @@
 
         <span class="kw">let </span>addr = wallet_desc
             .at_derivation_index(<span class="number">0</span>)
+            .unwrap()
             .address(Network::Testnet)
             .unwrap();
         <span class="macro">assert_eq!</span>(

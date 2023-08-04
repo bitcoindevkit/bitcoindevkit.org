@@ -355,7 +355,7 @@
 
 <span class="kw">use </span>bdk_chain::ConfirmationTime;
 <span class="kw">use </span>bitcoin::blockdata::transaction::{OutPoint, Transaction, TxOut};
-<span class="kw">use </span>bitcoin::{hash_types::Txid, util::psbt};
+<span class="kw">use </span>bitcoin::{hash_types::Txid, psbt, Weight};
 
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 
@@ -439,8 +439,8 @@
     }
 
     <span class="doccomment">/// Calculate fee rate from `fee` and weight units (`wu`).
-    </span><span class="kw">pub fn </span>from_wu(fee: u64, wu: usize) -&gt; FeeRate {
-        <span class="self">Self</span>::from_vb(fee, wu.vbytes())
+    </span><span class="kw">pub fn </span>from_wu(fee: u64, wu: Weight) -&gt; FeeRate {
+        <span class="self">Self</span>::from_vb(fee, wu.to_vbytes_ceil() <span class="kw">as </span>usize)
     }
 
     <span class="doccomment">/// Calculate fee rate from `fee` and `vbytes`.
@@ -460,8 +460,8 @@
     </span>}
 
     <span class="doccomment">/// Calculate absolute fee in Satoshis using size in weight units.
-    </span><span class="kw">pub fn </span>fee_wu(<span class="kw-2">&amp;</span><span class="self">self</span>, wu: usize) -&gt; u64 {
-        <span class="self">self</span>.fee_vb(wu.vbytes())
+    </span><span class="kw">pub fn </span>fee_wu(<span class="kw-2">&amp;</span><span class="self">self</span>, wu: Weight) -&gt; u64 {
+        <span class="self">self</span>.fee_vb(wu.to_vbytes_ceil() <span class="kw">as </span>usize)
     }
 
     <span class="doccomment">/// Calculate absolute fee in Satoshis using size in virtual bytes.

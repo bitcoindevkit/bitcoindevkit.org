@@ -300,6 +300,7 @@
 <a href="#300" id="300">300</a>
 <a href="#301" id="301">301</a>
 <a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::BTreeMap,
     io::{<span class="self">self</span>, Write},
@@ -307,7 +308,7 @@
 };
 
 <span class="kw">use </span>bdk_chain::{
-    bitcoin::{Address, Network, OutPoint, Txid},
+    bitcoin::{Address, Network, OutPoint, ScriptBuf, Txid},
     indexed_tx_graph::{IndexedAdditions, IndexedTxGraph},
     keychain::LocalChangeSet,
     local_chain::LocalChain,
@@ -381,6 +382,7 @@
         Network::Testnet =&gt; <span class="string">&quot;ssl://electrum.blockstream.info:60002&quot;</span>,
         Network::Regtest =&gt; <span class="string">&quot;tcp://localhost:60401&quot;</span>,
         Network::Signet =&gt; <span class="string">&quot;tcp://signet-electrumx.wakiyamap.dev:50001&quot;</span>,
+        <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unknown network&quot;</span>),
     };
     <span class="kw">let </span>config = electrum_client::Config::builder()
         .validate_domain(<span class="macro">matches!</span>(args.network, Network::Bitcoin))
@@ -474,7 +476,7 @@
                 unused_spks = <span class="bool-val">false</span>;
             }
 
-            <span class="kw">let </span><span class="kw-2">mut </span>spks: Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = bdk_chain::bitcoin::Script&gt;&gt; =
+            <span class="kw">let </span><span class="kw-2">mut </span>spks: Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = bdk_chain::bitcoin::ScriptBuf&gt;&gt; =
                 Box::new(core::iter::empty());
             <span class="kw">if </span>all_spks {
                 <span class="kw">let </span>all_spks = graph
@@ -492,7 +494,7 @@
                 <span class="kw">let </span>unused_spks = graph
                     .index
                     .unused_spks(..)
-                    .map(|(k, v)| (<span class="kw-2">*</span>k, v.clone()))
+                    .map(|(k, v)| (<span class="kw-2">*</span>k, ScriptBuf::from(v)))
                     .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
                 spks = Box::new(spks.chain(unused_spks.into_iter().map(|(index, script)| {
                     <span class="macro">eprintln!</span>(

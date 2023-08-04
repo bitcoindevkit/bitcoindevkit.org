@@ -216,15 +216,31 @@
 <a href="#216" id="216">216</a>
 <a href="#217" id="217">217</a>
 <a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bdk_chain::{bitcoin, collections::<span class="kw-2">*</span>, miniscript};
 <span class="kw">use </span>core::ops::Deref;
 
 <span class="kw">use </span>bitcoin::{
+    bip32,
     hashes::{hash160, ripemd160, sha256},
+    key::XOnlyPublicKey,
     psbt::Prevouts,
     secp256k1::{KeyPair, Message, PublicKey, Signing, Verification},
-    util::{bip32, sighash, sighash::SighashCache, taproot},
-    EcdsaSighashType, SchnorrSighashType, Transaction, TxOut, XOnlyPublicKey,
+    sighash,
+    sighash::{EcdsaSighashType, SighashCache, TapSighashType},
+    taproot, Transaction, TxOut,
 };
 
 <span class="kw">use super</span>::<span class="kw-2">*</span>;
@@ -290,7 +306,7 @@
         <span class="doccomment">/// the internal key
         </span>plan_key: PlanKey&lt;Ak&gt;,
         <span class="doccomment">/// The merkle root of the taproot output
-        </span>merkle_root: <span class="prelude-ty">Option</span>&lt;TapBranchHash&gt;,
+        </span>merkle_root: <span class="prelude-ty">Option</span>&lt;taproot::TapNodeHash&gt;,
     },
     <span class="doccomment">/// Taproot script path signatures are required
     </span>TapScript {
@@ -332,12 +348,12 @@
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>SigningError {}
 
 <span class="kw">impl </span>RequiredSignatures&lt;DescriptorPublicKey&gt; {
-    <span class="kw">pub fn </span>sign_with_keymap&lt;T: Deref&lt;Target = Transaction&gt;&gt;(
+    <span class="kw">pub fn </span>sign_with_keymap&lt;T: core::borrow::Borrow&lt;Transaction&gt;&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         input_index: usize,
         keymap: <span class="kw-2">&amp;</span>KeyMap,
         prevouts: <span class="kw-2">&amp;</span>Prevouts&lt;<span class="lifetime">&#39;_</span>, <span class="kw">impl </span>core::borrow::Borrow&lt;TxOut&gt;&gt;,
-        schnorr_sighashty: <span class="prelude-ty">Option</span>&lt;SchnorrSighashType&gt;,
+        schnorr_sighashty: <span class="prelude-ty">Option</span>&lt;TapSighashType&gt;,
         _ecdsa_sighashty: <span class="prelude-ty">Option</span>&lt;EcdsaSighashType&gt;,
         sighash_cache: <span class="kw-2">&amp;mut </span>SighashCache&lt;T&gt;,
         auth_data: <span class="kw-2">&amp;mut </span>SatisfactionMaterial,
@@ -349,7 +365,7 @@
                 plan_key,
                 merkle_root,
             } =&gt; {
-                <span class="kw">let </span>schnorr_sighashty = schnorr_sighashty.unwrap_or(SchnorrSighashType::Default);
+                <span class="kw">let </span>schnorr_sighashty = schnorr_sighashty.unwrap_or(TapSighashType::Default);
                 <span class="kw">let </span>sighash = sighash_cache.taproot_key_spend_signature_hash(
                     input_index,
                     prevouts,
@@ -366,6 +382,11 @@
                             .derive_priv(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>plan_key.derivation_hint)<span class="question-mark">?
                             </span>.private_key
                     }
+                    DescriptorSecretKey::MultiXPrv(<span class="kw">_</span>) =&gt; {
+                        <span class="comment">// This crate will be replaced by
+                        // https://github.com/rust-bitcoin/rust-miniscript/pull/481 anyways
+                        </span><span class="macro">todo!</span>();
+                    }
                 };
 
                 <span class="kw">let </span>pubkey = PublicKey::from_secret_key(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>secret_key);
@@ -380,7 +401,7 @@
                 <span class="kw">let </span>msg = Message::from_slice(sighash.as_ref()).expect(<span class="string">&quot;Sighashes are 32 bytes&quot;</span>);
                 <span class="kw">let </span>sig = secp.sign_schnorr_no_aux_rand(<span class="kw-2">&amp;</span>msg, <span class="kw-2">&amp;</span>keypair);
 
-                <span class="kw">let </span>bitcoin_sig = SchnorrSig {
+                <span class="kw">let </span>bitcoin_sig = taproot::Signature {
                     sig,
                     hash_ty: schnorr_sighashty,
                 };
@@ -394,7 +415,7 @@
                 leaf_hash,
                 plan_keys,
             } =&gt; {
-                <span class="kw">let </span>sighash_type = schnorr_sighashty.unwrap_or(SchnorrSighashType::Default);
+                <span class="kw">let </span>sighash_type = schnorr_sighashty.unwrap_or(TapSighashType::Default);
                 <span class="kw">let </span>sighash = sighash_cache.taproot_script_spend_signature_hash(
                     input_index,
                     prevouts,
@@ -413,12 +434,17 @@
                                     .derive_priv(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>plan_key.derivation_hint)<span class="question-mark">?
                                     </span>.private_key
                             }
+                            DescriptorSecretKey::MultiXPrv(<span class="kw">_</span>) =&gt; {
+                                <span class="comment">// This crate will be replaced by
+                                // https://github.com/rust-bitcoin/rust-miniscript/pull/481 anyways
+                                </span><span class="macro">todo!</span>();
+                            }
                         };
                         <span class="kw">let </span>keypair = KeyPair::from_secret_key(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>secret_key.clone());
                         <span class="kw">let </span>msg =
                             Message::from_slice(sighash.as_ref()).expect(<span class="string">&quot;Sighashes are 32 bytes&quot;</span>);
                         <span class="kw">let </span>sig = secp.sign_schnorr_no_aux_rand(<span class="kw-2">&amp;</span>msg, <span class="kw-2">&amp;</span>keypair);
-                        <span class="kw">let </span>bitcoin_sig = SchnorrSig {
+                        <span class="kw">let </span>bitcoin_sig = taproot::Signature {
                             sig,
                             hash_ty: sighash_type,
                         };

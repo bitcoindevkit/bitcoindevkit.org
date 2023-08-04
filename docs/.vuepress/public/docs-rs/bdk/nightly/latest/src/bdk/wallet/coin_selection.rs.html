@@ -1444,6 +1444,14 @@
 <a href="#1443" id="1443">1443</a>
 <a href="#1444" id="1444">1444</a>
 <a href="#1445" id="1445">1445</a>
+<a href="#1446" id="1446">1446</a>
+<a href="#1447" id="1447">1447</a>
+<a href="#1448" id="1448">1448</a>
+<a href="#1449" id="1449">1449</a>
+<a href="#1450" id="1450">1450</a>
+<a href="#1451" id="1451">1451</a>
+<a href="#1452" id="1452">1452</a>
+<a href="#1453" id="1453">1453</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1484,12 +1492,12 @@
 //!         &amp;self,
 //!         required_utxos: Vec&lt;WeightedUtxo&gt;,
 //!         optional_utxos: Vec&lt;WeightedUtxo&gt;,
-//!         fee_rate: FeeRate,
+//!         fee_rate: bdk::FeeRate,
 //!         target_amount: u64,
 //!         drain_script: &amp;Script,
 //!     ) -&gt; Result&lt;CoinSelectionResult, bdk::Error&gt; {
 //!         let mut selected_amount = 0;
-//!         let mut additional_weight = 0;
+//!         let mut additional_weight = Weight::ZERO;
 //!         let all_utxos_selected = required_utxos
 //!             .into_iter()
 //!             .chain(optional_utxos)
@@ -1497,7 +1505,9 @@
 //!                 (&amp;mut selected_amount, &amp;mut additional_weight),
 //!                 |(selected_amount, additional_weight), weighted_utxo| {
 //!                     **selected_amount += weighted_utxo.utxo.txout().value;
-//!                     **additional_weight += TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight;
+//!                     **additional_weight += Weight::from_wu(
+//!                         (TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight) as u64,
+//!                     );
 //!                     Some(weighted_utxo.utxo)
 //!                 },
 //!             )
@@ -1526,7 +1536,10 @@
 //! # let mut wallet = doctest_wallet!();
 //! // create wallet, sync, ...
 //!
-//! let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap();
+//! let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;)
+//!     .unwrap()
+//!     .require_network(Network::Testnet)
+//!     .unwrap();
 //! let (psbt, details) = {
 //!     let mut builder = wallet.build_tx().coin_selection(AlwaysSpendEverything);
 //!     builder.add_recipient(to_address.script_pubkey(), 50_000);
@@ -1545,7 +1558,7 @@
 
 <span class="kw">use </span>alloc::vec::Vec;
 <span class="kw">use </span>bitcoin::consensus::encode::serialize;
-<span class="kw">use </span>bitcoin::Script;
+<span class="kw">use </span>bitcoin::{Script, Weight};
 
 <span class="kw">use </span>core::convert::TryInto;
 <span class="kw">use </span>rand::seq::SliceRandom;
@@ -1748,8 +1761,9 @@
             (<span class="kw-2">&amp;mut </span>selected_amount, <span class="kw-2">&amp;mut </span>fee_amount),
             |(selected_amount, fee_amount), (must_use, weighted_utxo)| {
                 <span class="kw">if </span>must_use || <span class="kw-2">**</span>selected_amount &lt; target_amount + <span class="kw-2">**</span>fee_amount {
-                    <span class="kw-2">**</span>fee_amount +=
-                        fee_rate.fee_wu(TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight);
+                    <span class="kw-2">**</span>fee_amount += fee_rate.fee_wu(Weight::from_wu(
+                        (TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight) <span class="kw">as </span>u64,
+                    ));
                     <span class="kw-2">**</span>selected_amount += weighted_utxo.utxo.txout().value;
 
                     <span class="macro">log::debug!</span>(
@@ -1797,7 +1811,9 @@
 
 <span class="kw">impl </span>OutputGroup {
     <span class="kw">fn </span>new(weighted_utxo: WeightedUtxo, fee_rate: FeeRate) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span>fee = fee_rate.fee_wu(TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight);
+        <span class="kw">let </span>fee = fee_rate.fee_wu(Weight::from_wu(
+            (TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight) <span class="kw">as </span>u64,
+        ));
         <span class="kw">let </span>effective_value = weighted_utxo.utxo.txout().value <span class="kw">as </span>i64 - fee <span class="kw">as </span>i64;
         OutputGroup {
             weighted_utxo,
@@ -2127,7 +2143,7 @@
     <span class="kw">use </span>core::str::FromStr;
 
     <span class="kw">use </span>bdk_chain::ConfirmationTime;
-    <span class="kw">use </span>bitcoin::{OutPoint, Script, TxOut};
+    <span class="kw">use </span>bitcoin::{OutPoint, ScriptBuf, TxOut};
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::types::<span class="kw-2">*</span>;
@@ -2156,7 +2172,7 @@
                 outpoint,
                 txout: TxOut {
                     value,
-                    script_pubkey: Script::new(),
+                    script_pubkey: ScriptBuf::new(),
                 },
                 keychain: KeychainKind::External,
                 is_spent: <span class="bool-val">false</span>,
@@ -2219,7 +2235,7 @@
                     .unwrap(),
                     txout: TxOut {
                         value: rng.gen_range(<span class="number">0</span>..<span class="number">200000000</span>),
-                        script_pubkey: Script::new(),
+                        script_pubkey: ScriptBuf::new(),
                     },
                     keychain: KeychainKind::External,
                     is_spent: <span class="bool-val">false</span>,
@@ -2248,7 +2264,7 @@
                 .unwrap(),
                 txout: TxOut {
                     value: utxos_value,
-                    script_pubkey: Script::new(),
+                    script_pubkey: ScriptBuf::new(),
                 },
                 keychain: KeychainKind::External,
                 is_spent: <span class="bool-val">false</span>,
@@ -2271,7 +2287,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_largest_first_coin_selection_success() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">250_000 </span>+ FEE_AMOUNT;
 
         <span class="kw">let </span>result = LargestFirstCoinSelection::default()
@@ -2292,7 +2308,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_largest_first_coin_selection_use_all() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">20_000 </span>+ FEE_AMOUNT;
 
         <span class="kw">let </span>result = LargestFirstCoinSelection::default()
@@ -2313,7 +2329,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_largest_first_coin_selection_use_only_necessary() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">20_000 </span>+ FEE_AMOUNT;
 
         <span class="kw">let </span>result = LargestFirstCoinSelection::default()
@@ -2335,7 +2351,7 @@
     #[should_panic(expected = <span class="string">&quot;InsufficientFunds&quot;</span>)]
     </span><span class="kw">fn </span>test_largest_first_coin_selection_insufficient_funds() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">500_000 </span>+ FEE_AMOUNT;
 
         LargestFirstCoinSelection::default()
@@ -2353,7 +2369,7 @@
     #[should_panic(expected = <span class="string">&quot;InsufficientFunds&quot;</span>)]
     </span><span class="kw">fn </span>test_largest_first_coin_selection_insufficient_funds_high_fees() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">250_000 </span>+ FEE_AMOUNT;
 
         LargestFirstCoinSelection::default()
@@ -2370,7 +2386,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_oldest_first_coin_selection_success() {
         <span class="kw">let </span>utxos = get_oldest_first_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">180_000 </span>+ FEE_AMOUNT;
 
         <span class="kw">let </span>result = OldestFirstCoinSelection::default()
@@ -2391,7 +2407,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_oldest_first_coin_selection_use_all() {
         <span class="kw">let </span>utxos = get_oldest_first_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">20_000 </span>+ FEE_AMOUNT;
 
         <span class="kw">let </span>result = OldestFirstCoinSelection::default()
@@ -2412,7 +2428,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_oldest_first_coin_selection_use_only_necessary() {
         <span class="kw">let </span>utxos = get_oldest_first_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">20_000 </span>+ FEE_AMOUNT;
 
         <span class="kw">let </span>result = OldestFirstCoinSelection::default()
@@ -2434,7 +2450,7 @@
     #[should_panic(expected = <span class="string">&quot;InsufficientFunds&quot;</span>)]
     </span><span class="kw">fn </span>test_oldest_first_coin_selection_insufficient_funds() {
         <span class="kw">let </span>utxos = get_oldest_first_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">600_000 </span>+ FEE_AMOUNT;
 
         OldestFirstCoinSelection::default()
@@ -2454,7 +2470,7 @@
         <span class="kw">let </span>utxos = get_oldest_first_test_utxos();
 
         <span class="kw">let </span>target_amount: u64 = utxos.iter().map(|wu| wu.utxo.txout().value).sum::&lt;u64&gt;() - <span class="number">50</span>;
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
 
         OldestFirstCoinSelection::default()
             .coin_select(
@@ -2473,7 +2489,7 @@
         // select three outputs
         </span><span class="kw">let </span>utxos = generate_same_value_utxos(<span class="number">100_000</span>, <span class="number">20</span>);
 
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
 
         <span class="kw">let </span>target_amount = <span class="number">250_000 </span>+ FEE_AMOUNT;
 
@@ -2495,7 +2511,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_bnb_coin_selection_required_are_enough() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">20_000 </span>+ FEE_AMOUNT;
 
         <span class="kw">let </span>result = BranchAndBoundCoinSelection::default()
@@ -2516,7 +2532,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_bnb_coin_selection_optional_are_enough() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">299756 </span>+ FEE_AMOUNT;
 
         <span class="kw">let </span>result = BranchAndBoundCoinSelection::default()
@@ -2552,7 +2568,7 @@
         <span class="macro">assert_eq!</span>(amount, <span class="number">100_000</span>);
         <span class="kw">let </span>amount: u64 = optional.iter().map(|u| u.utxo.txout().value).sum();
         <span class="macro">assert!</span>(amount &gt; <span class="number">150_000</span>);
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
 
         <span class="kw">let </span>target_amount = <span class="number">150_000 </span>+ FEE_AMOUNT;
 
@@ -2575,7 +2591,7 @@
     #[should_panic(expected = <span class="string">&quot;InsufficientFunds&quot;</span>)]
     </span><span class="kw">fn </span>test_bnb_coin_selection_insufficient_funds() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">500_000 </span>+ FEE_AMOUNT;
 
         BranchAndBoundCoinSelection::default()
@@ -2593,7 +2609,7 @@
     #[should_panic(expected = <span class="string">&quot;InsufficientFunds&quot;</span>)]
     </span><span class="kw">fn </span>test_bnb_coin_selection_insufficient_funds_high_fees() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">250_000 </span>+ FEE_AMOUNT;
 
         BranchAndBoundCoinSelection::default()
@@ -2610,7 +2626,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_bnb_coin_selection_check_fee_rate() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">99932</span>; <span class="comment">// first utxo&#39;s effective value
 
         </span><span class="kw">let </span>result = BranchAndBoundCoinSelection::new(<span class="number">0</span>)
@@ -2638,7 +2654,7 @@
         <span class="kw">for </span>_i <span class="kw">in </span><span class="number">0</span>..<span class="number">200 </span>{
             <span class="kw">let </span><span class="kw-2">mut </span>optional_utxos = generate_random_utxos(<span class="kw-2">&amp;mut </span>rng, <span class="number">16</span>);
             <span class="kw">let </span>target_amount = sum_random_utxos(<span class="kw-2">&amp;mut </span>rng, <span class="kw-2">&amp;mut </span>optional_utxos);
-            <span class="kw">let </span>drain_script = Script::default();
+            <span class="kw">let </span>drain_script = ScriptBuf::default();
             <span class="kw">let </span>result = BranchAndBoundCoinSelection::new(<span class="number">0</span>)
                 .coin_select(
                     <span class="macro">vec!</span>[],
@@ -2666,7 +2682,7 @@
         <span class="kw">let </span>size_of_change = <span class="number">31</span>;
         <span class="kw">let </span>cost_of_change = size_of_change <span class="kw">as </span>f32 * fee_rate.as_sat_per_vb();
 
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">20_000 </span>+ FEE_AMOUNT;
         BranchAndBoundCoinSelection::new(size_of_change)
             .bnb(
@@ -2697,7 +2713,7 @@
         <span class="kw">let </span>cost_of_change = size_of_change <span class="kw">as </span>f32 * fee_rate.as_sat_per_vb();
         <span class="kw">let </span>target_amount = <span class="number">20_000 </span>+ FEE_AMOUNT;
 
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
 
         BranchAndBoundCoinSelection::new(size_of_change)
             .bnb(
@@ -2733,7 +2749,7 @@
         // cost_of_change + 5.
         </span><span class="kw">let </span>target_amount = <span class="number">2 </span>* <span class="number">50_000 </span>- <span class="number">2 </span>* <span class="number">67 </span>- cost_of_change.ceil() <span class="kw">as </span>i64 + <span class="number">5</span>;
 
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
 
         <span class="kw">let </span>result = BranchAndBoundCoinSelection::new(size_of_change)
             .bnb(
@@ -2773,7 +2789,7 @@
             <span class="kw">let </span>target_amount =
                 optional_utxos[<span class="number">3</span>].effective_value + optional_utxos[<span class="number">23</span>].effective_value;
 
-            <span class="kw">let </span>drain_script = Script::default();
+            <span class="kw">let </span>drain_script = ScriptBuf::default();
 
             <span class="kw">let </span>result = BranchAndBoundCoinSelection::new(<span class="number">0</span>)
                 .bnb(
@@ -2804,7 +2820,7 @@
             .map(|u| OutputGroup::new(u, fee_rate))
             .collect();
 
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
 
         <span class="kw">let </span>result = BranchAndBoundCoinSelection::default().single_random_draw(
             <span class="macro">vec!</span>[],
@@ -2822,7 +2838,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_bnb_exclude_negative_effective_value() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
 
         <span class="kw">let </span>selection = BranchAndBoundCoinSelection::default().coin_select(
             <span class="macro">vec!</span>[],
@@ -2844,7 +2860,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_bnb_include_negative_effective_value_when_required() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
 
         <span class="kw">let </span>(required, optional) = utxos
             .into_iter()
@@ -2870,7 +2886,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_bnb_sum_of_effective_value_negative() {
         <span class="kw">let </span>utxos = get_test_utxos();
-        <span class="kw">let </span>drain_script = Script::default();
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
 
         <span class="kw">let </span>selection = BranchAndBoundCoinSelection::default().coin_select(
             utxos,
