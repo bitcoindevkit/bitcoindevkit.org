@@ -301,6 +301,7 @@
 <a href="#301" id="301">301</a>
 <a href="#302" id="302">302</a>
 <a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::BTreeMap,
     io::{<span class="self">self</span>, Write},
@@ -309,8 +310,8 @@
 
 <span class="kw">use </span>bdk_chain::{
     bitcoin::{Address, Network, OutPoint, ScriptBuf, Txid},
-    indexed_tx_graph::{IndexedAdditions, IndexedTxGraph},
-    keychain::LocalChangeSet,
+    indexed_tx_graph::{<span class="self">self</span>, IndexedTxGraph},
+    keychain::WalletChangeSet,
     local_chain::LocalChain,
     Append, ConfirmationHeightAnchor,
 };
@@ -363,7 +364,7 @@
     </span><span class="kw">pub </span>batch_size: usize,
 }
 
-<span class="kw">type </span>ChangeSet = LocalChangeSet&lt;Keychain, ConfirmationHeightAnchor&gt;;
+<span class="kw">type </span>ChangeSet = WalletChangeSet&lt;Keychain, ConfirmationHeightAnchor&gt;;
 
 <span class="kw">fn </span>main() -&gt; anyhow::Result&lt;()&gt; {
     <span class="kw">let </span>(args, keymap, index, db, init_changeset) =
@@ -371,11 +372,11 @@
 
     <span class="kw">let </span>graph = Mutex::new({
         <span class="kw">let </span><span class="kw-2">mut </span>graph = IndexedTxGraph::new(index);
-        graph.apply_additions(init_changeset.indexed_additions);
+        graph.apply_changeset(init_changeset.index_tx_graph);
         graph
     });
 
-    <span class="kw">let </span>chain = Mutex::new(LocalChain::from_changeset(init_changeset.chain_changeset));
+    <span class="kw">let </span>chain = Mutex::new(LocalChain::from_changeset(init_changeset.chain));
 
     <span class="kw">let </span>electrum_url = <span class="kw">match </span>args.network {
         Network::Bitcoin =&gt; <span class="string">&quot;ssl://electrum.blockstream.info:50002&quot;</span>,
@@ -537,8 +538,8 @@
                 <span class="kw">let </span>unconfirmed_txids = graph
                     .graph()
                     .list_chain_txs(<span class="kw-2">&amp;*</span>chain, chain_tip)
-                    .filter(|canonical_tx| !canonical_tx.observed_as.is_confirmed())
-                    .map(|canonical_tx| canonical_tx.node.txid)
+                    .filter(|canonical_tx| !canonical_tx.chain_position.is_confirmed())
+                    .map(|canonical_tx| canonical_tx.tx_node.txid)
                     .collect::&lt;Vec&lt;Txid&gt;&gt;();
 
                 txids = Box::new(unconfirmed_txids.into_iter().inspect(|txid| {
@@ -578,24 +579,25 @@
         <span class="kw">let </span><span class="kw-2">mut </span>chain = chain.lock().unwrap();
         <span class="kw">let </span><span class="kw-2">mut </span>graph = graph.lock().unwrap();
 
-        <span class="kw">let </span>chain_changeset = chain.apply_update(final_update.chain)<span class="question-mark">?</span>;
+        <span class="kw">let </span>chain = chain.apply_update(final_update.chain)<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>indexed_additions = {
-            <span class="kw">let </span><span class="kw-2">mut </span>additions = IndexedAdditions::&lt;ConfirmationHeightAnchor, <span class="kw">_</span>&gt;::default();
-            <span class="kw">let </span>(<span class="kw">_</span>, index_additions) = graph
+        <span class="kw">let </span>index_tx_graph = {
+            <span class="kw">let </span><span class="kw-2">mut </span>changeset =
+                indexed_tx_graph::ChangeSet::&lt;ConfirmationHeightAnchor, <span class="kw">_</span>&gt;::default();
+            <span class="kw">let </span>(<span class="kw">_</span>, indexer) = graph
                 .index
                 .reveal_to_target_multi(<span class="kw-2">&amp;</span>final_update.last_active_indices);
-            additions.append(IndexedAdditions {
-                index_additions,
+            changeset.append(indexed_tx_graph::ChangeSet {
+                indexer,
                 ..Default::default()
             });
-            additions.append(graph.apply_update(final_update.graph));
-            additions
+            changeset.append(graph.apply_update(final_update.graph));
+            changeset
         };
 
         ChangeSet {
-            indexed_additions,
-            chain_changeset,
+            index_tx_graph,
+            chain,
         }
     };
 

@@ -586,6 +586,8 @@
 <a href="#586" id="586">586</a>
 <a href="#587" id="587">587</a>
 <a href="#588" id="588">588</a>
+<a href="#589" id="589">589</a>
+<a href="#590" id="590">590</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     collections::<span class="kw-2">*</span>,
     indexed_tx_graph::Indexer,
@@ -599,8 +601,6 @@
 
 <span class="kw">use </span><span class="kw">crate</span>::Append;
 
-<span class="kw">use </span><span class="kw">super</span>::DerivationAdditions;
-
 <span class="doccomment">/// A convenient wrapper around [`SpkTxOutIndex`] that relates script pubkeys to miniscript public
 /// [`Descriptor`]s.
 ///
@@ -611,7 +611,7 @@
 /// revealed. In addition to revealed scripts, we have a `lookahead` parameter for each keychain,
 /// which defines the number of script pubkeys to store ahead of the last revealed index.
 ///
-/// Methods that could update the last revealed index will return [`DerivationAdditions`] to report
+/// Methods that could update the last revealed index will return [`super::ChangeSet`] to report
 /// these changes. This can be persisted for future recovery.
 ///
 /// ## Synopsis
@@ -678,18 +678,22 @@
 }
 
 <span class="kw">impl</span>&lt;K: Clone + Ord + Debug&gt; Indexer <span class="kw">for </span>KeychainTxOutIndex&lt;K&gt; {
-    <span class="kw">type </span>Additions = DerivationAdditions&lt;K&gt;;
+    <span class="kw">type </span>ChangeSet = <span class="kw">super</span>::ChangeSet&lt;K&gt;;
 
-    <span class="kw">fn </span>index_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="self">Self</span>::Additions {
+    <span class="kw">fn </span>index_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="self">Self</span>::ChangeSet {
         <span class="self">self</span>.scan_txout(outpoint, txout)
     }
 
-    <span class="kw">fn </span>index_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>bitcoin::Transaction) -&gt; <span class="self">Self</span>::Additions {
+    <span class="kw">fn </span>index_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>bitcoin::Transaction) -&gt; <span class="self">Self</span>::ChangeSet {
         <span class="self">self</span>.scan(tx)
     }
 
-    <span class="kw">fn </span>apply_additions(<span class="kw-2">&amp;mut </span><span class="self">self</span>, additions: <span class="self">Self</span>::Additions) {
-        <span class="self">self</span>.apply_additions(additions)
+    <span class="kw">fn </span>initial_changeset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::ChangeSet {
+        <span class="kw">super</span>::ChangeSet(<span class="self">self</span>.last_revealed.clone())
+    }
+
+    <span class="kw">fn </span>apply_changeset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: <span class="self">Self</span>::ChangeSet) {
+        <span class="self">self</span>.apply_changeset(changeset)
     }
 
     <span class="kw">fn </span>is_tx_relevant(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>bitcoin::Transaction) -&gt; bool {
@@ -701,7 +705,7 @@
     <span class="doccomment">/// Scans an object for relevant outpoints, which are stored and indexed internally.
     ///
     /// If the matched script pubkey is part of the lookahead, the last stored index is updated for
-    /// the script pubkey&#39;s keychain and the [`DerivationAdditions`] returned will reflect the
+    /// the script pubkey&#39;s keychain and the [`super::ChangeSet`] returned will reflect the
     /// change.
     ///
     /// Typically, this method is used in two situations:
@@ -714,19 +718,19 @@
     /// See [`ForEachTxout`] for the types that support this.
     ///
     /// [`ForEachTxout`]: crate::ForEachTxOut
-    </span><span class="kw">pub fn </span>scan(<span class="kw-2">&amp;mut </span><span class="self">self</span>, txouts: <span class="kw-2">&amp;</span><span class="kw">impl </span>ForEachTxOut) -&gt; DerivationAdditions&lt;K&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>additions = DerivationAdditions::&lt;K&gt;::default();
-        txouts.for_each_txout(|(op, txout)| additions.append(<span class="self">self</span>.scan_txout(op, txout)));
-        additions
+    </span><span class="kw">pub fn </span>scan(<span class="kw-2">&amp;mut </span><span class="self">self</span>, txouts: <span class="kw-2">&amp;</span><span class="kw">impl </span>ForEachTxOut) -&gt; <span class="kw">super</span>::ChangeSet&lt;K&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>changeset = <span class="kw">super</span>::ChangeSet::&lt;K&gt;::default();
+        txouts.for_each_txout(|(op, txout)| changeset.append(<span class="self">self</span>.scan_txout(op, txout)));
+        changeset
     }
 
     <span class="doccomment">/// Scan a single outpoint for a matching script pubkey.
     ///
     /// If it matches, this will store and index it.
-    </span><span class="kw">pub fn </span>scan_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, op: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; DerivationAdditions&lt;K&gt; {
+    </span><span class="kw">pub fn </span>scan_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, op: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="kw">super</span>::ChangeSet&lt;K&gt; {
         <span class="kw">match </span><span class="self">self</span>.inner.scan_txout(op, txout).cloned() {
             <span class="prelude-val">Some</span>((keychain, index)) =&gt; <span class="self">self</span>.reveal_to_target(<span class="kw-2">&amp;</span>keychain, index).<span class="number">1</span>,
-            <span class="prelude-val">None </span>=&gt; DerivationAdditions::default(),
+            <span class="prelude-val">None </span>=&gt; <span class="kw">super</span>::ChangeSet::default(),
         }
     }
 
@@ -958,20 +962,20 @@
         keychains: <span class="kw-2">&amp;</span>BTreeMap&lt;K, u32&gt;,
     ) -&gt; (
         BTreeMap&lt;K, SpkIterator&lt;Descriptor&lt;DescriptorPublicKey&gt;&gt;&gt;,
-        DerivationAdditions&lt;K&gt;,
+        <span class="kw">super</span>::ChangeSet&lt;K&gt;,
     ) {
-        <span class="kw">let </span><span class="kw-2">mut </span>additions = DerivationAdditions::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>changeset = <span class="kw">super</span>::ChangeSet::default();
         <span class="kw">let </span><span class="kw-2">mut </span>spks = BTreeMap::new();
 
         <span class="kw">for </span>(keychain, <span class="kw-2">&amp;</span>index) <span class="kw">in </span>keychains {
-            <span class="kw">let </span>(new_spks, new_additions) = <span class="self">self</span>.reveal_to_target(keychain, index);
-            <span class="kw">if </span>!new_additions.is_empty() {
+            <span class="kw">let </span>(new_spks, new_changeset) = <span class="self">self</span>.reveal_to_target(keychain, index);
+            <span class="kw">if </span>!new_changeset.is_empty() {
                 spks.insert(keychain.clone(), new_spks);
-                additions.append(new_additions.clone());
+                changeset.append(new_changeset.clone());
             }
         }
 
-        (spks, additions)
+        (spks, changeset)
     }
 
     <span class="doccomment">/// Reveals script pubkeys of the `keychain`&#39;s descriptor **up to and including** the
@@ -982,7 +986,7 @@
     /// reveal up to the last possible index.
     ///
     /// This returns an iterator of newly revealed indices (alongside their scripts) and a
-    /// [`DerivationAdditions`], which reports updates to the latest revealed index. If no new script
+    /// [`super::ChangeSet`], which reports updates to the latest revealed index. If no new script
     /// pubkeys are revealed, then both of these will be empty.
     ///
     /// # Panics
@@ -994,7 +998,7 @@
         target_index: u32,
     ) -&gt; (
         SpkIterator&lt;Descriptor&lt;DescriptorPublicKey&gt;&gt;,
-        DerivationAdditions&lt;K&gt;,
+        <span class="kw">super</span>::ChangeSet&lt;K&gt;,
     ) {
         <span class="kw">let </span>descriptor = <span class="self">self</span>.keychains.get(keychain).expect(<span class="string">&quot;keychain must exist&quot;</span>);
         <span class="kw">let </span>has_wildcard = descriptor.has_wildcard();
@@ -1038,7 +1042,7 @@
                 <span class="macro">debug_assert!</span>(_old_index &lt; <span class="prelude-val">Some</span>(index));
                 (
                     SpkIterator::new_with_range(descriptor.clone(), next_reveal_index..index + <span class="number">1</span>),
-                    DerivationAdditions(core::iter::once((keychain.clone(), index)).collect()),
+                    <span class="kw">super</span>::ChangeSet(core::iter::once((keychain.clone(), index)).collect()),
                 )
             }
             <span class="prelude-val">None </span>=&gt; (
@@ -1046,7 +1050,7 @@
                     descriptor.clone(),
                     next_reveal_index..next_reveal_index,
                 ),
-                DerivationAdditions::default(),
+                <span class="kw">super</span>::ChangeSet::default(),
             ),
         }
     }
@@ -1054,10 +1058,10 @@
     <span class="doccomment">/// Attempts to reveal the next script pubkey for `keychain`.
     ///
     /// Returns the derivation index of the revealed script pubkey, the revealed script pubkey and a
-    /// [`DerivationAdditions`] which represents changes in the last revealed index (if any).
+    /// [`super::ChangeSet`] which represents changes in the last revealed index (if any).
     ///
     /// When a new script cannot be revealed, we return the last revealed script and an empty
-    /// [`DerivationAdditions`]. There are two scenarios when a new script pubkey cannot be derived:
+    /// [`super::ChangeSet`]. There are two scenarios when a new script pubkey cannot be derived:
     ///
     ///  1. The descriptor has no wildcard and already has one script revealed.
     ///  2. The descriptor has already revealed scripts up to the numeric bound.
@@ -1065,14 +1069,14 @@
     /// # Panics
     ///
     /// Panics if the `keychain` does not exist.
-    </span><span class="kw">pub fn </span>reveal_next_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; ((u32, <span class="kw-2">&amp;</span>Script), DerivationAdditions&lt;K&gt;) {
+    </span><span class="kw">pub fn </span>reveal_next_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; ((u32, <span class="kw-2">&amp;</span>Script), <span class="kw">super</span>::ChangeSet&lt;K&gt;) {
         <span class="kw">let </span>(next_index, <span class="kw">_</span>) = <span class="self">self</span>.next_index(keychain);
-        <span class="kw">let </span>additions = <span class="self">self</span>.reveal_to_target(keychain, next_index).<span class="number">1</span>;
+        <span class="kw">let </span>changeset = <span class="self">self</span>.reveal_to_target(keychain, next_index).<span class="number">1</span>;
         <span class="kw">let </span>script = <span class="self">self
             </span>.inner
             .spk_at_index(<span class="kw-2">&amp;</span>(keychain.clone(), next_index))
             .expect(<span class="string">&quot;script must already be stored&quot;</span>);
-        ((next_index, script), additions)
+        ((next_index, script), changeset)
     }
 
     <span class="doccomment">/// Gets the next unused script pubkey in the keychain. I.e., the script pubkey with the lowest
@@ -1087,7 +1091,7 @@
     /// # Panics
     ///
     /// Panics if `keychain` has never been added to the index
-    </span><span class="kw">pub fn </span>next_unused_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; ((u32, <span class="kw-2">&amp;</span>Script), DerivationAdditions&lt;K&gt;) {
+    </span><span class="kw">pub fn </span>next_unused_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; ((u32, <span class="kw-2">&amp;</span>Script), <span class="kw">super</span>::ChangeSet&lt;K&gt;) {
         <span class="kw">let </span>need_new = <span class="self">self</span>.unused_spks_of_keychain(keychain).next().is_none();
         <span class="comment">// this rather strange branch is needed because of some lifetime issues
         </span><span class="kw">if </span>need_new {
@@ -1097,7 +1101,7 @@
                 <span class="self">self</span>.unused_spks_of_keychain(keychain)
                     .next()
                     .expect(<span class="string">&quot;we already know next exists&quot;</span>),
-                DerivationAdditions::default(),
+                <span class="kw">super</span>::ChangeSet::default(),
             )
         }
     }
@@ -1168,10 +1172,10 @@
             .collect()
     }
 
-    <span class="doccomment">/// Applies the derivation additions to the [`KeychainTxOutIndex`], extending the number of
-    /// derived scripts per keychain, as specified in the `additions`.
-    </span><span class="kw">pub fn </span>apply_additions(<span class="kw-2">&amp;mut </span><span class="self">self</span>, additions: DerivationAdditions&lt;K&gt;) {
-        <span class="kw">let _ </span>= <span class="self">self</span>.reveal_to_target_multi(<span class="kw-2">&amp;</span>additions.<span class="number">0</span>);
+    <span class="doccomment">/// Applies the derivation changeset to the [`KeychainTxOutIndex`], extending the number of
+    /// derived scripts per keychain, as specified in the `changeset`.
+    </span><span class="kw">pub fn </span>apply_changeset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: <span class="kw">super</span>::ChangeSet&lt;K&gt;) {
+        <span class="kw">let _ </span>= <span class="self">self</span>.reveal_to_target_multi(<span class="kw-2">&amp;</span>changeset.<span class="number">0</span>);
     }
 }
 </code></pre></div>

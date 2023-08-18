@@ -1912,6 +1912,12 @@
 <a href="#1911" id="1911">1911</a>
 <a href="#1912" id="1912">1912</a>
 <a href="#1913" id="1913">1913</a>
+<a href="#1914" id="1914">1914</a>
+<a href="#1915" id="1915">1915</a>
+<a href="#1916" id="1916">1916</a>
+<a href="#1917" id="1917">1917</a>
+<a href="#1918" id="1918">1918</a>
+<a href="#1919" id="1919">1919</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1935,8 +1941,8 @@
 };
 <span class="kw">pub use </span>bdk_chain::keychain::Balance;
 <span class="kw">use </span>bdk_chain::{
-    indexed_tx_graph::IndexedAdditions,
-    keychain::{KeychainTxOutIndex, LocalChangeSet, LocalUpdate},
+    indexed_tx_graph,
+    keychain::{KeychainTxOutIndex, WalletChangeSet, WalletUpdate},
     local_chain::{<span class="self">self</span>, CannotConnectError, CheckPoint, CheckPointIter, LocalChain},
     tx_graph::{CanonicalTx, TxGraph},
     Append, BlockId, ChainPosition, ConfirmationTime, ConfirmationTimeAnchor, FullTxOut,
@@ -2009,10 +2015,10 @@
 }
 
 <span class="doccomment">/// The update to a [`Wallet`] used in [`Wallet::apply_update`]. This is usually returned from blockchain data sources.
-</span><span class="kw">pub type </span>Update = LocalUpdate&lt;KeychainKind, ConfirmationTimeAnchor&gt;;
+</span><span class="kw">pub type </span>Update = WalletUpdate&lt;KeychainKind, ConfirmationTimeAnchor&gt;;
 
 <span class="doccomment">/// The changeset produced internally by [`Wallet`] when mutated.
-</span><span class="kw">pub type </span>ChangeSet = LocalChangeSet&lt;KeychainKind, ConfirmationTimeAnchor&gt;;
+</span><span class="kw">pub type </span>ChangeSet = WalletChangeSet&lt;KeychainKind, ConfirmationTimeAnchor&gt;;
 
 <span class="doccomment">/// The address index selection strategy to use to derived an address from the wallet&#39;s external
 /// descriptor. See [`Wallet::get_address`]. If you&#39;re unsure which one to use use `WalletIndex::New`.
@@ -2160,8 +2166,8 @@
         };
 
         <span class="kw">let </span>changeset = db.load_from_persistence().map_err(NewError::Persist)<span class="question-mark">?</span>;
-        chain.apply_changeset(<span class="kw-2">&amp;</span>changeset.chain_changeset);
-        indexed_graph.apply_additions(changeset.indexed_additions);
+        chain.apply_changeset(<span class="kw-2">&amp;</span>changeset.chain);
+        indexed_graph.apply_changeset(changeset.index_tx_graph);
 
         <span class="kw">let </span>persist = Persist::new(db);
 
@@ -2234,14 +2240,14 @@
     {
         <span class="kw">let </span>keychain = <span class="self">self</span>.map_keychain(keychain);
         <span class="kw">let </span>txout_index = <span class="kw-2">&amp;mut </span><span class="self">self</span>.indexed_graph.index;
-        <span class="kw">let </span>(index, spk, additions) = <span class="kw">match </span>address_index {
+        <span class="kw">let </span>(index, spk, changeset) = <span class="kw">match </span>address_index {
             AddressIndex::New =&gt; {
-                <span class="kw">let </span>((index, spk), index_additions) = txout_index.reveal_next_spk(<span class="kw-2">&amp;</span>keychain);
-                (index, spk.into(), <span class="prelude-val">Some</span>(index_additions))
+                <span class="kw">let </span>((index, spk), index_changeset) = txout_index.reveal_next_spk(<span class="kw-2">&amp;</span>keychain);
+                (index, spk.into(), <span class="prelude-val">Some</span>(index_changeset))
             }
             AddressIndex::LastUnused =&gt; {
-                <span class="kw">let </span>((index, spk), index_additions) = txout_index.next_unused_spk(<span class="kw-2">&amp;</span>keychain);
-                (index, spk.into(), <span class="prelude-val">Some</span>(index_additions))
+                <span class="kw">let </span>((index, spk), index_changeset) = txout_index.next_unused_spk(<span class="kw-2">&amp;</span>keychain);
+                (index, spk.into(), <span class="prelude-val">Some</span>(index_changeset))
             }
             AddressIndex::Peek(index) =&gt; {
                 <span class="kw">let </span>(index, spk) = txout_index
@@ -2253,9 +2259,11 @@
             }
         };
 
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(additions) = additions {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = changeset {
             <span class="self">self</span>.persist
-                .stage(ChangeSet::from(IndexedAdditions::from(additions)));
+                .stage(ChangeSet::from(indexed_tx_graph::ChangeSet::from(
+                    changeset,
+                )));
             <span class="self">self</span>.persist.commit()<span class="question-mark">?</span>;
         }
 
@@ -2350,12 +2358,12 @@
         <span class="kw">let </span>graph = <span class="self">self</span>.indexed_graph.graph();
 
         <span class="kw">let </span>canonical_tx = CanonicalTx {
-            observed_as: graph.get_chain_position(
+            chain_position: graph.get_chain_position(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
                 <span class="self">self</span>.chain.tip().map(|cp| cp.block_id()).unwrap_or_default(),
                 txid,
             )<span class="question-mark">?</span>,
-            node: graph.get_tx_node(txid)<span class="question-mark">?</span>,
+            tx_node: graph.get_tx_node(txid)<span class="question-mark">?</span>,
         };
 
         <span class="prelude-val">Some</span>(new_tx_details(
@@ -2803,12 +2811,14 @@
             <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>drain_recipient) =&gt; drain_recipient.clone(),
             <span class="prelude-val">None </span>=&gt; {
                 <span class="kw">let </span>change_keychain = <span class="self">self</span>.map_keychain(KeychainKind::Internal);
-                <span class="kw">let </span>((index, spk), index_additions) =
+                <span class="kw">let </span>((index, spk), index_changeset) =
                     <span class="self">self</span>.indexed_graph.index.next_unused_spk(<span class="kw-2">&amp;</span>change_keychain);
                 <span class="kw">let </span>spk = spk.into();
                 <span class="self">self</span>.indexed_graph.index.mark_used(<span class="kw-2">&amp;</span>change_keychain, index);
                 <span class="self">self</span>.persist
-                    .stage(ChangeSet::from(IndexedAdditions::from(index_additions)));
+                    .stage(ChangeSet::from(indexed_tx_graph::ChangeSet::from(
+                        index_changeset,
+                    )));
                 <span class="self">self</span>.persist.commit().expect(<span class="string">&quot;TODO&quot;</span>);
                 spk
             }
@@ -3200,7 +3210,7 @@
                 </span>.indexed_graph
                 .graph()
                 .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, input.previous_output.txid)
-                .map(|observed_as| <span class="kw">match </span>observed_as {
+                .map(|chain_position| <span class="kw">match </span>chain_position {
                     ChainPosition::Confirmed(a) =&gt; a.confirmation_height,
                     ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; u32::MAX,
                 });
@@ -3383,7 +3393,7 @@
                     .graph()
                     .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, txid)
                 {
-                    <span class="prelude-val">Some</span>(observed_as) =&gt; observed_as.cloned().into(),
+                    <span class="prelude-val">Some</span>(chain_position) =&gt; chain_position.cloned().into(),
                     <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="bool-val">false</span>,
                 };
 
@@ -3630,11 +3640,13 @@
         </span>D: PersistBackend&lt;ChangeSet&gt;,
     {
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::from(<span class="self">self</span>.chain.apply_update(update.chain)<span class="question-mark">?</span>);
-        <span class="kw">let </span>(<span class="kw">_</span>, index_additions) = <span class="self">self
+        <span class="kw">let </span>(<span class="kw">_</span>, index_changeset) = <span class="self">self
             </span>.indexed_graph
             .index
             .reveal_to_target_multi(<span class="kw-2">&amp;</span>update.last_active_indices);
-        changeset.append(ChangeSet::from(IndexedAdditions::from(index_additions)));
+        changeset.append(ChangeSet::from(indexed_tx_graph::ChangeSet::from(
+            index_changeset,
+        )));
         changeset.append(ChangeSet::from(
             <span class="self">self</span>.indexed_graph.apply_update(update.graph),
         ));
@@ -3741,7 +3753,7 @@
 ) -&gt; TransactionDetails {
     <span class="kw">let </span>graph = indexed_graph.graph();
     <span class="kw">let </span>index = <span class="kw-2">&amp;</span>indexed_graph.index;
-    <span class="kw">let </span>tx = canonical_tx.node.tx;
+    <span class="kw">let </span>tx = canonical_tx.tx_node.tx;
 
     <span class="kw">let </span>received = tx
         .output
@@ -3781,11 +3793,11 @@
 
     TransactionDetails {
         transaction: <span class="kw">if </span>include_raw { <span class="prelude-val">Some</span>(tx.clone()) } <span class="kw">else </span>{ <span class="prelude-val">None </span>},
-        txid: canonical_tx.node.txid,
+        txid: canonical_tx.tx_node.txid,
         received,
         sent,
         fee,
-        confirmation_time: canonical_tx.observed_as.cloned().into(),
+        confirmation_time: canonical_tx.chain_position.cloned().into(),
     }
 }
 

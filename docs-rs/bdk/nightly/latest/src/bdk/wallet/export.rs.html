@@ -339,7 +339,6 @@
 <a href="#338" id="338">338</a>
 <a href="#339" id="339">339</a>
 <a href="#340" id="340">340</a>
-<a href="#341" id="341">341</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -468,13 +467,12 @@
         <span class="self">Self</span>::is_compatible_with_core(<span class="kw-2">&amp;</span>descriptor)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>blockheight = <span class="kw">if </span>include_blockheight {
-            wallet
-                .transactions()
-                .next()
-                .map_or(<span class="number">0</span>, |canonical_tx| <span class="kw">match </span>canonical_tx.observed_as {
+            wallet.transactions().next().map_or(<span class="number">0</span>, |canonical_tx| {
+                <span class="kw">match </span>canonical_tx.chain_position {
                     bdk_chain::ChainPosition::Confirmed(a) =&gt; a.confirmation_height,
                     bdk_chain::ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; <span class="number">0</span>,
-                })
+                }
+            })
         } <span class="kw">else </span>{
             <span class="number">0
         </span>};
