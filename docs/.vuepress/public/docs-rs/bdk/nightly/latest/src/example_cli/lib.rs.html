@@ -748,8 +748,8 @@
         absolute, address, psbt::Prevouts, secp256k1::Secp256k1, sighash::SighashCache, Address,
         Network, Sequence, Transaction, TxIn, TxOut,
     },
-    indexed_tx_graph::{IndexedAdditions, IndexedTxGraph},
-    keychain::{DerivationAdditions, KeychainTxOutIndex},
+    indexed_tx_graph::{<span class="self">self</span>, IndexedTxGraph},
+    keychain::{<span class="self">self</span>, KeychainTxOutIndex},
     miniscript::{
         descriptor::{DescriptorSecretKey, KeyMap},
         Descriptor, DescriptorPublicKey,
@@ -762,7 +762,7 @@
 <span class="kw">use </span>clap::{Parser, Subcommand};
 
 <span class="kw">pub type </span>KeychainTxGraph&lt;A&gt; = IndexedTxGraph&lt;A, KeychainTxOutIndex&lt;Keychain&gt;&gt;;
-<span class="kw">pub type </span>KeychainAdditions&lt;A&gt; = IndexedAdditions&lt;A, DerivationAdditions&lt;Keychain&gt;&gt;;
+<span class="kw">pub type </span>KeychainChangeSet&lt;A&gt; = indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;Keychain&gt;&gt;;
 <span class="kw">pub type </span>Database&lt;<span class="lifetime">&#39;m</span>, C&gt; = Persist&lt;Store&lt;<span class="lifetime">&#39;m</span>, C&gt;, C&gt;;
 
 <span class="attr">#[derive(Parser)]
@@ -924,7 +924,7 @@
     cmd: AddressCmd,
 ) -&gt; anyhow::Result&lt;()&gt;
 <span class="kw">where
-    </span>C: Default + Append + DeserializeOwned + Serialize + From&lt;KeychainAdditions&lt;A&gt;&gt;,
+    </span>C: Default + Append + DeserializeOwned + Serialize + From&lt;KeychainChangeSet&lt;A&gt;&gt;,
 {
     <span class="kw">let </span>index = <span class="kw-2">&amp;mut </span>graph.index;
 
@@ -936,9 +936,9 @@
                 <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;only these two variants exist in match arm&quot;</span>),
             };
 
-            <span class="kw">let </span>((spk_i, spk), index_additions) = spk_chooser(index, <span class="kw-2">&amp;</span>Keychain::External);
+            <span class="kw">let </span>((spk_i, spk), index_changeset) = spk_chooser(index, <span class="kw-2">&amp;</span>Keychain::External);
             <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
-            db.stage(C::from(KeychainAdditions::from(index_additions)));
+            db.stage(C::from(KeychainChangeSet::from(index_changeset)));
             db.commit()<span class="question-mark">?</span>;
             <span class="kw">let </span>addr = Address::from_script(spk, network).context(<span class="string">&quot;failed to derive address&quot;</span>)<span class="question-mark">?</span>;
             <span class="macro">println!</span>(<span class="string">&quot;[address @ {}] {}&quot;</span>, spk_i, addr);
@@ -1078,20 +1078,20 @@
 ) -&gt; anyhow::Result&lt;()&gt;
 <span class="kw">where
     </span>O::Error: std::error::Error + Send + Sync + <span class="lifetime">&#39;static</span>,
-    C: Default + Append + DeserializeOwned + Serialize + From&lt;KeychainAdditions&lt;A&gt;&gt;,
+    C: Default + Append + DeserializeOwned + Serialize + From&lt;KeychainChangeSet&lt;A&gt;&gt;,
 {
     <span class="kw">let </span>(transaction, change_index) = {
         <span class="kw">let </span>graph = <span class="kw-2">&amp;mut *</span>graph.lock().unwrap();
         <span class="comment">// take mutable ref to construct tx -- it is only open for a short time while building it.
         </span><span class="kw">let </span>(tx, change_info) = create_tx(graph, chain, keymap, cs_algorithm, address, value)<span class="question-mark">?</span>;
 
-        <span class="kw">if let </span><span class="prelude-val">Some</span>((index_additions, (change_keychain, index))) = change_info {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((index_changeset, (change_keychain, index))) = change_info {
             <span class="comment">// We must first persist to disk the fact that we&#39;ve got a new address from the
             // change keychain so future scans will find the tx we&#39;re about to broadcast.
             // If we&#39;re unable to persist this, then we don&#39;t want to broadcast.
             </span>{
                 <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
-                db.stage(C::from(KeychainAdditions::from(index_additions)));
+                db.stage(C::from(KeychainChangeSet::from(index_changeset)));
                 db.commit()<span class="question-mark">?</span>;
             }
 
@@ -1109,12 +1109,12 @@
         <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {
             <span class="macro">println!</span>(<span class="string">&quot;Broadcasted Tx : {}&quot;</span>, transaction.txid());
 
-            <span class="kw">let </span>keychain_additions = graph.lock().unwrap().insert_tx(<span class="kw-2">&amp;</span>transaction, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
+            <span class="kw">let </span>keychain_changeset = graph.lock().unwrap().insert_tx(<span class="kw-2">&amp;</span>transaction, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
 
             <span class="comment">// We know the tx is at least unconfirmed now. Note if persisting here fails,
             // it&#39;s not a big deal since we can always find it again form
             // blockchain.
-            </span>db.lock().unwrap().stage(C::from(keychain_additions));
+            </span>db.lock().unwrap().stage(C::from(keychain_changeset));
             <span class="prelude-val">Ok</span>(())
         }
         <span class="prelude-val">Err</span>(e) =&gt; {
@@ -1137,12 +1137,12 @@
     value: u64,
 ) -&gt; anyhow::Result&lt;(
     Transaction,
-    <span class="prelude-ty">Option</span>&lt;(DerivationAdditions&lt;Keychain&gt;, (Keychain, u32))&gt;,
+    <span class="prelude-ty">Option</span>&lt;(keychain::ChangeSet&lt;Keychain&gt;, (Keychain, u32))&gt;,
 )&gt;
 <span class="kw">where
     </span>O::Error: std::error::Error + Send + Sync + <span class="lifetime">&#39;static</span>,
 {
-    <span class="kw">let </span><span class="kw-2">mut </span>additions = DerivationAdditions::default();
+    <span class="kw">let </span><span class="kw-2">mut </span>changeset = keychain::ChangeSet::default();
 
     <span class="kw">let </span>assets = bdk_tmp_plan::Assets {
         keys: keymap.iter().map(|(pk, <span class="kw">_</span>)| pk.clone()).collect(),
@@ -1190,9 +1190,9 @@
         Keychain::External
     };
 
-    <span class="kw">let </span>((change_index, change_script), change_additions) =
+    <span class="kw">let </span>((change_index, change_script), change_changeset) =
         graph.index.next_unused_spk(<span class="kw-2">&amp;</span>internal_keychain);
-    additions.append(change_additions);
+    changeset.append(change_changeset);
 
     <span class="comment">// Clone to drop the immutable reference.
     </span><span class="kw">let </span>change_script = change_script.into();
@@ -1332,7 +1332,7 @@
     }
 
     <span class="kw">let </span>change_info = <span class="kw">if </span>selection_meta.drain_value.is_some() {
-        <span class="prelude-val">Some</span>((additions, (internal_keychain, change_index)))
+        <span class="prelude-val">Some</span>((changeset, (internal_keychain, change_index)))
     } <span class="kw">else </span>{
         <span class="prelude-val">None
     </span>};
@@ -1383,7 +1383,7 @@
 ) -&gt; anyhow::Result&lt;()&gt;
 <span class="kw">where
     </span>O::Error: std::error::Error + Send + Sync + <span class="lifetime">&#39;static</span>,
-    C: Default + Append + DeserializeOwned + Serialize + From&lt;KeychainAdditions&lt;A&gt;&gt;,
+    C: Default + Append + DeserializeOwned + Serialize + From&lt;KeychainChangeSet&lt;A&gt;&gt;,
 {
     <span class="kw">match </span>cmd {
         Commands::ChainSpecific(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;example code should handle this!&quot;</span>),

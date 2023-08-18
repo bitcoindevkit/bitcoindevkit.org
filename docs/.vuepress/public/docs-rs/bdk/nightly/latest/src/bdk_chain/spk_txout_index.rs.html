@@ -335,6 +335,8 @@
 <a href="#335" id="335">335</a>
 <a href="#336" id="336">336</a>
 <a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
 </pre><pre class="rust"><code><span class="kw">use </span>core::ops::RangeBounds;
 
 <span class="kw">use crate</span>::{
@@ -391,19 +393,21 @@
 }
 
 <span class="kw">impl</span>&lt;I: Clone + Ord&gt; Indexer <span class="kw">for </span>SpkTxOutIndex&lt;I&gt; {
-    <span class="kw">type </span>Additions = ();
+    <span class="kw">type </span>ChangeSet = ();
 
-    <span class="kw">fn </span>index_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="self">Self</span>::Additions {
+    <span class="kw">fn </span>index_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="self">Self</span>::ChangeSet {
         <span class="self">self</span>.scan_txout(outpoint, txout);
         Default::default()
     }
 
-    <span class="kw">fn </span>index_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="self">Self</span>::Additions {
+    <span class="kw">fn </span>index_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="self">Self</span>::ChangeSet {
         <span class="self">self</span>.scan(tx);
         Default::default()
     }
 
-    <span class="kw">fn </span>apply_additions(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _additions: <span class="self">Self</span>::Additions) {
+    <span class="kw">fn </span>initial_changeset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::ChangeSet {}
+
+    <span class="kw">fn </span>apply_changeset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _changeset: <span class="self">Self</span>::ChangeSet) {
         <span class="comment">// This applies nothing.
     </span>}
 

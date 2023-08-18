@@ -549,7 +549,7 @@
 <a href="#549" id="549">549</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bdk_chain::{
     bitcoin::{OutPoint, ScriptBuf, Transaction, Txid},
-    keychain::LocalUpdate,
+    keychain::WalletUpdate,
     local_chain::{<span class="self">self</span>, CheckPoint},
     tx_graph::{<span class="self">self</span>, TxGraph},
     Anchor, BlockId, ConfirmationHeightAnchor, ConfirmationTimeAnchor,
@@ -607,7 +607,7 @@
         client: <span class="kw-2">&amp;</span>Client,
         seen_at: <span class="prelude-ty">Option</span>&lt;u64&gt;,
         missing: Vec&lt;Txid&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;LocalUpdate&lt;K, A&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;WalletUpdate&lt;K, A&gt;, Error&gt; {
         <span class="kw">let </span>new_txs = client.batch_transaction_get(<span class="kw-2">&amp;</span>missing)<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>graph_update = TxGraph::&lt;A&gt;::new(new_txs);
         <span class="kw">for </span>(txid, anchors) <span class="kw">in </span><span class="self">self</span>.graph_update {
@@ -618,7 +618,7 @@
                 <span class="kw">let _ </span>= graph_update.insert_anchor(txid, anchor);
             }
         }
-        <span class="prelude-val">Ok</span>(LocalUpdate {
+        <span class="prelude-val">Ok</span>(WalletUpdate {
             last_active_indices: <span class="self">self</span>.keychain_update,
             graph: graph_update,
             chain: local_chain::Update {
@@ -641,7 +641,7 @@
         client: <span class="kw-2">&amp;</span>Client,
         seen_at: <span class="prelude-ty">Option</span>&lt;u64&gt;,
         missing: Vec&lt;Txid&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;LocalUpdate&lt;K, ConfirmationTimeAnchor&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;WalletUpdate&lt;K, ConfirmationTimeAnchor&gt;, Error&gt; {
         <span class="kw">let </span>update = <span class="self">self</span>.finalize(client, seen_at, missing)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>relevant_heights = {
@@ -666,13 +666,13 @@
             )
             .collect::&lt;HashMap&lt;u32, u64&gt;&gt;();
 
-        <span class="kw">let </span>graph_additions = {
-            <span class="kw">let </span>old_additions = TxGraph::default().determine_additions(<span class="kw-2">&amp;</span>update.graph);
-            tx_graph::Additions {
-                txs: old_additions.txs,
-                txouts: old_additions.txouts,
-                last_seen: old_additions.last_seen,
-                anchors: old_additions
+        <span class="kw">let </span>graph_changeset = {
+            <span class="kw">let </span>old_changeset = TxGraph::default().apply_update(update.graph.clone());
+            tx_graph::ChangeSet {
+                txs: old_changeset.txs,
+                txouts: old_changeset.txouts,
+                last_seen: old_changeset.last_seen,
+                anchors: old_changeset
                     .anchors
                     .into_iter()
                     .map(|(height_anchor, txid)| {
@@ -689,11 +689,11 @@
             }
         };
 
-        <span class="prelude-val">Ok</span>(LocalUpdate {
+        <span class="prelude-val">Ok</span>(WalletUpdate {
             last_active_indices: update.last_active_indices,
             graph: {
                 <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::default();
-                graph.apply_additions(graph_additions);
+                graph.apply_changeset(graph_changeset);
                 graph
             },
             chain: update.chain,

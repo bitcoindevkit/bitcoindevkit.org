@@ -1209,57 +1209,20 @@
 <a href="#1209" id="1209">1209</a>
 <a href="#1210" id="1210">1210</a>
 <a href="#1211" id="1211">1211</a>
-<a href="#1212" id="1212">1212</a>
-<a href="#1213" id="1213">1213</a>
-<a href="#1214" id="1214">1214</a>
-<a href="#1215" id="1215">1215</a>
-<a href="#1216" id="1216">1216</a>
-<a href="#1217" id="1217">1217</a>
-<a href="#1218" id="1218">1218</a>
-<a href="#1219" id="1219">1219</a>
-<a href="#1220" id="1220">1220</a>
-<a href="#1221" id="1221">1221</a>
-<a href="#1222" id="1222">1222</a>
-<a href="#1223" id="1223">1223</a>
-<a href="#1224" id="1224">1224</a>
-<a href="#1225" id="1225">1225</a>
-<a href="#1226" id="1226">1226</a>
-<a href="#1227" id="1227">1227</a>
-<a href="#1228" id="1228">1228</a>
-<a href="#1229" id="1229">1229</a>
-<a href="#1230" id="1230">1230</a>
-<a href="#1231" id="1231">1231</a>
-<a href="#1232" id="1232">1232</a>
-<a href="#1233" id="1233">1233</a>
-<a href="#1234" id="1234">1234</a>
-<a href="#1235" id="1235">1235</a>
-<a href="#1236" id="1236">1236</a>
-<a href="#1237" id="1237">1237</a>
-<a href="#1238" id="1238">1238</a>
-<a href="#1239" id="1239">1239</a>
-<a href="#1240" id="1240">1240</a>
-<a href="#1241" id="1241">1241</a>
-<a href="#1242" id="1242">1242</a>
-<a href="#1243" id="1243">1243</a>
-<a href="#1244" id="1244">1244</a>
-<a href="#1245" id="1245">1245</a>
-<a href="#1246" id="1246">1246</a>
-<a href="#1247" id="1247">1247</a>
-<a href="#1248" id="1248">1248</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
 //! [`TxGraph`] is a monotone structure that inserts transactions and indexes the spends. The
-//! [`Additions`] structure reports changes of [`TxGraph`] but can also be applied to a
+//! [`ChangeSet`] structure reports changes of [`TxGraph`] but can also be applied to a
 //! [`TxGraph`] as well. Lastly, [`TxDescendants`] is an [`Iterator`] that traverses descendants of
 //! a given transaction.
 //!
 //! Conflicting transactions are allowed to coexist within a [`TxGraph`]. This is useful for
 //! identifying and traversing conflicts and descendants of a given transaction.
 //!
-//! # Previewing and applying changes
+//! # Applying changes
 //!
-//! Methods that either preview or apply changes to [`TxGraph`] will return [`Additions`].
-//! [`Additions`] can be applied back to a [`TxGraph`] or be used to inform persistent storage
+//! Methods that apply changes to [`TxGraph`] will return [`ChangeSet`].
+//! [`ChangeSet`] can be applied back to a [`TxGraph`] or be used to inform persistent storage
 //! of the changes to [`TxGraph`].
 //!
 //! ```
@@ -1268,16 +1231,14 @@
 //! # use bdk_chain::example_utils::*;
 //! # use bitcoin::Transaction;
 //! # let tx_a = tx_from_hex(RAW_TX_1);
-//! # let tx_b = tx_from_hex(RAW_TX_2);
 //! let mut graph: TxGraph = TxGraph::default();
+//! let mut another_graph: TxGraph = TxGraph::default();
 //!
-//! // preview a transaction insertion (not actually inserted)
-//! let additions = graph.insert_tx_preview(tx_a);
-//! // apply the insertion
-//! graph.apply_additions(additions);
+//! // insert a transaction
+//! let changeset = graph.insert_tx(tx_a);
 //!
-//! // you can also insert a transaction directly
-//! let already_applied_additions = graph.insert_tx(tx_b);
+//! // the resulting changeset can be applied to another tx graph
+//! another_graph.apply_changeset(changeset);
 //! ```
 //!
 //! A [`TxGraph`] can also be updated with another [`TxGraph`].
@@ -1292,15 +1253,12 @@
 //! let mut graph: TxGraph = TxGraph::default();
 //! let update = TxGraph::new(vec![tx_a, tx_b]);
 //!
-//! // preview additions as the result of the update
-//! let additions = graph.determine_additions(&amp;update);
-//! // apply the additions
-//! graph.apply_additions(additions);
+//! // apply the update graph
+//! let changeset = graph.apply_update(update.clone());
 //!
-//! // we can also apply the update graph directly
-//! // the additions will be empty as we have already applied the same update above
-//! let additions = graph.apply_update(update);
-//! assert!(additions.is_empty());
+//! // if we apply it again, the resulting changeset will be empty
+//! let changeset = graph.apply_update(update);
+//! assert!(changeset.is_empty());
 //! ```
 
 </span><span class="kw">use crate</span>::{
@@ -1383,9 +1341,9 @@
 </span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 </span><span class="kw">pub struct </span>CanonicalTx&lt;<span class="lifetime">&#39;a</span>, T, A&gt; {
     <span class="doccomment">/// How the transaction is observed as (confirmed or unconfirmed).
-    </span><span class="kw">pub </span>observed_as: ChainPosition&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>A&gt;,
+    </span><span class="kw">pub </span>chain_position: ChainPosition&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>A&gt;,
     <span class="doccomment">/// The transaction node (as part of the graph).
-    </span><span class="kw">pub </span>node: TxNode&lt;<span class="lifetime">&#39;a</span>, T, A&gt;,
+    </span><span class="kw">pub </span>tx_node: TxNode&lt;<span class="lifetime">&#39;a</span>, T, A&gt;,
 }
 
 <span class="kw">impl</span>&lt;A&gt; TxGraph&lt;A&gt; {
@@ -1619,15 +1577,16 @@
         new
     }
 
-    <span class="doccomment">/// Returns the resultant [`Additions`] if the given `txout` is inserted at `outpoint`. Does not
-    /// mutate `self`.
+    <span class="doccomment">/// Inserts the given [`TxOut`] at [`OutPoint`].
     ///
     /// Inserting floating txouts are useful for determining fee/feerate of transactions we care
     /// about.
     ///
-    /// The [`Additions`] result will be empty if the `outpoint` (or a full transaction containing
+    /// The [`ChangeSet`] result will be empty if the `outpoint` (or a full transaction containing
     /// the `outpoint`) already existed in `self`.
-    </span><span class="kw">pub fn </span>insert_txout_preview(<span class="kw-2">&amp;</span><span class="self">self</span>, outpoint: OutPoint, txout: TxOut) -&gt; Additions&lt;A&gt; {
+    ///
+    /// [`apply_changeset`]: Self::apply_changeset
+    </span><span class="kw">pub fn </span>insert_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: TxOut) -&gt; ChangeSet&lt;A&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>update = <span class="self">Self</span>::default();
         update.txs.insert(
             outpoint.txid,
@@ -1637,100 +1596,67 @@
                 <span class="number">0</span>,
             ),
         );
-        <span class="self">self</span>.determine_additions(<span class="kw-2">&amp;</span>update)
-    }
-
-    <span class="doccomment">/// Inserts the given [`TxOut`] at [`OutPoint`].
-    ///
-    /// This is equivalent to calling [`insert_txout_preview`] and [`apply_additions`] in sequence.
-    ///
-    /// [`insert_txout_preview`]: Self::insert_txout_preview
-    /// [`apply_additions`]: Self::apply_additions
-    </span><span class="kw">pub fn </span>insert_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: TxOut) -&gt; Additions&lt;A&gt; {
-        <span class="kw">let </span>additions = <span class="self">self</span>.insert_txout_preview(outpoint, txout);
-        <span class="self">self</span>.apply_additions(additions.clone());
-        additions
-    }
-
-    <span class="doccomment">/// Returns the resultant [`Additions`] if the given transaction is inserted. Does not actually
-    /// mutate [`Self`].
-    ///
-    /// The [`Additions`] result will be empty if `tx` already exists in `self`.
-    </span><span class="kw">pub fn </span>insert_tx_preview(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: Transaction) -&gt; Additions&lt;A&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>update = <span class="self">Self</span>::default();
-        update
-            .txs
-            .insert(tx.txid(), (TxNodeInternal::Whole(tx), BTreeSet::new(), <span class="number">0</span>));
-        <span class="self">self</span>.determine_additions(<span class="kw-2">&amp;</span>update)
+        <span class="kw">let </span>changeset = <span class="self">self</span>.determine_changeset(update);
+        <span class="self">self</span>.apply_changeset(changeset.clone());
+        changeset
     }
 
     <span class="doccomment">/// Inserts the given transaction into [`TxGraph`].
     ///
-    /// The [`Additions`] returned will be empty if `tx` already exists.
-    </span><span class="kw">pub fn </span>insert_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: Transaction) -&gt; Additions&lt;A&gt; {
-        <span class="kw">let </span>additions = <span class="self">self</span>.insert_tx_preview(tx);
-        <span class="self">self</span>.apply_additions(additions.clone());
-        additions
-    }
-
-    <span class="doccomment">/// Returns the resultant [`Additions`] if the `txid` is set in `anchor`.
-    </span><span class="kw">pub fn </span>insert_anchor_preview(<span class="kw-2">&amp;</span><span class="self">self</span>, txid: Txid, anchor: A) -&gt; Additions&lt;A&gt; {
+    /// The [`ChangeSet`] returned will be empty if `tx` already exists.
+    </span><span class="kw">pub fn </span>insert_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: Transaction) -&gt; ChangeSet&lt;A&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>update = <span class="self">Self</span>::default();
-        update.anchors.insert((anchor, txid));
-        <span class="self">self</span>.determine_additions(<span class="kw-2">&amp;</span>update)
+        update
+            .txs
+            .insert(tx.txid(), (TxNodeInternal::Whole(tx), BTreeSet::new(), <span class="number">0</span>));
+        <span class="kw">let </span>changeset = <span class="self">self</span>.determine_changeset(update);
+        <span class="self">self</span>.apply_changeset(changeset.clone());
+        changeset
     }
 
     <span class="doccomment">/// Inserts the given `anchor` into [`TxGraph`].
     ///
-    /// This is equivalent to calling [`insert_anchor_preview`] and [`apply_additions`] in sequence.
-    /// The [`Additions`] returned will be empty if graph already knows that `txid` exists in
+    /// The [`ChangeSet`] returned will be empty if graph already knows that `txid` exists in
     /// `anchor`.
-    ///
-    /// [`insert_anchor_preview`]: Self::insert_anchor_preview
-    /// [`apply_additions`]: Self::apply_additions
-    </span><span class="kw">pub fn </span>insert_anchor(<span class="kw-2">&amp;mut </span><span class="self">self</span>, txid: Txid, anchor: A) -&gt; Additions&lt;A&gt; {
-        <span class="kw">let </span>additions = <span class="self">self</span>.insert_anchor_preview(txid, anchor);
-        <span class="self">self</span>.apply_additions(additions.clone());
-        additions
+    </span><span class="kw">pub fn </span>insert_anchor(<span class="kw-2">&amp;mut </span><span class="self">self</span>, txid: Txid, anchor: A) -&gt; ChangeSet&lt;A&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>update = <span class="self">Self</span>::default();
+        update.anchors.insert((anchor, txid));
+        <span class="kw">let </span>changeset = <span class="self">self</span>.determine_changeset(update);
+        <span class="self">self</span>.apply_changeset(changeset.clone());
+        changeset
     }
 
-    <span class="doccomment">/// Returns the resultant [`Additions`] if the `txid` is set to `seen_at`.
+    <span class="doccomment">/// Inserts the given `seen_at` for `txid` into [`TxGraph`].
     ///
     /// Note that [`TxGraph`] only keeps track of the lastest `seen_at`.
-    </span><span class="kw">pub fn </span>insert_seen_at_preview(<span class="kw-2">&amp;</span><span class="self">self</span>, txid: Txid, seen_at: u64) -&gt; Additions&lt;A&gt; {
+    </span><span class="kw">pub fn </span>insert_seen_at(<span class="kw-2">&amp;mut </span><span class="self">self</span>, txid: Txid, seen_at: u64) -&gt; ChangeSet&lt;A&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>update = <span class="self">Self</span>::default();
         <span class="kw">let </span>(<span class="kw">_</span>, <span class="kw">_</span>, update_last_seen) = update.txs.entry(txid).or_default();
         <span class="kw-2">*</span>update_last_seen = seen_at;
-        <span class="self">self</span>.determine_additions(<span class="kw-2">&amp;</span>update)
-    }
-
-    <span class="doccomment">/// Inserts the given `seen_at` into [`TxGraph`].
-    ///
-    /// This is equivalent to calling [`insert_seen_at_preview`] and [`apply_additions`] in
-    /// sequence.
-    ///
-    /// [`insert_seen_at_preview`]: Self::insert_seen_at_preview
-    /// [`apply_additions`]: Self::apply_additions
-    </span><span class="kw">pub fn </span>insert_seen_at(<span class="kw-2">&amp;mut </span><span class="self">self</span>, txid: Txid, seen_at: u64) -&gt; Additions&lt;A&gt; {
-        <span class="kw">let </span>additions = <span class="self">self</span>.insert_seen_at_preview(txid, seen_at);
-        <span class="self">self</span>.apply_additions(additions.clone());
-        additions
+        <span class="kw">let </span>changeset = <span class="self">self</span>.determine_changeset(update);
+        <span class="self">self</span>.apply_changeset(changeset.clone());
+        changeset
     }
 
     <span class="doccomment">/// Extends this graph with another so that `self` becomes the union of the two sets of
     /// transactions.
     ///
-    /// The returned [`Additions`] is the set difference between `update` and `self` (transactions that
+    /// The returned [`ChangeSet`] is the set difference between `update` and `self` (transactions that
     /// exist in `update` but not in `self`).
-    </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: TxGraph&lt;A&gt;) -&gt; Additions&lt;A&gt; {
-        <span class="kw">let </span>additions = <span class="self">self</span>.determine_additions(<span class="kw-2">&amp;</span>update);
-        <span class="self">self</span>.apply_additions(additions.clone());
-        additions
+    </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: TxGraph&lt;A&gt;) -&gt; ChangeSet&lt;A&gt; {
+        <span class="kw">let </span>changeset = <span class="self">self</span>.determine_changeset(update);
+        <span class="self">self</span>.apply_changeset(changeset.clone());
+        changeset
     }
 
-    <span class="doccomment">/// Applies [`Additions`] to [`TxGraph`].
-    </span><span class="kw">pub fn </span>apply_additions(<span class="kw-2">&amp;mut </span><span class="self">self</span>, additions: Additions&lt;A&gt;) {
-        <span class="kw">for </span>tx <span class="kw">in </span>additions.txs {
+    <span class="doccomment">/// Determines the [`ChangeSet`] between `self` and an empty [`TxGraph`].
+    </span><span class="kw">pub fn </span>initial_changeset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ChangeSet&lt;A&gt; {
+        <span class="self">Self</span>::default().determine_changeset(<span class="self">self</span>.clone())
+    }
+
+    <span class="doccomment">/// Applies [`ChangeSet`] to [`TxGraph`].
+    </span><span class="kw">pub fn </span>apply_changeset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: ChangeSet&lt;A&gt;) {
+        <span class="kw">for </span>tx <span class="kw">in </span>changeset.txs {
             <span class="kw">let </span>txid = tx.txid();
 
             tx.input
@@ -1761,7 +1687,7 @@
             }
         }
 
-        <span class="kw">for </span>(outpoint, txout) <span class="kw">in </span>additions.txouts {
+        <span class="kw">for </span>(outpoint, txout) <span class="kw">in </span>changeset.txouts {
             <span class="kw">let </span>tx_entry = <span class="self">self
                 </span>.txs
                 .entry(outpoint.txid)
@@ -1776,14 +1702,14 @@
             }
         }
 
-        <span class="kw">for </span>(anchor, txid) <span class="kw">in </span>additions.anchors {
+        <span class="kw">for </span>(anchor, txid) <span class="kw">in </span>changeset.anchors {
             <span class="kw">if </span><span class="self">self</span>.anchors.insert((anchor.clone(), txid)) {
                 <span class="kw">let </span>(<span class="kw">_</span>, anchors, <span class="kw">_</span>) = <span class="self">self</span>.txs.entry(txid).or_insert_with(Default::default);
                 anchors.insert(anchor);
             }
         }
 
-        <span class="kw">for </span>(txid, new_last_seen) <span class="kw">in </span>additions.last_seen {
+        <span class="kw">for </span>(txid, new_last_seen) <span class="kw">in </span>changeset.last_seen {
             <span class="kw">let </span>(<span class="kw">_</span>, <span class="kw">_</span>, last_seen) = <span class="self">self</span>.txs.entry(txid).or_insert_with(Default::default);
             <span class="kw">if </span>new_last_seen &gt; <span class="kw-2">*</span>last_seen {
                 <span class="kw-2">*</span>last_seen = new_last_seen;
@@ -1791,21 +1717,21 @@
         }
     }
 
-    <span class="doccomment">/// Previews the resultant [`Additions`] when [`Self`] is updated against the `update` graph.
+    <span class="doccomment">/// Previews the resultant [`ChangeSet`] when [`Self`] is updated against the `update` graph.
     ///
-    /// The [`Additions`] would be the set difference between `update` and `self` (transactions that
+    /// The [`ChangeSet`] would be the set difference between `update` and `self` (transactions that
     /// exist in `update` but not in `self`).
-    </span><span class="kw">pub fn </span>determine_additions(<span class="kw-2">&amp;</span><span class="self">self</span>, update: <span class="kw-2">&amp;</span>TxGraph&lt;A&gt;) -&gt; Additions&lt;A&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>additions = Additions::default();
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>determine_changeset(<span class="kw-2">&amp;</span><span class="self">self</span>, update: TxGraph&lt;A&gt;) -&gt; ChangeSet&lt;A&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
 
         <span class="kw">for </span>(<span class="kw-2">&amp;</span>txid, (update_tx_node, <span class="kw">_</span>, update_last_seen)) <span class="kw">in </span><span class="kw-2">&amp;</span>update.txs {
             <span class="kw">let </span>prev_last_seen: u64 = <span class="kw">match </span>(<span class="self">self</span>.txs.get(<span class="kw-2">&amp;</span>txid), update_tx_node) {
                 (<span class="prelude-val">None</span>, TxNodeInternal::Whole(update_tx)) =&gt; {
-                    additions.txs.insert(update_tx.clone());
+                    changeset.txs.insert(update_tx.clone());
                     <span class="number">0
                 </span>}
                 (<span class="prelude-val">None</span>, TxNodeInternal::Partial(update_txos)) =&gt; {
-                    additions.txouts.extend(
+                    changeset.txouts.extend(
                         update_txos
                             .iter()
                             .map(|(<span class="kw-2">&amp;</span>vout, txo)| (OutPoint::new(txid, vout), txo.clone())),
@@ -1817,14 +1743,14 @@
                     <span class="prelude-val">Some</span>((TxNodeInternal::Partial(<span class="kw">_</span>), <span class="kw">_</span>, last_seen)),
                     TxNodeInternal::Whole(update_tx),
                 ) =&gt; {
-                    additions.txs.insert(update_tx.clone());
+                    changeset.txs.insert(update_tx.clone());
                     <span class="kw-2">*</span>last_seen
                 }
                 (
                     <span class="prelude-val">Some</span>((TxNodeInternal::Partial(txos), <span class="kw">_</span>, last_seen)),
                     TxNodeInternal::Partial(update_txos),
                 ) =&gt; {
-                    additions.txouts.extend(
+                    changeset.txouts.extend(
                         update_txos
                             .iter()
                             .filter(|(vout, <span class="kw">_</span>)| !txos.contains_key(<span class="kw-2">*</span>vout))
@@ -1835,13 +1761,13 @@
             };
 
             <span class="kw">if </span><span class="kw-2">*</span>update_last_seen &gt; prev_last_seen {
-                additions.last_seen.insert(txid, <span class="kw-2">*</span>update_last_seen);
+                changeset.last_seen.insert(txid, <span class="kw-2">*</span>update_last_seen);
             }
         }
 
-        additions.anchors = update.anchors.difference(<span class="kw-2">&amp;</span><span class="self">self</span>.anchors).cloned().collect();
+        changeset.anchors = update.anchors.difference(<span class="kw-2">&amp;</span><span class="self">self</span>.anchors).cloned().collect();
 
-        additions
+        changeset
     }
 }
 
@@ -2052,8 +1978,8 @@
             <span class="self">self</span>.try_get_chain_position(chain, chain_tip, tx.txid)
                 .map(|v| {
                     v.map(|observed_in| CanonicalTx {
-                        observed_as: observed_in,
-                        node: tx,
+                        chain_position: observed_in,
+                        tx_node: tx,
                     })
                 })
                 .transpose()
@@ -2274,7 +2200,7 @@
 
 <span class="doccomment">/// A structure that represents changes to a [`TxGraph`].
 ///
-/// It is named &quot;additions&quot; because [`TxGraph`] is monotone, so transactions can only be added and
+/// Since [`TxGraph`] is monotone &quot;changeset&quot; can only contain transactions to be added and
 /// not removed.
 ///
 /// Refer to [module-level documentation] for more.
@@ -2293,7 +2219,7 @@
     )
 )]
 #[must_use]
-</span><span class="kw">pub struct </span>Additions&lt;A = ()&gt; {
+</span><span class="kw">pub struct </span>ChangeSet&lt;A = ()&gt; {
     <span class="doccomment">/// Added transactions.
     </span><span class="kw">pub </span>txs: BTreeSet&lt;Transaction&gt;,
     <span class="doccomment">/// Added txouts.
@@ -2304,7 +2230,7 @@
     </span><span class="kw">pub </span>last_seen: BTreeMap&lt;Txid, u64&gt;,
 }
 
-<span class="kw">impl</span>&lt;A&gt; Default <span class="kw">for </span>Additions&lt;A&gt; {
+<span class="kw">impl</span>&lt;A&gt; Default <span class="kw">for </span>ChangeSet&lt;A&gt; {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             txs: Default::default(),
@@ -2315,13 +2241,13 @@
     }
 }
 
-<span class="kw">impl</span>&lt;A&gt; Additions&lt;A&gt; {
-    <span class="doccomment">/// Returns true if the [`Additions`] is empty (no transactions or txouts).
+<span class="kw">impl</span>&lt;A&gt; ChangeSet&lt;A&gt; {
+    <span class="doccomment">/// Returns true if the [`ChangeSet`] is empty (no transactions or txouts).
     </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.txs.is_empty() &amp;&amp; <span class="self">self</span>.txouts.is_empty()
     }
 
-    <span class="doccomment">/// Iterates over all outpoints contained within [`Additions`].
+    <span class="doccomment">/// Iterates over all outpoints contained within [`ChangeSet`].
     </span><span class="kw">pub fn </span>txouts(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (OutPoint, <span class="kw-2">&amp;</span>TxOut)&gt; {
         <span class="self">self</span>.txs
             .iter()
@@ -2335,7 +2261,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;A: Ord&gt; Append <span class="kw">for </span>Additions&lt;A&gt; {
+<span class="kw">impl</span>&lt;A: Ord&gt; Append <span class="kw">for </span>ChangeSet&lt;A&gt; {
     <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>other: <span class="self">Self</span>) {
         <span class="self">self</span>.txs.append(<span class="kw-2">&amp;mut </span>other.txs);
         <span class="self">self</span>.txouts.append(<span class="kw-2">&amp;mut </span>other.txouts);
@@ -2365,7 +2291,7 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;A&gt; ForEachTxOut <span class="kw">for </span>Additions&lt;A&gt; {
+<span class="kw">impl</span>&lt;A&gt; ForEachTxOut <span class="kw">for </span>ChangeSet&lt;A&gt; {
     <span class="kw">fn </span>for_each_txout(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw">impl </span>FnMut((OutPoint, <span class="kw-2">&amp;</span>TxOut))) {
         <span class="self">self</span>.txouts().for_each(f)
     }

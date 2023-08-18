@@ -266,8 +266,6 @@
 <a href="#266" id="266">266</a>
 <a href="#267" id="267">267</a>
 <a href="#268" id="268">268</a>
-<a href="#269" id="269">269</a>
-<a href="#270" id="270">270</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for keychain related structures.
 //!
 //! A keychain here is a set of application-defined indexes for a miniscript descriptor where we can
@@ -281,8 +279,7 @@
 //! [`SpkTxOutIndex`]: crate::SpkTxOutIndex
 
 </span><span class="kw">use crate</span>::{
-    collections::BTreeMap, indexed_tx_graph::IndexedAdditions, local_chain, tx_graph::TxGraph,
-    Anchor, Append,
+    collections::BTreeMap, indexed_tx_graph, local_chain, tx_graph::TxGraph, Anchor, Append,
 };
 
 <span class="attr">#[cfg(feature = <span class="string">&quot;miniscript&quot;</span>)]
@@ -291,12 +288,13 @@
 </span><span class="kw">pub use </span>txout_index::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Represents updates to the derivation index of a [`KeychainTxOutIndex`].
+/// It maps each keychain `K` to its last revealed index.
 ///
-/// It can be applied to [`KeychainTxOutIndex`] with [`apply_additions`]. [`DerivationAdditions] are
+/// It can be applied to [`KeychainTxOutIndex`] with [`apply_changeset`]. [`ChangeSet] are
 /// monotone in that they will never decrease the revealed derivation index.
 ///
 /// [`KeychainTxOutIndex`]: crate::keychain::KeychainTxOutIndex
-/// [`apply_additions`]: crate::keychain::KeychainTxOutIndex::apply_additions
+/// [`apply_changeset`]: crate::keychain::KeychainTxOutIndex::apply_changeset
 </span><span class="attr">#[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = <span class="string">&quot;serde&quot;</span>,
@@ -310,17 +308,17 @@
     )
 )]
 #[must_use]
-</span><span class="kw">pub struct </span>DerivationAdditions&lt;K&gt;(<span class="kw">pub </span>BTreeMap&lt;K, u32&gt;);
+</span><span class="kw">pub struct </span>ChangeSet&lt;K&gt;(<span class="kw">pub </span>BTreeMap&lt;K, u32&gt;);
 
-<span class="kw">impl</span>&lt;K&gt; DerivationAdditions&lt;K&gt; {
+<span class="kw">impl</span>&lt;K&gt; ChangeSet&lt;K&gt; {
     <span class="doccomment">/// Get the inner map of the keychain to its new derivation index.
     </span><span class="kw">pub fn </span>as_inner(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeMap&lt;K, u32&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
     </span>}
 }
 
-<span class="kw">impl</span>&lt;K: Ord&gt; Append <span class="kw">for </span>DerivationAdditions&lt;K&gt; {
-    <span class="doccomment">/// Append another [`DerivationAdditions`] into self.
+<span class="kw">impl</span>&lt;K: Ord&gt; Append <span class="kw">for </span>ChangeSet&lt;K&gt; {
+    <span class="doccomment">/// Append another [`ChangeSet`] into self.
     ///
     /// If the keychain already exists, increase the index when the other&#39;s index &gt; self&#39;s index.
     /// If the keychain did not exist, append the new keychain.
@@ -334,19 +332,19 @@
         <span class="self">self</span>.<span class="number">0</span>.append(<span class="kw-2">&amp;mut </span>other.<span class="number">0</span>);
     }
 
-    <span class="doccomment">/// Returns whether the additions are empty.
+    <span class="doccomment">/// Returns whether the changeset are empty.
     </span><span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.<span class="number">0</span>.is_empty()
     }
 }
 
-<span class="kw">impl</span>&lt;K&gt; Default <span class="kw">for </span>DerivationAdditions&lt;K&gt; {
+<span class="kw">impl</span>&lt;K&gt; Default <span class="kw">for </span>ChangeSet&lt;K&gt; {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>(Default::default())
     }
 }
 
-<span class="kw">impl</span>&lt;K&gt; AsRef&lt;BTreeMap&lt;K, u32&gt;&gt; <span class="kw">for </span>DerivationAdditions&lt;K&gt; {
+<span class="kw">impl</span>&lt;K&gt; AsRef&lt;BTreeMap&lt;K, u32&gt;&gt; <span class="kw">for </span>ChangeSet&lt;K&gt; {
     <span class="kw">fn </span>as_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeMap&lt;K, u32&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
     </span>}
@@ -356,7 +354,7 @@
 ///
 /// [`LocalChain`]: local_chain::LocalChain
 </span><span class="attr">#[derive(Debug, Clone)]
-</span><span class="kw">pub struct </span>LocalUpdate&lt;K, A&gt; {
+</span><span class="kw">pub struct </span>WalletUpdate&lt;K, A&gt; {
     <span class="doccomment">/// Contains the last active derivation indices per keychain (`K`), which is used to update the
     /// [`KeychainTxOutIndex`].
     </span><span class="kw">pub </span>last_active_indices: BTreeMap&lt;K, u32&gt;,
@@ -370,10 +368,8 @@
     </span><span class="kw">pub </span>chain: local_chain::Update,
 }
 
-<span class="kw">impl</span>&lt;K, A&gt; LocalUpdate&lt;K, A&gt; {
-    <span class="doccomment">/// Construct a [`LocalUpdate`] with a given [`local_chain::Update`].
-    ///
-    /// [`CheckPoint`]: local_chain::CheckPoint
+<span class="kw">impl</span>&lt;K, A&gt; WalletUpdate&lt;K, A&gt; {
+    <span class="doccomment">/// Construct a [`WalletUpdate`] with a given [`local_chain::Update`].
     </span><span class="kw">pub fn </span>new(chain_update: local_chain::Update) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             last_active_indices: BTreeMap::new(),
@@ -383,7 +379,7 @@
     }
 }
 
-<span class="doccomment">/// A structure that records the corresponding changes as result of applying an [`LocalUpdate`].
+<span class="doccomment">/// A structure that records the corresponding changes as result of applying an [`WalletUpdate`].
 </span><span class="attr">#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(
     feature = <span class="string">&quot;serde&quot;</span>,
@@ -396,51 +392,51 @@
         )
     )
 )]
-</span><span class="kw">pub struct </span>LocalChangeSet&lt;K, A&gt; {
+</span><span class="kw">pub struct </span>WalletChangeSet&lt;K, A&gt; {
     <span class="doccomment">/// Changes to the [`LocalChain`].
     ///
     /// [`LocalChain`]: local_chain::LocalChain
-    </span><span class="kw">pub </span>chain_changeset: local_chain::ChangeSet,
+    </span><span class="kw">pub </span>chain: local_chain::ChangeSet,
 
-    <span class="doccomment">/// Additions to [`IndexedTxGraph`].
+    <span class="doccomment">/// ChangeSet to [`IndexedTxGraph`].
     ///
     /// [`IndexedTxGraph`]: crate::indexed_tx_graph::IndexedTxGraph
-    </span><span class="kw">pub </span>indexed_additions: IndexedAdditions&lt;A, DerivationAdditions&lt;K&gt;&gt;,
+    </span><span class="kw">pub </span>index_tx_graph: indexed_tx_graph::ChangeSet&lt;A, ChangeSet&lt;K&gt;&gt;,
 }
 
-<span class="kw">impl</span>&lt;K, A&gt; Default <span class="kw">for </span>LocalChangeSet&lt;K, A&gt; {
+<span class="kw">impl</span>&lt;K, A&gt; Default <span class="kw">for </span>WalletChangeSet&lt;K, A&gt; {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            chain_changeset: Default::default(),
-            indexed_additions: Default::default(),
+            chain: Default::default(),
+            index_tx_graph: Default::default(),
         }
     }
 }
 
-<span class="kw">impl</span>&lt;K: Ord, A: Anchor&gt; Append <span class="kw">for </span>LocalChangeSet&lt;K, A&gt; {
+<span class="kw">impl</span>&lt;K: Ord, A: Anchor&gt; Append <span class="kw">for </span>WalletChangeSet&lt;K, A&gt; {
     <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
-        Append::append(<span class="kw-2">&amp;mut </span><span class="self">self</span>.chain_changeset, other.chain_changeset);
-        Append::append(<span class="kw-2">&amp;mut </span><span class="self">self</span>.indexed_additions, other.indexed_additions);
+        Append::append(<span class="kw-2">&amp;mut </span><span class="self">self</span>.chain, other.chain);
+        Append::append(<span class="kw-2">&amp;mut </span><span class="self">self</span>.index_tx_graph, other.index_tx_graph);
     }
 
     <span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.chain_changeset.is_empty() &amp;&amp; <span class="self">self</span>.indexed_additions.is_empty()
+        <span class="self">self</span>.chain.is_empty() &amp;&amp; <span class="self">self</span>.index_tx_graph.is_empty()
     }
 }
 
-<span class="kw">impl</span>&lt;K, A&gt; From&lt;local_chain::ChangeSet&gt; <span class="kw">for </span>LocalChangeSet&lt;K, A&gt; {
-    <span class="kw">fn </span>from(chain_changeset: local_chain::ChangeSet) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;K, A&gt; From&lt;local_chain::ChangeSet&gt; <span class="kw">for </span>WalletChangeSet&lt;K, A&gt; {
+    <span class="kw">fn </span>from(chain: local_chain::ChangeSet) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            chain_changeset,
+            chain,
             ..Default::default()
         }
     }
 }
 
-<span class="kw">impl</span>&lt;K, A&gt; From&lt;IndexedAdditions&lt;A, DerivationAdditions&lt;K&gt;&gt;&gt; <span class="kw">for </span>LocalChangeSet&lt;K, A&gt; {
-    <span class="kw">fn </span>from(indexed_additions: IndexedAdditions&lt;A, DerivationAdditions&lt;K&gt;&gt;) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;K, A&gt; From&lt;indexed_tx_graph::ChangeSet&lt;A, ChangeSet&lt;K&gt;&gt;&gt; <span class="kw">for </span>WalletChangeSet&lt;K, A&gt; {
+    <span class="kw">fn </span>from(index_tx_graph: indexed_tx_graph::ChangeSet&lt;A, ChangeSet&lt;K&gt;&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            indexed_additions,
+            index_tx_graph,
             ..Default::default()
         }
     }
@@ -524,8 +520,8 @@
         lhs_di.insert(Keychain::Three, <span class="number">3</span>);
         rhs_di.insert(Keychain::Four, <span class="number">4</span>);
 
-        <span class="kw">let </span><span class="kw-2">mut </span>lhs = DerivationAdditions(lhs_di);
-        <span class="kw">let </span>rhs = DerivationAdditions(rhs_di);
+        <span class="kw">let </span><span class="kw-2">mut </span>lhs = ChangeSet(lhs_di);
+        <span class="kw">let </span>rhs = ChangeSet(rhs_di);
         lhs.append(rhs);
 
         <span class="comment">// Exiting index doesn&#39;t update if the new index in `other` is lower than `self`.
