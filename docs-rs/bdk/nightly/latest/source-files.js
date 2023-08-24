@@ -9,7 +9,7 @@ var sourcesIndex = JSON.parse('{\
 "example_cli":["",[],["lib.rs"]],\
 "example_electrum":["",[],["main.rs"]],\
 "wallet_electrum_example":["",[],["main.rs"]],\
-"wallet_esplora":["",[],["main.rs"]],\
-"wallet_esplora_async":["",[],["main.rs"]]\
+"wallet_esplora_async":["",[],["main.rs"]],\
+"wallet_esplora_blocking":["",[],["main.rs"]]\
 }');
 createSourceSidebar();
