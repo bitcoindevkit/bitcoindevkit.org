@@ -507,7 +507,7 @@ But let's check what happens if `E` tries to transact before the designated 2 mo
 
 ```bash
 # address to send the transaction to
-E_ADDR=$(Ewallet getnewaddress | jq -r ".address")
+E_ADDR=$(Ewallet get_new_address | jq -r ".address")
 
 # get external_policy id - this identifies which policy the wallet will try to sign against
 POLICY_ID=$(Ewallet policies | jq -r ".external | .id")
