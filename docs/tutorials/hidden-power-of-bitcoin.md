@@ -141,7 +141,7 @@ Descriptor: pkh([d34db33f/44'/0'/0']xpub6ERaJH[...]LJRcEL/1/*)#ml40v0wf
             <1> <--------2---------><----------3---------><4> <---5--->
 
 Sections:
-1 - address type specifier (here, describing P2PK type addresses)
+1 - address type specifier (here, describing P2PKH type addresses)
 2 - master key fingerprint and derivation path from master
 3 - xpub at m/44'/0'/0
 4 - path to deriving keys/addresses at
@@ -154,7 +154,7 @@ A descriptor have three parts:
 
 The address type specifiers currently supported are `pk`, `pkh`, `sh`, `wpkh`, `wsh` for corresponding address type and recently added `tr` for taproot addresses.
 
-There is a special address specifier called `combo` that creates addresses of all types from spending policy policy.
+There is a special address specifier called `combo` that creates addresses of all types from spending policy.
 
 After the address specifier, comes the *policy* that describes how the funds in the address can be spent. The descriptor
 above in the example has a simple spending policy of "spend by the correct private key". There can be more complicated policies,
@@ -212,7 +212,7 @@ Let us first generate an XPRV and create the wpkh wallet descriptor
 ```bash
 XPRV=$(bdk-cli key generate | jq -r '.xprv')
 EX_DESC="wpkh($XPRV/86'/1'/0'/0/*)"
-EX_DESC_CS=$(elcli getdescriptorinfo $EX_DESC | jq -r '.checksum')
+EX_DESC_CS=$(bitcoin-cli getdescriptorinfo $EX_DESC | jq -r '.checksum')
 EX_DESC=$EX_DESC#$EX_DESC_CS
 
 # Set this descriptor in a wallet in bitcoin-cli
