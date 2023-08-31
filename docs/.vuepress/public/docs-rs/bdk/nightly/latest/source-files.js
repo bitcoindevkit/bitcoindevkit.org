@@ -8,6 +8,7 @@ var sourcesIndex = JSON.parse('{\
 "bdk_tmp_plan":["",[],["lib.rs","plan_impls.rs","requirements.rs","template.rs"]],\
 "example_cli":["",[],["lib.rs"]],\
 "example_electrum":["",[],["main.rs"]],\
+"example_esplora":["",[],["main.rs"]],\
 "wallet_electrum_example":["",[],["main.rs"]],\
 "wallet_esplora_async":["",[],["main.rs"]],\
 "wallet_esplora_blocking":["",[],["main.rs"]]\
