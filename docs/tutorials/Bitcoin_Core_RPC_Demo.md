@@ -100,10 +100,10 @@ dirs-next = "2.0"
 ```
 We disabled the default BDK feature (which specifies blockchain backend as an electrum server) and we requested the following features:
  - **all-keys**: Adds BIP39 key derivation capabilities
- - **key-value-db**: Adds a persistance storage capability
+ - **key-value-db**: Adds a persistence storage capability
  - **rpc**: Adds the RPC blockchain backend capability.
 
-Now that we have the dependcies added, we can import them in the `main.rs` file to use in our code.
+Now that we have the dependencies added, we can import them in the `main.rs` file to use in our code.
 Add the following imports at the start of `main.rs`
 
 ```rust
@@ -201,7 +201,7 @@ fn get_descriptors() -> (String, String) {
     ...
 }
 ```
-Running the binary should produces the following result
+Running the binary should produce the following result
 ```shell
 $ cargo run
 recv: "wpkh([89df6a67/84'/1'/0'/0]tprv8iSRXyLtTKJN9qt1jyPVqwhDMEaYztXunPaRQznaH1z8gj8e2g7RnF2ZoHP56VEXwMn76AiV1Je6nJmZbFistwAQCrRGmSrsoKfdqfTDNA1/*)", 
@@ -355,7 +355,7 @@ That's a lot of code. They are divided into logical sections. Let's discuss each
  - We used the rpc configuration to create a `RpcBlockchain` structure.
  - Finally we used the Descriptors, Database, and Blockchain to create our final BDK `wallet` structure.
 
-Now that we have a our wallet cooked, in the end, we instructed it to sync with the bitcoin core backend, and fetch us a new address.
+Now that we have our wallet cooked, in the end, we instructed it to sync with the bitcoin core backend, and fetch us a new address.
 
 If all goes well, you should see an address printed in the terminal.
 
@@ -431,7 +431,7 @@ fn main() {
 }
 ```
 
-The above code segment is mostly straight forward. The only new thing added is `wallet.build_tx()` which returns a `TxBuilder`. BDK allows us to have very fine grained control of cooking up transactions. Almost everything that is possible to do with a Bitcoin transaction can be done in BDK. Here we have a very simple vanilla transaction with no added magic. To get full list of capabilities that `TxBuilder` supports scour its implementation [here](https://github.com/bitcoindevkit/bdk/blob/38d1d0b0e29d38cd370c740d798d96a3c9fcaa1f/src/wallet/tx_builder.rs#L123-L153).
+The above code segment is mostly straightforward. The only new thing added is `wallet.build_tx()` which returns a `TxBuilder`. BDK allows us to have very fine grained control of cooking up transactions. Almost everything that is possible to do with a Bitcoin transaction can be done in BDK. Here we have a very simple vanilla transaction with no added magic. To get full list of capabilities that `TxBuilder` supports scour its implementation [here](https://github.com/bitcoindevkit/bdk/blob/38d1d0b0e29d38cd370c740d798d96a3c9fcaa1f/src/wallet/tx_builder.rs#L123-L153).
 
 Finally to step through what we did above:
  - We asked core wallet to send 10 BTC to bdk wallet address.
@@ -610,7 +610,7 @@ fn get_descriptors() -> (String, String) {
     let xkey: ExtendedKey = (mnemonic, password).into_extended_key().unwrap();
     let xprv = xkey.into_xprv(Network::Regtest).unwrap();
 
-    // Derive our dewscriptors to use
+    // Derive our descriptors to use
     // We use the following paths for recieve and change descriptor
     // recieve: "m/84h/1h/0h/0"
     // change: "m/84h/1h/0h/1" 

@@ -243,7 +243,7 @@ fn create_blockchain() -> EsploraBlockchain {
 There are two notable differences though. First, we call `build_async()` to 
 create an asynchronous Esplora client. Second the SOCKS5 URL scheme is 
 “socks5h”. It’s not a typo. The async client supports two SOCKS5 schemes 
-“socks5” and “socks5h”. The difference between them that the former 
+“socks5” and “socks5h”. The difference between them is that the former 
 makes the client to resolve domain names, and the latter does not, so the 
 client passes them to the proxy as is. A regular DNS resolver cannot 
 resolve Tor onion addresses, so we should use “socks5h” here.

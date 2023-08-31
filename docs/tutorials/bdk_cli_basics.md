@@ -101,7 +101,7 @@ SUBCOMMANDS:
  
 ## Step 1: Seed Generate
 
-### 1a: Mnemonic word-list + XPRV (Exteneded Private Key) :key: 
+### 1a: Mnemonic word-list + XPRV (Extended Private Key) :key: 
 
 Linux/Terminal:
 :arrow_forward:   `bdk-cli key generate | tee key.json`
@@ -338,7 +338,7 @@ Windows Powershell:
 }
 ```
 
-- Verify transcation in the memory pool on testnet [Mempool-testnet!](https://mempool.space/testnet)
+- Verify transaction in the memory pool on testnet [Mempool-testnet!](https://mempool.space/testnet)
  
 :::tip
 Run sync one more time and see that the balance has decreased.

@@ -6,7 +6,7 @@
 
 In order to build the website locally, you'll need [Node.js](https://nodejs.org/) >= 14.16 (or basically the latest LTS version).
 
-The setup is straight forward:
+The setup is straightforward:
 
 ```bash
 # Install dependencies
@@ -64,13 +64,13 @@ This document explains how to **integrate BDK into your stack**.
 
 ### Embedding YouTube videos
 
-To add a YouTube video with a preview, you can so so by linking to it like this:
+To add a YouTube video with a preview, you can do so by linking to it like this:
 
 ```md
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/mqdefault.jpg)](https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
 ```
 
-Note that the link item need to be a preview image (either from YouTube or a custom one) to result in an embedded video.
+Note that the link item needs to be a preview image (either from YouTube or a custom one) to result in an embedded video.
 
 ### Check for broken links
 
