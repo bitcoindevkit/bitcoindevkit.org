@@ -957,6 +957,7 @@
 <a href="#956" id="956">956</a>
 <a href="#957" id="957">957</a>
 <a href="#958" id="958">958</a>
+<a href="#959" id="959">959</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -991,7 +992,7 @@
 //!     .do_not_spend_change()
 //!     // Turn on RBF signaling
 //!     .enable_rbf();
-//! let (psbt, tx_details) = tx_builder.finish()?;
+//! let psbt = tx_builder.finish()?;
 //! # Ok::&lt;(), bdk::Error&gt;(())
 //! ```
 
@@ -1007,10 +1008,7 @@
 
 <span class="kw">use </span><span class="kw">super</span>::coin_selection::{CoinSelectionAlgorithm, DefaultCoinSelectionAlgorithm};
 <span class="kw">use </span><span class="kw">super</span>::ChangeSet;
-<span class="kw">use crate</span>::{
-    types::{FeeRate, KeychainKind, LocalUtxo, WeightedUtxo},
-    TransactionDetails,
-};
+<span class="kw">use </span><span class="kw">crate</span>::types::{FeeRate, KeychainKind, LocalUtxo, WeightedUtxo};
 <span class="kw">use crate</span>::{Error, Utxo, Wallet};
 <span class="doccomment">/// Context in which the [`TxBuilder`] is valid
 </span><span class="kw">pub trait </span>TxBuilderContext: core::fmt::Debug + Default + Clone {}
@@ -1044,7 +1042,7 @@
 /// # let addr1 = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap().assume_checked();
 /// # let addr2 = addr1.clone();
 /// // chaining
-/// let (psbt1, details) = {
+/// let psbt1 = {
 ///     let mut builder = wallet.build_tx();
 ///     builder
 ///         .ordering(TxOrdering::Untouched)
@@ -1054,7 +1052,7 @@
 /// };
 ///
 /// // non-chaining
-/// let (psbt2, details) = {
+/// let psbt2 = {
 ///     let mut builder = wallet.build_tx();
 ///     builder.ordering(TxOrdering::Untouched);
 ///     for addr in &amp;[addr1, addr2] {
@@ -1297,6 +1295,10 @@
     ///
     /// This is an **EXPERIMENTAL** feature, API and other major changes are expected.
     ///
+    /// In order to use [`Wallet::calculate_fee`] or [`Wallet::calculate_fee_rate`] for a transaction
+    /// created with foreign UTXO(s) you must manually insert the corresponding TxOut(s) into the tx
+    /// graph using the [`Wallet::insert_txout`] function.
+    ///
     /// # Errors
     ///
     /// This method returns errors in the following circumstances:
@@ -1490,7 +1492,7 @@
     /// Returns the [`BIP174`] &quot;PSBT&quot; and summary details about the transaction.
     ///
     /// [`BIP174`]: https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki
-    </span><span class="kw">pub fn </span>finish(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(Psbt, TransactionDetails), Error&gt;
+    </span><span class="kw">pub fn </span>finish(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Psbt, Error&gt;
     <span class="kw">where
         </span>D: PersistBackend&lt;ChangeSet&gt;,
     {
@@ -1604,7 +1606,7 @@
     ///     .drain_to(to_address.script_pubkey())
     ///     .fee_rate(bdk::FeeRate::from_sat_per_vb(5.0))
     ///     .enable_rbf();
-    /// let (psbt, tx_details) = tx_builder.finish()?;
+    /// let psbt = tx_builder.finish()?;
     /// # Ok::&lt;(), bdk::Error&gt;(())
     /// ```
     ///
