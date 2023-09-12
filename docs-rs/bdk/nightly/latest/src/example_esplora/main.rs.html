@@ -318,10 +318,6 @@
 <a href="#318" id="318">318</a>
 <a href="#319" id="319">319</a>
 <a href="#320" id="320">320</a>
-<a href="#321" id="321">321</a>
-<a href="#322" id="322">322</a>
-<a href="#323" id="323">323</a>
-<a href="#324" id="324">324</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::{BTreeMap, BTreeSet},
     io::{<span class="self">self</span>, Write},
@@ -478,7 +474,7 @@
             // represents the last active spk derivation indices of keychains
             // (`keychain_indices_update`).
             </span><span class="kw">let </span>(graph_update, last_active_indices) = client
-                .update_tx_graph(
+                .scan_txs_with_keychains(
                     keychain_spks,
                     core::iter::empty(),
                     core::iter::empty(),
@@ -600,12 +596,8 @@
                 }
             }
 
-            <span class="kw">let </span>graph_update = client.update_tx_graph_without_keychain(
-                spks,
-                txids,
-                outpoints,
-                scan_options.parallel_requests,
-            )<span class="question-mark">?</span>;
+            <span class="kw">let </span>graph_update =
+                client.scan_txs(spks, txids, outpoints, scan_options.parallel_requests)<span class="question-mark">?</span>;
 
             graph.lock().unwrap().apply_update(graph_update)
         }

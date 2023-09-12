@@ -365,7 +365,7 @@
     /// transactions. `parallel_requests` specifies the max number of HTTP requests to make in
     /// parallel.
     </span><span class="attr">#[allow(clippy::result_large_err)]
-    </span><span class="kw">fn </span>update_tx_graph&lt;K: Ord + Clone&gt;(
+    </span><span class="kw">fn </span>scan_txs_with_keychains&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, ScriptBuf)&gt;&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
@@ -374,18 +374,18 @@
         parallel_requests: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationTimeAnchor&gt;, BTreeMap&lt;K, u32&gt;), Error&gt;;
 
-    <span class="doccomment">/// Convenience method to call [`update_tx_graph`] without requiring a keychain.
+    <span class="doccomment">/// Convenience method to call [`scan_txs_with_keychains`] without requiring a keychain.
     ///
-    /// [`update_tx_graph`]: EsploraExt::update_tx_graph
+    /// [`scan_txs_with_keychains`]: EsploraExt::scan_txs_with_keychains
     </span><span class="attr">#[allow(clippy::result_large_err)]
-    </span><span class="kw">fn </span>update_tx_graph_without_keychain(
+    </span><span class="kw">fn </span>scan_txs(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         misc_spks: <span class="kw">impl </span>IntoIterator&lt;Item = ScriptBuf&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         parallel_requests: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationTimeAnchor&gt;, Error&gt; {
-        <span class="self">self</span>.update_tx_graph(
+        <span class="self">self</span>.scan_txs_with_keychains(
             [(
                 (),
                 misc_spks
@@ -511,7 +511,7 @@
         })
     }
 
-    <span class="kw">fn </span>update_tx_graph&lt;K: Ord + Clone&gt;(
+    <span class="kw">fn </span>scan_txs_with_keychains&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, ScriptBuf)&gt;&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
