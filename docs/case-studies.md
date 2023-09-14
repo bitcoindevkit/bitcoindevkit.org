@@ -27,6 +27,19 @@ lastUpdated: false
         <p>Padawan is a testnet-only bitcoin wallet filled with tutorials on how to use bitcoin wallets. It is a self-study tool, acquainting users with mobile bitcoin wallets in a risk-free environment using the bitcoin testnet network. It is a perfect app for experimentation and learning for people of all ages. No accounts, no trackers, and the app is a free and open source project.</p>
       </div>
     </div>
+
+    <div class="case-studies">
+      <div class="case-study-item">
+        <a href="https://peachbitcoin.com/" target="_blank">
+          <img src="/img/peach-bitcoin-logo.svg" />
+        </a>
+        <h3>
+          <a href="https://peachbitcoin.com/" target="_blank">Peach Bitcoin</a>
+        </h3>
+        <p>Peach is a mobile application that connects Bitcoin buyers and sellers directly together. Buy or sell bitcoin peer-to-peer anywhere, at anytime. Use the payment method of your choice amongst many options. Sell at the price of your choice because peer-to-peer markets are the real markets.</p>
+      </div>
+    </div>
+  
   </template>
 
   <template v-slot:web>
