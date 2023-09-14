@@ -13,29 +13,31 @@ lastUpdated: false
    Meet the projects building with BDK
 </h1>
 
-<CodeSwitcher :languages="{all: 'All', mobile:'Mobile', web:'Web', desktop:'Desktop', custodial: 'Custodial', infra:'Infrastructure', misc:'Misc',}">
+<!-- <CodeSwitcher :languages="{all: 'All', mobile:'Mobile', web:'Web', desktop:'Desktop', custodial: 'Custodial', infra:'Infrastructure', misc:'Misc',}"> -->
   
+<CodeSwitcher :languages="{all: 'All', mobile: 'Mobile', hardware: 'Hardware'}">
+
   <template v-slot:mobile>
     <div class="case-studies">
       <div class="case-study-item">
-        <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">
-          <img src="/img/padawan-logo.png" />
+        <a href="https://bitkey.build/" target="_blank">
+          <img src="/img/case-studies-logos/block-logo.gif" />
         </a>
         <h3>
-          <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">Padawan Wallet</a>
+          <a href="https://bitkey.build/" target="_blank">Bitkey</a> 
         </h3>
-        <p>Padawan is a testnet-only bitcoin wallet filled with tutorials on how to use bitcoin wallets. It is a self-study tool, acquainting users with mobile bitcoin wallets in a risk-free environment using the bitcoin testnet network. It is a perfect app for experimentation and learning for people of all ages. No accounts, no trackers, and the app is a free and open source project.</p>
+        <p>Bitkey is the safe, easy way to own and manage bitcoin. It’s a mobile app, hardware device, and a set of recovery tools, for simple, secure self-custody.</p>
       </div>
       <div class="case-study-item">
         <a href="https://peachbitcoin.com/" target="_blank">
-          <img src="/img/peach-bitcoin-logo.svg" />
+          <img src="/img/case-studies-logos/peach-bitcoin-logo.svg" />
         </a>
         <h3>
           <a href="https://peachbitcoin.com/" target="_blank">Peach Bitcoin</a>
         </h3>
         <p>Peach is a mobile application that connects Bitcoin buyers and sellers directly together. Buy or sell bitcoin peer-to-peer anywhere, at anytime. Use the payment method of your choice amongst many options. Sell at the price of your choice because peer-to-peer markets are the real markets.</p>
       </div>
-            <div class="case-study-item">
+      <div class="case-study-item">
         <a href="https://github.com/lightningdevkit/ldk-node" target="_blank">
           <img src="/img/case-studies-logos/ldk-node-logo.png" />
         </a>
@@ -44,10 +46,19 @@ lastUpdated: false
         </h3>
         <p>A ready-to-go Lightning node library built using LDK and BDK.</p>
       </div>
+      <div class="case-study-item">
+        <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">
+          <img src="/img/case-studies-logos/padawan-logo.png" />
+        </a>
+        <h3>
+          <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">Padawan Wallet</a>
+        </h3>
+        <p>Padawan is a testnet-only bitcoin wallet filled with tutorials on how to use bitcoin wallets. It is a self-study tool, acquainting users with mobile bitcoin wallets in a risk-free environment using the bitcoin testnet network. It is a perfect app for experimentation and learning for people of all ages. No accounts, no trackers, and the app is a free and open source project.</p>
+      </div>
     </div>
   </template>
 
-  <template v-slot:web>
+  <!-- <template v-slot:web>
     <div class="case-studies">
       <div class="case-study-item">
         <a href="https://bitcoindevkit.org" target="_blank">
@@ -59,9 +70,9 @@ lastUpdated: false
         <p>A cool app built with BDK.</p>
       </div>
     </div>
-  </template>
+  </template> -->
 
-  <template v-slot:desktop>
+  <!-- <template v-slot:desktop>
     <div class="case-studies">
       <div class="case-study-item">
         <a href="https://bitcoindevkit.org" target="_blank">
@@ -73,9 +84,23 @@ lastUpdated: false
         <p>A cool app built with BDK.</p>
       </div>
     </div>
+  </template> -->
+
+  <template v-slot:hardware>
+    <div class="case-studies">
+      <div class="case-study-item">
+        <a href="https://bitkey.build/" target="_blank">
+          <img src="/img/case-studies-logos/block-logo.gif" />
+        </a>
+        <h3>
+          <a href="https://bitkey.build/" target="_blank">Bitkey</a> 
+        </h3>
+        <p>Bitkey is the safe, easy way to own and manage bitcoin. It’s a mobile app, hardware device, and a set of recovery tools, for simple, secure self-custody.</p>
+      </div>
+    </div>
   </template>
 
-  <template v-slot:custodial>
+  <!-- <template v-slot:custodial>
     <div class="case-studies">
       <div class="case-study-item">
         <a href="https://bitcoindevkit.org" target="_blank">
@@ -87,9 +112,9 @@ lastUpdated: false
         <p>A cool app built with BDK.</p>
       </div>
     </div>
-  </template>
+  </template> -->
 
-  <template v-slot:infra>
+  <!-- <template v-slot:infra>
     <div class="case-studies">
       <div class="case-study-item">
         <a href="https://bitcoindevkit.org" target="_blank">
@@ -101,9 +126,9 @@ lastUpdated: false
         <p>A cool app built with BDK.</p>
       </div>
     </div>
-  </template>
+  </template> -->
 
-  <template v-slot:misc>
+  <!-- <template v-slot:misc>
     <div class="case-studies">
       <div class="case-study-item">
         <a href="https://bitcoindevkit.org" target="_blank">
@@ -115,37 +140,45 @@ lastUpdated: false
         <p>A cool app built with BDK.</p>
       </div>
     </div>
-  </template>
+  </template> -->
 
   <template v-slot:all>
     <div class="case-studies">
+            <div class="case-study-item">
+        <a href="https://bitkey.build/" target="_blank">
+          <img src="/img/case-studies-logos/block-logo.gif" />
+        </a>
+        <h3>
+          <a href="https://bitkey.build/" target="_blank">Bitkey</a> 
+        </h3>
+        <p>Bitkey is the safe, easy way to own and manage bitcoin. It’s a mobile app, hardware device, and a set of recovery tools, for simple, secure self-custody.</p>
+      </div>
+      <div class="case-study-item">
+        <a href="https://peachbitcoin.com/" target="_blank">
+          <img src="/img/case-studies-logos/peach-bitcoin-logo.svg" />
+        </a>
+        <h3>
+          <a href="https://peachbitcoin.com/" target="_blank">Peach Bitcoin</a>
+        </h3>
+        <p>Peach is a mobile application that connects Bitcoin buyers and sellers directly together. Buy or sell bitcoin peer-to-peer anywhere, at anytime. Use the payment method of your choice amongst many options. Sell at the price of your choice because peer-to-peer markets are the real markets.</p>
+      </div>
+      <div class="case-study-item">
+        <a href="https://github.com/lightningdevkit/ldk-node" target="_blank">
+          <img src="/img/case-studies-logos/ldk-node-logo.png" />
+        </a>
+        <h3>
+          <a href="https://github.com/lightningdevkit/ldk-node" target="_blank">LDK Node</a> 
+        </h3>
+        <p>A ready-to-go Lightning node library built using LDK and BDK.</p>
+      </div>
       <div class="case-study-item">
         <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">
-          <img src="/img/padawan-logo.png" />
+          <img src="/img/case-studies-logos/padawan-logo.png" />
         </a>
         <h3>
           <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">Padawan Wallet</a>
         </h3>
         <p>Padawan is a testnet-only bitcoin wallet filled with tutorials on how to use bitcoin wallets. It is a self-study tool, acquainting users with mobile bitcoin wallets in a risk-free environment using the bitcoin testnet network. It is a perfect app for experimentation and learning for people of all ages. No accounts, no trackers, and the app is a free and open source project.</p>
-      </div>
-    </div>
-      <div class="case-study-item">
-        <a href="https://bitcoindevkit.org" target="_blank">
-          <img src="/img/bitcoindevkit.svg" />
-        </a>
-        <h3>
-          <a href="https://bitcoindevkit.org" target="_blank">Example App 2</a>
-        </h3>
-        <p>A cool app built with BDK.</p>
-      </div>
-      <div class="case-study-item">
-        <a href="https://bitcoindevkit.org" target="_blank">
-          <img src="/img/bitcoindevkit.svg" />
-        </a>
-        <h3>
-          <a href="https://bitcoindevkit.org" target="_blank">Example App 3</a>
-        </h3>
-        <p>A cool app built with BDK.</p>
       </div>
     </div>
   </template>
