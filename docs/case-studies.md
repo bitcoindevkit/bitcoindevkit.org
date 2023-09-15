@@ -30,7 +30,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://peachbitcoin.com/" target="_blank">
-          <img src="/img/case-studies-logos/peach-bitcoin-logo.svg" />
+          <img src="/img/case-studies-logos/peach-bitcoin-logo.png" />
         </a>
         <h3>
           <a href="https://peachbitcoin.com/" target="_blank">Peach Bitcoin</a>
@@ -54,6 +54,15 @@ lastUpdated: false
           <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">Padawan Wallet</a>
         </h3>
         <p>Padawan is a testnet-only bitcoin wallet filled with tutorials on how to use bitcoin wallets. It is a self-study tool, acquainting users with mobile bitcoin wallets in a risk-free environment using the bitcoin testnet network. It is a perfect app for experimentation and learning for people of all ages. No accounts, no trackers, and the app is a free and open source project.</p>
+      </div>
+      <div class="case-study-item">
+        <a href="https://www.mutinywallet.com/" target="_blank">
+          <img src="/img/case-studies-logos/mutiny-logo.png" />
+        </a>
+        <h3>
+          <a href="https://www.mutinywallet.com/" target="_blank">Mutiny Wallet</a>
+        </h3>
+        <p>Mutiny is a self-custodial lightning wallet that runs in the browser.</p>
       </div>
     </div>
   </template>
@@ -144,7 +153,7 @@ lastUpdated: false
 
   <template v-slot:all>
     <div class="case-studies">
-            <div class="case-study-item">
+      <div class="case-study-item">
         <a href="https://bitkey.build/" target="_blank">
           <img src="/img/case-studies-logos/block-logo.gif" />
         </a>
@@ -154,8 +163,8 @@ lastUpdated: false
         <p>Bitkey is the safe, easy way to own and manage bitcoin. It’s a mobile app, hardware device, and a set of recovery tools, for simple, secure self-custody.</p>
       </div>
       <div class="case-study-item">
-        <a href="https://peachbitcoin.com/" target="_blank">
-          <img src="/img/case-studies-logos/peach-bitcoin-logo.svg" style="width:100%;;aspect-ratio:1/1;object-fit: contain;" />
+        <a href="" target="_blank">
+          <img src="/img/case-studies-logos/peach-bitcoin-logo.png" style="width:100%;;aspect-ratio:1/1;object-fit: contain;" />
         </a>
         <h3>
           <a href="https://peachbitcoin.com/" target="_blank">Peach Bitcoin</a>
@@ -170,6 +179,15 @@ lastUpdated: false
           <a href="https://www.anchorwatch.com/" target="_blank">AnchorWatch</a>
         </h3>
         <p>Protect your bitcoin with regulated insurance and enterprise-grade multi-institutional custody.</p>
+      </div>
+      <div class="case-study-item">
+        <a href="https://www.mutinywallet.com/" target="_blank">
+          <img src="/img/case-studies-logos/mutiny-logo.png" />
+        </a>
+        <h3>
+          <a href="https://www.mutinywallet.com/" target="_blank">Mutiny Wallet</a>
+        </h3>
+        <p>Mutiny is a self-custodial lightning wallet that runs in the browser.</p>
       </div>
       <div class="case-study-item">
         <a href="https://github.com/lightningdevkit/ldk-node" target="_blank">
