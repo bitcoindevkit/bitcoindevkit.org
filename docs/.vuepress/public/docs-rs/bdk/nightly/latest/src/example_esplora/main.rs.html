@@ -318,6 +318,10 @@
 <a href="#318" id="318">318</a>
 <a href="#319" id="319">319</a>
 <a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::{BTreeMap, BTreeSet},
     io::{<span class="self">self</span>, Write},
@@ -326,9 +330,9 @@
 
 <span class="kw">use </span>bdk_chain::{
     bitcoin::{Address, Network, OutPoint, ScriptBuf, Txid},
-    indexed_tx_graph::IndexedTxGraph,
-    keychain::WalletChangeSet,
-    local_chain::{CheckPoint, LocalChain},
+    indexed_tx_graph::{<span class="self">self</span>, IndexedTxGraph},
+    keychain,
+    local_chain::{<span class="self">self</span>, CheckPoint, LocalChain},
     Append, ConfirmationTimeAnchor,
 };
 
@@ -342,6 +346,11 @@
 
 <span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;bdk_example_esplora&quot;</span>;
 <span class="kw">const </span>DB_PATH: <span class="kw-2">&amp;</span>str = <span class="string">&quot;.bdk_esplora_example.db&quot;</span>;
+
+<span class="kw">type </span>ChangeSet = (
+    local_chain::ChangeSet,
+    indexed_tx_graph::ChangeSet&lt;ConfirmationTimeAnchor, keychain::ChangeSet&lt;Keychain&gt;&gt;,
+);
 
 <span class="attr">#[derive(Subcommand, Debug, Clone)]
 </span><span class="kw">enum </span>EsploraCommands {
@@ -380,22 +389,22 @@
 }
 
 <span class="kw">fn </span>main() -&gt; anyhow::Result&lt;()&gt; {
-    <span class="kw">let </span>(args, keymap, index, db, init_changeset) = example_cli::init::&lt;
-        EsploraCommands,
-        WalletChangeSet&lt;Keychain, ConfirmationTimeAnchor&gt;,
-    &gt;(DB_MAGIC, DB_PATH)<span class="question-mark">?</span>;
+    <span class="kw">let </span>(args, keymap, index, db, init_changeset) =
+        example_cli::init::&lt;EsploraCommands, ChangeSet&gt;(DB_MAGIC, DB_PATH)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>(init_chain_changeset, init_indexed_tx_graph_changeset) = init_changeset;
 
     <span class="comment">// Contruct `IndexedTxGraph` and `LocalChain` with our initial changeset. They are wrapped in
     // `Mutex` to display how they can be used in a multithreaded context. Technically the mutexes
     // aren&#39;t strictly needed here.
     </span><span class="kw">let </span>graph = Mutex::new({
         <span class="kw">let </span><span class="kw-2">mut </span>graph = IndexedTxGraph::new(index);
-        graph.apply_changeset(init_changeset.indexed_tx_graph);
+        graph.apply_changeset(init_indexed_tx_graph_changeset);
         graph
     });
     <span class="kw">let </span>chain = Mutex::new({
         <span class="kw">let </span><span class="kw-2">mut </span>chain = LocalChain::default();
-        chain.apply_changeset(<span class="kw-2">&amp;</span>init_changeset.chain);
+        chain.apply_changeset(<span class="kw-2">&amp;</span>init_chain_changeset);
         chain
     });
 
@@ -623,18 +632,17 @@
     <span class="macro">println!</span>(<span class="string">&quot;missing block heights: {:?}&quot;</span>, missing_block_heights);
 
     <span class="comment">// Here, we actually fetch the missing blocks and create a `local_chain::Update`.
-    </span><span class="kw">let </span>chain_update = client
-        .update_local_chain(tip, missing_block_heights)
-        .context(<span class="string">&quot;scanning for blocks&quot;</span>)<span class="question-mark">?</span>;
-
-    <span class="macro">println!</span>(<span class="string">&quot;new tip: {}&quot;</span>, chain_update.tip.height());
+    </span><span class="kw">let </span>chain_changeset = {
+        <span class="kw">let </span>chain_update = client
+            .update_local_chain(tip, missing_block_heights)
+            .context(<span class="string">&quot;scanning for blocks&quot;</span>)<span class="question-mark">?</span>;
+        <span class="macro">println!</span>(<span class="string">&quot;new tip: {}&quot;</span>, chain_update.tip.height());
+        chain.lock().unwrap().apply_update(chain_update)<span class="question-mark">?
+    </span>};
 
     <span class="comment">// We persist the changes
     </span><span class="kw">let </span><span class="kw-2">mut </span>db = db.lock().unwrap();
-    db.stage(WalletChangeSet {
-        chain: chain.lock().unwrap().apply_update(chain_update)<span class="question-mark">?</span>,
-        indexed_tx_graph: indexed_tx_graph_changeset,
-    });
+    db.stage((chain_changeset, indexed_tx_graph_changeset));
     db.commit()<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }

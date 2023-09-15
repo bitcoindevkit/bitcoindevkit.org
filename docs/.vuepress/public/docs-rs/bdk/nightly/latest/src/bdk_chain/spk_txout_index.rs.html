@@ -324,33 +324,20 @@
 <a href="#324" id="324">324</a>
 <a href="#325" id="325">325</a>
 <a href="#326" id="326">326</a>
-<a href="#327" id="327">327</a>
-<a href="#328" id="328">328</a>
-<a href="#329" id="329">329</a>
-<a href="#330" id="330">330</a>
-<a href="#331" id="331">331</a>
-<a href="#332" id="332">332</a>
-<a href="#333" id="333">333</a>
-<a href="#334" id="334">334</a>
-<a href="#335" id="335">335</a>
-<a href="#336" id="336">336</a>
-<a href="#337" id="337">337</a>
-<a href="#338" id="338">338</a>
-<a href="#339" id="339">339</a>
 </pre><pre class="rust"><code><span class="kw">use </span>core::ops::RangeBounds;
 
 <span class="kw">use crate</span>::{
     collections::{hash_map::Entry, BTreeMap, BTreeSet, HashMap},
     indexed_tx_graph::Indexer,
-    ForEachTxOut,
 };
 <span class="kw">use </span>bitcoin::{<span class="self">self</span>, OutPoint, Script, ScriptBuf, Transaction, TxOut, Txid};
 
 <span class="doccomment">/// An index storing [`TxOut`]s that have a script pubkey that matches those in a list.
 ///
 /// The basic idea is that you insert script pubkeys you care about into the index with
-/// [`insert_spk`] and then when you call [`scan`], the index will look at any txouts you pass in and
-/// store and index any txouts matching one of its script pubkeys.
+/// [`insert_spk`] and then when you call [`Indexer::index_tx`] or [`Indexer::index_txout`], the
+/// index will look at any txouts you pass in and store and index any txouts matching one of its
+/// script pubkeys.
 ///
 /// Each script pubkey is associated with an application-defined index script index `I`, which must be
 /// [`Ord`]. Usually, this is used to associate the derivation index of the script pubkey or even a
@@ -364,7 +351,6 @@
 /// [`TxOut`]: bitcoin::TxOut
 /// [`insert_spk`]: Self::insert_spk
 /// [`Ord`]: core::cmp::Ord
-/// [`scan`]: Self::scan
 /// [`TxGraph`]: crate::tx_graph::TxGraph
 </span><span class="attr">#[derive(Clone, Debug)]
 </span><span class="kw">pub struct </span>SpkTxOutIndex&lt;I&gt; {
@@ -416,41 +402,23 @@
     }
 }
 
-<span class="doccomment">/// This macro is used instead of a member function of `SpkTxOutIndex`, which would result in a
-/// compiler error[E0521]: &quot;borrowed data escapes out of closure&quot; when we attempt to take a
-/// reference out of the `ForEachTxOut` closure during scanning.
-</span><span class="macro">macro_rules! </span>scan_txout {
-    (<span class="macro-nonterminal">$self</span>:ident, <span class="macro-nonterminal">$op</span>:expr, <span class="macro-nonterminal">$txout</span>:expr) =&gt; {{
-        <span class="kw">let </span>spk_i = <span class="macro-nonterminal">$self</span>.spk_indices.get(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$txout</span>.script_pubkey);
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(spk_i) = spk_i {
-            <span class="macro-nonterminal">$self</span>.txouts.insert(<span class="macro-nonterminal">$op</span>, (spk_i.clone(), <span class="macro-nonterminal">$txout</span>.clone()));
-            <span class="macro-nonterminal">$self</span>.spk_txouts.insert((spk_i.clone(), <span class="macro-nonterminal">$op</span>));
-            <span class="macro-nonterminal">$self</span>.unused.remove(<span class="kw-2">&amp;</span>spk_i);
-        }
-        spk_i
-    }};
-}
-
 <span class="kw">impl</span>&lt;I: Clone + Ord&gt; SpkTxOutIndex&lt;I&gt; {
-    <span class="doccomment">/// Scans an object containing many txouts.
+    <span class="doccomment">/// Scans a transaction&#39;s outputs for matching script pubkeys.
     ///
     /// Typically, this is used in two situations:
     ///
     /// 1. After loading transaction data from the disk, you may scan over all the txouts to restore all
     /// your txouts.
     /// 2. When getting new data from the chain, you usually scan it before incorporating it into your chain state.
-    ///
-    /// See [`ForEachTxout`] for the types that support this.
-    ///
-    /// [`ForEachTxout`]: crate::ForEachTxOut
-    </span><span class="kw">pub fn </span>scan(<span class="kw-2">&amp;mut </span><span class="self">self</span>, txouts: <span class="kw-2">&amp;</span><span class="kw">impl </span>ForEachTxOut) -&gt; BTreeSet&lt;I&gt; {
+    </span><span class="kw">pub fn </span>scan(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; BTreeSet&lt;I&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>scanned_indices = BTreeSet::new();
-
-        txouts.for_each_txout(|(op, txout)| {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(spk_i) = <span class="macro">scan_txout!</span>(<span class="self">self</span>, op, txout) {
+        <span class="kw">let </span>txid = tx.txid();
+        <span class="kw">for </span>(i, txout) <span class="kw">in </span>tx.output.iter().enumerate() {
+            <span class="kw">let </span>op = OutPoint::new(txid, i <span class="kw">as </span>u32);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(spk_i) = <span class="self">self</span>.scan_txout(op, txout) {
                 scanned_indices.insert(spk_i.clone());
             }
-        });
+        }
 
         scanned_indices
     }
@@ -458,7 +426,13 @@
     <span class="doccomment">/// Scan a single `TxOut` for a matching script pubkey and returns the index that matches the
     /// script pubkey (if any).
     </span><span class="kw">pub fn </span>scan_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, op: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>I&gt; {
-        <span class="macro">scan_txout!</span>(<span class="self">self</span>, op, txout)
+        <span class="kw">let </span>spk_i = <span class="self">self</span>.spk_indices.get(<span class="kw-2">&amp;</span>txout.script_pubkey);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(spk_i) = spk_i {
+            <span class="self">self</span>.txouts.insert(op, (spk_i.clone(), txout.clone()));
+            <span class="self">self</span>.spk_txouts.insert((spk_i.clone(), op));
+            <span class="self">self</span>.unused.remove(spk_i);
+        }
+        spk_i
     }
 
     <span class="doccomment">/// Get a reference to the set of indexed outpoints.

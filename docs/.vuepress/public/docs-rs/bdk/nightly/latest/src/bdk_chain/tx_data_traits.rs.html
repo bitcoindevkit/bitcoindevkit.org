@@ -148,67 +148,10 @@
 <a href="#148" id="148">148</a>
 <a href="#149" id="149">149</a>
 <a href="#150" id="150">150</a>
-<a href="#151" id="151">151</a>
-<a href="#152" id="152">152</a>
-<a href="#153" id="153">153</a>
-<a href="#154" id="154">154</a>
-<a href="#155" id="155">155</a>
-<a href="#156" id="156">156</a>
-<a href="#157" id="157">157</a>
-<a href="#158" id="158">158</a>
-<a href="#159" id="159">159</a>
-<a href="#160" id="160">160</a>
-<a href="#161" id="161">161</a>
-<a href="#162" id="162">162</a>
-<a href="#163" id="163">163</a>
-<a href="#164" id="164">164</a>
-<a href="#165" id="165">165</a>
-<a href="#166" id="166">166</a>
-<a href="#167" id="167">167</a>
-<a href="#168" id="168">168</a>
-<a href="#169" id="169">169</a>
-<a href="#170" id="170">170</a>
-<a href="#171" id="171">171</a>
-<a href="#172" id="172">172</a>
-<a href="#173" id="173">173</a>
-<a href="#174" id="174">174</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::collections::BTreeMap;
 <span class="kw">use </span><span class="kw">crate</span>::collections::BTreeSet;
 <span class="kw">use </span><span class="kw">crate</span>::BlockId;
 <span class="kw">use </span>alloc::vec::Vec;
-<span class="kw">use </span>bitcoin::{Block, OutPoint, Transaction, TxOut};
-
-<span class="doccomment">/// Trait to do something with every txout contained in a structure.
-///
-/// We would prefer to just work with things that can give us an `Iterator&lt;Item=(OutPoint, &amp;TxOut)&gt;`
-/// here, but rust&#39;s type system makes it extremely hard to do this (without trait objects).
-</span><span class="kw">pub trait </span>ForEachTxOut {
-    <span class="doccomment">/// The provided closure `f` will be called with each `outpoint/txout` pair.
-    </span><span class="kw">fn </span>for_each_txout(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw">impl </span>FnMut((OutPoint, <span class="kw-2">&amp;</span>TxOut)));
-}
-
-<span class="kw">impl </span>ForEachTxOut <span class="kw">for </span>Block {
-    <span class="kw">fn </span>for_each_txout(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>f: <span class="kw">impl </span>FnMut((OutPoint, <span class="kw-2">&amp;</span>TxOut))) {
-        <span class="kw">for </span>tx <span class="kw">in </span><span class="self">self</span>.txdata.iter() {
-            tx.for_each_txout(<span class="kw-2">&amp;mut </span>f)
-        }
-    }
-}
-
-<span class="kw">impl </span>ForEachTxOut <span class="kw">for </span>Transaction {
-    <span class="kw">fn </span>for_each_txout(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>f: <span class="kw">impl </span>FnMut((OutPoint, <span class="kw-2">&amp;</span>TxOut))) {
-        <span class="kw">let </span>txid = <span class="self">self</span>.txid();
-        <span class="kw">for </span>(i, txout) <span class="kw">in </span><span class="self">self</span>.output.iter().enumerate() {
-            f((
-                OutPoint {
-                    txid,
-                    vout: i <span class="kw">as </span>u32,
-                },
-                txout,
-            ))
-        }
-    }
-}
 
 <span class="doccomment">/// Trait that &quot;anchors&quot; blockchain data to a specific block of height and hash.
 ///
@@ -298,14 +241,6 @@
     </span><span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool;
 }
 
-<span class="kw">impl </span>Append <span class="kw">for </span>() {
-    <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _other: <span class="self">Self</span>) {}
-
-    <span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="bool-val">true
-    </span>}
-}
-
 <span class="kw">impl</span>&lt;K: Ord, V&gt; Append <span class="kw">for </span>BTreeMap&lt;K, V&gt; {
     <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>other: <span class="self">Self</span>) {
         BTreeMap::append(<span class="self">self</span>, <span class="kw-2">&amp;mut </span>other)
@@ -336,15 +271,32 @@
     }
 }
 
-<span class="kw">impl</span>&lt;A: Append, B: Append&gt; Append <span class="kw">for </span>(A, B) {
-    <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
-        Append::append(<span class="kw-2">&amp;mut </span><span class="self">self</span>.<span class="number">0</span>, other.<span class="number">0</span>);
-        Append::append(<span class="kw-2">&amp;mut </span><span class="self">self</span>.<span class="number">1</span>, other.<span class="number">1</span>);
-    }
+<span class="macro">macro_rules! </span>impl_append_for_tuple {
+    ($(<span class="macro-nonterminal">$a</span>:ident <span class="macro-nonterminal">$b</span>:tt)<span class="kw-2">*</span>) =&gt; {
+        <span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$a</span>),<span class="kw-2">*</span>&gt; Append <span class="kw">for </span>($(<span class="macro-nonterminal">$a</span>,)<span class="kw-2">*</span>) <span class="kw">where </span>$(<span class="macro-nonterminal">$a</span>: Append),* {
 
-    <span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        Append::is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>) &amp;&amp; Append::is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">1</span>)
+            <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _other: <span class="self">Self</span>) {
+                $(Append::append(<span class="kw-2">&amp;mut </span><span class="self">self</span>.<span class="macro-nonterminal">$b</span>, _other.<span class="macro-nonterminal">$b</span>) );*
+            }
+
+            <span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+                $(Append::is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="macro-nonterminal">$b</span>) &amp;&amp; )* <span class="bool-val">true
+            </span>}
+        }
     }
 }
+
+<span class="macro">impl_append_for_tuple!</span>();
+<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0</span>);
+<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1</span>);
+<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2</span>);
+<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3</span>);
+<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4</span>);
+<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5</span>);
+<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6</span>);
+<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6 </span>T7 <span class="number">7</span>);
+<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6 </span>T7 <span class="number">7 </span>T8 <span class="number">8</span>);
+<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6 </span>T7 <span class="number">7 </span>T8 <span class="number">8 </span>T9 <span class="number">9</span>);
+<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6 </span>T7 <span class="number">7 </span>T8 <span class="number">8 </span>T9 <span class="number">9 </span>T10 <span class="number">10</span>);
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
