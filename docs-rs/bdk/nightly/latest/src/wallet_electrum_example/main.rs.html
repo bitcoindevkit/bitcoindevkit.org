@@ -91,6 +91,20 @@
 <a href="#91" id="91">91</a>
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
 </pre><pre class="rust"><code><span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">&quot;bdk_wallet_electrum_example&quot;</span>;
 <span class="kw">const </span>SEND_AMOUNT: u64 = <span class="number">5000</span>;
 <span class="kw">const </span>STOP_GAP: usize = <span class="number">50</span>;
@@ -100,10 +114,13 @@
 <span class="kw">use </span>std::str::FromStr;
 
 <span class="kw">use </span>bdk::bitcoin::Address;
+<span class="kw">use </span>bdk::wallet::Update;
 <span class="kw">use </span>bdk::SignOptions;
 <span class="kw">use </span>bdk::{bitcoin::Network, Wallet};
-<span class="kw">use </span>bdk_electrum::electrum_client::{<span class="self">self</span>, ElectrumApi};
-<span class="kw">use </span>bdk_electrum::ElectrumExt;
+<span class="kw">use </span>bdk_electrum::{
+    electrum_client::{<span class="self">self</span>, ElectrumApi},
+    ElectrumExt, ElectrumUpdate,
+};
 <span class="kw">use </span>bdk_file_store::Store;
 
 <span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
@@ -145,14 +162,25 @@
         })
         .collect();
 
-    <span class="kw">let </span>electrum_update = client.scan(prev_tip, keychain_spks, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, STOP_GAP, BATCH_SIZE)<span class="question-mark">?</span>;
+    <span class="kw">let </span>(
+        ElectrumUpdate {
+            chain_update,
+            relevant_txids,
+        },
+        keychain_update,
+    ) = client.scan(prev_tip, keychain_spks, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, STOP_GAP, BATCH_SIZE)<span class="question-mark">?</span>;
 
     <span class="macro">println!</span>();
 
-    <span class="kw">let </span>missing = electrum_update.missing_full_txs(wallet.as_ref());
-    <span class="kw">let </span>update = electrum_update.finalize_as_confirmation_time(<span class="kw-2">&amp;</span>client, <span class="prelude-val">None</span>, missing)<span class="question-mark">?</span>;
+    <span class="kw">let </span>missing = relevant_txids.missing_full_txs(wallet.as_ref());
+    <span class="kw">let </span>graph_update = relevant_txids.into_confirmation_time_tx_graph(<span class="kw-2">&amp;</span>client, <span class="prelude-val">None</span>, missing)<span class="question-mark">?</span>;
 
-    wallet.apply_update(update)<span class="question-mark">?</span>;
+    <span class="kw">let </span>wallet_update = Update {
+        last_active_indices: keychain_update,
+        graph: graph_update,
+        chain: <span class="prelude-val">Some</span>(chain_update),
+    };
+    wallet.apply_update(wallet_update)<span class="question-mark">?</span>;
     wallet.commit()<span class="question-mark">?</span>;
 
     <span class="kw">let </span>balance = wallet.get_balance();

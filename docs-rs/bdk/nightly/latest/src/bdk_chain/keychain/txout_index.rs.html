@@ -562,38 +562,12 @@
 <a href="#562" id="562">562</a>
 <a href="#563" id="563">563</a>
 <a href="#564" id="564">564</a>
-<a href="#565" id="565">565</a>
-<a href="#566" id="566">566</a>
-<a href="#567" id="567">567</a>
-<a href="#568" id="568">568</a>
-<a href="#569" id="569">569</a>
-<a href="#570" id="570">570</a>
-<a href="#571" id="571">571</a>
-<a href="#572" id="572">572</a>
-<a href="#573" id="573">573</a>
-<a href="#574" id="574">574</a>
-<a href="#575" id="575">575</a>
-<a href="#576" id="576">576</a>
-<a href="#577" id="577">577</a>
-<a href="#578" id="578">578</a>
-<a href="#579" id="579">579</a>
-<a href="#580" id="580">580</a>
-<a href="#581" id="581">581</a>
-<a href="#582" id="582">582</a>
-<a href="#583" id="583">583</a>
-<a href="#584" id="584">584</a>
-<a href="#585" id="585">585</a>
-<a href="#586" id="586">586</a>
-<a href="#587" id="587">587</a>
-<a href="#588" id="588">588</a>
-<a href="#589" id="589">589</a>
-<a href="#590" id="590">590</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     collections::<span class="kw-2">*</span>,
     indexed_tx_graph::Indexer,
     miniscript::{Descriptor, DescriptorPublicKey},
     spk_iter::BIP32_MAX_INDEX,
-    ForEachTxOut, SpkIterator, SpkTxOutIndex,
+    SpkIterator, SpkTxOutIndex,
 };
 <span class="kw">use </span>alloc::vec::Vec;
 <span class="kw">use </span>bitcoin::{OutPoint, Script, TxOut};
@@ -681,11 +655,18 @@
     <span class="kw">type </span>ChangeSet = <span class="kw">super</span>::ChangeSet&lt;K&gt;;
 
     <span class="kw">fn </span>index_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="self">Self</span>::ChangeSet {
-        <span class="self">self</span>.scan_txout(outpoint, txout)
+        <span class="kw">match </span><span class="self">self</span>.inner.scan_txout(outpoint, txout).cloned() {
+            <span class="prelude-val">Some</span>((keychain, index)) =&gt; <span class="self">self</span>.reveal_to_target(<span class="kw-2">&amp;</span>keychain, index).<span class="number">1</span>,
+            <span class="prelude-val">None </span>=&gt; <span class="kw">super</span>::ChangeSet::default(),
+        }
     }
 
     <span class="kw">fn </span>index_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>bitcoin::Transaction) -&gt; <span class="self">Self</span>::ChangeSet {
-        <span class="self">self</span>.scan(tx)
+        <span class="kw">let </span><span class="kw-2">mut </span>changeset = <span class="kw">super</span>::ChangeSet::&lt;K&gt;::default();
+        <span class="kw">for </span>(op, txout) <span class="kw">in </span>tx.output.iter().enumerate() {
+            changeset.append(<span class="self">self</span>.index_txout(OutPoint::new(tx.txid(), op <span class="kw">as </span>u32), txout));
+        }
+        changeset
     }
 
     <span class="kw">fn </span>initial_changeset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::ChangeSet {
@@ -702,38 +683,6 @@
 }
 
 <span class="kw">impl</span>&lt;K: Clone + Ord + Debug&gt; KeychainTxOutIndex&lt;K&gt; {
-    <span class="doccomment">/// Scans an object for relevant outpoints, which are stored and indexed internally.
-    ///
-    /// If the matched script pubkey is part of the lookahead, the last stored index is updated for
-    /// the script pubkey&#39;s keychain and the [`super::ChangeSet`] returned will reflect the
-    /// change.
-    ///
-    /// Typically, this method is used in two situations:
-    ///
-    /// 1. After loading transaction data from the disk, you may scan over all the txouts to restore all
-    /// your txouts.
-    /// 2. When getting new data from the chain, you usually scan it before incorporating it into
-    /// your chain state (i.e., `SparseChain`, `ChainGraph`).
-    ///
-    /// See [`ForEachTxout`] for the types that support this.
-    ///
-    /// [`ForEachTxout`]: crate::ForEachTxOut
-    </span><span class="kw">pub fn </span>scan(<span class="kw-2">&amp;mut </span><span class="self">self</span>, txouts: <span class="kw-2">&amp;</span><span class="kw">impl </span>ForEachTxOut) -&gt; <span class="kw">super</span>::ChangeSet&lt;K&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>changeset = <span class="kw">super</span>::ChangeSet::&lt;K&gt;::default();
-        txouts.for_each_txout(|(op, txout)| changeset.append(<span class="self">self</span>.scan_txout(op, txout)));
-        changeset
-    }
-
-    <span class="doccomment">/// Scan a single outpoint for a matching script pubkey.
-    ///
-    /// If it matches, this will store and index it.
-    </span><span class="kw">pub fn </span>scan_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, op: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="kw">super</span>::ChangeSet&lt;K&gt; {
-        <span class="kw">match </span><span class="self">self</span>.inner.scan_txout(op, txout).cloned() {
-            <span class="prelude-val">Some</span>((keychain, index)) =&gt; <span class="self">self</span>.reveal_to_target(<span class="kw-2">&amp;</span>keychain, index).<span class="number">1</span>,
-            <span class="prelude-val">None </span>=&gt; <span class="kw">super</span>::ChangeSet::default(),
-        }
-    }
-
     <span class="doccomment">/// Return a reference to the internal [`SpkTxOutIndex`].
     </span><span class="kw">pub fn </span>inner(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>SpkTxOutIndex&lt;(K, u32)&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.inner
@@ -789,15 +738,14 @@
 
     <span class="doccomment">/// Set the lookahead count for `keychain`.
     ///
-    /// The lookahead is the number of scripts to cache ahead of the last stored script index. This
-    /// is useful during a scan via [`scan`] or [`scan_txout`].
+    /// The lookahead is the number of scripts to cache ahead of the last revealed script index. This
+    /// is useful to find outputs you own when processing block data that lie beyond the last revealed
+    /// index. In certain situations, such as when performing an initial scan of the blockchain during
+    /// wallet import, it may be uncertain or unknown what the last revealed index is.
     ///
     /// # Panics
     ///
     /// This will panic if the `keychain` does not exist.
-    ///
-    /// [`scan`]: Self::scan
-    /// [`scan_txout`]: Self::scan_txout
     </span><span class="kw">pub fn </span>set_lookahead(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K, lookahead: u32) {
         <span class="self">self</span>.lookahead.insert(keychain.clone(), lookahead);
         <span class="self">self</span>.replenish_lookahead(keychain);

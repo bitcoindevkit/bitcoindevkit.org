@@ -302,6 +302,8 @@
 <a href="#302" id="302">302</a>
 <a href="#303" id="303">303</a>
 <a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::BTreeMap,
     io::{<span class="self">self</span>, Write},
@@ -311,8 +313,8 @@
 <span class="kw">use </span>bdk_chain::{
     bitcoin::{Address, Network, OutPoint, ScriptBuf, Txid},
     indexed_tx_graph::{<span class="self">self</span>, IndexedTxGraph},
-    keychain::WalletChangeSet,
-    local_chain::LocalChain,
+    keychain,
+    local_chain::{<span class="self">self</span>, LocalChain},
     Append, ConfirmationHeightAnchor,
 };
 <span class="kw">use </span>bdk_electrum::{
@@ -364,19 +366,22 @@
     </span><span class="kw">pub </span>batch_size: usize,
 }
 
-<span class="kw">type </span>ChangeSet = WalletChangeSet&lt;Keychain, ConfirmationHeightAnchor&gt;;
+<span class="kw">type </span>ChangeSet = (
+    local_chain::ChangeSet,
+    indexed_tx_graph::ChangeSet&lt;ConfirmationHeightAnchor, keychain::ChangeSet&lt;Keychain&gt;&gt;,
+);
 
 <span class="kw">fn </span>main() -&gt; anyhow::Result&lt;()&gt; {
-    <span class="kw">let </span>(args, keymap, index, db, init_changeset) =
+    <span class="kw">let </span>(args, keymap, index, db, (disk_local_chain, disk_tx_graph)) =
         example_cli::init::&lt;ElectrumCommands, ChangeSet&gt;(DB_MAGIC, DB_PATH)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>graph = Mutex::new({
         <span class="kw">let </span><span class="kw-2">mut </span>graph = IndexedTxGraph::new(index);
-        graph.apply_changeset(init_changeset.indexed_tx_graph);
+        graph.apply_changeset(disk_tx_graph);
         graph
     });
 
-    <span class="kw">let </span>chain = Mutex::new(LocalChain::from_changeset(init_changeset.chain));
+    <span class="kw">let </span>chain = Mutex::new(LocalChain::from_changeset(disk_local_chain));
 
     <span class="kw">let </span>electrum_url = <span class="kw">match </span>args.network {
         Network::Bitcoin =&gt; <span class="string">&quot;ssl://electrum.blockstream.info:50002&quot;</span>,
@@ -552,20 +557,24 @@
             <span class="comment">// drop lock on graph and chain
             </span>drop((graph, chain));
 
-            <span class="kw">let </span>update = client
+            <span class="kw">let </span>electrum_update = client
                 .scan_without_keychain(tip, spks, txids, outpoints, scan_options.batch_size)
                 .context(<span class="string">&quot;scanning the blockchain&quot;</span>)<span class="question-mark">?</span>;
-            ElectrumUpdate {
-                graph_update: update.graph_update,
-                new_tip: update.new_tip,
-                keychain_update: BTreeMap::new(),
-            }
+            (electrum_update, BTreeMap::new())
         }
     };
 
+    <span class="kw">let </span>(
+        ElectrumUpdate {
+            chain_update,
+            relevant_txids,
+        },
+        keychain_update,
+    ) = response;
+
     <span class="kw">let </span>missing_txids = {
         <span class="kw">let </span>graph = <span class="kw-2">&amp;*</span>graph.lock().unwrap();
-        response.missing_full_txs(graph.graph())
+        relevant_txids.missing_full_txs(graph.graph())
     };
 
     <span class="kw">let </span>now = std::time::UNIX_EPOCH
@@ -573,32 +582,27 @@
         .expect(<span class="string">&quot;must get time&quot;</span>)
         .as_secs();
 
-    <span class="kw">let </span>final_update = response.finalize(<span class="kw-2">&amp;</span>client, <span class="prelude-val">Some</span>(now), missing_txids)<span class="question-mark">?</span>;
+    <span class="kw">let </span>graph_update = relevant_txids.into_tx_graph(<span class="kw-2">&amp;</span>client, <span class="prelude-val">Some</span>(now), missing_txids)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>db_changeset = {
         <span class="kw">let </span><span class="kw-2">mut </span>chain = chain.lock().unwrap();
         <span class="kw">let </span><span class="kw-2">mut </span>graph = graph.lock().unwrap();
 
-        <span class="kw">let </span>chain = chain.apply_update(final_update.chain)<span class="question-mark">?</span>;
+        <span class="kw">let </span>chain = chain.apply_update(chain_update)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>indexed_tx_graph = {
             <span class="kw">let </span><span class="kw-2">mut </span>changeset =
                 indexed_tx_graph::ChangeSet::&lt;ConfirmationHeightAnchor, <span class="kw">_</span>&gt;::default();
-            <span class="kw">let </span>(<span class="kw">_</span>, indexer) = graph
-                .index
-                .reveal_to_target_multi(<span class="kw-2">&amp;</span>final_update.last_active_indices);
+            <span class="kw">let </span>(<span class="kw">_</span>, indexer) = graph.index.reveal_to_target_multi(<span class="kw-2">&amp;</span>keychain_update);
             changeset.append(indexed_tx_graph::ChangeSet {
                 indexer,
                 ..Default::default()
             });
-            changeset.append(graph.apply_update(final_update.graph));
+            changeset.append(graph.apply_update(graph_update));
             changeset
         };
 
-        ChangeSet {
-            indexed_tx_graph,
-            chain,
-        }
+        (chain, indexed_tx_graph)
     };
 
     <span class="kw">let </span><span class="kw-2">mut </span>db = db.lock().unwrap();

@@ -2001,6 +2001,73 @@
 <a href="#2000" id="2000">2000</a>
 <a href="#2001" id="2001">2001</a>
 <a href="#2002" id="2002">2002</a>
+<a href="#2003" id="2003">2003</a>
+<a href="#2004" id="2004">2004</a>
+<a href="#2005" id="2005">2005</a>
+<a href="#2006" id="2006">2006</a>
+<a href="#2007" id="2007">2007</a>
+<a href="#2008" id="2008">2008</a>
+<a href="#2009" id="2009">2009</a>
+<a href="#2010" id="2010">2010</a>
+<a href="#2011" id="2011">2011</a>
+<a href="#2012" id="2012">2012</a>
+<a href="#2013" id="2013">2013</a>
+<a href="#2014" id="2014">2014</a>
+<a href="#2015" id="2015">2015</a>
+<a href="#2016" id="2016">2016</a>
+<a href="#2017" id="2017">2017</a>
+<a href="#2018" id="2018">2018</a>
+<a href="#2019" id="2019">2019</a>
+<a href="#2020" id="2020">2020</a>
+<a href="#2021" id="2021">2021</a>
+<a href="#2022" id="2022">2022</a>
+<a href="#2023" id="2023">2023</a>
+<a href="#2024" id="2024">2024</a>
+<a href="#2025" id="2025">2025</a>
+<a href="#2026" id="2026">2026</a>
+<a href="#2027" id="2027">2027</a>
+<a href="#2028" id="2028">2028</a>
+<a href="#2029" id="2029">2029</a>
+<a href="#2030" id="2030">2030</a>
+<a href="#2031" id="2031">2031</a>
+<a href="#2032" id="2032">2032</a>
+<a href="#2033" id="2033">2033</a>
+<a href="#2034" id="2034">2034</a>
+<a href="#2035" id="2035">2035</a>
+<a href="#2036" id="2036">2036</a>
+<a href="#2037" id="2037">2037</a>
+<a href="#2038" id="2038">2038</a>
+<a href="#2039" id="2039">2039</a>
+<a href="#2040" id="2040">2040</a>
+<a href="#2041" id="2041">2041</a>
+<a href="#2042" id="2042">2042</a>
+<a href="#2043" id="2043">2043</a>
+<a href="#2044" id="2044">2044</a>
+<a href="#2045" id="2045">2045</a>
+<a href="#2046" id="2046">2046</a>
+<a href="#2047" id="2047">2047</a>
+<a href="#2048" id="2048">2048</a>
+<a href="#2049" id="2049">2049</a>
+<a href="#2050" id="2050">2050</a>
+<a href="#2051" id="2051">2051</a>
+<a href="#2052" id="2052">2052</a>
+<a href="#2053" id="2053">2053</a>
+<a href="#2054" id="2054">2054</a>
+<a href="#2055" id="2055">2055</a>
+<a href="#2056" id="2056">2056</a>
+<a href="#2057" id="2057">2057</a>
+<a href="#2058" id="2058">2058</a>
+<a href="#2059" id="2059">2059</a>
+<a href="#2060" id="2060">2060</a>
+<a href="#2061" id="2061">2061</a>
+<a href="#2062" id="2062">2062</a>
+<a href="#2063" id="2063">2063</a>
+<a href="#2064" id="2064">2064</a>
+<a href="#2065" id="2065">2065</a>
+<a href="#2066" id="2066">2066</a>
+<a href="#2067" id="2067">2067</a>
+<a href="#2068" id="2068">2068</a>
+<a href="#2069" id="2069">2069</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2025,7 +2092,7 @@
 <span class="kw">pub use </span>bdk_chain::keychain::Balance;
 <span class="kw">use </span>bdk_chain::{
     indexed_tx_graph,
-    keychain::{KeychainTxOutIndex, WalletChangeSet, WalletUpdate},
+    keychain::{<span class="self">self</span>, KeychainTxOutIndex},
     local_chain::{<span class="self">self</span>, CannotConnectError, CheckPoint, CheckPointIter, LocalChain},
     tx_graph::{CanonicalTx, TxGraph},
     Append, BlockId, ChainPosition, ConfirmationTime, ConfirmationTimeAnchor, FullTxOut,
@@ -2098,11 +2165,74 @@
     secp: SecpCtx,
 }
 
-<span class="doccomment">/// The update to a [`Wallet`] used in [`Wallet::apply_update`]. This is usually returned from blockchain data sources.
-</span><span class="kw">pub type </span>Update = WalletUpdate&lt;KeychainKind, ConfirmationTimeAnchor&gt;;
+<span class="doccomment">/// An update to [`Wallet`].
+///
+/// It updates [`bdk_chain::keychain::KeychainTxOutIndex`], [`bdk_chain::TxGraph`] and [`local_chain::LocalChain`] atomically.
+</span><span class="attr">#[derive(Debug, Clone, Default)]
+</span><span class="kw">pub struct </span>Update {
+    <span class="doccomment">/// Contains the last active derivation indices per keychain (`K`), which is used to update the
+    /// [`KeychainTxOutIndex`].
+    </span><span class="kw">pub </span>last_active_indices: BTreeMap&lt;KeychainKind, u32&gt;,
 
-<span class="doccomment">/// The changeset produced internally by [`Wallet`] when mutated.
-</span><span class="kw">pub type </span>ChangeSet = WalletChangeSet&lt;KeychainKind, ConfirmationTimeAnchor&gt;;
+    <span class="doccomment">/// Update for the wallet&#39;s internal [`TxGraph`].
+    </span><span class="kw">pub </span>graph: TxGraph&lt;ConfirmationTimeAnchor&gt;,
+
+    <span class="doccomment">/// Update for the wallet&#39;s internal [`LocalChain`].
+    ///
+    /// [`LocalChain`]: local_chain::LocalChain
+    </span><span class="kw">pub </span>chain: <span class="prelude-ty">Option</span>&lt;local_chain::Update&gt;,
+}
+
+<span class="doccomment">/// The changes made to a wallet by applying an [`Update`].
+</span><span class="attr">#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, Default)]
+</span><span class="kw">pub struct </span>ChangeSet {
+    <span class="doccomment">/// Changes to the [`LocalChain`].
+    ///
+    /// [`LocalChain`]: local_chain::LocalChain
+    </span><span class="kw">pub </span>chain: local_chain::ChangeSet,
+
+    <span class="doccomment">/// Changes to [`IndexedTxGraph`].
+    ///
+    /// [`IndexedTxGraph`]: bdk_chain::indexed_tx_graph::IndexedTxGraph
+    </span><span class="kw">pub </span>indexed_tx_graph:
+        indexed_tx_graph::ChangeSet&lt;ConfirmationTimeAnchor, keychain::ChangeSet&lt;KeychainKind&gt;&gt;,
+}
+
+<span class="kw">impl </span>Append <span class="kw">for </span>ChangeSet {
+    <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
+        Append::append(<span class="kw-2">&amp;mut </span><span class="self">self</span>.chain, other.chain);
+        Append::append(<span class="kw-2">&amp;mut </span><span class="self">self</span>.indexed_tx_graph, other.indexed_tx_graph);
+    }
+
+    <span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.chain.is_empty() &amp;&amp; <span class="self">self</span>.indexed_tx_graph.is_empty()
+    }
+}
+
+<span class="kw">impl </span>From&lt;local_chain::ChangeSet&gt; <span class="kw">for </span>ChangeSet {
+    <span class="kw">fn </span>from(chain: local_chain::ChangeSet) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            chain,
+            ..Default::default()
+        }
+    }
+}
+
+<span class="kw">impl </span>From&lt;indexed_tx_graph::ChangeSet&lt;ConfirmationTimeAnchor, keychain::ChangeSet&lt;KeychainKind&gt;&gt;&gt;
+    <span class="kw">for </span>ChangeSet
+{
+    <span class="kw">fn </span>from(
+        indexed_tx_graph: indexed_tx_graph::ChangeSet&lt;
+            ConfirmationTimeAnchor,
+            keychain::ChangeSet&lt;KeychainKind&gt;,
+        &gt;,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            indexed_tx_graph,
+            ..Default::default()
+        }
+    }
+}
 
 <span class="doccomment">/// The address index selection strategy to use to derived an address from the wallet&#39;s external
 /// descriptor. See [`Wallet::get_address`]. If you&#39;re unsure which one to use use `WalletIndex::New`.
@@ -3860,7 +3990,11 @@
     <span class="kw">where
         </span>D: PersistBackend&lt;ChangeSet&gt;,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::from(<span class="self">self</span>.chain.apply_update(update.chain)<span class="question-mark">?</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>changeset = <span class="kw">match </span>update.chain {
+            <span class="prelude-val">Some</span>(chain_update) =&gt; ChangeSet::from(<span class="self">self</span>.chain.apply_update(chain_update)<span class="question-mark">?</span>),
+            <span class="prelude-val">None </span>=&gt; ChangeSet::default(),
+        };
+
         <span class="kw">let </span>(<span class="kw">_</span>, index_changeset) = <span class="self">self
             </span>.indexed_graph
             .index

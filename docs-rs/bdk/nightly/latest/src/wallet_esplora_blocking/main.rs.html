@@ -96,7 +96,6 @@
 <a href="#96" id="96">96</a>
 <a href="#97" id="97">97</a>
 <a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
 </pre><pre class="rust"><code><span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">&quot;bdk_wallet_esplora_example&quot;</span>;
 <span class="kw">const </span>SEND_AMOUNT: u64 = <span class="number">1000</span>;
 <span class="kw">const </span>STOP_GAP: usize = <span class="number">5</span>;
@@ -106,8 +105,7 @@
 
 <span class="kw">use </span>bdk::{
     bitcoin::{Address, Network},
-    chain::keychain::WalletUpdate,
-    wallet::AddressIndex,
+    wallet::{AddressIndex, Update},
     SignOptions, Wallet,
 };
 <span class="kw">use </span>bdk_esplora::{esplora_client, EsploraExt};
@@ -157,10 +155,10 @@
         client.scan_txs_with_keychains(keychain_spks, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, STOP_GAP, PARALLEL_REQUESTS)<span class="question-mark">?</span>;
     <span class="kw">let </span>missing_heights = wallet.tx_graph().missing_heights(wallet.local_chain());
     <span class="kw">let </span>chain_update = client.update_local_chain(prev_tip, missing_heights)<span class="question-mark">?</span>;
-    <span class="kw">let </span>update = WalletUpdate {
+    <span class="kw">let </span>update = Update {
         last_active_indices,
         graph: update_graph,
-        ..WalletUpdate::new(chain_update)
+        chain: <span class="prelude-val">Some</span>(chain_update),
     };
 
     wallet.apply_update(update)<span class="question-mark">?</span>;

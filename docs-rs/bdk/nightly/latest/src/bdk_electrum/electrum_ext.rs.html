@@ -544,12 +544,8 @@
 <a href="#544" id="544">544</a>
 <a href="#545" id="545">545</a>
 <a href="#546" id="546">546</a>
-<a href="#547" id="547">547</a>
-<a href="#548" id="548">548</a>
-<a href="#549" id="549">549</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bdk_chain::{
     bitcoin::{OutPoint, ScriptBuf, Transaction, Txid},
-    keychain::WalletUpdate,
     local_chain::{<span class="self">self</span>, CheckPoint},
     tx_graph::{<span class="self">self</span>, TxGraph},
     Anchor, BlockId, ConfirmationHeightAnchor, ConfirmationTimeAnchor,
@@ -564,90 +560,65 @@
 <span class="doccomment">/// We assume that a block of this depth and deeper cannot be reorged.
 </span><span class="kw">const </span>ASSUME_FINAL_DEPTH: u32 = <span class="number">8</span>;
 
-<span class="doccomment">/// Represents an update fetched from an Electrum server, but excludes full transactions.
+<span class="doccomment">/// Represents updates fetched from an Electrum server, but excludes full transactions.
 ///
 /// To provide a complete update to [`TxGraph`], you&#39;ll need to call [`Self::missing_full_txs`] to
-/// determine the full transactions missing from [`TxGraph`]. Then call [`Self::finalize`] to fetch
-/// the full transactions from Electrum and finalize the update.
-</span><span class="attr">#[derive(Debug, Clone)]
-</span><span class="kw">pub struct </span>ElectrumUpdate&lt;K, A&gt; {
-    <span class="doccomment">/// Map of [`Txid`]s to associated [`Anchor`]s.
-    </span><span class="kw">pub </span>graph_update: HashMap&lt;Txid, BTreeSet&lt;A&gt;&gt;,
-    <span class="doccomment">/// The latest chain tip, as seen by the Electrum server.
-    </span><span class="kw">pub </span>new_tip: local_chain::CheckPoint,
-    <span class="doccomment">/// Last-used index update for [`KeychainTxOutIndex`](bdk_chain::keychain::KeychainTxOutIndex).
-    </span><span class="kw">pub </span>keychain_update: BTreeMap&lt;K, u32&gt;,
-}
+/// determine the full transactions missing from [`TxGraph`]. Then call [`Self::into_tx_graph`] to
+/// fetch the full transactions from Electrum and finalize the update.
+</span><span class="attr">#[derive(Debug, Default, Clone)]
+</span><span class="kw">pub struct </span>RelevantTxids(HashMap&lt;Txid, BTreeSet&lt;ConfirmationHeightAnchor&gt;&gt;);
 
-<span class="kw">impl</span>&lt;K, A: Anchor&gt; ElectrumUpdate&lt;K, A&gt; {
-    <span class="kw">fn </span>new(new_tip: local_chain::CheckPoint) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            new_tip,
-            graph_update: HashMap::new(),
-            keychain_update: BTreeMap::new(),
-        }
-    }
-
+<span class="kw">impl </span>RelevantTxids {
     <span class="doccomment">/// Determine the full transactions that are missing from `graph`.
     ///
-    /// Refer to [`ElectrumUpdate`].
-    </span><span class="kw">pub fn </span>missing_full_txs&lt;A2&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, graph: <span class="kw-2">&amp;</span>TxGraph&lt;A2&gt;) -&gt; Vec&lt;Txid&gt; {
-        <span class="self">self</span>.graph_update
-            .keys()
+    /// Refer to [`RelevantTxids`] for more details.
+    </span><span class="kw">pub fn </span>missing_full_txs&lt;A: Anchor&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, graph: <span class="kw-2">&amp;</span>TxGraph&lt;A&gt;) -&gt; Vec&lt;Txid&gt; {
+        <span class="self">self</span>.<span class="number">0
+            </span>.keys()
             .filter(<span class="kw">move </span>|&amp;&amp;txid| graph.as_ref().get_tx(txid).is_none())
             .cloned()
             .collect()
     }
 
-    <span class="doccomment">/// Finalizes update with `missing` txids to fetch from `client`.
+    <span class="doccomment">/// Finalizes the [`TxGraph`] update by fetching `missing` txids from the `client`.
     ///
-    /// Refer to [`ElectrumUpdate`].
-    </span><span class="kw">pub fn </span>finalize(
+    /// Refer to [`RelevantTxids`] for more details.
+    </span><span class="kw">pub fn </span>into_tx_graph(
         <span class="self">self</span>,
         client: <span class="kw-2">&amp;</span>Client,
         seen_at: <span class="prelude-ty">Option</span>&lt;u64&gt;,
         missing: Vec&lt;Txid&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;WalletUpdate&lt;K, A&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationHeightAnchor&gt;, Error&gt; {
         <span class="kw">let </span>new_txs = client.batch_transaction_get(<span class="kw-2">&amp;</span>missing)<span class="question-mark">?</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = TxGraph::&lt;A&gt;::new(new_txs);
-        <span class="kw">for </span>(txid, anchors) <span class="kw">in </span><span class="self">self</span>.graph_update {
+        <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::&lt;ConfirmationHeightAnchor&gt;::new(new_txs);
+        <span class="kw">for </span>(txid, anchors) <span class="kw">in </span><span class="self">self</span>.<span class="number">0 </span>{
             <span class="kw">if let </span><span class="prelude-val">Some</span>(seen_at) = seen_at {
-                <span class="kw">let _ </span>= graph_update.insert_seen_at(txid, seen_at);
+                <span class="kw">let _ </span>= graph.insert_seen_at(txid, seen_at);
             }
             <span class="kw">for </span>anchor <span class="kw">in </span>anchors {
-                <span class="kw">let _ </span>= graph_update.insert_anchor(txid, anchor);
+                <span class="kw">let _ </span>= graph.insert_anchor(txid, anchor);
             }
         }
-        <span class="prelude-val">Ok</span>(WalletUpdate {
-            last_active_indices: <span class="self">self</span>.keychain_update,
-            graph: graph_update,
-            chain: local_chain::Update {
-                tip: <span class="self">self</span>.new_tip,
-                introduce_older_blocks: <span class="bool-val">true</span>,
-            },
-        })
+        <span class="prelude-val">Ok</span>(graph)
     }
-}
 
-<span class="kw">impl</span>&lt;K&gt; ElectrumUpdate&lt;K, ConfirmationHeightAnchor&gt; {
-    <span class="doccomment">/// Finalizes the [`ElectrumUpdate`] with `new_txs` and anchors of type
+    <span class="doccomment">/// Finalizes [`RelevantTxids`] with `new_txs` and anchors of type
     /// [`ConfirmationTimeAnchor`].
     ///
     /// **Note:** The confirmation time might not be precisely correct if there has been a reorg.
     /// Electrum&#39;s API intends that we use the merkle proof API, we should change `bdk_electrum` to
     /// use it.
-    </span><span class="kw">pub fn </span>finalize_as_confirmation_time(
+    </span><span class="kw">pub fn </span>into_confirmation_time_tx_graph(
         <span class="self">self</span>,
         client: <span class="kw-2">&amp;</span>Client,
         seen_at: <span class="prelude-ty">Option</span>&lt;u64&gt;,
         missing: Vec&lt;Txid&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;WalletUpdate&lt;K, ConfirmationTimeAnchor&gt;, Error&gt; {
-        <span class="kw">let </span>update = <span class="self">self</span>.finalize(client, seen_at, missing)<span class="question-mark">?</span>;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationTimeAnchor&gt;, Error&gt; {
+        <span class="kw">let </span>graph = <span class="self">self</span>.into_tx_graph(client, seen_at, missing)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>relevant_heights = {
             <span class="kw">let </span><span class="kw-2">mut </span>visited_heights = HashSet::new();
-            update
-                .graph
+            graph
                 .all_anchors()
                 .iter()
                 .map(|(a, <span class="kw">_</span>)| a.confirmation_height_upper_bound())
@@ -667,7 +638,7 @@
             .collect::&lt;HashMap&lt;u32, u64&gt;&gt;();
 
         <span class="kw">let </span>graph_changeset = {
-            <span class="kw">let </span>old_changeset = TxGraph::default().apply_update(update.graph.clone());
+            <span class="kw">let </span>old_changeset = TxGraph::default().apply_update(graph);
             tx_graph::ChangeSet {
                 txs: old_changeset.txs,
                 txouts: old_changeset.txouts,
@@ -689,21 +660,28 @@
             }
         };
 
-        <span class="prelude-val">Ok</span>(WalletUpdate {
-            last_active_indices: update.last_active_indices,
-            graph: {
-                <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::default();
-                graph.apply_changeset(graph_changeset);
-                graph
-            },
-            chain: update.chain,
-        })
+        <span class="kw">let </span><span class="kw-2">mut </span>new_graph = TxGraph::default();
+        new_graph.apply_changeset(graph_changeset);
+        <span class="prelude-val">Ok</span>(new_graph)
     }
 }
 
+<span class="doccomment">/// Combination of chain and transactions updates from electrum
+///
+/// We have to update the chain and the txids at the same time since we anchor the txids to
+/// the same chain tip that we check before and after we gather the txids.
+</span><span class="attr">#[derive(Debug)]
+</span><span class="kw">pub struct </span>ElectrumUpdate {
+    <span class="doccomment">/// Chain update
+    </span><span class="kw">pub </span>chain_update: local_chain::Update,
+    <span class="doccomment">/// Transaction updates from electrum
+    </span><span class="kw">pub </span>relevant_txids: RelevantTxids,
+}
+
 <span class="doccomment">/// Trait to extend [`Client`] functionality.
-</span><span class="kw">pub trait </span>ElectrumExt&lt;A&gt; {
-    <span class="doccomment">/// Scan the blockchain (via electrum) for the data specified and returns a [`ElectrumUpdate`].
+</span><span class="kw">pub trait </span>ElectrumExt {
+    <span class="doccomment">/// Scan the blockchain (via electrum) for the data specified and returns updates for
+    /// [`bdk_chain`] data structures.
     ///
     /// - `prev_tip`: the most recent blockchain tip present locally
     /// - `keychain_spks`: keychains that we want to scan transactions for
@@ -722,7 +700,7 @@
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         stop_gap: usize,
         batch_size: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;ElectrumUpdate&lt;K, A&gt;, Error&gt;;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(ElectrumUpdate, BTreeMap&lt;K, u32&gt;), Error&gt;;
 
     <span class="doccomment">/// Convenience method to call [`scan`] without requiring a keychain.
     ///
@@ -734,24 +712,26 @@
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         batch_size: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;ElectrumUpdate&lt;(), A&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;ElectrumUpdate, Error&gt; {
         <span class="kw">let </span>spk_iter = misc_spks
             .into_iter()
             .enumerate()
             .map(|(i, spk)| (i <span class="kw">as </span>u32, spk));
 
-        <span class="self">self</span>.scan(
+        <span class="kw">let </span>(electrum_update, <span class="kw">_</span>) = <span class="self">self</span>.scan(
             prev_tip,
             [((), spk_iter)].into(),
             txids,
             outpoints,
             usize::MAX,
             batch_size,
-        )
+        )<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(electrum_update)
     }
 }
 
-<span class="kw">impl </span>ElectrumExt&lt;ConfirmationHeightAnchor&gt; <span class="kw">for </span>Client {
+<span class="kw">impl </span>ElectrumExt <span class="kw">for </span>Client {
     <span class="kw">fn </span>scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         prev_tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
@@ -760,7 +740,7 @@
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         stop_gap: usize,
         batch_size: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;ElectrumUpdate&lt;K, ConfirmationHeightAnchor&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(ElectrumUpdate, BTreeMap&lt;K, u32&gt;), Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>request_spks = keychain_spks
             .into_iter()
             .map(|(k, s)| (k, s.into_iter()))
@@ -770,11 +750,10 @@
         <span class="kw">let </span>txids = txids.into_iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
         <span class="kw">let </span>outpoints = outpoints.into_iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
-        <span class="kw">let </span>update = <span class="kw">loop </span>{
+        <span class="kw">let </span>(electrum_update, keychain_update) = <span class="kw">loop </span>{
             <span class="kw">let </span>(tip, <span class="kw">_</span>) = construct_update_tip(<span class="self">self</span>, prev_tip.clone())<span class="question-mark">?</span>;
-            <span class="kw">let </span><span class="kw-2">mut </span>update = ElectrumUpdate::&lt;K, ConfirmationHeightAnchor&gt;::new(tip.clone());
-            <span class="kw">let </span>cps = update
-                .new_tip
+            <span class="kw">let </span><span class="kw-2">mut </span>relevant_txids = RelevantTxids::default();
+            <span class="kw">let </span>cps = tip
                 .iter()
                 .take(<span class="number">10</span>)
                 .map(|cp| (cp.height(), cp))
@@ -785,7 +764,7 @@
                     scanned_spks.append(<span class="kw-2">&amp;mut </span>populate_with_spks(
                         <span class="self">self</span>,
                         <span class="kw-2">&amp;</span>cps,
-                        <span class="kw-2">&amp;mut </span>update,
+                        <span class="kw-2">&amp;mut </span>relevant_txids,
                         <span class="kw-2">&amp;mut </span>scanned_spks
                             .iter()
                             .map(|(i, (spk, <span class="kw">_</span>))| (i.clone(), spk.clone())),
@@ -798,7 +777,7 @@
                         populate_with_spks(
                             <span class="self">self</span>,
                             <span class="kw-2">&amp;</span>cps,
-                            <span class="kw-2">&amp;mut </span>update,
+                            <span class="kw-2">&amp;mut </span>relevant_txids,
                             keychain_spks,
                             stop_gap,
                             batch_size,
@@ -809,10 +788,14 @@
                 }
             }
 
-            populate_with_txids(<span class="self">self</span>, <span class="kw-2">&amp;</span>cps, <span class="kw-2">&amp;mut </span>update, <span class="kw-2">&amp;mut </span>txids.iter().cloned())<span class="question-mark">?</span>;
+            populate_with_txids(<span class="self">self</span>, <span class="kw-2">&amp;</span>cps, <span class="kw-2">&amp;mut </span>relevant_txids, <span class="kw-2">&amp;mut </span>txids.iter().cloned())<span class="question-mark">?</span>;
 
-            <span class="kw">let </span>_txs =
-                populate_with_outpoints(<span class="self">self</span>, <span class="kw-2">&amp;</span>cps, <span class="kw-2">&amp;mut </span>update, <span class="kw-2">&amp;mut </span>outpoints.iter().cloned())<span class="question-mark">?</span>;
+            <span class="kw">let </span>_txs = populate_with_outpoints(
+                <span class="self">self</span>,
+                <span class="kw-2">&amp;</span>cps,
+                <span class="kw-2">&amp;mut </span>relevant_txids,
+                <span class="kw-2">&amp;mut </span>outpoints.iter().cloned(),
+            )<span class="question-mark">?</span>;
 
             <span class="comment">// check for reorgs during scan process
             </span><span class="kw">let </span>server_blockhash = <span class="self">self</span>.block_header(tip.height() <span class="kw">as </span>usize)<span class="question-mark">?</span>.block_hash();
@@ -820,7 +803,12 @@
                 <span class="kw">continue</span>; <span class="comment">// reorg
             </span>}
 
-            update.keychain_update = request_spks
+            <span class="kw">let </span>chain_update = local_chain::Update {
+                tip,
+                introduce_older_blocks: <span class="bool-val">true</span>,
+            };
+
+            <span class="kw">let </span>keychain_update = request_spks
                 .into_keys()
                 .filter_map(|k| {
                     scanned_spks
@@ -830,10 +818,17 @@
                         .map(|((<span class="kw">_</span>, i), <span class="kw">_</span>)| (k, <span class="kw-2">*</span>i))
                 })
                 .collect::&lt;BTreeMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;&gt;();
-            <span class="kw">break </span>update;
+
+            <span class="kw">break </span>(
+                ElectrumUpdate {
+                    chain_update,
+                    relevant_txids,
+                },
+                keychain_update,
+            );
         };
 
-        <span class="prelude-val">Ok</span>(update)
+        <span class="prelude-val">Ok</span>((electrum_update, keychain_update))
     }
 }
 
@@ -954,10 +949,10 @@
     }
 }
 
-<span class="kw">fn </span>populate_with_outpoints&lt;K&gt;(
+<span class="kw">fn </span>populate_with_outpoints(
     client: <span class="kw-2">&amp;</span>Client,
     cps: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, CheckPoint&gt;,
-    update: <span class="kw-2">&amp;mut </span>ElectrumUpdate&lt;K, ConfirmationHeightAnchor&gt;,
+    relevant_txids: <span class="kw-2">&amp;mut </span>RelevantTxids,
     outpoints: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Iterator&lt;Item = OutPoint&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;HashMap&lt;Txid, Transaction&gt;, Error&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>full_txs = HashMap::new();
@@ -1006,8 +1001,7 @@
             };
 
             <span class="kw">let </span>anchor = determine_tx_anchor(cps, res.height, res.tx_hash);
-
-            <span class="kw">let </span>tx_entry = update.graph_update.entry(res.tx_hash).or_default();
+            <span class="kw">let </span>tx_entry = relevant_txids.<span class="number">0</span>.entry(res.tx_hash).or_default();
             <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor {
                 tx_entry.insert(anchor);
             }
@@ -1016,10 +1010,10 @@
     <span class="prelude-val">Ok</span>(full_txs)
 }
 
-<span class="kw">fn </span>populate_with_txids&lt;K&gt;(
+<span class="kw">fn </span>populate_with_txids(
     client: <span class="kw-2">&amp;</span>Client,
     cps: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, CheckPoint&gt;,
-    update: <span class="kw-2">&amp;mut </span>ElectrumUpdate&lt;K, ConfirmationHeightAnchor&gt;,
+    relevant_txids: <span class="kw-2">&amp;mut </span>RelevantTxids,
     txids: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Iterator&lt;Item = Txid&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
     <span class="kw">for </span>txid <span class="kw">in </span>txids {
@@ -1044,7 +1038,7 @@
             <span class="prelude-val">None </span>=&gt; <span class="kw">continue</span>,
         };
 
-        <span class="kw">let </span>tx_entry = update.graph_update.entry(txid).or_default();
+        <span class="kw">let </span>tx_entry = relevant_txids.<span class="number">0</span>.entry(txid).or_default();
         <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor {
             tx_entry.insert(anchor);
         }
@@ -1052,10 +1046,10 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn </span>populate_with_spks&lt;K, I: Ord + Clone&gt;(
+<span class="kw">fn </span>populate_with_spks&lt;I: Ord + Clone&gt;(
     client: <span class="kw-2">&amp;</span>Client,
     cps: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, CheckPoint&gt;,
-    update: <span class="kw-2">&amp;mut </span>ElectrumUpdate&lt;K, ConfirmationHeightAnchor&gt;,
+    relevant_txids: <span class="kw-2">&amp;mut </span>RelevantTxids,
     spks: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Iterator&lt;Item = (I, ScriptBuf)&gt;,
     stop_gap: usize,
     batch_size: usize,
@@ -1088,7 +1082,7 @@
             }
 
             <span class="kw">for </span>tx <span class="kw">in </span>spk_history {
-                <span class="kw">let </span>tx_entry = update.graph_update.entry(tx.tx_hash).or_default();
+                <span class="kw">let </span>tx_entry = relevant_txids.<span class="number">0</span>.entry(tx.tx_hash).or_default();
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = determine_tx_anchor(cps, tx.height, tx.tx_hash) {
                     tx_entry.insert(anchor);
                 }
