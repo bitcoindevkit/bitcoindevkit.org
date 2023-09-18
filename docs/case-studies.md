@@ -47,6 +47,15 @@ lastUpdated: false
         <p>A ready-to-go Lightning node library built using LDK and BDK.</p>
       </div>
       <div class="case-study-item">
+        <a href="https://www.lava.xyz/" target="_blank">
+          <img src="/img/case-studies-logos/lava-logo.png" />
+        </a>
+        <h3>
+          <a href="https://www.lava.xyz/" target="_blank">Lava</a>
+        </h3>
+        <p>The Future of Finance Available Today. Functional, safe and simple.</p>
+      </div>
+      <div class="case-study-item">
         <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">
           <img src="/img/case-studies-logos/padawan-logo.png" />
         </a>
@@ -188,6 +197,15 @@ lastUpdated: false
           <a href="https://www.mutinywallet.com/" target="_blank">Mutiny Wallet</a>
         </h3>
         <p>Mutiny is a self-custodial lightning wallet that runs in the browser.</p>
+      </div>
+      <div class="case-study-item">
+        <a href="https://www.lava.xyz/" target="_blank">
+          <img src="/img/case-studies-logos/lava-logo.png" />
+        </a>
+        <h3>
+          <a href="https://www.lava.xyz/" target="_blank">Lava</a>
+        </h3>
+        <p>The Future of Finance Available Today. Functional, safe and simple.</p>
       </div>
       <div class="case-study-item">
         <a href="https://github.com/lightningdevkit/ldk-node" target="_blank">
