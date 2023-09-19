@@ -958,6 +958,14 @@
 <a href="#957" id="957">957</a>
 <a href="#958" id="958">958</a>
 <a href="#959" id="959">959</a>
+<a href="#960" id="960">960</a>
+<a href="#961" id="961">961</a>
+<a href="#962" id="962">962</a>
+<a href="#963" id="963">963</a>
+<a href="#964" id="964">964</a>
+<a href="#965" id="965">965</a>
+<a href="#966" id="966">966</a>
+<a href="#967" id="967">967</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1141,6 +1149,13 @@
 <span class="comment">// methods supported by both contexts, for any CoinSelectionAlgorithm
 </span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, D, Cs: CoinSelectionAlgorithm, Ctx: TxBuilderContext&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, D, Cs, Ctx&gt; {
     <span class="doccomment">/// Set a custom fee rate
+    /// The fee_rate method sets the mining fee paid by the transaction as a rate on its size.
+    /// This means that the total fee paid is equal to this rate * size of the transaction in virtual Bytes (vB) or Weigth Unit (wu).
+    /// This rate is internally expressed in satoshis-per-virtual-bytes (sats/vB) using FeeRate::from_sat_per_vb, but can also be set by:
+    /// * sats/kvB (1000 sats/kvB == 1 sats/vB) using FeeRate::from_sat_per_kvb
+    /// * btc/kvB (0.00001000 btc/kvB == 1 sats/vB) using FeeRate::from_btc_per_kvb
+    /// * sats/kwu (250 sats/kwu == 1 sats/vB) using FeeRate::from_sat_per_kwu
+    /// Default is 1 sat/vB (see min_relay_fee)
     </span><span class="kw">pub fn </span>fee_rate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, fee_rate: FeeRate) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.fee_policy = <span class="prelude-val">Some</span>(FeePolicy::FeeRate(fee_rate));
         <span class="self">self
@@ -1149,7 +1164,8 @@
     <span class="doccomment">/// Set an absolute fee
     /// The fee_absolute method refers to the absolute transaction fee in satoshis (sats).
     /// If anyone sets both the fee_absolute method and the fee_rate method,
-    /// the fee_absolute value will take precedence over the fee_rate.
+    /// the FeePolicy enum will be set by whichever method was called last,
+    /// as the FeeRate and FeeAmount are mutually exclusive.
     </span><span class="kw">pub fn </span>fee_absolute(<span class="kw-2">&amp;mut </span><span class="self">self</span>, fee_amount: u64) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.fee_policy = <span class="prelude-val">Some</span>(FeePolicy::FeeAmount(fee_amount));
         <span class="self">self
