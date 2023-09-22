@@ -10,8 +10,8 @@ A demo app for the bitcoindevkit on Android using `bdk-kotlin`.
 ## [Padawan Wallet](https://github.com/thunderbiscuit/padawan-wallet)
 A testnet-only bitcoin wallet full of tutorials on how to use bitcoin wallets.
 
-## [BdkSwiftSample](https://github.com/futurepaul/BdkSwiftSample)
-A basic test bed for an iOS mobile wallet using `bdk-swift` inspired by the Android DevkitWallet."
+## [BDKSwiftExampleWallet](https://github.com/reez/BDKSwiftExampleWallet)
+An example iOS app using `bdk-swift`.
 
 ## [Tatooine](https://github.com/thunderbiscuit/tatooine)
 Tatooine is a small bitcoin testnet faucet built with Ktor, a Kotlin asynchronous framework for creating microservices and web applications.
