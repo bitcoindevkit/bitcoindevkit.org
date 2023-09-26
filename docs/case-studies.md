@@ -73,6 +73,15 @@ lastUpdated: false
         </h3>
         <p>Mutiny is a self-custodial lightning wallet that runs in the browser.</p>
       </div>
+      <div class="case-study-item">
+        <a href="https://foundationdevices.com/" target="_blank">
+          <img src="/img/case-studies-logos/foundation-logo.png" />
+        </a>
+        <h3>
+          <a href="https://foundationdevices.com/" target="_blank">Envoy By Foundation</a> 
+        </h3>
+        <p>A Bitcoin wallet with powerful account management and privacy features. Use alongside your Passport hardware wallet to take true ownership of your Bitcoin.</p>
+      </div>
     </div>
   </template>
 
@@ -114,6 +123,15 @@ lastUpdated: false
           <a href="https://bitkey.build/" target="_blank">Bitkey</a> 
         </h3>
         <p>Bitkey is the safe, easy way to own and manage bitcoin. It’s a mobile app, hardware device, and a set of recovery tools, for simple, secure self-custody.</p>
+      </div>
+      <div class="case-study-item">
+        <a href="https://foundationdevices.com/" target="_blank">
+          <img src="/img/case-studies-logos/foundation-logo.png" />
+        </a>
+        <h3>
+          <a href="https://foundationdevices.com/" target="_blank">Envoy By Foundation</a> 
+        </h3>
+        <p>A Bitcoin wallet with powerful account management and privacy features. Use alongside your Passport hardware wallet to take true ownership of your Bitcoin.</p>
       </div>
     </div>
   </template>
@@ -197,6 +215,15 @@ lastUpdated: false
           <a href="https://www.mutinywallet.com/" target="_blank">Mutiny Wallet</a>
         </h3>
         <p>Mutiny is a self-custodial lightning wallet that runs in the browser.</p>
+      </div>
+      <div class="case-study-item">
+        <a href="https://foundationdevices.com/" target="_blank">
+          <img src="/img/case-studies-logos/foundation-logo.png" />
+        </a>
+        <h3>
+          <a href="https://foundationdevices.com/" target="_blank">Envoy By Foundation</a> 
+        </h3>
+        <p>A Bitcoin wallet with powerful account management and privacy features. Use alongside your Passport hardware wallet to take true ownership of your Bitcoin.</p>
       </div>
       <div class="case-study-item">
         <a href="https://www.lava.xyz/" target="_blank">
