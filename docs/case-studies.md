@@ -4,7 +4,7 @@ sidebar: false
 tagline: "Bitcoin applications building with BDK"
 description: "A list of bitcoin applications and services building with BDK"
 actionText: "Add your project"
-actionLink: "https://github.com/orgs/lightningdevkit/discussions/1554"
+actionLink: "https://github.com/orgs/bitcoindevkit/discussions/64"
 editLink: false
 lastUpdated: false
 ---
