@@ -1454,6 +1454,23 @@
 <a href="#1454" id="1454">1454</a>
 <a href="#1455" id="1455">1455</a>
 <a href="#1456" id="1456">1456</a>
+<a href="#1457" id="1457">1457</a>
+<a href="#1458" id="1458">1458</a>
+<a href="#1459" id="1459">1459</a>
+<a href="#1460" id="1460">1460</a>
+<a href="#1461" id="1461">1461</a>
+<a href="#1462" id="1462">1462</a>
+<a href="#1463" id="1463">1463</a>
+<a href="#1464" id="1464">1464</a>
+<a href="#1465" id="1465">1465</a>
+<a href="#1466" id="1466">1466</a>
+<a href="#1467" id="1467">1467</a>
+<a href="#1468" id="1468">1468</a>
+<a href="#1469" id="1469">1469</a>
+<a href="#1470" id="1470">1470</a>
+<a href="#1471" id="1471">1471</a>
+<a href="#1472" id="1472">1472</a>
+<a href="#1473" id="1473">1473</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
 //! [`TxGraph`] is a monotone structure that inserts transactions and indexes the spends. The
@@ -1905,6 +1922,23 @@
             .txs
             .insert(tx.txid(), (TxNodeInternal::Whole(tx), BTreeSet::new(), <span class="number">0</span>));
         <span class="self">self</span>.apply_update(update)
+    }
+
+    <span class="doccomment">/// Batch insert unconfirmed transactions.
+    ///
+    /// Items of `txs` are tuples containing the transaction and a *last seen* timestamp. The
+    /// *last seen* communicates when the transaction is last seen in the mempool which is used for
+    /// conflict-resolution (refer to [`TxGraph::insert_seen_at`] for details).
+    </span><span class="kw">pub fn </span>batch_insert_unconfirmed(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        txs: <span class="kw">impl </span>IntoIterator&lt;Item = (Transaction, u64)&gt;,
+    ) -&gt; ChangeSet&lt;A&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::&lt;A&gt;::default();
+        <span class="kw">for </span>(tx, seen_at) <span class="kw">in </span>txs {
+            changeset.append(<span class="self">self</span>.insert_seen_at(tx.txid(), seen_at));
+            changeset.append(<span class="self">self</span>.insert_tx(tx));
+        }
+        changeset
     }
 
     <span class="doccomment">/// Inserts the given `anchor` into [`TxGraph`].

@@ -304,6 +304,33 @@
 <a href="#304" id="304">304</a>
 <a href="#305" id="305">305</a>
 <a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::BTreeMap,
     io::{<span class="self">self</span>, Write},
@@ -318,7 +345,7 @@
     Append, ConfirmationHeightAnchor,
 };
 <span class="kw">use </span>bdk_electrum::{
-    electrum_client::{<span class="self">self</span>, ElectrumApi},
+    electrum_client::{<span class="self">self</span>, Client, ElectrumApi},
     ElectrumExt, ElectrumUpdate,
 };
 <span class="kw">use </span>example_cli::{
@@ -339,6 +366,8 @@
         </span>stop_gap: usize,
         <span class="attr">#[clap(flatten)]
         </span>scan_options: ScanOptions,
+        <span class="attr">#[clap(flatten)]
+        </span>electrum_args: ElectrumArgs,
     },
     <span class="doccomment">/// Scans particular addresses using the electrum API.
     </span>Sync {
@@ -356,7 +385,42 @@
         </span>unconfirmed: bool,
         <span class="attr">#[clap(flatten)]
         </span>scan_options: ScanOptions,
+        <span class="attr">#[clap(flatten)]
+        </span>electrum_args: ElectrumArgs,
     },
+}
+
+<span class="kw">impl </span>ElectrumCommands {
+    <span class="kw">fn </span>electrum_args(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ElectrumArgs {
+        <span class="kw">match </span><span class="self">self </span>{
+            ElectrumCommands::Scan { electrum_args, .. } =&gt; electrum_args.clone(),
+            ElectrumCommands::Sync { electrum_args, .. } =&gt; electrum_args.clone(),
+        }
+    }
+}
+
+<span class="attr">#[derive(clap::Args, Debug, Clone)]
+</span><span class="kw">pub struct </span>ElectrumArgs {
+    <span class="doccomment">/// The electrum url to use to connect to. If not provided it will use a default electrum server
+    /// for your chosen network.
+    </span>electrum_url: <span class="prelude-ty">Option</span>&lt;String&gt;,
+}
+
+<span class="kw">impl </span>ElectrumArgs {
+    <span class="kw">pub fn </span>client(<span class="kw-2">&amp;</span><span class="self">self</span>, network: Network) -&gt; anyhow::Result&lt;Client&gt; {
+        <span class="kw">let </span>electrum_url = <span class="self">self</span>.electrum_url.as_deref().unwrap_or(<span class="kw">match </span>network {
+            Network::Bitcoin =&gt; <span class="string">&quot;ssl://electrum.blockstream.info:50002&quot;</span>,
+            Network::Testnet =&gt; <span class="string">&quot;ssl://electrum.blockstream.info:60002&quot;</span>,
+            Network::Regtest =&gt; <span class="string">&quot;tcp://localhost:60401&quot;</span>,
+            Network::Signet =&gt; <span class="string">&quot;tcp://signet-electrumx.wakiyamap.dev:50001&quot;</span>,
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unknown network&quot;</span>),
+        });
+        <span class="kw">let </span>config = electrum_client::Config::builder()
+            .validate_domain(<span class="macro">matches!</span>(network, Network::Bitcoin))
+            .build();
+
+        <span class="prelude-val">Ok</span>(electrum_client::Client::from_config(electrum_url, config)<span class="question-mark">?</span>)
+    }
 }
 
 <span class="attr">#[derive(Parser, Debug, Clone, PartialEq)]
@@ -373,7 +437,7 @@
 
 <span class="kw">fn </span>main() -&gt; anyhow::Result&lt;()&gt; {
     <span class="kw">let </span>(args, keymap, index, db, (disk_local_chain, disk_tx_graph)) =
-        example_cli::init::&lt;ElectrumCommands, ChangeSet&gt;(DB_MAGIC, DB_PATH)<span class="question-mark">?</span>;
+        example_cli::init::&lt;ElectrumCommands, ElectrumArgs, ChangeSet&gt;(DB_MAGIC, DB_PATH)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>graph = Mutex::new({
         <span class="kw">let </span><span class="kw-2">mut </span>graph = IndexedTxGraph::new(index);
@@ -382,19 +446,6 @@
     });
 
     <span class="kw">let </span>chain = Mutex::new(LocalChain::from_changeset(disk_local_chain));
-
-    <span class="kw">let </span>electrum_url = <span class="kw">match </span>args.network {
-        Network::Bitcoin =&gt; <span class="string">&quot;ssl://electrum.blockstream.info:50002&quot;</span>,
-        Network::Testnet =&gt; <span class="string">&quot;ssl://electrum.blockstream.info:60002&quot;</span>,
-        Network::Regtest =&gt; <span class="string">&quot;tcp://localhost:60401&quot;</span>,
-        Network::Signet =&gt; <span class="string">&quot;tcp://signet-electrumx.wakiyamap.dev:50001&quot;</span>,
-        <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;Unknown network&quot;</span>),
-    };
-    <span class="kw">let </span>config = electrum_client::Config::builder()
-        .validate_domain(<span class="macro">matches!</span>(args.network, Network::Bitcoin))
-        .build();
-
-    <span class="kw">let </span>client = electrum_client::Client::from_config(electrum_url, config)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>electrum_cmd = <span class="kw">match </span><span class="kw-2">&amp;</span>args.command {
         example_cli::Commands::ChainSpecific(electrum_cmd) =&gt; electrum_cmd,
@@ -405,11 +456,10 @@
                 <span class="kw-2">&amp;</span>chain,
                 <span class="kw-2">&amp;</span>keymap,
                 args.network,
-                |tx| {
-                    client
-                        .transaction_broadcast(tx)
-                        .map(|<span class="kw">_</span>| ())
-                        .map_err(anyhow::Error::from)
+                |electrum_args, tx| {
+                    <span class="kw">let </span>client = electrum_args.client(args.network)<span class="question-mark">?</span>;
+                    client.transaction_broadcast(tx)<span class="question-mark">?</span>;
+                    <span class="prelude-val">Ok</span>(())
                 },
                 general_cmd.clone(),
             );
@@ -419,10 +469,13 @@
         }
     };
 
+    <span class="kw">let </span>client = electrum_cmd.electrum_args().client(args.network)<span class="question-mark">?</span>;
+
     <span class="kw">let </span>response = <span class="kw">match </span>electrum_cmd.clone() {
         ElectrumCommands::Scan {
             stop_gap,
             scan_options,
+            ..
         } =&gt; {
             <span class="kw">let </span>(keychain_spks, tip) = {
                 <span class="kw">let </span>graph = <span class="kw-2">&amp;*</span>graph.lock().unwrap();
@@ -468,6 +521,7 @@
             <span class="kw-2">mut </span>utxos,
             <span class="kw-2">mut </span>unconfirmed,
             scan_options,
+            ..
         } =&gt; {
             <span class="comment">// Get a short lock on the tracker to get the spks we&#39;re interested in
             </span><span class="kw">let </span>graph = graph.lock().unwrap();
