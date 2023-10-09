@@ -2068,6 +2068,15 @@
 <a href="#2067" id="2067">2067</a>
 <a href="#2068" id="2068">2068</a>
 <a href="#2069" id="2069">2069</a>
+<a href="#2070" id="2070">2070</a>
+<a href="#2071" id="2071">2071</a>
+<a href="#2072" id="2072">2072</a>
+<a href="#2073" id="2073">2073</a>
+<a href="#2074" id="2074">2074</a>
+<a href="#2075" id="2075">2075</a>
+<a href="#2076" id="2076">2076</a>
+<a href="#2077" id="2077">2077</a>
+<a href="#2078" id="2078">2078</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2579,7 +2588,7 @@
     <span class="kw">where
         </span>D: PersistBackend&lt;ChangeSet&gt;,
     {
-        <span class="kw">let </span>additions = <span class="self">self</span>.indexed_graph.insert_txout(outpoint, <span class="kw-2">&amp;</span>txout);
+        <span class="kw">let </span>additions = <span class="self">self</span>.indexed_graph.insert_txout(outpoint, txout);
         <span class="self">self</span>.persist.stage(ChangeSet::from(additions));
     }
 
@@ -2808,7 +2817,16 @@
             ConfirmationTime::Unconfirmed { last_seen } =&gt; (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(last_seen)),
         };
 
-        <span class="kw">let </span>changeset: ChangeSet = <span class="self">self</span>.indexed_graph.insert_tx(<span class="kw-2">&amp;</span>tx, anchor, last_seen).into();
+        <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
+        <span class="kw">let </span>txid = tx.txid();
+        changeset.append(<span class="self">self</span>.indexed_graph.insert_tx(tx).into());
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor {
+            changeset.append(<span class="self">self</span>.indexed_graph.insert_anchor(txid, anchor).into());
+        }
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(last_seen) = last_seen {
+            changeset.append(<span class="self">self</span>.indexed_graph.insert_seen_at(txid, last_seen).into());
+        }
+
         <span class="kw">let </span>changed = !changeset.is_empty();
         <span class="self">self</span>.persist.stage(changeset);
         <span class="prelude-val">Ok</span>(changed)

@@ -269,9 +269,35 @@
 <a href="#269" id="269">269</a>
 <a href="#270" id="270">270</a>
 <a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bitcoin::{hashes::Hash, BlockHash, OutPoint, TxOut, Txid};
 
-<span class="kw">use crate</span>::{Anchor, COINBASE_MATURITY};
+<span class="kw">use crate</span>::{Anchor, AnchorFromBlockPosition, COINBASE_MATURITY};
 
 <span class="doccomment">/// Represents the observed position of some chain data.
 ///
@@ -380,6 +406,12 @@
     </span>}
 }
 
+<span class="kw">impl </span>AnchorFromBlockPosition <span class="kw">for </span>BlockId {
+    <span class="kw">fn </span>from_block_position(_block: <span class="kw-2">&amp;</span>bitcoin::Block, block_id: BlockId, _tx_pos: usize) -&gt; <span class="self">Self </span>{
+        block_id
+    }
+}
+
 <span class="kw">impl </span>Default <span class="kw">for </span>BlockId {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
@@ -439,6 +471,15 @@
     }
 }
 
+<span class="kw">impl </span>AnchorFromBlockPosition <span class="kw">for </span>ConfirmationHeightAnchor {
+    <span class="kw">fn </span>from_block_position(_block: <span class="kw-2">&amp;</span>bitcoin::Block, block_id: BlockId, _tx_pos: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            anchor_block: block_id,
+            confirmation_height: block_id.height,
+        }
+    }
+}
+
 <span class="doccomment">/// An [`Anchor`] implementation that also records the exact confirmation time and height of the
 /// transaction.
 ///
@@ -467,6 +508,17 @@
         <span class="self">self</span>.confirmation_height
     }
 }
+
+<span class="kw">impl </span>AnchorFromBlockPosition <span class="kw">for </span>ConfirmationTimeAnchor {
+    <span class="kw">fn </span>from_block_position(block: <span class="kw-2">&amp;</span>bitcoin::Block, block_id: BlockId, _tx_pos: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            anchor_block: block_id,
+            confirmation_height: block_id.height,
+            confirmation_time: block.header.time <span class="kw">as _</span>,
+        }
+    }
+}
+
 <span class="doccomment">/// A `TxOut` with as much data as we can retrieve about it
 </span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 </span><span class="kw">pub struct </span>FullTxOut&lt;A&gt; {

@@ -322,6 +322,34 @@
 <a href="#322" id="322">322</a>
 <a href="#323" id="323">323</a>
 <a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::{BTreeMap, BTreeSet},
     io::{<span class="self">self</span>, Write},
@@ -361,6 +389,8 @@
         </span>stop_gap: usize,
         <span class="attr">#[clap(flatten)]
         </span>scan_options: ScanOptions,
+        <span class="attr">#[clap(flatten)]
+        </span>esplora_args: EsploraArgs,
     },
     <span class="doccomment">/// Scan for particular addresses and unconfirmed transactions using the esplora API.
     </span>Sync {
@@ -378,7 +408,39 @@
         </span>unconfirmed: bool,
         <span class="attr">#[clap(flatten)]
         </span>scan_options: ScanOptions,
+        <span class="attr">#[clap(flatten)]
+        </span>esplora_args: EsploraArgs,
     },
+}
+<span class="kw">impl </span>EsploraCommands {
+    <span class="kw">fn </span>esplora_args(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; EsploraArgs {
+        <span class="kw">match </span><span class="self">self </span>{
+            EsploraCommands::Scan { esplora_args, .. } =&gt; esplora_args.clone(),
+            EsploraCommands::Sync { esplora_args, .. } =&gt; esplora_args.clone(),
+        }
+    }
+}
+
+<span class="attr">#[derive(clap::Args, Debug, Clone)]
+</span><span class="kw">pub struct </span>EsploraArgs {
+    <span class="doccomment">/// The esplora url endpoint to connect to e.g. `&lt;https://blockstream.info/api&gt;`
+    /// If not provided it&#39;ll be set to a default for the network provided
+    </span>esplora_url: <span class="prelude-ty">Option</span>&lt;String&gt;,
+}
+
+<span class="kw">impl </span>EsploraArgs {
+    <span class="kw">pub fn </span>client(<span class="kw-2">&amp;</span><span class="self">self</span>, network: Network) -&gt; anyhow::Result&lt;esplora_client::BlockingClient&gt; {
+        <span class="kw">let </span>esplora_url = <span class="self">self</span>.esplora_url.as_deref().unwrap_or(<span class="kw">match </span>network {
+            Network::Bitcoin =&gt; <span class="string">&quot;https://blockstream.info/api&quot;</span>,
+            Network::Testnet =&gt; <span class="string">&quot;https://blockstream.info/testnet/api&quot;</span>,
+            Network::Regtest =&gt; <span class="string">&quot;http://localhost:3002&quot;</span>,
+            Network::Signet =&gt; <span class="string">&quot;https://mempool.space/signet/api&quot;</span>,
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unsupported network&quot;</span>),
+        });
+
+        <span class="kw">let </span>client = esplora_client::Builder::new(esplora_url).build_blocking()<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(client)
+    }
 }
 
 <span class="attr">#[derive(Parser, Debug, Clone, PartialEq)]
@@ -390,7 +452,7 @@
 
 <span class="kw">fn </span>main() -&gt; anyhow::Result&lt;()&gt; {
     <span class="kw">let </span>(args, keymap, index, db, init_changeset) =
-        example_cli::init::&lt;EsploraCommands, ChangeSet&gt;(DB_MAGIC, DB_PATH)<span class="question-mark">?</span>;
+        example_cli::init::&lt;EsploraCommands, EsploraArgs, ChangeSet&gt;(DB_MAGIC, DB_PATH)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>(init_chain_changeset, init_indexed_tx_graph_changeset) = init_changeset;
 
@@ -408,16 +470,6 @@
         chain
     });
 
-    <span class="kw">let </span>esplora_url = <span class="kw">match </span>args.network {
-        Network::Bitcoin =&gt; <span class="string">&quot;https://blockstream.info/api&quot;</span>,
-        Network::Testnet =&gt; <span class="string">&quot;https://blockstream.info/testnet/api&quot;</span>,
-        Network::Regtest =&gt; <span class="string">&quot;http://localhost:3002&quot;</span>,
-        Network::Signet =&gt; <span class="string">&quot;https://mempool.space/signet/api&quot;</span>,
-        <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;unsupported network&quot;</span>),
-    };
-
-    <span class="kw">let </span>client = esplora_client::Builder::new(esplora_url).build_blocking()<span class="question-mark">?</span>;
-
     <span class="kw">let </span>esplora_cmd = <span class="kw">match </span><span class="kw-2">&amp;</span>args.command {
         <span class="comment">// These are commands that are handled by this example (sync, scan).
         </span>example_cli::Commands::ChainSpecific(esplora_cmd) =&gt; esplora_cmd,
@@ -429,7 +481,8 @@
                 <span class="kw-2">&amp;</span>chain,
                 <span class="kw-2">&amp;</span>keymap,
                 args.network,
-                |tx| {
+                |esplora_args, tx| {
+                    <span class="kw">let </span>client = esplora_args.client(args.network)<span class="question-mark">?</span>;
                     client
                         .broadcast(tx)
                         .map(|<span class="kw">_</span>| ())
@@ -443,6 +496,7 @@
         }
     };
 
+    <span class="kw">let </span>client = esplora_cmd.esplora_args().client(args.network)<span class="question-mark">?</span>;
     <span class="comment">// Prepare the `IndexedTxGraph` update based on whether we are scanning or syncing.
     // Scanning: We are iterating through spks of all keychains and scanning for transactions for
     //   each spk. We start with the lowest derivation index spk and stop scanning after `stop_gap`
@@ -455,6 +509,7 @@
         EsploraCommands::Scan {
             stop_gap,
             scan_options,
+            ..
         } =&gt; {
             <span class="kw">let </span>keychain_spks = graph
                 .lock()
@@ -508,6 +563,7 @@
             <span class="kw-2">mut </span>utxos,
             <span class="kw-2">mut </span>unconfirmed,
             scan_options,
+            ..
         } =&gt; {
             <span class="kw">if </span>!(<span class="kw-2">*</span>all_spks || unused_spks || utxos || unconfirmed) {
                 <span class="comment">// If nothing is specifically selected, we select everything (except all spks).

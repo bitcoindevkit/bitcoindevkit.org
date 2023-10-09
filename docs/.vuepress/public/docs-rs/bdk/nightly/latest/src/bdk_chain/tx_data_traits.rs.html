@@ -148,6 +148,13 @@
 <a href="#148" id="148">148</a>
 <a href="#149" id="149">149</a>
 <a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::collections::BTreeMap;
 <span class="kw">use </span><span class="kw">crate</span>::collections::BTreeSet;
 <span class="kw">use </span><span class="kw">crate</span>::BlockId;
@@ -226,10 +233,17 @@
     }
 }
 
-<span class="kw">impl</span>&lt;A: Anchor&gt; Anchor <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>A {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, A: Anchor&gt; Anchor <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>A {
     <span class="kw">fn </span>anchor_block(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; BlockId {
         &lt;A <span class="kw">as </span>Anchor&gt;::anchor_block(<span class="self">self</span>)
     }
+}
+
+<span class="doccomment">/// An [`Anchor`] that can be constructed from a given block, block height and transaction position
+/// within the block.
+</span><span class="kw">pub trait </span>AnchorFromBlockPosition: Anchor {
+    <span class="doccomment">/// Construct the anchor from a given `block`, block height and `tx_pos` within the block.
+    </span><span class="kw">fn </span>from_block_position(block: <span class="kw-2">&amp;</span>bitcoin::Block, block_id: BlockId, tx_pos: usize) -&gt; <span class="self">Self</span>;
 }
 
 <span class="doccomment">/// Trait that makes an object appendable.

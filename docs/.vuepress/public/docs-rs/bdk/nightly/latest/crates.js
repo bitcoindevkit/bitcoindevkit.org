@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["bdk","bdk_chain","bdk_coin_select","bdk_electrum","bdk_esplora","bdk_file_store","bdk_tmp_plan","example_cli","example_electrum","example_esplora","wallet_electrum_example","wallet_esplora_async","wallet_esplora_blocking"];
+window.ALL_CRATES = ["bdk","bdk_bitcoind_rpc","bdk_chain","bdk_coin_select","bdk_electrum","bdk_esplora","bdk_file_store","bdk_tmp_plan","example_bitcoind_rpc_polling","example_cli","example_electrum","example_esplora","wallet_electrum_example","wallet_esplora_async","wallet_esplora_blocking"];
