@@ -15,7 +15,7 @@ lastUpdated: false
 
 <!-- <CodeSwitcher :languages="{all: 'All', mobile:'Mobile', web:'Web', desktop:'Desktop', custodial: 'Custodial', infra:'Infrastructure', misc:'Misc',}"> -->
   
-<CodeSwitcher :languages="{ all: 'All', mobile: 'Mobile', desktop: 'Desktop', hardware: 'Hardware', custodial: 'Custodial', exchange: 'Exchange' }">
+<CodeSwitcher :languages="{ all: 'All', mobile: 'Mobile', desktop: 'Desktop', hardware: 'Hardware', web:'Web', custodial: 'Custodial', exchange: 'Exchange' }">
 
   <template v-slot:mobile>
     <div class="case-studies">
@@ -164,19 +164,19 @@ lastUpdated: false
     </div>
   </template> -->
 
-  <!-- <template v-slot:misc>
+  <template v-slot:web>
     <div class="case-studies">
       <div class="case-study-item">
-        <a href="https://bitcoindevkit.org" target="_blank">
-          <img src="/img/bitcoindevkit.svg" />
+        <a href="https://bitmask.app/" target="_blank">
+          <img src="/img/case-studies-logos/bitmask-logo.png" />
         </a>
         <h3>
-          <a href="https://bitcoindevkit.org" target="_blank">Example miscellaneous App</a>
+          <a href="https://bitmask.app/" target="_blank">BitMask Wallet</a>
         </h3>
-        <p>A cool app built with BDK.</p>
+        <p>Your Gateway to DeepWeb3 on Bitcoin. A browser extension for decentralized applications on Bitcoin.</p>
       </div>
     </div>
-  </template> -->
+  </template>
 
   <template v-slot:all>
     <div class="case-studies">
@@ -269,6 +269,15 @@ lastUpdated: false
           <a href="https://www.seba.swiss/" target="_blank">Seba Bank</a>
         </h3>
         <p>Merging traditional financial expertise with cutting-edge technology to shape the future of finance.</p>
+      </div>
+      <div class="case-study-item">
+        <a href="https://bitmask.app/" target="_blank">
+          <img src="/img/case-studies-logos/bitmask-logo.png" />
+        </a>
+        <h3>
+          <a href="https://bitmask.app/" target="_blank">BitMask Wallet</a>
+        </h3>
+        <p>Your Gateway to DeepWeb3 on Bitcoin. A browser extension for decentralized applications on Bitcoin.</p>
       </div>
     </div>
   </template>
