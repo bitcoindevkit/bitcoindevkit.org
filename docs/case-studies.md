@@ -62,7 +62,7 @@ lastUpdated: false
         <h3>
           <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">Padawan Wallet</a>
         </h3>
-        <p>Padawan is a testnet-only bitcoin wallet filled with tutorials on how to use bitcoin wallets. It is a self-study tool, acquainting users with mobile bitcoin wallets in a risk-free environment using the bitcoin testnet network. It is a perfect app for experimentation and learning for people of all ages. No accounts, no trackers, and the app is a free and open source project.</p>
+        <p>Padawan is a testnet-only bitcoin wallet packed with tutorials to learn how to use bitcoin on mobile.</p>
       </div>
       <div class="case-study-item">
         <a href="https://www.mutinywallet.com/" target="_blank">
@@ -81,6 +81,15 @@ lastUpdated: false
           <a href="https://foundationdevices.com/" target="_blank">Envoy By Foundation</a> 
         </h3>
         <p>A Bitcoin wallet with powerful account management and privacy features. Use alongside your Passport hardware wallet to take true ownership of your Bitcoin.</p>
+      </div>
+      <div class="case-study-item">
+        <a href="https://www.bullbitcoin.com/" target="_blank">
+          <img src="/img/case-studies-logos/bull-bitcoin-130.png" />
+        </a>
+        <h3>
+          <a href="https://www.bullbitcoin.com/" target="_blank">Bull Bitcoin</a>
+        </h3>
+        <p>A self-custodial Bitcoin Wallet and Exchange app that lets users buy, sell, spend and get paid with Bitcoin. Bitcoins are automatically sent from the exchange to the user's wallet.</p>
       </div>
     </div>
   </template>
