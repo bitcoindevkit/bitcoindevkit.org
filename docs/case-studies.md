@@ -145,7 +145,7 @@ lastUpdated: false
         <h3>
           <a href="https://www.seba.swiss/" target="_blank">Seba Bank</a>
         </h3>
-        <p>Merging traditional financial expertise with cutting-edge technology to shape the future of finance.</p>
+        <p>From everyday banking to crypto custody and trading, get the most out of your assets with a regulated global crypto bank.</p>
       </div>
     </div>
   </template>
@@ -268,7 +268,7 @@ lastUpdated: false
         <h3>
           <a href="https://www.seba.swiss/" target="_blank">Seba Bank</a>
         </h3>
-        <p>Merging traditional financial expertise with cutting-edge technology to shape the future of finance.</p>
+        <p>From everyday banking to crypto custody and trading, get the most out of your assets with a regulated global crypto bank.</p>
       </div>
       <div class="case-study-item">
         <a href="https://bitmask.app/" target="_blank">
