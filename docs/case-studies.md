@@ -35,7 +35,7 @@ lastUpdated: false
         <h3>
           <a href="https://peachbitcoin.com/" target="_blank">Peach Bitcoin</a>
         </h3>
-        <p>Peach is a mobile application that connects Bitcoin buyers and sellers directly together. Buy or sell bitcoin peer-to-peer anywhere, at anytime. Use the payment method of your choice amongst many options. Sell at the price of your choice because peer-to-peer markets are the real markets.</p>
+        <p>Connecting Bitcoin buyers and sellers directly together. Buy or sell bitcoin peer-to-peer anywhere, at anytime.</p>
       </div>
       <div class="case-study-item">
         <a href="https://github.com/lightningdevkit/ldk-node" target="_blank">
@@ -196,7 +196,7 @@ lastUpdated: false
         <h3>
           <a href="https://peachbitcoin.com/" target="_blank">Peach Bitcoin</a>
         </h3>
-        <p>Peach is a mobile application that connects Bitcoin buyers and sellers directly together. Buy or sell bitcoin peer-to-peer anywhere, at anytime. Use the payment method of your choice amongst many options. Sell at the price of your choice because peer-to-peer markets are the real markets.</p>
+        <p>Connecting Bitcoin buyers and sellers directly together. Buy or sell bitcoin peer-to-peer anywhere, at anytime.</p>
       </div>
       <div class="case-study-item">
         <a href="https://www.anchorwatch.com/" target="_blank">
@@ -259,7 +259,7 @@ lastUpdated: false
         <h3>
           <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">Padawan Wallet</a>
         </h3>
-        <p>Padawan is a testnet-only bitcoin wallet filled with tutorials to learn how to use bitcoin on mobile. It is a self-study tool in a risk-free environment using the bitcoin testnet network.</p>
+        <p>Padawan is a testnet-only bitcoin wallet packed with tutorials to learn how to use bitcoin on mobile.</p>
       </div>
       <div class="case-study-item">
         <a href="https://www.seba.swiss/" target="_blank">
