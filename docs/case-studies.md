@@ -21,7 +21,7 @@ lastUpdated: false
     <div class="case-studies">
       <div class="case-study-item">
         <a href="https://bitkey.build/" target="_blank">
-          <img src="/img/case-studies-logos/block-logo.gif" />
+          <img src="/img/case-studies-logos/block-logo.gif" style="max-height: 130px;" />
         </a>
         <h3>
           <a href="https://bitkey.build/" target="_blank">Bitkey</a> 
@@ -30,7 +30,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://peachbitcoin.com/" target="_blank">
-          <img src="/img/case-studies-logos/peach-bitcoin-logo-500.png" />
+          <img src="/img/case-studies-logos/peach-130.png" />
         </a>
         <h3>
           <a href="https://peachbitcoin.com/" target="_blank">Peach Bitcoin</a>
@@ -39,7 +39,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://github.com/lightningdevkit/ldk-node" target="_blank">
-          <img src="/img/case-studies-logos/ldk-node-logo-500.png" />
+          <img src="/img/case-studies-logos/ldk-node-130.png" />
         </a>
         <h3>
           <a href="https://github.com/lightningdevkit/ldk-node" target="_blank">LDK Node</a> 
@@ -48,7 +48,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://www.lava.xyz/" target="_blank">
-          <img src="/img/case-studies-logos/lava-logo-500.png" />
+          <img src="/img/case-studies-logos/lava-130.png" />
         </a>
         <h3>
           <a href="https://www.lava.xyz/" target="_blank">Lava</a>
@@ -57,7 +57,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">
-          <img src="/img/case-studies-logos/padawan-logo-500.png" />
+          <img src="/img/case-studies-logos/padawan-130.png" />
         </a>
         <h3>
           <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">Padawan Wallet</a>
@@ -66,7 +66,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://www.mutinywallet.com/" target="_blank">
-          <img src="/img/case-studies-logos/mutiny-logo-500.png" />
+          <img src="/img/case-studies-logos/mutiny-130.png" />
         </a>
         <h3>
           <a href="https://www.mutinywallet.com/" target="_blank">Mutiny Wallet</a>
@@ -75,7 +75,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://foundationdevices.com/" target="_blank">
-          <img src="/img/case-studies-logos/foundation-logo.png" />
+          <img src="/img/case-studies-logos/foundation-130.png" />
         </a>
         <h3>
           <a href="https://foundationdevices.com/" target="_blank">Envoy By Foundation</a> 
@@ -89,7 +89,7 @@ lastUpdated: false
     <div class="case-studies">
       <div class="case-study-item">
         <a href="https://www.bullbitcoin.com/" target="_blank">
-          <img src="/img/case-studies-logos/bull-bitcoin-logo-500.png" />
+          <img src="/img/case-studies-logos/bull-bitcoin-130.png" />
         </a>
         <h3>
           <a href="https://www.bullbitcoin.com/" target="_blank">Bull Bitcoin</a>
@@ -103,7 +103,7 @@ lastUpdated: false
     <div class="case-studies">
       <div class="case-study-item">
         <a href="https://www.anchorwatch.com/" target="_blank">
-          <img src="/img/case-studies-logos/anchorwatch-logo-500.png" />
+          <img src="/img/case-studies-logos/anchorwatch-130.png" />
         </a>
         <h3>
           <a href="https://www.anchorwatch.com/" target="_blank">AnchorWatch</a>
@@ -117,7 +117,7 @@ lastUpdated: false
     <div class="case-studies">
       <div class="case-study-item">
         <a href="https://bitkey.build/" target="_blank">
-          <img src="/img/case-studies-logos/block-logo.gif" />
+          <img src="/img/case-studies-logos/block-logo.gif" style="max-height: 130px;" />
         </a>
         <h3>
           <a href="https://bitkey.build/" target="_blank">Bitkey</a> 
@@ -126,7 +126,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://foundationdevices.com/" target="_blank">
-          <img src="/img/case-studies-logos/foundation-logo.png" />
+          <img src="/img/case-studies-logos/foundation-130.png" />
         </a>
         <h3>
           <a href="https://foundationdevices.com/" target="_blank">Envoy By Foundation</a> 
@@ -140,7 +140,7 @@ lastUpdated: false
     <div class="case-studies">
       <div class="case-study-item">
         <a href="https://www.seba.swiss/" target="_blank">
-          <img src="/img/case-studies-logos/seba-bank-logo-500.png" />
+          <img src="/img/case-studies-logos/seba-130.png" />
         </a>
         <h3>
           <a href="https://www.seba.swiss/" target="_blank">Seba Bank</a>
@@ -168,7 +168,7 @@ lastUpdated: false
     <div class="case-studies">
       <div class="case-study-item">
         <a href="https://bitmask.app/" target="_blank">
-          <img src="/img/case-studies-logos/bitmask-logo.png" />
+          <img src="/img/case-studies-logos/bitmask-130.png" />
         </a>
         <h3>
           <a href="https://bitmask.app/" target="_blank">BitMask Wallet</a>
@@ -182,7 +182,7 @@ lastUpdated: false
     <div class="case-studies">
       <div class="case-study-item">
         <a href="https://bitkey.build/" target="_blank">
-          <img src="/img/case-studies-logos/block-logo.gif" />
+          <img src="/img/case-studies-logos/block-logo.gif" style="max-height: 130px;" />
         </a>
         <h3>
           <a href="https://bitkey.build/" target="_blank">Bitkey</a> 
@@ -191,7 +191,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="" target="_blank">
-          <img src="/img/case-studies-logos/peach-bitcoin-logo-500.png" style="width:100%;;aspect-ratio:1/1;object-fit: contain;" />
+          <img src="/img/case-studies-logos/peach-130.png" />
         </a>
         <h3>
           <a href="https://peachbitcoin.com/" target="_blank">Peach Bitcoin</a>
@@ -200,7 +200,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://www.anchorwatch.com/" target="_blank">
-          <img src="/img/case-studies-logos/anchorwatch-logo-500.png" />
+          <img src="/img/case-studies-logos/anchorwatch-130.png" />
         </a>
         <h3>
           <a href="https://www.anchorwatch.com/" target="_blank">AnchorWatch</a>
@@ -209,7 +209,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://www.mutinywallet.com/" target="_blank">
-          <img src="/img/case-studies-logos/mutiny-logo-500.png" />
+          <img src="/img/case-studies-logos/mutiny-130.png" />
         </a>
         <h3>
           <a href="https://www.mutinywallet.com/" target="_blank">Mutiny Wallet</a>
@@ -218,7 +218,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://foundationdevices.com/" target="_blank">
-          <img src="/img/case-studies-logos/foundation-logo.png" />
+          <img src="/img/case-studies-logos/foundation-130.png" />
         </a>
         <h3>
           <a href="https://foundationdevices.com/" target="_blank">Envoy By Foundation</a> 
@@ -227,7 +227,7 @@ lastUpdated: false
       </div>
             <div class="case-study-item">
         <a href="https://www.bullbitcoin.com/" target="_blank">
-          <img src="/img/case-studies-logos/bull-bitcoin-logo-500.png" />
+          <img src="/img/case-studies-logos/bull-bitcoin-130.png" />
         </a>
         <h3>
           <a href="https://www.bullbitcoin.com/" target="_blank">Bull Bitcoin</a>
@@ -236,7 +236,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://www.lava.xyz/" target="_blank">
-          <img src="/img/case-studies-logos/lava-logo-500.png" />
+          <img src="/img/case-studies-logos/lava-130.png" />
         </a>
         <h3>
           <a href="https://www.lava.xyz/" target="_blank">Lava</a>
@@ -245,7 +245,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://github.com/lightningdevkit/ldk-node" target="_blank">
-          <img src="/img/case-studies-logos/ldk-node-logo-500.png" />
+          <img src="/img/case-studies-logos/ldk-node-130.png" />
         </a>
         <h3>
           <a href="https://github.com/lightningdevkit/ldk-node" target="_blank">LDK Node</a> 
@@ -254,7 +254,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">
-          <img src="/img/case-studies-logos/padawan-logo-500.png" />
+          <img src="/img/case-studies-logos/padawan-130.png" />
         </a>
         <h3>
           <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">Padawan Wallet</a>
@@ -263,7 +263,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://www.seba.swiss/" target="_blank">
-          <img src="/img/case-studies-logos/seba-bank-logo-500.png" />
+          <img src="/img/case-studies-logos/seba-130.png" />
         </a>
         <h3>
           <a href="https://www.seba.swiss/" target="_blank">Seba Bank</a>
@@ -272,7 +272,7 @@ lastUpdated: false
       </div>
       <div class="case-study-item">
         <a href="https://bitmask.app/" target="_blank">
-          <img src="/img/case-studies-logos/bitmask-logo.png" />
+          <img src="/img/case-studies-logos/bitmask-130.png" />
         </a>
         <h3>
           <a href="https://bitmask.app/" target="_blank">BitMask Wallet</a>
