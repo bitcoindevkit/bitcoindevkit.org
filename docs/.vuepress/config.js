@@ -110,6 +110,10 @@ module.exports = {
         link: '/case-studies'
       },
       {
+        text: 'Foundation',
+        link: '/foundation'
+      },
+      {
         text: 'Blog',
         link: '/blog/'
       },
@@ -178,6 +182,10 @@ module.exports = {
             {
               text: 'Supporters',
               link: '/supporters/'
+            },
+            {
+              text: 'BDK Foundation',
+              link: '/foundation'
             }
           ]
         }
