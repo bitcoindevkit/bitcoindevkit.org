@@ -557,8 +557,8 @@
     str::FromStr,
 };
 
-<span class="doccomment">/// We assume that a block of this depth and deeper cannot be reorged.
-</span><span class="kw">const </span>ASSUME_FINAL_DEPTH: u32 = <span class="number">8</span>;
+<span class="doccomment">/// We include a chain suffix of a certain length for the purpose of robustness.
+</span><span class="kw">const </span>CHAIN_SUFFIX_LENGTH: u32 = <span class="number">8</span>;
 
 <span class="doccomment">/// Represents updates fetched from an Electrum server, but excludes full transactions.
 ///
@@ -848,12 +848,12 @@
         }
     }
 
-    <span class="comment">// Atomically fetch the latest `ASSUME_FINAL_DEPTH` count of blocks from Electrum. We use this
+    <span class="comment">// Atomically fetch the latest `CHAIN_SUFFIX_LENGTH` count of blocks from Electrum. We use this
     // to construct our checkpoint update.
     </span><span class="kw">let </span><span class="kw-2">mut </span>new_blocks = {
-        <span class="kw">let </span>start_height = new_tip_height.saturating_sub(ASSUME_FINAL_DEPTH);
+        <span class="kw">let </span>start_height = new_tip_height.saturating_sub(CHAIN_SUFFIX_LENGTH - <span class="number">1</span>);
         <span class="kw">let </span>hashes = client
-            .block_headers(start_height <span class="kw">as _</span>, ASSUME_FINAL_DEPTH <span class="kw">as _</span>)<span class="question-mark">?
+            .block_headers(start_height <span class="kw">as _</span>, CHAIN_SUFFIX_LENGTH <span class="kw">as _</span>)<span class="question-mark">?
             </span>.headers
             .into_iter()
             .map(|h| h.block_hash());
