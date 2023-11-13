@@ -1188,6 +1188,9 @@
 <a href="#1187" id="1187">1187</a>
 <a href="#1188" id="1188">1188</a>
 <a href="#1189" id="1189">1189</a>
+<a href="#1190" id="1190">1190</a>
+<a href="#1191" id="1191">1191</a>
+<a href="#1192" id="1192">1192</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1649,20 +1652,23 @@
         <span class="kw">let </span>x_only_pubkey = XOnlyPublicKey::from(pubkey.inner);
 
         <span class="kw">if let </span>SignerContext::Tap { is_internal_key } = <span class="self">self</span>.ctx {
-            <span class="kw">if </span>is_internal_key
-                &amp;&amp; psbt.inputs[input_index].tap_key_sig.is_none()
-                &amp;&amp; sign_options.sign_with_tap_internal_key
-            {
-                <span class="kw">let </span>(hash, hash_ty) = Tap::sighash(psbt, input_index, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
-                sign_psbt_schnorr(
-                    <span class="kw-2">&amp;</span><span class="self">self</span>.inner,
-                    x_only_pubkey,
-                    <span class="prelude-val">None</span>,
-                    <span class="kw-2">&amp;mut </span>psbt.inputs[input_index],
-                    hash,
-                    hash_ty,
-                    secp,
-                );
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(psbt_internal_key) = psbt.inputs[input_index].tap_internal_key {
+                <span class="kw">if </span>is_internal_key
+                    &amp;&amp; psbt.inputs[input_index].tap_key_sig.is_none()
+                    &amp;&amp; sign_options.sign_with_tap_internal_key
+                    &amp;&amp; x_only_pubkey == psbt_internal_key
+                {
+                    <span class="kw">let </span>(hash, hash_ty) = Tap::sighash(psbt, input_index, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+                    sign_psbt_schnorr(
+                        <span class="kw-2">&amp;</span><span class="self">self</span>.inner,
+                        x_only_pubkey,
+                        <span class="prelude-val">None</span>,
+                        <span class="kw-2">&amp;mut </span>psbt.inputs[input_index],
+                        hash,
+                        hash_ty,
+                        secp,
+                    );
+                }
             }
 
             <span class="kw">if let </span><span class="prelude-val">Some</span>((leaf_hashes, <span class="kw">_</span>)) =
