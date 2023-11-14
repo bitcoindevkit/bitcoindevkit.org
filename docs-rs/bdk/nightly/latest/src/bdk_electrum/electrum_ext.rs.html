@@ -548,7 +548,7 @@
     bitcoin::{OutPoint, ScriptBuf, Transaction, Txid},
     local_chain::{<span class="self">self</span>, CheckPoint},
     tx_graph::{<span class="self">self</span>, TxGraph},
-    Anchor, BlockId, ConfirmationHeightAnchor, ConfirmationTimeAnchor,
+    Anchor, BlockId, ConfirmationHeightAnchor, ConfirmationTimeHeightAnchor,
 };
 <span class="kw">use </span>electrum_client::{Client, ElectrumApi, Error, HeaderNotification};
 <span class="kw">use </span>std::{
@@ -603,7 +603,7 @@
     }
 
     <span class="doccomment">/// Finalizes [`RelevantTxids`] with `new_txs` and anchors of type
-    /// [`ConfirmationTimeAnchor`].
+    /// [`ConfirmationTimeHeightAnchor`].
     ///
     /// **Note:** The confirmation time might not be precisely correct if there has been a reorg.
     /// Electrum&#39;s API intends that we use the merkle proof API, we should change `bdk_electrum` to
@@ -613,7 +613,7 @@
         client: <span class="kw-2">&amp;</span>Client,
         seen_at: <span class="prelude-ty">Option</span>&lt;u64&gt;,
         missing: Vec&lt;Txid&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationTimeAnchor&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationTimeHeightAnchor&gt;, Error&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.into_tx_graph(client, seen_at, missing)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>relevant_heights = {
@@ -649,7 +649,7 @@
                     .map(|(height_anchor, txid)| {
                         <span class="kw">let </span>confirmation_height = height_anchor.confirmation_height;
                         <span class="kw">let </span>confirmation_time = height_to_time[<span class="kw-2">&amp;</span>confirmation_height];
-                        <span class="kw">let </span>time_anchor = ConfirmationTimeAnchor {
+                        <span class="kw">let </span>time_anchor = ConfirmationTimeHeightAnchor {
                             anchor_block: height_anchor.anchor_block,
                             confirmation_height,
                             confirmation_time,

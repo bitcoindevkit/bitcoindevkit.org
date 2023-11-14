@@ -324,7 +324,7 @@
 <span class="kw">use </span>bdk_chain::{
     bitcoin::{BlockHash, OutPoint, ScriptBuf, Txid},
     local_chain::{<span class="self">self</span>, CheckPoint},
-    BlockId, ConfirmationTimeAnchor, TxGraph,
+    BlockId, ConfirmationTimeHeightAnchor, TxGraph,
 };
 <span class="kw">use </span>esplora_client::{Error, TxStatus};
 
@@ -357,7 +357,7 @@
     /// indices.
     ///
     /// * `keychain_spks`: keychains that we want to scan transactions for
-    /// * `txids`: transactions for which we want updated [`ConfirmationTimeAnchor`]s
+    /// * `txids`: transactions for which we want updated [`ConfirmationTimeHeightAnchor`]s
     /// * `outpoints`: transactions associated with these outpoints (residing, spending) that we
     ///     want to include in the update
     ///
@@ -372,7 +372,7 @@
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         stop_gap: usize,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationTimeAnchor&gt;, BTreeMap&lt;K, u32&gt;), Error&gt;;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationTimeHeightAnchor&gt;, BTreeMap&lt;K, u32&gt;), Error&gt;;
 
     <span class="doccomment">/// Convenience method to call [`scan_txs_with_keychains`] without requiring a keychain.
     ///
@@ -384,7 +384,7 @@
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationTimeAnchor&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationTimeHeightAnchor&gt;, Error&gt; {
         <span class="self">self</span>.scan_txs_with_keychains(
             [(
                 (),
@@ -518,10 +518,10 @@
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         stop_gap: usize,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationTimeAnchor&gt;, BTreeMap&lt;K, u32&gt;), Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationTimeHeightAnchor&gt;, BTreeMap&lt;K, u32&gt;), Error&gt; {
         <span class="kw">type </span>TxsOfSpkIndex = (u32, Vec&lt;esplora_client::Tx&gt;);
         <span class="kw">let </span>parallel_requests = Ord::max(parallel_requests, <span class="number">1</span>);
-        <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::&lt;ConfirmationTimeAnchor&gt;::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::&lt;ConfirmationTimeHeightAnchor&gt;::default();
         <span class="kw">let </span><span class="kw-2">mut </span>last_active_indexes = BTreeMap::&lt;K, u32&gt;::new();
 
         <span class="kw">for </span>(keychain, spks) <span class="kw">in </span>keychain_spks {
