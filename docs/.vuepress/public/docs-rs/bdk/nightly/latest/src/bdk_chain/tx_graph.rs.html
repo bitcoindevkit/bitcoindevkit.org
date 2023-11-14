@@ -1477,6 +1477,13 @@
 <a href="#1477" id="1477">1477</a>
 <a href="#1478" id="1478">1478</a>
 <a href="#1479" id="1479">1479</a>
+<a href="#1480" id="1480">1480</a>
+<a href="#1481" id="1481">1481</a>
+<a href="#1482" id="1482">1482</a>
+<a href="#1483" id="1483">1483</a>
+<a href="#1484" id="1484">1484</a>
+<a href="#1485" id="1485">1485</a>
+<a href="#1486" id="1486">1486</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
 //! [`TxGraph`] is a monotone structure that inserts transactions and indexes the spends. The
@@ -2197,7 +2204,14 @@
         // might be in mempool, or it might have been dropped already.
         // Let&#39;s check conflicts to find out!
         </span><span class="kw">let </span>tx = <span class="kw">match </span>tx_node {
-            TxNodeInternal::Whole(tx) =&gt; tx,
+            TxNodeInternal::Whole(tx) =&gt; {
+                <span class="comment">// A coinbase tx that is not anchored in the best chain cannot be unconfirmed and
+                // should always be filtered out.
+                </span><span class="kw">if </span>tx.is_coin_base() {
+                    <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
+                }
+                tx
+            }
             TxNodeInternal::Partial(<span class="kw">_</span>) =&gt; {
                 <span class="comment">// Partial transactions (outputs only) cannot have conflicts.
                 </span><span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
