@@ -1484,6 +1484,27 @@
 <a href="#1484" id="1484">1484</a>
 <a href="#1485" id="1485">1485</a>
 <a href="#1486" id="1486">1486</a>
+<a href="#1487" id="1487">1487</a>
+<a href="#1488" id="1488">1488</a>
+<a href="#1489" id="1489">1489</a>
+<a href="#1490" id="1490">1490</a>
+<a href="#1491" id="1491">1491</a>
+<a href="#1492" id="1492">1492</a>
+<a href="#1493" id="1493">1493</a>
+<a href="#1494" id="1494">1494</a>
+<a href="#1495" id="1495">1495</a>
+<a href="#1496" id="1496">1496</a>
+<a href="#1497" id="1497">1497</a>
+<a href="#1498" id="1498">1498</a>
+<a href="#1499" id="1499">1499</a>
+<a href="#1500" id="1500">1500</a>
+<a href="#1501" id="1501">1501</a>
+<a href="#1502" id="1502">1502</a>
+<a href="#1503" id="1503">1503</a>
+<a href="#1504" id="1504">1504</a>
+<a href="#1505" id="1505">1505</a>
+<a href="#1506" id="1506">1506</a>
+<a href="#1507" id="1507">1507</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
 //! [`TxGraph`] is a monotone structure that inserts transactions and indexes the spends. The
@@ -1543,6 +1564,7 @@
 <span class="kw">use </span>alloc::collections::vec_deque::VecDeque;
 <span class="kw">use </span>alloc::vec::Vec;
 <span class="kw">use </span>bitcoin::{OutPoint, Script, Transaction, TxOut, Txid};
+<span class="kw">use </span>core::fmt::{<span class="self">self</span>, Formatter};
 <span class="kw">use </span>core::{
     convert::Infallible,
     ops::{Deref, RangeInclusive},
@@ -1630,6 +1652,26 @@
     <span class="doccomment">/// When the transaction is invalid according to the graph it has a negative fee
     </span>NegativeFee(i64),
 }
+
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>CalculateFeeError {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">match </span><span class="self">self </span>{
+            CalculateFeeError::MissingTxOut(outpoints) =&gt; <span class="macro">write!</span>(
+                f,
+                <span class="string">&quot;missing `TxOut` for one or more of the inputs of the tx: {:?}&quot;</span>,
+                outpoints
+            ),
+            CalculateFeeError::NegativeFee(fee) =&gt; <span class="macro">write!</span>(
+                f,
+                <span class="string">&quot;transaction is invalid according to the graph and has negative fee: {}&quot;</span>,
+                fee
+            ),
+        }
+    }
+}
+
+<span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+</span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>CalculateFeeError {}
 
 <span class="kw">impl</span>&lt;A&gt; TxGraph&lt;A&gt; {
     <span class="doccomment">/// Iterate over all tx outputs known by [`TxGraph`].

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["BuildFeeBumpError","Error returned from `Wallet::build_fee_bump`"],["CreateTxError","Error returned from `TxBuilder::finish`"],["MiniscriptPsbtError","Errors returned by miniscript when updating inconsistent PSBTs"]]};
