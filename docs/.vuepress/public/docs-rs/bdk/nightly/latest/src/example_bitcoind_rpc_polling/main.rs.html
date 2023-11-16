@@ -378,14 +378,6 @@
 <a href="#378" id="378">378</a>
 <a href="#379" id="379">379</a>
 <a href="#380" id="380">380</a>
-<a href="#381" id="381">381</a>
-<a href="#382" id="382">382</a>
-<a href="#383" id="383">383</a>
-<a href="#384" id="384">384</a>
-<a href="#385" id="385">385</a>
-<a href="#386" id="386">386</a>
-<a href="#387" id="387">387</a>
-<a href="#388" id="388">388</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     path::PathBuf,
     sync::{
@@ -519,7 +511,7 @@
         start.elapsed().as_secs_f32()
     );
 
-    <span class="kw">let </span>chain = Mutex::new(LocalChain::from_changeset(init_changeset.<span class="number">0</span>));
+    <span class="kw">let </span>chain = Mutex::new(LocalChain::from_changeset(init_changeset.<span class="number">0</span>)<span class="question-mark">?</span>);
     <span class="macro">println!</span>(
         <span class="string">&quot;[{:&gt;10}s] loaded local chain from changeset&quot;</span>,
         start.elapsed().as_secs_f32()
@@ -558,10 +550,7 @@
 
             <span class="kw">let </span>chain_tip = chain.lock().unwrap().tip();
             <span class="kw">let </span>rpc_client = rpc_args.new_client()<span class="question-mark">?</span>;
-            <span class="kw">let </span><span class="kw-2">mut </span>emitter = <span class="kw">match </span>chain_tip {
-                <span class="prelude-val">Some</span>(cp) =&gt; Emitter::from_checkpoint(<span class="kw-2">&amp;</span>rpc_client, cp),
-                <span class="prelude-val">None </span>=&gt; Emitter::from_height(<span class="kw-2">&amp;</span>rpc_client, fallback_height),
-            };
+            <span class="kw">let </span><span class="kw-2">mut </span>emitter = Emitter::new(<span class="kw-2">&amp;</span>rpc_client, chain_tip, fallback_height);
 
             <span class="kw">let </span><span class="kw-2">mut </span>last_db_commit = Instant::now();
             <span class="kw">let </span><span class="kw-2">mut </span>last_print = Instant::now();
@@ -593,23 +582,22 @@
                 <span class="comment">// print synced-to height and current balance in intervals
                 </span><span class="kw">if </span>last_print.elapsed() &gt;= STDOUT_PRINT_DELAY {
                     last_print = Instant::now();
-                    <span class="kw">if let </span><span class="prelude-val">Some</span>(synced_to) = chain.tip() {
-                        <span class="kw">let </span>balance = {
-                            graph.graph().balance(
-                                <span class="kw-2">&amp;*</span>chain,
-                                synced_to.block_id(),
-                                graph.index.outpoints().iter().cloned(),
-                                |(k, <span class="kw">_</span>), <span class="kw">_</span>| k == <span class="kw-2">&amp;</span>Keychain::Internal,
-                            )
-                        };
-                        <span class="macro">println!</span>(
-                            <span class="string">&quot;[{:&gt;10}s] synced to {} @ {} | total: {} sats&quot;</span>,
-                            start.elapsed().as_secs_f32(),
-                            synced_to.hash(),
-                            synced_to.height(),
-                            balance.total()
-                        );
-                    }
+                    <span class="kw">let </span>synced_to = chain.tip();
+                    <span class="kw">let </span>balance = {
+                        graph.graph().balance(
+                            <span class="kw-2">&amp;*</span>chain,
+                            synced_to.block_id(),
+                            graph.index.outpoints().iter().cloned(),
+                            |(k, <span class="kw">_</span>), <span class="kw">_</span>| k == <span class="kw-2">&amp;</span>Keychain::Internal,
+                        )
+                    };
+                    <span class="macro">println!</span>(
+                        <span class="string">&quot;[{:&gt;10}s] synced to {} @ {} | total: {} sats&quot;</span>,
+                        start.elapsed().as_secs_f32(),
+                        synced_to.hash(),
+                        synced_to.height(),
+                        balance.total()
+                    );
                 }
             }
 
@@ -641,10 +629,7 @@
             <span class="kw">let </span>(tx, rx) = std::sync::mpsc::sync_channel::&lt;Emission&gt;(CHANNEL_BOUND);
             <span class="kw">let </span>emission_jh = std::thread::spawn(<span class="kw">move </span>|| -&gt; anyhow::Result&lt;()&gt; {
                 <span class="kw">let </span>rpc_client = rpc_args.new_client()<span class="question-mark">?</span>;
-                <span class="kw">let </span><span class="kw-2">mut </span>emitter = <span class="kw">match </span>last_cp {
-                    <span class="prelude-val">Some</span>(cp) =&gt; Emitter::from_checkpoint(<span class="kw-2">&amp;</span>rpc_client, cp),
-                    <span class="prelude-val">None </span>=&gt; Emitter::from_height(<span class="kw-2">&amp;</span>rpc_client, fallback_height),
-                };
+                <span class="kw">let </span><span class="kw-2">mut </span>emitter = Emitter::new(<span class="kw-2">&amp;</span>rpc_client, last_cp, fallback_height);
 
                 <span class="kw">let </span><span class="kw-2">mut </span>block_count = rpc_client.get_block_count()<span class="question-mark">? </span><span class="kw">as </span>u32;
                 tx.send(Emission::Tip(block_count))<span class="question-mark">?</span>;
@@ -723,24 +708,23 @@
 
                 <span class="kw">if </span>last_print.map_or(Duration::MAX, |i| i.elapsed()) &gt;= STDOUT_PRINT_DELAY {
                     last_print = <span class="prelude-val">Some</span>(Instant::now());
-                    <span class="kw">if let </span><span class="prelude-val">Some</span>(synced_to) = chain.tip() {
-                        <span class="kw">let </span>balance = {
-                            graph.graph().balance(
-                                <span class="kw-2">&amp;*</span>chain,
-                                synced_to.block_id(),
-                                graph.index.outpoints().iter().cloned(),
-                                |(k, <span class="kw">_</span>), <span class="kw">_</span>| k == <span class="kw-2">&amp;</span>Keychain::Internal,
-                            )
-                        };
-                        <span class="macro">println!</span>(
-                            <span class="string">&quot;[{:&gt;10}s] synced to {} @ {} / {} | total: {} sats&quot;</span>,
-                            start.elapsed().as_secs_f32(),
-                            synced_to.hash(),
-                            synced_to.height(),
-                            tip_height,
-                            balance.total()
-                        );
-                    }
+                    <span class="kw">let </span>synced_to = chain.tip();
+                    <span class="kw">let </span>balance = {
+                        graph.graph().balance(
+                            <span class="kw-2">&amp;*</span>chain,
+                            synced_to.block_id(),
+                            graph.index.outpoints().iter().cloned(),
+                            |(k, <span class="kw">_</span>), <span class="kw">_</span>| k == <span class="kw-2">&amp;</span>Keychain::Internal,
+                        )
+                    };
+                    <span class="macro">println!</span>(
+                        <span class="string">&quot;[{:&gt;10}s] synced to {} @ {} / {} | total: {} sats&quot;</span>,
+                        start.elapsed().as_secs_f32(),
+                        synced_to.hash(),
+                        synced_to.height(),
+                        tip_height,
+                        balance.total()
+                    );
                 }
             }
 

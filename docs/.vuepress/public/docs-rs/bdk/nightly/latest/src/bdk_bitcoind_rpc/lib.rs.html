@@ -278,27 +278,6 @@
 <a href="#278" id="278">278</a>
 <a href="#279" id="279">279</a>
 <a href="#280" id="280">280</a>
-<a href="#281" id="281">281</a>
-<a href="#282" id="282">282</a>
-<a href="#283" id="283">283</a>
-<a href="#284" id="284">284</a>
-<a href="#285" id="285">285</a>
-<a href="#286" id="286">286</a>
-<a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
 </pre><pre class="rust"><code><span class="doccomment">//! This crate is used for emitting blockchain data from the `bitcoind` RPC interface. It does not
 //! use the wallet RPC API, so this crate can be used with wallet-disabled Bitcoin Core nodes.
 //!
@@ -326,7 +305,7 @@
 
     <span class="doccomment">/// The checkpoint of the last-emitted block that is in the best chain. If it is later found
     /// that the block is no longer in the best chain, it will be popped off from here.
-    </span>last_cp: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
+    </span>last_cp: CheckPoint,
 
     <span class="doccomment">/// The block result returned from rpc of the last-emitted block. As this result contains the
     /// next block&#39;s block hash (which we use to fetch the next block), we set this to `None`
@@ -344,29 +323,16 @@
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;c</span>, C: bitcoincore_rpc::RpcApi&gt; Emitter&lt;<span class="lifetime">&#39;c</span>, C&gt; {
-    <span class="doccomment">/// Construct a new [`Emitter`] with the given RPC `client` and `start_height`.
+    <span class="doccomment">/// Construct a new [`Emitter`] with the given RPC `client`, `last_cp` and `start_height`.
     ///
-    /// `start_height` is the block height to start emitting blocks from.
-    </span><span class="kw">pub fn </span>from_height(client: <span class="kw-2">&amp;</span><span class="lifetime">&#39;c </span>C, start_height: u32) -&gt; <span class="self">Self </span>{
+    /// * `last_cp` is the check point used to find the latest block which is still part of the best
+    ///   chain.
+    /// * `start_height` is the block height to start emitting blocks from.
+    </span><span class="kw">pub fn </span>new(client: <span class="kw-2">&amp;</span><span class="lifetime">&#39;c </span>C, last_cp: CheckPoint, start_height: u32) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             client,
             start_height,
-            last_cp: <span class="prelude-val">None</span>,
-            last_block: <span class="prelude-val">None</span>,
-            last_mempool_time: <span class="number">0</span>,
-            last_mempool_tip: <span class="prelude-val">None</span>,
-        }
-    }
-
-    <span class="doccomment">/// Construct a new [`Emitter`] with the given RPC `client` and `checkpoint`.
-    ///
-    /// `checkpoint` is used to find the latest block which is still part of the best chain. The
-    /// [`Emitter`] will emit blocks starting right above this block.
-    </span><span class="kw">pub fn </span>from_checkpoint(client: <span class="kw-2">&amp;</span><span class="lifetime">&#39;c </span>C, checkpoint: CheckPoint) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            client,
-            start_height: <span class="number">0</span>,
-            last_cp: <span class="prelude-val">Some</span>(checkpoint),
+            last_cp,
             last_block: <span class="prelude-val">None</span>,
             last_mempool_time: <span class="number">0</span>,
             last_mempool_tip: <span class="prelude-val">None</span>,
@@ -435,7 +401,7 @@
             .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;, <span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
 
         <span class="self">self</span>.last_mempool_time = latest_time;
-        <span class="self">self</span>.last_mempool_tip = <span class="self">self</span>.last_cp.as_ref().map(|cp| cp.height());
+        <span class="self">self</span>.last_mempool_tip = <span class="prelude-val">Some</span>(<span class="self">self</span>.last_cp.height());
 
         <span class="prelude-val">Ok</span>(txs_to_emit)
     }
@@ -457,7 +423,8 @@
     <span class="doccomment">/// Fetched block is not in the best chain.
     </span>BlockNotInBestChain,
     AgreementFound(bitcoincore_rpc_json::GetBlockResult, CheckPoint),
-    AgreementPointNotFound,
+    <span class="doccomment">/// Force the genesis checkpoint down the receiver&#39;s throat.
+    </span>AgreementPointNotFound(BlockHash),
 }
 
 <span class="kw">fn </span>poll_once&lt;C&gt;(emitter: <span class="kw-2">&amp;</span>Emitter&lt;C&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;PollResponse, bitcoincore_rpc::Error&gt;
@@ -467,45 +434,50 @@
     <span class="kw">let </span>client = emitter.client;
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(last_res) = <span class="kw-2">&amp;</span>emitter.last_block {
-        <span class="macro">assert!</span>(
-            emitter.last_cp.is_some(),
-            <span class="string">&quot;must not have block result without last cp&quot;
-        </span>);
-
-        <span class="kw">let </span>next_hash = <span class="kw">match </span>last_res.nextblockhash {
-            <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(PollResponse::NoMoreBlocks),
-            <span class="prelude-val">Some</span>(next_hash) =&gt; next_hash,
+        <span class="kw">let </span>next_hash = <span class="kw">if </span>last_res.height &lt; emitter.start_height <span class="kw">as _ </span>{
+            <span class="comment">// enforce start height
+            </span><span class="kw">let </span>next_hash = client.get_block_hash(emitter.start_height <span class="kw">as _</span>)<span class="question-mark">?</span>;
+            <span class="comment">// make sure last emission is still in best chain
+            </span><span class="kw">if </span>client.get_block_hash(last_res.height <span class="kw">as _</span>)<span class="question-mark">? </span>!= last_res.hash {
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(PollResponse::BlockNotInBestChain);
+            }
+            next_hash
+        } <span class="kw">else </span>{
+            <span class="kw">match </span>last_res.nextblockhash {
+                <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(PollResponse::NoMoreBlocks),
+                <span class="prelude-val">Some</span>(next_hash) =&gt; next_hash,
+            }
         };
 
         <span class="kw">let </span>res = client.get_block_info(<span class="kw-2">&amp;</span>next_hash)<span class="question-mark">?</span>;
         <span class="kw">if </span>res.confirmations &lt; <span class="number">0 </span>{
             <span class="kw">return </span><span class="prelude-val">Ok</span>(PollResponse::BlockNotInBestChain);
         }
+
         <span class="kw">return </span><span class="prelude-val">Ok</span>(PollResponse::Block(res));
     }
 
-    <span class="kw">if </span>emitter.last_cp.is_none() {
-        <span class="kw">let </span>hash = client.get_block_hash(emitter.start_height <span class="kw">as _</span>)<span class="question-mark">?</span>;
-
-        <span class="kw">let </span>res = client.get_block_info(<span class="kw-2">&amp;</span>hash)<span class="question-mark">?</span>;
-        <span class="kw">if </span>res.confirmations &lt; <span class="number">0 </span>{
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(PollResponse::BlockNotInBestChain);
-        }
-        <span class="kw">return </span><span class="prelude-val">Ok</span>(PollResponse::Block(res));
-    }
-
-    <span class="kw">for </span>cp <span class="kw">in </span>emitter.last_cp.iter().flat_map(CheckPoint::iter) {
-        <span class="kw">let </span>res = client.get_block_info(<span class="kw-2">&amp;</span>cp.hash())<span class="question-mark">?</span>;
-        <span class="kw">if </span>res.confirmations &lt; <span class="number">0 </span>{
-            <span class="comment">// block is not in best chain
-            </span><span class="kw">continue</span>;
-        }
+    <span class="kw">for </span>cp <span class="kw">in </span>emitter.last_cp.iter() {
+        <span class="kw">let </span>res = <span class="kw">match </span>client.get_block_info(<span class="kw-2">&amp;</span>cp.hash()) {
+            <span class="comment">// block not in best chain
+            </span><span class="prelude-val">Ok</span>(res) <span class="kw">if </span>res.confirmations &lt; <span class="number">0 </span>=&gt; <span class="kw">continue</span>,
+            <span class="prelude-val">Ok</span>(res) =&gt; res,
+            <span class="prelude-val">Err</span>(e) <span class="kw">if </span>e.is_not_found_error() =&gt; {
+                <span class="kw">if </span>cp.height() &gt; <span class="number">0 </span>{
+                    <span class="kw">continue</span>;
+                }
+                <span class="comment">// if we can&#39;t find genesis block, we can&#39;t create an update that connects
+                </span><span class="kw">break</span>;
+            }
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(e),
+        };
 
         <span class="comment">// agreement point found
         </span><span class="kw">return </span><span class="prelude-val">Ok</span>(PollResponse::AgreementFound(res, cp));
     }
 
-    <span class="prelude-val">Ok</span>(PollResponse::AgreementPointNotFound)
+    <span class="kw">let </span>genesis_hash = client.get_block_hash(<span class="number">0</span>)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(PollResponse::AgreementPointNotFound(genesis_hash))
 }
 
 <span class="kw">fn </span>poll&lt;C, V, F&gt;(
@@ -523,25 +495,12 @@
                 <span class="kw">let </span>hash = res.hash;
                 <span class="kw">let </span>item = get_item(<span class="kw-2">&amp;</span>hash)<span class="question-mark">?</span>;
 
-                <span class="kw">let </span>this_id = BlockId { height, hash };
-                <span class="kw">let </span>prev_id = res.previousblockhash.map(|prev_hash| BlockId {
-                    height: height - <span class="number">1</span>,
-                    hash: prev_hash,
-                });
-
-                <span class="kw">match </span>(<span class="kw-2">&amp;mut </span>emitter.last_cp, prev_id) {
-                    (<span class="prelude-val">Some</span>(cp), <span class="kw">_</span>) =&gt; <span class="kw-2">*</span>cp = cp.clone().push(this_id).expect(<span class="string">&quot;must push&quot;</span>),
-                    (last_cp, <span class="prelude-val">None</span>) =&gt; <span class="kw-2">*</span>last_cp = <span class="prelude-val">Some</span>(CheckPoint::new(this_id)),
-                    <span class="comment">// When the receiver constructs a local_chain update from a block, the previous
-                    // checkpoint is also included in the update. We need to reflect this state in
-                    // `Emitter::last_cp` as well.
-                    </span>(last_cp, <span class="prelude-val">Some</span>(prev_id)) =&gt; {
-                        <span class="kw-2">*</span>last_cp = <span class="prelude-val">Some</span>(CheckPoint::new(prev_id).push(this_id).expect(<span class="string">&quot;must push&quot;</span>))
-                    }
-                }
-
+                emitter.last_cp = emitter
+                    .last_cp
+                    .clone()
+                    .push(BlockId { height, hash })
+                    .expect(<span class="string">&quot;must push&quot;</span>);
                 emitter.last_block = <span class="prelude-val">Some</span>(res);
-
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((height, item)));
             }
             PollResponse::NoMoreBlocks =&gt; {
@@ -555,9 +514,6 @@
             PollResponse::AgreementFound(res, cp) =&gt; {
                 <span class="kw">let </span>agreement_h = res.height <span class="kw">as </span>u32;
 
-                <span class="comment">// get rid of evicted blocks
-                </span>emitter.last_cp = <span class="prelude-val">Some</span>(cp);
-
                 <span class="comment">// The tip during the last mempool emission needs to in the best chain, we reduce
                 // it if it is not.
                 </span><span class="kw">if let </span><span class="prelude-val">Some</span>(h) = emitter.last_mempool_tip.as_mut() {
@@ -565,15 +521,17 @@
                         <span class="kw-2">*</span>h = agreement_h;
                     }
                 }
+
+                <span class="comment">// get rid of evicted blocks
+                </span>emitter.last_cp = cp;
                 emitter.last_block = <span class="prelude-val">Some</span>(res);
                 <span class="kw">continue</span>;
             }
-            PollResponse::AgreementPointNotFound =&gt; {
-                <span class="comment">// We want to clear `last_cp` and set `start_height` to the first checkpoint&#39;s
-                // height. This way, the first checkpoint in `LocalChain` can be replaced.
-                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(last_cp) = emitter.last_cp.take() {
-                    emitter.start_height = last_cp.height();
-                }
+            PollResponse::AgreementPointNotFound(genesis_hash) =&gt; {
+                emitter.last_cp = CheckPoint::new(BlockId {
+                    height: <span class="number">0</span>,
+                    hash: genesis_hash,
+                });
                 emitter.last_block = <span class="prelude-val">None</span>;
                 <span class="kw">continue</span>;
             }
