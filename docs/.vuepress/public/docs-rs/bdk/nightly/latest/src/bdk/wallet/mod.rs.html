@@ -2370,6 +2370,60 @@
 <a href="#2369" id="2369">2369</a>
 <a href="#2370" id="2370">2370</a>
 <a href="#2371" id="2371">2371</a>
+<a href="#2372" id="2372">2372</a>
+<a href="#2373" id="2373">2373</a>
+<a href="#2374" id="2374">2374</a>
+<a href="#2375" id="2375">2375</a>
+<a href="#2376" id="2376">2376</a>
+<a href="#2377" id="2377">2377</a>
+<a href="#2378" id="2378">2378</a>
+<a href="#2379" id="2379">2379</a>
+<a href="#2380" id="2380">2380</a>
+<a href="#2381" id="2381">2381</a>
+<a href="#2382" id="2382">2382</a>
+<a href="#2383" id="2383">2383</a>
+<a href="#2384" id="2384">2384</a>
+<a href="#2385" id="2385">2385</a>
+<a href="#2386" id="2386">2386</a>
+<a href="#2387" id="2387">2387</a>
+<a href="#2388" id="2388">2388</a>
+<a href="#2389" id="2389">2389</a>
+<a href="#2390" id="2390">2390</a>
+<a href="#2391" id="2391">2391</a>
+<a href="#2392" id="2392">2392</a>
+<a href="#2393" id="2393">2393</a>
+<a href="#2394" id="2394">2394</a>
+<a href="#2395" id="2395">2395</a>
+<a href="#2396" id="2396">2396</a>
+<a href="#2397" id="2397">2397</a>
+<a href="#2398" id="2398">2398</a>
+<a href="#2399" id="2399">2399</a>
+<a href="#2400" id="2400">2400</a>
+<a href="#2401" id="2401">2401</a>
+<a href="#2402" id="2402">2402</a>
+<a href="#2403" id="2403">2403</a>
+<a href="#2404" id="2404">2404</a>
+<a href="#2405" id="2405">2405</a>
+<a href="#2406" id="2406">2406</a>
+<a href="#2407" id="2407">2407</a>
+<a href="#2408" id="2408">2408</a>
+<a href="#2409" id="2409">2409</a>
+<a href="#2410" id="2410">2410</a>
+<a href="#2411" id="2411">2411</a>
+<a href="#2412" id="2412">2412</a>
+<a href="#2413" id="2413">2413</a>
+<a href="#2414" id="2414">2414</a>
+<a href="#2415" id="2415">2415</a>
+<a href="#2416" id="2416">2416</a>
+<a href="#2417" id="2417">2417</a>
+<a href="#2418" id="2418">2418</a>
+<a href="#2419" id="2419">2419</a>
+<a href="#2420" id="2420">2420</a>
+<a href="#2421" id="2421">2421</a>
+<a href="#2422" id="2422">2422</a>
+<a href="#2423" id="2423">2423</a>
+<a href="#2424" id="2424">2424</a>
+<a href="#2425" id="2425">2425</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2410,6 +2464,7 @@
 <span class="kw">use </span>bitcoin::{constants::genesis_block, psbt};
 <span class="kw">use </span>core::fmt;
 <span class="kw">use </span>core::ops::Deref;
+<span class="kw">use </span>descriptor::error::Error <span class="kw">as </span>DescriptorError;
 <span class="kw">use </span>miniscript::psbt::{PsbtExt, PsbtInputExt, PsbtInputSatisfier};
 
 <span class="kw">use </span>bdk_chain::tx_graph::CalculateFeeError;
@@ -2422,6 +2477,7 @@
 <span class="kw">pub mod </span>tx_builder;
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>utils;
 
+<span class="kw">pub mod </span>error;
 <span class="attr">#[cfg(feature = <span class="string">&quot;hardware-signer&quot;</span>)]
 #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;hardware-signer&quot;</span>)))]
 </span><span class="kw">pub mod </span>hardwaresigner;
@@ -2436,14 +2492,14 @@
 
 <span class="kw">use </span><span class="kw">crate</span>::descriptor::policy::BuildSatisfaction;
 <span class="kw">use </span><span class="kw">crate</span>::descriptor::{
-    calc_checksum, into_wallet_descriptor_checked, DerivedDescriptor, DescriptorMeta,
+    <span class="self">self</span>, calc_checksum, into_wallet_descriptor_checked, DerivedDescriptor, DescriptorMeta,
     ExtendedDescriptor, ExtractPolicy, IntoWalletDescriptor, Policy, XKeyUtils,
 };
-<span class="kw">use </span><span class="kw">crate</span>::error::{Error, MiniscriptPsbtError};
 <span class="kw">use </span><span class="kw">crate</span>::psbt::PsbtUtils;
 <span class="kw">use </span><span class="kw">crate</span>::signer::SignerError;
 <span class="kw">use </span><span class="kw">crate</span>::types::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">crate</span>::wallet::coin_selection::Excess::{Change, NoChange};
+<span class="kw">use </span><span class="kw">crate</span>::wallet::error::{BuildFeeBumpError, CreateTxError, MiniscriptPsbtError};
 
 <span class="kw">const </span>COINBASE_MATURITY: u32 = <span class="number">100</span>;
 
@@ -2607,7 +2663,7 @@
         descriptor: E,
         change_descriptor: <span class="prelude-ty">Option</span>&lt;E&gt;,
         network: Network,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="kw">crate</span>::descriptor::DescriptorError&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, DescriptorError&gt; {
         <span class="self">Self</span>::new(descriptor, change_descriptor, (), network).map_err(|e| <span class="kw">match </span>e {
             NewError::Descriptor(e) =&gt; e,
             NewError::Write(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;mock-write must always succeed&quot;</span>),
@@ -2626,6 +2682,29 @@
                 NewError::Descriptor(e) =&gt; e,
                 NewError::Write(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;mock-write must always succeed&quot;</span>),
             })
+    }
+}
+
+<span class="kw">impl</span>&lt;D&gt; Wallet&lt;D&gt;
+<span class="kw">where
+    </span>D: PersistBackend&lt;ChangeSet, WriteError = core::convert::Infallible&gt;,
+{
+    <span class="doccomment">/// Infallibly return a derived address using the external descriptor, see [`AddressIndex`] for
+    /// available address index selection strategies. If none of the keys in the descriptor are derivable
+    /// (i.e. does not end with /*) then the same address will always be returned for any [`AddressIndex`].
+    </span><span class="kw">pub fn </span>get_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, address_index: AddressIndex) -&gt; AddressInfo {
+        <span class="self">self</span>.try_get_address(address_index).unwrap()
+    }
+
+    <span class="doccomment">/// Infallibly return a derived address using the internal (change) descriptor.
+    ///
+    /// If the wallet doesn&#39;t have an internal descriptor it will use the external descriptor.
+    ///
+    /// see [`AddressIndex`] for available address index selection strategies. If none of the keys
+    /// in the descriptor are derivable (i.e. does not end with /*) then the same address will always
+    /// be returned for any [`AddressIndex`].
+    </span><span class="kw">pub fn </span>get_internal_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, address_index: AddressIndex) -&gt; AddressInfo {
+        <span class="self">self</span>.try_get_internal_address(address_index).unwrap()
     }
 }
 
@@ -2981,27 +3060,37 @@
     <span class="doccomment">/// Return a derived address using the external descriptor, see [`AddressIndex`] for
     /// available address index selection strategies. If none of the keys in the descriptor are derivable
     /// (i.e. does not end with /*) then the same address will always be returned for any [`AddressIndex`].
-    </span><span class="kw">pub fn </span>get_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, address_index: AddressIndex) -&gt; AddressInfo
+    ///
+    /// A `PersistBackend&lt;ChangeSet&gt;::WriteError` will result if unable to persist the new address
+    /// to the `PersistBackend`.
+    </span><span class="kw">pub fn </span>try_get_address(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        address_index: AddressIndex,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;AddressInfo, D::WriteError&gt;
     <span class="kw">where
         </span>D: PersistBackend&lt;ChangeSet&gt;,
     {
         <span class="self">self</span>._get_address(KeychainKind::External, address_index)
-            .expect(<span class="string">&quot;persistence backend must not fail&quot;</span>)
     }
 
     <span class="doccomment">/// Return a derived address using the internal (change) descriptor.
     ///
     /// If the wallet doesn&#39;t have an internal descriptor it will use the external descriptor.
     ///
+    /// A `PersistBackend&lt;ChangeSet&gt;::WriteError` will result if unable to persist the new address
+    /// to the `PersistBackend`.
+    ///
     /// see [`AddressIndex`] for available address index selection strategies. If none of the keys
     /// in the descriptor are derivable (i.e. does not end with /*) then the same address will always
     /// be returned for any [`AddressIndex`].
-    </span><span class="kw">pub fn </span>get_internal_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, address_index: AddressIndex) -&gt; AddressInfo
+    </span><span class="kw">pub fn </span>try_get_internal_address(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        address_index: AddressIndex,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;AddressInfo, D::WriteError&gt;
     <span class="kw">where
         </span>D: PersistBackend&lt;ChangeSet&gt;,
     {
         <span class="self">self</span>._get_address(KeychainKind::Internal, address_index)
-            .expect(<span class="string">&quot;persistence backend must not fail&quot;</span>)
     }
 
     <span class="doccomment">/// Return a derived address using the specified `keychain` (external/internal).
@@ -3464,6 +3553,10 @@
     /// # use std::str::FromStr;
     /// # use bitcoin::*;
     /// # use bdk::*;
+    /// # use bdk::wallet::ChangeSet;
+    /// # use bdk::wallet::error::CreateTxError;
+    /// # use bdk_chain::PersistBackend;
+    /// # use anyhow::Error;
     /// # let descriptor = &quot;wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)&quot;;
     /// # let mut wallet = doctest_wallet!();
     /// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap().assume_checked();
@@ -3475,7 +3568,7 @@
     /// };
     ///
     /// // sign and broadcast ...
-    /// # Ok::&lt;(), bdk::Error&gt;(())
+    /// # Ok::&lt;(), anyhow::Error&gt;(())
     /// ```
     ///
     /// [`TxBuilder`]: crate::TxBuilder
@@ -3492,7 +3585,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         coin_selection: Cs,
         params: TxParams,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;psbt::PartiallySignedTransaction, Error&gt;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;psbt::PartiallySignedTransaction, CreateTxError&lt;D::WriteError&gt;&gt;
     <span class="kw">where
         </span>D: PersistBackend&lt;ChangeSet&gt;,
     {
@@ -3514,7 +3607,7 @@
         <span class="kw">let </span>internal_policy = internal_descriptor
             .as_ref()
             .map(|desc| {
-                <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, Error&gt;(
+                <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, CreateTxError&lt;D::WriteError&gt;&gt;(
                     desc.extract_policy(<span class="kw-2">&amp;</span><span class="self">self</span>.change_signers, BuildSatisfaction::None, <span class="kw-2">&amp;</span><span class="self">self</span>.secp)<span class="question-mark">?
                         </span>.unwrap(),
                 )
@@ -3527,7 +3620,9 @@
             &amp;&amp; external_policy.requires_path()
             &amp;&amp; params.external_policy_path.is_none()
         {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::SpendingPolicyRequired(KeychainKind::External));
+            <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::SpendingPolicyRequired(
+                KeychainKind::External,
+            ));
         };
         <span class="comment">// Same for the internal_policy path, if present
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(internal_policy) = <span class="kw-2">&amp;</span>internal_policy {
@@ -3535,7 +3630,9 @@
                 &amp;&amp; internal_policy.requires_path()
                 &amp;&amp; params.internal_policy_path.is_none()
             {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Error::SpendingPolicyRequired(KeychainKind::Internal));
+                <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::SpendingPolicyRequired(
+                    KeychainKind::Internal,
+                ));
             };
         }
 
@@ -3547,7 +3644,7 @@
         )<span class="question-mark">?</span>;
         <span class="kw">let </span>internal_requirements = internal_policy
             .map(|policy| {
-                <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, Error&gt;(
+                <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, CreateTxError&lt;D::WriteError&gt;&gt;(
                     policy.get_condition(
                         params
                             .internal_policy_path
@@ -3563,14 +3660,9 @@
         <span class="macro">debug!</span>(<span class="string">&quot;Policy requirements: {:?}&quot;</span>, requirements);
 
         <span class="kw">let </span>version = <span class="kw">match </span>params.version {
-            <span class="prelude-val">Some</span>(tx_builder::Version(<span class="number">0</span>)) =&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Generic(<span class="string">&quot;Invalid version `0`&quot;</span>.into()))
-            }
+            <span class="prelude-val">Some</span>(tx_builder::Version(<span class="number">0</span>)) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::Version0),
             <span class="prelude-val">Some</span>(tx_builder::Version(<span class="number">1</span>)) <span class="kw">if </span>requirements.csv.is_some() =&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Generic(
-                    <span class="string">&quot;TxBuilder requested version `1`, but at least `2` is needed to use OP_CSV&quot;
-                        </span>.into(),
-                ))
+                <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::Version1Csv)
             }
             <span class="prelude-val">Some</span>(tx_builder::Version(x)) =&gt; x,
             <span class="prelude-val">None </span><span class="kw">if </span>requirements.csv.is_some() =&gt; <span class="number">2</span>,
@@ -3601,7 +3693,9 @@
                     <span class="comment">// No requirement, just use the fee_sniping_height
                     </span><span class="prelude-val">None </span>=&gt; fee_sniping_height,
                     <span class="comment">// There&#39;s a block-based requirement, but the value is lower than the fee_sniping_height
-                    </span><span class="prelude-val">Some</span>(value @ absolute::LockTime::Blocks(<span class="kw">_</span>)) <span class="kw">if </span>value &lt; fee_sniping_height =&gt; fee_sniping_height,
+                    </span><span class="prelude-val">Some</span>(value @ absolute::LockTime::Blocks(<span class="kw">_</span>)) <span class="kw">if </span>value &lt; fee_sniping_height =&gt; {
+                        fee_sniping_height
+                    }
                     <span class="comment">// There&#39;s a time-based requirement or a block-based requirement greater
                     // than the fee_sniping_height use that value
                     </span><span class="prelude-val">Some</span>(value) =&gt; value,
@@ -3610,9 +3704,19 @@
             <span class="comment">// Specific nLockTime required and we have no constraints, so just set to that value
             </span><span class="prelude-val">Some</span>(x) <span class="kw">if </span>requirements.timelock.is_none() =&gt; x,
             <span class="comment">// Specific nLockTime required and it&#39;s compatible with the constraints
-            </span><span class="prelude-val">Some</span>(x) <span class="kw">if </span>requirements.timelock.unwrap().is_same_unit(x) &amp;&amp; x &gt;= requirements.timelock.unwrap() =&gt; x,
+            </span><span class="prelude-val">Some</span>(x)
+                <span class="kw">if </span>requirements.timelock.unwrap().is_same_unit(x)
+                    &amp;&amp; x &gt;= requirements.timelock.unwrap() =&gt;
+            {
+                x
+            }
             <span class="comment">// Invalid nLockTime required
-            </span><span class="prelude-val">Some</span>(x) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Generic(<span class="macro">format!</span>(<span class="string">&quot;TxBuilder requested timelock of `{:?}`, but at least `{:?}` is required to spend from this script&quot;</span>, x, requirements.timelock.unwrap())))
+            </span><span class="prelude-val">Some</span>(x) =&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::LockTime {
+                    requested: x,
+                    required: requirements.timelock.unwrap(),
+                })
+            }
         };
 
         <span class="kw">let </span>n_sequence = <span class="kw">match </span>(params.rbf, requirements.csv) {
@@ -3630,18 +3734,13 @@
 
             <span class="comment">// RBF with a specific value but that value is too high
             </span>(<span class="prelude-val">Some</span>(tx_builder::RbfValue::Value(rbf)), <span class="kw">_</span>) <span class="kw">if </span>!rbf.is_rbf() =&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Generic(
-                    <span class="string">&quot;Cannot enable RBF with a nSequence &gt;= 0xFFFFFFFE&quot;</span>.into(),
-                ))
+                <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::RbfSequence)
             }
             <span class="comment">// RBF with a specific value requested, but the value is incompatible with CSV
             </span>(<span class="prelude-val">Some</span>(tx_builder::RbfValue::Value(rbf)), <span class="prelude-val">Some</span>(csv))
                 <span class="kw">if </span>!check_nsequence_rbf(rbf, csv) =&gt;
             {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Generic(<span class="macro">format!</span>(
-                    <span class="string">&quot;Cannot enable RBF with nSequence `{:?}` given a required OP_CSV of `{:?}`&quot;</span>,
-                    rbf, csv
-                )))
+                <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::RbfSequenceCsv { rbf, csv })
             }
 
             <span class="comment">// RBF enabled with the default value with CSV also enabled. CSV takes precedence
@@ -3660,7 +3759,7 @@
             </span>FeePolicy::FeeAmount(fee) =&gt; {
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(previous_fee) = params.bumping_fee {
                     <span class="kw">if </span><span class="kw-2">*</span>fee &lt; previous_fee.absolute {
-                        <span class="kw">return </span><span class="prelude-val">Err</span>(Error::FeeTooLow {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::FeeTooLow {
                             required: previous_fee.absolute,
                         });
                     }
@@ -3671,7 +3770,7 @@
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(previous_fee) = params.bumping_fee {
                     <span class="kw">let </span>required_feerate = FeeRate::from_sat_per_vb(previous_fee.rate + <span class="number">1.0</span>);
                     <span class="kw">if </span><span class="kw-2">*</span>rate &lt; required_feerate {
-                        <span class="kw">return </span><span class="prelude-val">Err</span>(Error::FeeRateTooLow {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::FeeRateTooLow {
                             required: required_feerate,
                         });
                     }
@@ -3688,7 +3787,7 @@
         };
 
         <span class="kw">if </span>params.manually_selected_only &amp;&amp; params.utxos.is_empty() {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::NoUtxosSelected);
+            <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::NoUtxosSelected);
         }
 
         <span class="comment">// we keep it as a float while we accumulate it, and only round it at the end
@@ -3702,7 +3801,7 @@
                 &amp;&amp; value.is_dust(script_pubkey)
                 &amp;&amp; !script_pubkey.is_provably_unspendable()
             {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Error::OutputBelowDustLimit(index));
+                <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::OutputBelowDustLimit(index));
             }
 
             <span class="kw">if </span><span class="self">self</span>.is_mine(script_pubkey) {
@@ -3735,9 +3834,7 @@
         <span class="kw">if </span>params.change_policy != tx_builder::ChangeSpendPolicy::ChangeAllowed
             &amp;&amp; internal_descriptor.is_none()
         {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Generic(
-                <span class="string">&quot;The `change_policy` can be set only if the wallet has a change_descriptor&quot;</span>.into(),
-            ));
+            <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::ChangePolicyDescriptor);
         }
 
         <span class="kw">let </span>(required_utxos, optional_utxos) = <span class="self">self</span>.preselect_utxos(
@@ -3763,7 +3860,7 @@
                     .stage(ChangeSet::from(indexed_tx_graph::ChangeSet::from(
                         index_changeset,
                     )));
-                <span class="self">self</span>.persist.commit().expect(<span class="string">&quot;TODO&quot;</span>);
+                <span class="self">self</span>.persist.commit().map_err(CreateTxError::Persist)<span class="question-mark">?</span>;
                 spk
             }
         };
@@ -3804,13 +3901,13 @@
                     change_fee,
                 } = excess
                 {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(Error::InsufficientFunds {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::InsufficientFunds {
                         needed: <span class="kw-2">*</span>dust_threshold,
                         available: remaining_amount.saturating_sub(<span class="kw-2">*</span>change_fee),
                     });
                 }
             } <span class="kw">else </span>{
-                <span class="kw">return </span><span class="prelude-val">Err</span>(Error::NoRecipients);
+                <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::NoRecipients);
             }
         }
 
@@ -3857,6 +3954,10 @@
     /// # use std::str::FromStr;
     /// # use bitcoin::*;
     /// # use bdk::*;
+    /// # use bdk::wallet::ChangeSet;
+    /// # use bdk::wallet::error::CreateTxError;
+    /// # use bdk_chain::PersistBackend;
+    /// # use anyhow::Error;
     /// # let descriptor = &quot;wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)&quot;;
     /// # let mut wallet = doctest_wallet!();
     /// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap().assume_checked();
@@ -3880,27 +3981,27 @@
     /// let _ = wallet.sign(&amp;mut psbt, SignOptions::default())?;
     /// let fee_bumped_tx = psbt.extract_tx();
     /// // broadcast fee_bumped_tx to replace original
-    /// # Ok::&lt;(), bdk::Error&gt;(())
+    /// # Ok::&lt;(), anyhow::Error&gt;(())
     /// ```
     </span><span class="comment">// TODO: support for merging multiple transactions while bumping the fees
     </span><span class="kw">pub fn </span>build_fee_bump(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         txid: Txid,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxBuilder&lt;<span class="lifetime">&#39;_</span>, D, DefaultCoinSelectionAlgorithm, BumpFee&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxBuilder&lt;<span class="lifetime">&#39;_</span>, D, DefaultCoinSelectionAlgorithm, BumpFee&gt;, BuildFeeBumpError&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.indexed_graph.graph();
         <span class="kw">let </span>txout_index = <span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index;
         <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().block_id();
 
         <span class="kw">let </span><span class="kw-2">mut </span>tx = graph
             .get_tx(txid)
-            .ok_or(Error::TransactionNotFound)<span class="question-mark">?
+            .ok_or(BuildFeeBumpError::TransactionNotFound(txid))<span class="question-mark">?
             </span>.clone();
 
         <span class="kw">let </span>pos = graph
             .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, txid)
-            .ok_or(Error::TransactionNotFound)<span class="question-mark">?</span>;
+            .ok_or(BuildFeeBumpError::TransactionNotFound(txid))<span class="question-mark">?</span>;
         <span class="kw">if let </span>ChainPosition::Confirmed(<span class="kw">_</span>) = pos {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::TransactionConfirmed);
+            <span class="kw">return </span><span class="prelude-val">Err</span>(BuildFeeBumpError::TransactionConfirmed(txid));
         }
 
         <span class="kw">if </span>!tx
@@ -3908,29 +4009,29 @@
             .iter()
             .any(|txin| txin.sequence.to_consensus_u32() &lt;= <span class="number">0xFFFFFFFD</span>)
         {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::IrreplaceableTransaction);
+            <span class="kw">return </span><span class="prelude-val">Err</span>(BuildFeeBumpError::IrreplaceableTransaction(tx.txid()));
         }
 
         <span class="kw">let </span>fee = <span class="self">self
             </span>.calculate_fee(<span class="kw-2">&amp;</span>tx)
-            .map_err(|<span class="kw">_</span>| Error::FeeRateUnavailable)<span class="question-mark">?</span>;
+            .map_err(|<span class="kw">_</span>| BuildFeeBumpError::FeeRateUnavailable)<span class="question-mark">?</span>;
         <span class="kw">let </span>fee_rate = <span class="self">self
             </span>.calculate_fee_rate(<span class="kw-2">&amp;</span>tx)
-            .map_err(|<span class="kw">_</span>| Error::FeeRateUnavailable)<span class="question-mark">?</span>;
+            .map_err(|<span class="kw">_</span>| BuildFeeBumpError::FeeRateUnavailable)<span class="question-mark">?</span>;
 
         <span class="comment">// remove the inputs from the tx and process them
         </span><span class="kw">let </span>original_txin = tx.input.drain(..).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
         <span class="kw">let </span>original_utxos = original_txin
             .iter()
-            .map(|txin| -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, Error&gt; {
+            .map(|txin| -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, BuildFeeBumpError&gt; {
                 <span class="kw">let </span>prev_tx = graph
                     .get_tx(txin.previous_output.txid)
-                    .ok_or(Error::UnknownUtxo)<span class="question-mark">?</span>;
+                    .ok_or(BuildFeeBumpError::UnknownUtxo(txin.previous_output))<span class="question-mark">?</span>;
                 <span class="kw">let </span>txout = <span class="kw-2">&amp;</span>prev_tx.output[txin.previous_output.vout <span class="kw">as </span>usize];
 
                 <span class="kw">let </span>confirmation_time: ConfirmationTime = graph
                     .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, txin.previous_output.txid)
-                    .ok_or(Error::UnknownUtxo)<span class="question-mark">?
+                    .ok_or(BuildFeeBumpError::UnknownUtxo(txin.previous_output))<span class="question-mark">?
                     </span>.cloned()
                     .into();
 
@@ -4027,6 +4128,9 @@
     /// # use std::str::FromStr;
     /// # use bitcoin::*;
     /// # use bdk::*;
+    /// # use bdk::wallet::ChangeSet;
+    /// # use bdk::wallet::error::CreateTxError;
+    /// # use bdk_chain::PersistBackend;
     /// # let descriptor = &quot;wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)&quot;;
     /// # let mut wallet = doctest_wallet!();
     /// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap().assume_checked();
@@ -4035,17 +4139,18 @@
     ///     builder.add_recipient(to_address.script_pubkey(), 50_000);
     ///     builder.finish()?
     /// };
-    /// let  finalized = wallet.sign(&amp;mut psbt, SignOptions::default())?;
+    /// let finalized = wallet.sign(&amp;mut psbt, SignOptions::default())?;
     /// assert!(finalized, &quot;we should have signed all the inputs&quot;);
-    /// # Ok::&lt;(), bdk::Error&gt;(())
+    /// # Ok::&lt;(),anyhow::Error&gt;(())
     </span><span class="kw">pub fn </span>sign(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
         sign_options: SignOptions,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, SignerError&gt; {
         <span class="comment">// This adds all the PSBT metadata for the inputs, which will help us later figure out how
         // to derive our keys
-        </span><span class="self">self</span>.update_psbt_with_descriptor(psbt)<span class="question-mark">?</span>;
+        </span><span class="self">self</span>.update_psbt_with_descriptor(psbt)
+            .map_err(SignerError::MiniscriptPsbt)<span class="question-mark">?</span>;
 
         <span class="comment">// If we aren&#39;t allowed to use `witness_utxo`, ensure that every input (except p2tr and finalized ones)
         // has the `non_witness_utxo`
@@ -4057,7 +4162,7 @@
                 .filter(|i| i.tap_internal_key.is_none() &amp;&amp; i.tap_merkle_root.is_none())
                 .any(|i| i.non_witness_utxo.is_none())
         {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Signer(signer::SignerError::MissingNonWitnessUtxo));
+            <span class="kw">return </span><span class="prelude-val">Err</span>(SignerError::MissingNonWitnessUtxo);
         }
 
         <span class="comment">// If the user hasn&#39;t explicitly opted-in, refuse to sign the transaction unless every input
@@ -4070,7 +4175,7 @@
                     || i.sighash_type == <span class="prelude-val">Some</span>(TapSighashType::Default.into())
             })
         {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Signer(signer::SignerError::NonStandardSighash));
+            <span class="kw">return </span><span class="prelude-val">Err</span>(SignerError::NonStandardSighash);
         }
 
         <span class="kw">for </span>signer <span class="kw">in </span><span class="self">self
@@ -4091,7 +4196,7 @@
     }
 
     <span class="doccomment">/// Return the spending policies for the wallet&#39;s descriptor
-    </span><span class="kw">pub fn </span>policies(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: KeychainKind) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Policy&gt;, Error&gt; {
+    </span><span class="kw">pub fn </span>policies(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: KeychainKind) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Policy&gt;, DescriptorError&gt; {
         <span class="kw">let </span>signers = <span class="kw">match </span>keychain {
             KeychainKind::External =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.signers,
             KeychainKind::Internal =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.change_signers,
@@ -4123,7 +4228,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
         sign_options: SignOptions,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, SignerError&gt; {
         <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().block_id();
 
         <span class="kw">let </span>tx = <span class="kw-2">&amp;</span>psbt.unsigned_tx;
@@ -4133,7 +4238,7 @@
             <span class="kw">let </span>psbt_input = <span class="kw-2">&amp;</span>psbt
                 .inputs
                 .get(n)
-                .ok_or(Error::Signer(SignerError::InputIndexOutOfRange))<span class="question-mark">?</span>;
+                .ok_or(SignerError::InputIndexOutOfRange)<span class="question-mark">?</span>;
             <span class="kw">if </span>psbt_input.final_script_sig.is_some() || psbt_input.final_script_witness.is_some() {
                 <span class="kw">continue</span>;
             }
@@ -4382,7 +4487,10 @@
         tx: Transaction,
         selected: Vec&lt;Utxo&gt;,
         params: TxParams,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;psbt::PartiallySignedTransaction, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;psbt::PartiallySignedTransaction, CreateTxError&lt;D::WriteError&gt;&gt;
+    <span class="kw">where
+        </span>D: PersistBackend&lt;ChangeSet&gt;,
+    {
         <span class="kw">let </span><span class="kw-2">mut </span>psbt = psbt::PartiallySignedTransaction::from_unsigned_tx(tx)<span class="question-mark">?</span>;
 
         <span class="kw">if </span>params.add_global_xpubs {
@@ -4398,7 +4506,7 @@
                     <span class="prelude-val">None </span><span class="kw">if </span>xpub.xkey.depth == <span class="number">0 </span>=&gt; {
                         (xpub.root_fingerprint(<span class="kw-2">&amp;</span><span class="self">self</span>.secp), <span class="macro">vec!</span>[].into())
                     }
-                    <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(Error::MissingKeyOrigin(xpub.xkey.to_string())),
+                    <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::MissingKeyOrigin(xpub.xkey.to_string())),
                 };
 
                 psbt.xpub.insert(xpub.xkey, origin);
@@ -4423,7 +4531,7 @@
                         <span class="kw">match </span><span class="self">self</span>.get_psbt_input(utxo, params.sighash, params.only_witness_utxo) {
                             <span class="prelude-val">Ok</span>(psbt_input) =&gt; psbt_input,
                             <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">match </span>e {
-                                Error::UnknownUtxo =&gt; psbt::Input {
+                                CreateTxError::UnknownUtxo =&gt; psbt::Input {
                                     sighash_type: params.sighash,
                                     ..psbt::Input::default()
                                 },
@@ -4444,10 +4552,7 @@
                         &amp;&amp; !params.only_witness_utxo
                         &amp;&amp; foreign_psbt_input.non_witness_utxo.is_none()
                     {
-                        <span class="kw">return </span><span class="prelude-val">Err</span>(Error::Generic(<span class="macro">format!</span>(
-                            <span class="string">&quot;Missing non_witness_utxo on foreign utxo {}&quot;</span>,
-                            outpoint
-                        )));
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::MissingNonWitnessUtxo(outpoint));
                     }
                     <span class="kw-2">*</span>psbt_input = <span class="kw-2">*</span>foreign_psbt_input;
                 }
@@ -4465,14 +4570,17 @@
         utxo: LocalUtxo,
         sighash_type: <span class="prelude-ty">Option</span>&lt;psbt::PsbtSighashType&gt;,
         only_witness_utxo: bool,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;psbt::Input, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;psbt::Input, CreateTxError&lt;D::WriteError&gt;&gt;
+    <span class="kw">where
+        </span>D: PersistBackend&lt;ChangeSet&gt;,
+    {
         <span class="comment">// Try to find the prev_script in our db to figure out if this is internal or external,
         // and the derivation index
         </span><span class="kw">let </span><span class="kw-2">&amp;</span>(keychain, child) = <span class="self">self
             </span>.indexed_graph
             .index
             .index_of_spk(<span class="kw-2">&amp;</span>utxo.txout.script_pubkey)
-            .ok_or(Error::UnknownUtxo)<span class="question-mark">?</span>;
+            .ok_or(CreateTxError::UnknownUtxo)<span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>psbt_input = psbt::Input {
             sighash_type,
@@ -4503,7 +4611,7 @@
     <span class="kw">fn </span>update_psbt_with_descriptor(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), MiniscriptPsbtError&gt; {
         <span class="comment">// We need to borrow `psbt` mutably within the loops, so we have to allocate a vec for all
         // the input utxos and outputs
         //
@@ -4643,7 +4751,7 @@
     change_descriptor: <span class="prelude-ty">Option</span>&lt;T&gt;,
     network: Network,
     secp: <span class="kw-2">&amp;</span>SecpCtx,
-) -&gt; <span class="prelude-ty">Result</span>&lt;String, Error&gt;
+) -&gt; <span class="prelude-ty">Result</span>&lt;String, DescriptorError&gt;
 <span class="kw">where
     </span>T: IntoWalletDescriptor,
 {
