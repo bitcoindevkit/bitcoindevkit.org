@@ -350,6 +350,8 @@
 <a href="#350" id="350">350</a>
 <a href="#351" id="351">351</a>
 <a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::{BTreeMap, BTreeSet},
     io::{<span class="self">self</span>, Write},
@@ -357,10 +359,10 @@
 };
 
 <span class="kw">use </span>bdk_chain::{
-    bitcoin::{Address, Network, OutPoint, ScriptBuf, Txid},
+    bitcoin::{constants::genesis_block, Address, Network, OutPoint, ScriptBuf, Txid},
     indexed_tx_graph::{<span class="self">self</span>, IndexedTxGraph},
     keychain,
-    local_chain::{<span class="self">self</span>, CheckPoint, LocalChain},
+    local_chain::{<span class="self">self</span>, LocalChain},
     Append, ConfirmationTimeHeightAnchor,
 };
 
@@ -454,6 +456,8 @@
     <span class="kw">let </span>(args, keymap, index, db, init_changeset) =
         example_cli::init::&lt;EsploraCommands, EsploraArgs, ChangeSet&gt;(DB_MAGIC, DB_PATH)<span class="question-mark">?</span>;
 
+    <span class="kw">let </span>genesis_hash = genesis_block(args.network).block_hash();
+
     <span class="kw">let </span>(init_chain_changeset, init_indexed_tx_graph_changeset) = init_changeset;
 
     <span class="comment">// Contruct `IndexedTxGraph` and `LocalChain` with our initial changeset. They are wrapped in
@@ -465,8 +469,8 @@
         graph
     });
     <span class="kw">let </span>chain = Mutex::new({
-        <span class="kw">let </span><span class="kw-2">mut </span>chain = LocalChain::default();
-        chain.apply_changeset(<span class="kw-2">&amp;</span>init_chain_changeset);
+        <span class="kw">let </span>(<span class="kw-2">mut </span>chain, <span class="kw">_</span>) = LocalChain::from_genesis_hash(genesis_hash);
+        chain.apply_changeset(<span class="kw-2">&amp;</span>init_chain_changeset)<span class="question-mark">?</span>;
         chain
     });
 
@@ -586,7 +590,7 @@
             </span>{
                 <span class="kw">let </span>graph = graph.lock().unwrap();
                 <span class="kw">let </span>chain = chain.lock().unwrap();
-                <span class="kw">let </span>chain_tip = chain.tip().map(|cp| cp.block_id()).unwrap_or_default();
+                <span class="kw">let </span>chain_tip = chain.tip().block_id();
 
                 <span class="kw">if </span><span class="kw-2">*</span>all_spks {
                     <span class="kw">let </span>all_spks = graph
@@ -684,7 +688,7 @@
         (missing_block_heights, tip)
     };
 
-    <span class="macro">println!</span>(<span class="string">&quot;prev tip: {}&quot;</span>, tip.as_ref().map_or(<span class="number">0</span>, CheckPoint::height));
+    <span class="macro">println!</span>(<span class="string">&quot;prev tip: {}&quot;</span>, tip.height());
     <span class="macro">println!</span>(<span class="string">&quot;missing block heights: {:?}&quot;</span>, missing_block_heights);
 
     <span class="comment">// Here, we actually fetch the missing blocks and create a `local_chain::Update`.

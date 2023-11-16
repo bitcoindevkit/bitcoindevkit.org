@@ -542,8 +542,6 @@
 <a href="#542" id="542">542</a>
 <a href="#543" id="543">543</a>
 <a href="#544" id="544">544</a>
-<a href="#545" id="545">545</a>
-<a href="#546" id="546">546</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bdk_chain::{
     bitcoin::{OutPoint, ScriptBuf, Transaction, Txid},
     local_chain::{<span class="self">self</span>, CheckPoint},
@@ -694,7 +692,7 @@
     /// single batch request.
     </span><span class="kw">fn </span>scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        prev_tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
+        prev_tip: CheckPoint,
         keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, ScriptBuf)&gt;&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
@@ -707,7 +705,7 @@
     /// [`scan`]: ElectrumExt::scan
     </span><span class="kw">fn </span>scan_without_keychain(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        prev_tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
+        prev_tip: CheckPoint,
         misc_spks: <span class="kw">impl </span>IntoIterator&lt;Item = ScriptBuf&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
@@ -734,7 +732,7 @@
 <span class="kw">impl </span>ElectrumExt <span class="kw">for </span>Client {
     <span class="kw">fn </span>scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        prev_tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
+        prev_tip: CheckPoint,
         keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, ScriptBuf)&gt;&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
@@ -835,17 +833,15 @@
 <span class="doccomment">/// Return a [`CheckPoint`] of the latest tip, that connects with `prev_tip`.
 </span><span class="kw">fn </span>construct_update_tip(
     client: <span class="kw-2">&amp;</span>Client,
-    prev_tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
+    prev_tip: CheckPoint,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(CheckPoint, <span class="prelude-ty">Option</span>&lt;u32&gt;), Error&gt; {
     <span class="kw">let </span>HeaderNotification { height, .. } = client.block_headers_subscribe()<span class="question-mark">?</span>;
     <span class="kw">let </span>new_tip_height = height <span class="kw">as </span>u32;
 
     <span class="comment">// If electrum returns a tip height that is lower than our previous tip, then checkpoints do
     // not need updating. We just return the previous tip and use that as the point of agreement.
-    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(prev_tip) = prev_tip.as_ref() {
-        <span class="kw">if </span>new_tip_height &lt; prev_tip.height() {
-            <span class="kw">return </span><span class="prelude-val">Ok</span>((prev_tip.clone(), <span class="prelude-val">Some</span>(prev_tip.height())));
-        }
+    </span><span class="kw">if </span>new_tip_height &lt; prev_tip.height() {
+        <span class="kw">return </span><span class="prelude-val">Ok</span>((prev_tip.clone(), <span class="prelude-val">Some</span>(prev_tip.height())));
     }
 
     <span class="comment">// Atomically fetch the latest `CHAIN_SUFFIX_LENGTH` count of blocks from Electrum. We use this
@@ -863,7 +859,7 @@
     <span class="comment">// Find the &quot;point of agreement&quot; (if any).
     </span><span class="kw">let </span>agreement_cp = {
         <span class="kw">let </span><span class="kw-2">mut </span>agreement_cp = <span class="prelude-ty">Option</span>::&lt;CheckPoint&gt;::None;
-        <span class="kw">for </span>cp <span class="kw">in </span>prev_tip.iter().flat_map(CheckPoint::iter) {
+        <span class="kw">for </span>cp <span class="kw">in </span>prev_tip.iter() {
             <span class="kw">let </span>cp_block = cp.block_id();
             <span class="kw">let </span>hash = <span class="kw">match </span>new_blocks.get(<span class="kw-2">&amp;</span>cp_block.height) {
                 <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>hash) =&gt; hash,

@@ -315,8 +315,6 @@
 <a href="#315" id="315">315</a>
 <a href="#316" id="316">316</a>
 <a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::thread::JoinHandle;
 
 <span class="kw">use </span>bdk_chain::collections::btree_map;
@@ -349,7 +347,7 @@
     </span><span class="attr">#[allow(clippy::result_large_err)]
     </span><span class="kw">fn </span>update_local_chain(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        local_tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
+        local_tip: CheckPoint,
         request_heights: <span class="kw">impl </span>IntoIterator&lt;Item = u32&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;local_chain::Update, Error&gt;;
 
@@ -406,7 +404,7 @@
 <span class="kw">impl </span>EsploraExt <span class="kw">for </span>esplora_client::BlockingClient {
     <span class="kw">fn </span>update_local_chain(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        local_tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
+        local_tip: CheckPoint,
         request_heights: <span class="kw">impl </span>IntoIterator&lt;Item = u32&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;local_chain::Update, Error&gt; {
         <span class="kw">let </span>request_heights = request_heights.into_iter().collect::&lt;BTreeSet&lt;<span class="kw">_</span>&gt;&gt;();
@@ -439,41 +437,39 @@
         </span><span class="kw">let </span>earliest_agreement_cp = {
             <span class="kw">let </span><span class="kw-2">mut </span>earliest_agreement_cp = <span class="prelude-ty">Option</span>::&lt;CheckPoint&gt;::None;
 
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(local_tip) = local_tip {
-                <span class="kw">let </span>local_tip_height = local_tip.height();
-                <span class="kw">for </span>local_cp <span class="kw">in </span>local_tip.iter() {
-                    <span class="kw">let </span>local_block = local_cp.block_id();
+            <span class="kw">let </span>local_tip_height = local_tip.height();
+            <span class="kw">for </span>local_cp <span class="kw">in </span>local_tip.iter() {
+                <span class="kw">let </span>local_block = local_cp.block_id();
 
-                    <span class="comment">// the updated hash (block hash at this height after the update), can either be:
-                    // 1. a block that already existed in `fetched_blocks`
-                    // 2. a block that exists locally and at least has a depth of ASSUME_FINAL_DEPTH
-                    // 3. otherwise we can freshly fetch the block from remote, which is safe as it
-                    //    is guaranteed that this would be at or below ASSUME_FINAL_DEPTH from the
-                    //    remote tip
-                    </span><span class="kw">let </span>updated_hash = <span class="kw">match </span>fetched_blocks.entry(local_block.height) {
-                        btree_map::Entry::Occupied(entry) =&gt; <span class="kw-2">*</span>entry.get(),
-                        btree_map::Entry::Vacant(entry) =&gt; <span class="kw-2">*</span>entry.insert(
-                            <span class="kw">if </span>local_tip_height - local_block.height &gt;= ASSUME_FINAL_DEPTH {
-                                local_block.hash
-                            } <span class="kw">else </span>{
-                                <span class="self">self</span>.get_block_hash(local_block.height)<span class="question-mark">?
-                            </span>},
-                        ),
-                    };
+                <span class="comment">// the updated hash (block hash at this height after the update), can either be:
+                // 1. a block that already existed in `fetched_blocks`
+                // 2. a block that exists locally and at least has a depth of ASSUME_FINAL_DEPTH
+                // 3. otherwise we can freshly fetch the block from remote, which is safe as it
+                //    is guaranteed that this would be at or below ASSUME_FINAL_DEPTH from the
+                //    remote tip
+                </span><span class="kw">let </span>updated_hash = <span class="kw">match </span>fetched_blocks.entry(local_block.height) {
+                    btree_map::Entry::Occupied(entry) =&gt; <span class="kw-2">*</span>entry.get(),
+                    btree_map::Entry::Vacant(entry) =&gt; <span class="kw-2">*</span>entry.insert(
+                        <span class="kw">if </span>local_tip_height - local_block.height &gt;= ASSUME_FINAL_DEPTH {
+                            local_block.hash
+                        } <span class="kw">else </span>{
+                            <span class="self">self</span>.get_block_hash(local_block.height)<span class="question-mark">?
+                        </span>},
+                    ),
+                };
 
-                    <span class="comment">// since we may introduce blocks below the point of agreement, we cannot break
-                    // here unconditionally - we only break if we guarantee there are no new heights
-                    // below our current local checkpoint
-                    </span><span class="kw">if </span>local_block.hash == updated_hash {
-                        earliest_agreement_cp = <span class="prelude-val">Some</span>(local_cp);
+                <span class="comment">// since we may introduce blocks below the point of agreement, we cannot break
+                // here unconditionally - we only break if we guarantee there are no new heights
+                // below our current local checkpoint
+                </span><span class="kw">if </span>local_block.hash == updated_hash {
+                    earliest_agreement_cp = <span class="prelude-val">Some</span>(local_cp);
 
-                        <span class="kw">let </span>first_new_height = <span class="kw-2">*</span>fetched_blocks
-                            .keys()
-                            .next()
-                            .expect(<span class="string">&quot;must have at least one new block&quot;</span>);
-                        <span class="kw">if </span>first_new_height &gt;= local_block.height {
-                            <span class="kw">break</span>;
-                        }
+                    <span class="kw">let </span>first_new_height = <span class="kw-2">*</span>fetched_blocks
+                        .keys()
+                        .next()
+                        .expect(<span class="string">&quot;must have at least one new block&quot;</span>);
+                    <span class="kw">if </span>first_new_height &gt;= local_block.height {
+                        <span class="kw">break</span>;
                     }
                 }
             }
