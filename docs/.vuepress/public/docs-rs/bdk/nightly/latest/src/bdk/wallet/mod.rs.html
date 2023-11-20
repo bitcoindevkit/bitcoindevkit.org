@@ -2408,22 +2408,6 @@
 <a href="#2407" id="2407">2407</a>
 <a href="#2408" id="2408">2408</a>
 <a href="#2409" id="2409">2409</a>
-<a href="#2410" id="2410">2410</a>
-<a href="#2411" id="2411">2411</a>
-<a href="#2412" id="2412">2412</a>
-<a href="#2413" id="2413">2413</a>
-<a href="#2414" id="2414">2414</a>
-<a href="#2415" id="2415">2415</a>
-<a href="#2416" id="2416">2416</a>
-<a href="#2417" id="2417">2417</a>
-<a href="#2418" id="2418">2418</a>
-<a href="#2419" id="2419">2419</a>
-<a href="#2420" id="2420">2420</a>
-<a href="#2421" id="2421">2421</a>
-<a href="#2422" id="2422">2422</a>
-<a href="#2423" id="2423">2423</a>
-<a href="#2424" id="2424">2424</a>
-<a href="#2425" id="2425">2425</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2468,8 +2452,6 @@
 <span class="kw">use </span>miniscript::psbt::{PsbtExt, PsbtInputExt, PsbtInputSatisfier};
 
 <span class="kw">use </span>bdk_chain::tx_graph::CalculateFeeError;
-<span class="attr">#[allow(unused_imports)]
-</span><span class="kw">use </span>log::{debug, error, info, trace};
 
 <span class="kw">pub mod </span>coin_selection;
 <span class="kw">pub mod </span>export;
@@ -3657,7 +3639,6 @@
 
         <span class="kw">let </span>requirements =
             external_requirements.merge(<span class="kw-2">&amp;</span>internal_requirements.unwrap_or_default())<span class="question-mark">?</span>;
-        <span class="macro">debug!</span>(<span class="string">&quot;Policy requirements: {:?}&quot;</span>, requirements);
 
         <span class="kw">let </span>version = <span class="kw">match </span>params.version {
             <span class="prelude-val">Some</span>(tx_builder::Version(<span class="number">0</span>)) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::Version0),
@@ -4254,11 +4235,6 @@
                 .assume_height
                 .unwrap_or_else(|| <span class="self">self</span>.chain.tip().height());
 
-            <span class="macro">debug!</span>(
-                <span class="string">&quot;Input #{} - {}, using `confirmation_height` = {:?}, `current_height` = {:?}&quot;</span>,
-                n, input.previous_output, confirmation_height, current_height
-            );
-
             <span class="comment">// - Try to derive the descriptor by looking at the txout. If it&#39;s in our database, we
             //   know exactly which `keychain` to use, and which derivation index it is
             // - If that fails, try to derive it by looking at the psbt input: the complete logic
@@ -4301,10 +4277,7 @@
                                 psbt_input.partial_sigs.clear();
                             }
                         }
-                        <span class="prelude-val">Err</span>(e) =&gt; {
-                            <span class="macro">debug!</span>(<span class="string">&quot;satisfy error {:?} for input {}&quot;</span>, e, n);
-                            finished = <span class="bool-val">false
-                        </span>}
+                        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; finished = <span class="bool-val">false</span>,
                     }
                 }
                 <span class="prelude-val">None </span>=&gt; finished = <span class="bool-val">false</span>,
@@ -4633,11 +4606,6 @@
             <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(keychain, child)) =
                 <span class="self">self</span>.indexed_graph.index.index_of_spk(<span class="kw-2">&amp;</span>out.script_pubkey)
             {
-                <span class="macro">debug!</span>(
-                    <span class="string">&quot;Found descriptor for input #{} {:?}/{}&quot;</span>,
-                    index, keychain, child
-                );
-
                 <span class="kw">let </span>desc = <span class="self">self</span>.get_descriptor_for_keychain(keychain);
                 <span class="kw">let </span>desc = desc
                     .at_derivation_index(child)
