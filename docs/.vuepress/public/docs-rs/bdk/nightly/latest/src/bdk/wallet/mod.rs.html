@@ -2408,6 +2408,25 @@
 <a href="#2407" id="2407">2407</a>
 <a href="#2408" id="2408">2408</a>
 <a href="#2409" id="2409">2409</a>
+<a href="#2410" id="2410">2410</a>
+<a href="#2411" id="2411">2411</a>
+<a href="#2412" id="2412">2412</a>
+<a href="#2413" id="2413">2413</a>
+<a href="#2414" id="2414">2414</a>
+<a href="#2415" id="2415">2415</a>
+<a href="#2416" id="2416">2416</a>
+<a href="#2417" id="2417">2417</a>
+<a href="#2418" id="2418">2418</a>
+<a href="#2419" id="2419">2419</a>
+<a href="#2420" id="2420">2420</a>
+<a href="#2421" id="2421">2421</a>
+<a href="#2422" id="2422">2422</a>
+<a href="#2423" id="2423">2423</a>
+<a href="#2424" id="2424">2424</a>
+<a href="#2425" id="2425">2425</a>
+<a href="#2426" id="2426">2426</a>
+<a href="#2427" id="2427">2427</a>
+<a href="#2428" id="2428">2428</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -3145,10 +3164,24 @@
     }
 
     <span class="doccomment">/// Return the list of unspent outputs of this wallet
-    </span><span class="kw">pub fn </span>list_unspent(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = LocalUtxo&gt; + <span class="lifetime">&#39;_ </span>{
+    </span><span class="kw">pub fn </span>list_unspent(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = LocalOutput&gt; + <span class="lifetime">&#39;_ </span>{
         <span class="self">self</span>.indexed_graph
             .graph()
             .filter_chain_unspents(
+                <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
+                <span class="self">self</span>.chain.tip().block_id(),
+                <span class="self">self</span>.indexed_graph.index.outpoints().iter().cloned(),
+            )
+            .map(|((k, i), full_txo)| new_local_utxo(k, i, full_txo))
+    }
+
+    <span class="doccomment">/// List all relevant outputs (includes both spent and unspent, confirmed and unconfirmed).
+    ///
+    /// To list only unspent outputs (UTXOs), use [`Wallet::list_unspent`] instead.
+    </span><span class="kw">pub fn </span>list_output(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = LocalOutput&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="self">self</span>.indexed_graph
+            .graph()
+            .filter_chain_txouts(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
                 <span class="self">self</span>.chain.tip().block_id(),
                 <span class="self">self</span>.indexed_graph.index.outpoints().iter().cloned(),
@@ -3194,7 +3227,7 @@
 
     <span class="doccomment">/// Returns the utxo owned by this wallet corresponding to `outpoint` if it exists in the
     /// wallet&#39;s database.
-    </span><span class="kw">pub fn </span>get_utxo(<span class="kw-2">&amp;</span><span class="self">self</span>, op: OutPoint) -&gt; <span class="prelude-ty">Option</span>&lt;LocalUtxo&gt; {
+    </span><span class="kw">pub fn </span>get_utxo(<span class="kw-2">&amp;</span><span class="self">self</span>, op: OutPoint) -&gt; <span class="prelude-ty">Option</span>&lt;LocalOutput&gt; {
         <span class="kw">let </span>(<span class="kw-2">&amp;</span>spk_i, <span class="kw">_</span>) = <span class="self">self</span>.indexed_graph.index.txout(op)<span class="question-mark">?</span>;
         <span class="self">self</span>.indexed_graph
             .graph()
@@ -3208,15 +3241,20 @@
     }
 
     <span class="doccomment">/// Inserts a [`TxOut`] at [`OutPoint`] into the wallet&#39;s transaction graph.
-    /// Any inserted TxOuts are not persisted until [`commit`] is called.
     ///
-    /// This can be used to add a `TxOut` that the wallet doesn&#39;t own but is used as an input to
-    /// a [`Transaction`] passed to the [`calculate_fee`] or [`calculate_fee_rate`] functions.
+    /// This is used for providing a previous output&#39;s value so that we can use [`calculate_fee`]
+    /// or [`calculate_fee_rate`] on a given transaction. Outputs inserted with this method will
+    /// not be returned in [`list_unspent`] or [`list_output`].
     ///
-    /// Only insert TxOuts you trust the values for!
+    /// Any inserted `TxOut`s are not persisted until [`commit`] is called.
+    ///
+    /// **WARNING:** This should only be used to add `TxOut`s that the wallet does not own. Only
+    /// insert `TxOut`s that you trust the values for!
     ///
     /// [`calculate_fee`]: Self::calculate_fee
     /// [`calculate_fee_rate`]: Self::calculate_fee_rate
+    /// [`list_unspent`]: Self::list_unspent
+    /// [`list_output`]: Self::list_output
     /// [`commit`]: Self::commit
     </span><span class="kw">pub fn </span>insert_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: TxOut)
     <span class="kw">where
@@ -4024,7 +4062,7 @@
                             .max_satisfaction_weight()
                             .unwrap();
                         WeightedUtxo {
-                            utxo: Utxo::Local(LocalUtxo {
+                            utxo: Utxo::Local(LocalOutput {
                                 outpoint: txin.previous_output,
                                 txout: txout.clone(),
                                 keychain,
@@ -4343,7 +4381,7 @@
         descriptor.at_derivation_index(child).ok()
     }
 
-    <span class="kw">fn </span>get_available_utxos(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;(LocalUtxo, usize)&gt; {
+    <span class="kw">fn </span>get_available_utxos(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;(LocalOutput, usize)&gt; {
         <span class="self">self</span>.list_unspent()
             .map(|utxo| {
                 <span class="kw">let </span>keychain = utxo.keychain;
@@ -4540,7 +4578,7 @@
     <span class="doccomment">/// get the corresponding PSBT Input for a LocalUtxo
     </span><span class="kw">pub fn </span>get_psbt_input(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        utxo: LocalUtxo,
+        utxo: LocalOutput,
         sighash_type: <span class="prelude-ty">Option</span>&lt;psbt::PsbtSighashType&gt;,
         only_witness_utxo: bool,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;psbt::Input, CreateTxError&lt;D::WriteError&gt;&gt;
@@ -4746,8 +4784,8 @@
     keychain: KeychainKind,
     derivation_index: u32,
     full_txo: FullTxOut&lt;ConfirmationTimeHeightAnchor&gt;,
-) -&gt; LocalUtxo {
-    LocalUtxo {
+) -&gt; LocalOutput {
+    LocalOutput {
         outpoint: full_txo.outpoint,
         txout: full_txo.txout,
         is_spent: full_txo.spent_by.is_some(),
