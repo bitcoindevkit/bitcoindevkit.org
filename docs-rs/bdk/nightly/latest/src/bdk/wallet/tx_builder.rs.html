@@ -1123,7 +1123,7 @@
 
 <span class="kw">use </span><span class="kw">super</span>::coin_selection::{CoinSelectionAlgorithm, DefaultCoinSelectionAlgorithm};
 <span class="kw">use </span><span class="kw">super</span>::ChangeSet;
-<span class="kw">use </span><span class="kw">crate</span>::types::{FeeRate, KeychainKind, LocalUtxo, WeightedUtxo};
+<span class="kw">use </span><span class="kw">crate</span>::types::{FeeRate, KeychainKind, LocalOutput, WeightedUtxo};
 <span class="kw">use </span><span class="kw">crate</span>::wallet::CreateTxError;
 <span class="kw">use crate</span>::{Utxo, Wallet};
 
@@ -1959,7 +1959,7 @@
 }
 
 <span class="kw">impl </span>ChangeSpendPolicy {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>is_satisfied_by(<span class="kw-2">&amp;</span><span class="self">self</span>, utxo: <span class="kw-2">&amp;</span>LocalUtxo) -&gt; bool {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>is_satisfied_by(<span class="kw-2">&amp;</span><span class="self">self</span>, utxo: <span class="kw-2">&amp;</span>LocalOutput) -&gt; bool {
         <span class="kw">match </span><span class="self">self </span>{
             ChangeSpendPolicy::ChangeAllowed =&gt; <span class="bool-val">true</span>,
             ChangeSpendPolicy::OnlyChange =&gt; utxo.keychain == KeychainKind::Internal,
@@ -2064,11 +2064,11 @@
         );
     }
 
-    <span class="kw">fn </span>get_test_utxos() -&gt; Vec&lt;LocalUtxo&gt; {
+    <span class="kw">fn </span>get_test_utxos() -&gt; Vec&lt;LocalOutput&gt; {
         <span class="kw">use </span>bitcoin::hashes::Hash;
 
         <span class="macro">vec!</span>[
-            LocalUtxo {
+            LocalOutput {
                 outpoint: OutPoint {
                     txid: bitcoin::Txid::from_slice(<span class="kw-2">&amp;</span>[<span class="number">0</span>; <span class="number">32</span>]).unwrap(),
                     vout: <span class="number">0</span>,
@@ -2079,7 +2079,7 @@
                 confirmation_time: ConfirmationTime::Unconfirmed { last_seen: <span class="number">0 </span>},
                 derivation_index: <span class="number">0</span>,
             },
-            LocalUtxo {
+            LocalOutput {
                 outpoint: OutPoint {
                     txid: bitcoin::Txid::from_slice(<span class="kw-2">&amp;</span>[<span class="number">0</span>; <span class="number">32</span>]).unwrap(),
                     vout: <span class="number">1</span>,
