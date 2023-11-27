@@ -321,6 +321,12 @@
 <a href="#321" id="321">321</a>
 <a href="#322" id="322">322</a>
 <a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
 </pre><pre class="rust"><code><span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>bdk_chain::collections::btree_map;
 <span class="kw">use </span>bdk_chain::{
@@ -582,7 +588,13 @@
                     }
                 }
 
-                <span class="kw">if </span>last_index &gt; last_active_index.map(|i| i.saturating_add(stop_gap <span class="kw">as </span>u32)) {
+                <span class="kw">let </span>last_index = last_index.expect(<span class="string">&quot;Must be set since handles wasn&#39;t empty.&quot;</span>);
+                <span class="kw">let </span>past_gap_limit = <span class="kw">if let </span><span class="prelude-val">Some</span>(i) = last_active_index {
+                    last_index &gt; i.saturating_add(stop_gap <span class="kw">as </span>u32)
+                } <span class="kw">else </span>{
+                    last_index &gt;= stop_gap <span class="kw">as </span>u32
+                };
+                <span class="kw">if </span>past_gap_limit {
                     <span class="kw">break</span>;
                 }
             }
