@@ -315,6 +315,12 @@
 <a href="#315" id="315">315</a>
 <a href="#316" id="316">316</a>
 <a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::thread::JoinHandle;
 
 <span class="kw">use </span>bdk_chain::collections::btree_map;
@@ -567,7 +573,13 @@
                     }
                 }
 
-                <span class="kw">if </span>last_index &gt; last_active_index.map(|i| i.saturating_add(stop_gap <span class="kw">as </span>u32)) {
+                <span class="kw">let </span>last_index = last_index.expect(<span class="string">&quot;Must be set since handles wasn&#39;t empty.&quot;</span>);
+                <span class="kw">let </span>past_gap_limit = <span class="kw">if let </span><span class="prelude-val">Some</span>(i) = last_active_index {
+                    last_index &gt; i.saturating_add(stop_gap <span class="kw">as </span>u32)
+                } <span class="kw">else </span>{
+                    last_index &gt;= stop_gap <span class="kw">as </span>u32
+                };
+                <span class="kw">if </span>past_gap_limit {
                     <span class="kw">break</span>;
                 }
             }
