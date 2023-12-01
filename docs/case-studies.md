@@ -15,7 +15,7 @@ lastUpdated: false
 
 <!-- <CodeSwitcher :languages="{all: 'All', mobile:'Mobile', web:'Web', desktop:'Desktop', custodial: 'Custodial', infra:'Infrastructure', misc:'Misc',}"> -->
   
-<CodeSwitcher :languages="{ all: 'All', mobile: 'Mobile', desktop: 'Desktop', hardware: 'Hardware', web:'Web', custodial: 'Custodial', exchange: 'Exchange' }">
+<CodeSwitcher :languages="{ all: 'All', mobile: 'Mobile', desktop: 'Desktop', hardware: 'Hardware', web:'Web', custodial: 'Custodial', exchange: 'Exchange', infra: 'Infrastructure' }">
 
   <template v-slot:mobile>
     <div class="case-studies">
@@ -179,19 +179,19 @@ lastUpdated: false
     </div>
   </template>
 
-  <!-- <template v-slot:infra>
+  <template v-slot:infra>
     <div class="case-studies">
       <div class="case-study-item">
-        <a href="https://bitcoindevkit.org" target="_blank">
-          <img src="/img/bitcoindevkit.svg" />
+        <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">
+          <img src="/img/case-studies-logos/spotbit-130.png" />
         </a>
         <h3>
-          <a href="https://bitcoindevkit.org" target="_blank">Example Infrastructure App</a>
+          <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">Spotbit</a>
         </h3>
-        <p>A cool app built with BDK.</p>
+        <p>Spotbit is a portable API for Bitcoin price data and candles.</p>
       </div>
     </div>
-  </template> -->
+  </template>
 
   <template v-slot:web>
     <div class="case-studies">
@@ -348,6 +348,16 @@ lastUpdated: false
           <a href="https://play.google.com/store/apps/details?id=com.iriswallet.testnet" target="_blank">Iris Wallet</a>
         </h3>
         <p>Open-source wallet for Bitcoin and RGB assets.</p>
+      </div>
+      <!-- Spotbit -->
+      <div class="case-study-item">
+        <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">
+          <img src="/img/case-studies-logos/spotbit-130.png" />
+        </a>
+        <h3>
+          <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">Spotbit</a>
+        </h3>
+        <p>Spotbit is a portable API for Bitcoin price data and candles.</p>
       </div>
     </div>
   </template>
