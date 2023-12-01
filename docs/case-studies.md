@@ -93,7 +93,7 @@ lastUpdated: false
       </div>
       <!-- Smart Vaults -->
       <div class="case-study-item">
-        <a href="" target="_blank">
+        <a href="https://www.smartvaults.io/" target="_blank">
           <img src="/img/case-studies-logos/smart-vaults-130.png" style="max-height: 130px;" />
         </a>
         <h3>
@@ -311,13 +311,23 @@ lastUpdated: false
       </div>
       <!-- Smart Vaults -->
       <div class="case-study-item">
-        <a href="" target="_blank">
+        <a href="https://www.smartvaults.io/" target="_blank">
           <img src="/img/case-studies-logos/smart-vaults-130.png" style="max-height: 130px;" />
         </a>
         <h3>
           <a href="https://www.smartvaults.io/" target="_blank">Smart Vaults</a> 
         </h3>
         <p>Determine who, how, and when your Bitcoin can be accessed.</p>
+      </div>
+      <!-- Galoy -->
+      <div class="case-study-item">
+        <a href="https://galoy.io/" target="_blank">
+          <img src="/img/case-studies-logos/galoy-130.png" />
+        </a>
+        <h3>
+          <a href="https://galoy.io/" target="_blank">Galoy</a>
+        </h3>
+        <p>Bitcoin-native banking infrastructure for organizations.</p>
       </div>
     </div>
   </template>
