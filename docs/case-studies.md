@@ -101,6 +101,16 @@ lastUpdated: false
         </h3>
         <p>Determine who, how, and when your Bitcoin can be accessed.</p>
       </div>
+      <!-- Iris Wallet -->
+      <div class="case-study-item">
+        <a href="https://play.google.com/store/apps/details?id=com.iriswallet.testnet" target="_blank">
+          <img src="/img/case-studies-logos/iris-130.png" />
+        </a>
+        <h3>
+          <a href="https://play.google.com/store/apps/details?id=com.iriswallet.testnet" target="_blank">Iris Wallet</a>
+        </h3>
+        <p>Open-source wallet for Bitcoin and RGB assets.</p>
+      </div>
     </div>
   </template>
 
@@ -328,6 +338,16 @@ lastUpdated: false
           <a href="https://galoy.io/" target="_blank">Galoy</a>
         </h3>
         <p>Bitcoin-native banking infrastructure for organizations.</p>
+      </div>
+      <!-- Iris Wallet -->
+      <div class="case-study-item">
+        <a href="https://play.google.com/store/apps/details?id=com.iriswallet.testnet" target="_blank">
+          <img src="/img/case-studies-logos/iris-130.png" />
+        </a>
+        <h3>
+          <a href="https://play.google.com/store/apps/details?id=com.iriswallet.testnet" target="_blank">Iris Wallet</a>
+        </h3>
+        <p>Open-source wallet for Bitcoin and RGB assets.</p>
       </div>
     </div>
   </template>
