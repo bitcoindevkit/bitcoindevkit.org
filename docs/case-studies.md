@@ -181,6 +181,7 @@ lastUpdated: false
 
   <template v-slot:infra>
     <div class="case-studies">
+      <!-- Spotbit -->
       <div class="case-study-item">
         <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">
           <img src="/img/case-studies-logos/spotbit-130.png" />
@@ -189,6 +190,16 @@ lastUpdated: false
           <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">Spotbit</a>
         </h3>
         <p>Spotbit is a portable API for Bitcoin price data and candles.</p>
+      </div>
+      <!-- Galoy -->
+      <div class="case-study-item">
+        <a href="https://galoy.io/" target="_blank">
+          <img src="/img/case-studies-logos/galoy-130.png" />
+        </a>
+        <h3>
+          <a href="https://galoy.io/" target="_blank">Galoy</a>
+        </h3>
+        <p>Bitcoin-native banking infrastructure for organizations.</p>
       </div>
     </div>
   </template>
