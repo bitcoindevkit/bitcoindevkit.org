@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["Emitter","A structure that emits data sourced from [`bitcoincore_rpc::Client`]."]],"trait":[["BitcoindRpcErrorExt","Extends [`bitcoincore_rpc::Error`]."]]};
+window.SIDEBAR_ITEMS = {"struct":[["Emitter","The [`Emitter`] is used to emit data sourced from [`bitcoincore_rpc::Client`]."]],"trait":[["BitcoindRpcErrorExt","Extends [`bitcoincore_rpc::Error`]."]]};
