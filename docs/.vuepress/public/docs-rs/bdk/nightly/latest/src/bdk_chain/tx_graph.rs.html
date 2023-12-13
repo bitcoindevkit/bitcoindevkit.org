@@ -1505,15 +1505,70 @@
 <a href="#1505" id="1505">1505</a>
 <a href="#1506" id="1506">1506</a>
 <a href="#1507" id="1507">1507</a>
+<a href="#1508" id="1508">1508</a>
+<a href="#1509" id="1509">1509</a>
+<a href="#1510" id="1510">1510</a>
+<a href="#1511" id="1511">1511</a>
+<a href="#1512" id="1512">1512</a>
+<a href="#1513" id="1513">1513</a>
+<a href="#1514" id="1514">1514</a>
+<a href="#1515" id="1515">1515</a>
+<a href="#1516" id="1516">1516</a>
+<a href="#1517" id="1517">1517</a>
+<a href="#1518" id="1518">1518</a>
+<a href="#1519" id="1519">1519</a>
+<a href="#1520" id="1520">1520</a>
+<a href="#1521" id="1521">1521</a>
+<a href="#1522" id="1522">1522</a>
+<a href="#1523" id="1523">1523</a>
+<a href="#1524" id="1524">1524</a>
+<a href="#1525" id="1525">1525</a>
+<a href="#1526" id="1526">1526</a>
+<a href="#1527" id="1527">1527</a>
+<a href="#1528" id="1528">1528</a>
+<a href="#1529" id="1529">1529</a>
+<a href="#1530" id="1530">1530</a>
+<a href="#1531" id="1531">1531</a>
+<a href="#1532" id="1532">1532</a>
+<a href="#1533" id="1533">1533</a>
+<a href="#1534" id="1534">1534</a>
+<a href="#1535" id="1535">1535</a>
+<a href="#1536" id="1536">1536</a>
+<a href="#1537" id="1537">1537</a>
+<a href="#1538" id="1538">1538</a>
+<a href="#1539" id="1539">1539</a>
+<a href="#1540" id="1540">1540</a>
+<a href="#1541" id="1541">1541</a>
+<a href="#1542" id="1542">1542</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
-//! [`TxGraph`] is a monotone structure that inserts transactions and indexes the spends. The
-//! [`ChangeSet`] structure reports changes of [`TxGraph`] but can also be applied to a
-//! [`TxGraph`] as well. Lastly, [`TxDescendants`] is an [`Iterator`] that traverses descendants of
-//! a given transaction.
+//! [`TxGraph`] contains transactions and indexes them so you can easily traverse the graph of those transactions.
+//! `TxGraph` is *monotone* in that you can always insert a transaction -- it doesn&#39;t care whether that
+//! transaction is in the current best chain or whether it conflicts with any of the
+//! existing transactions or what order you insert the transactions. This means that you can always
+//! combine two [`TxGraph`]s together, without resulting in inconsistencies.
+//! Furthermore, there is currently no way to delete a transaction.
+//!
+//! Transactions can be either whole or partial (i.e., transactions for which we only
+//! know some outputs, which we usually call &quot;floating outputs&quot;; these are usually inserted
+//! using the [`insert_txout`] method.).
+//!
+//! The graph contains transactions in the form of [`TxNode`]s. Each node contains the
+//! txid, the transaction (whole or partial), the blocks it&#39;s anchored in (see the [`Anchor`]
+//! documentation for more details), and the timestamp of the last time we saw
+//! the transaction as unconfirmed.
 //!
 //! Conflicting transactions are allowed to coexist within a [`TxGraph`]. This is useful for
-//! identifying and traversing conflicts and descendants of a given transaction.
+//! identifying and traversing conflicts and descendants of a given transaction. Some [`TxGraph`]
+//! methods only consider &quot;canonical&quot; (i.e., in the best chain or in mempool) transactions,
+//! we decide which transactions are canonical based on anchors `last_seen_unconfirmed`;
+//! see the [`try_get_chain_position`] documentation for more details.
+//!
+//! The [`ChangeSet`] reports changes made to a [`TxGraph`]; it can be used to either save to
+//! persistent storage, or to be applied to another [`TxGraph`].
+//!
+//! Lastly, you can use [`TxAncestors`]/[`TxDescendants`] to traverse ancestors and descendants of
+//! a given transaction, respectively.
 //!
 //! # Applying changes
 //!
@@ -1556,6 +1611,8 @@
 //! let changeset = graph.apply_update(update);
 //! assert!(changeset.is_empty());
 //! ```
+//! [`try_get_chain_position`]: TxGraph::try_get_chain_position
+//! [`insert_txout`]: TxGraph::insert_txout
 
 </span><span class="kw">use crate</span>::{
     collections::<span class="kw-2">*</span>, keychain::Balance, local_chain::LocalChain, Anchor, Append, BlockId,
@@ -1598,7 +1655,7 @@
     }
 }
 
-<span class="doccomment">/// An outward-facing view of a (transaction) node in the [`TxGraph`].
+<span class="doccomment">/// A transaction node in the [`TxGraph`].
 </span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 </span><span class="kw">pub struct </span>TxNode&lt;<span class="lifetime">&#39;a</span>, T, A&gt; {
     <span class="doccomment">/// Txid of the transaction.
@@ -1635,7 +1692,7 @@
     }
 }
 
-<span class="doccomment">/// An outwards-facing view of a transaction that is part of the *best chain*&#39;s history.
+<span class="doccomment">/// A transaction that is included in the chain, or is still in mempool.
 </span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 </span><span class="kw">pub struct </span>CanonicalTx&lt;<span class="lifetime">&#39;a</span>, T, A&gt; {
     <span class="doccomment">/// How the transaction is observed as (confirmed or unconfirmed).
@@ -1982,7 +2039,7 @@
     <span class="doccomment">/// Batch insert unconfirmed transactions.
     ///
     /// Items of `txs` are tuples containing the transaction and a *last seen* timestamp. The
-    /// *last seen* communicates when the transaction is last seen in the mempool which is used for
+    /// *last seen* communicates when the transaction is last seen in mempool which is used for
     /// conflict-resolution (refer to [`TxGraph::insert_seen_at`] for details).
     </span><span class="kw">pub fn </span>batch_insert_unconfirmed(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
@@ -2215,8 +2272,20 @@
 
     <span class="doccomment">/// Get the position of the transaction in `chain` with tip `chain_tip`.
     ///
-    /// If the given transaction of `txid` does not exist in the chain of `chain_tip`, `None` is
-    /// returned.
+    /// Chain data is fetched from `chain`, a [`ChainOracle`] implementation.
+    ///
+    /// This method returns `Ok(None)` if the transaction is not found in the chain, and no longer
+    /// belongs in the mempool. The following factors are used to approximate whether an
+    /// unconfirmed transaction exists in the mempool (not evicted):
+    ///
+    /// 1. Unconfirmed transactions that conflict with confirmed transactions are evicted.
+    /// 2. Unconfirmed transactions that spend from transactions that are evicted, are also
+    ///    evicted.
+    /// 3. Given two conflicting unconfirmed transactions, the transaction with the lower
+    ///    `last_seen_unconfirmed` parameter is evicted. A transaction&#39;s `last_seen_unconfirmed`
+    ///    parameter is the max of all it&#39;s descendants&#39; `last_seen_unconfirmed` parameters. If the
+    ///    final `last_seen_unconfirmed`s are the same, the transaction with the lower `txid` (by
+    ///    lexicographical order) is evicted.
     ///
     /// # Error
     ///
@@ -2242,7 +2311,7 @@
             }
         }
 
-        <span class="comment">// The tx is not anchored to a block which is in the best chain, which means that it
+        <span class="comment">// The tx is not anchored to a block in the best chain, which means that it
         // might be in mempool, or it might have been dropped already.
         // Let&#39;s check conflicts to find out!
         </span><span class="kw">let </span>tx = <span class="kw">match </span>tx_node {
@@ -2452,7 +2521,8 @@
     /// (`OI`) for convenience. If `OI` is not necessary, the caller can use `()`, or
     /// [`Iterator::enumerate`] over a list of [`OutPoint`]s.
     ///
-    /// Floating outputs are ignored.
+    /// Floating outputs (i.e., outputs for which we don&#39;t have the full transaction in the graph)
+    /// are ignored.
     ///
     /// # Error
     ///
@@ -2643,9 +2713,9 @@
     }
 }
 
-<span class="doccomment">/// A structure that represents changes to a [`TxGraph`].
+<span class="doccomment">/// The [`ChangeSet`] represents changes to a [`TxGraph`].
 ///
-/// Since [`TxGraph`] is monotone &quot;changeset&quot; can only contain transactions to be added and
+/// Since [`TxGraph`] is monotone, the &quot;changeset&quot; can only contain transactions to be added and
 /// not removed.
 ///
 /// Refer to [module-level documentation] for more.
@@ -2779,7 +2849,7 @@
 ///
 /// The iterator excludes partial transactions.
 ///
-/// This `struct` is created by the [`walk_ancestors`] method of [`TxGraph`].
+/// Returned by the [`walk_ancestors`] method of [`TxGraph`].
 ///
 /// [`walk_ancestors`]: TxGraph::walk_ancestors
 </span><span class="kw">pub struct </span>TxAncestors&lt;<span class="lifetime">&#39;g</span>, A, F&gt; {
@@ -2897,7 +2967,7 @@
 
 <span class="doccomment">/// An iterator that traverses transaction descendants.
 ///
-/// This `struct` is created by the [`walk_descendants`] method of [`TxGraph`].
+/// Returned by the [`walk_descendants`] method of [`TxGraph`].
 ///
 /// [`walk_descendants`]: TxGraph::walk_descendants
 </span><span class="kw">pub struct </span>TxDescendants&lt;<span class="lifetime">&#39;g</span>, A, F&gt; {
