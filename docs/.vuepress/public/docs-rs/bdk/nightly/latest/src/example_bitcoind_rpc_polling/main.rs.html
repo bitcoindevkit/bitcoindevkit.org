@@ -392,7 +392,7 @@
     Emitter,
 };
 <span class="kw">use </span>bdk_chain::{
-    bitcoin::{Block, Transaction},
+    bitcoin::{constants::genesis_block, Block, Transaction},
     indexed_tx_graph, keychain,
     local_chain::{<span class="self">self</span>, CheckPoint, LocalChain},
     ConfirmationTimeHeightAnchor, IndexedTxGraph,
@@ -444,9 +444,6 @@
     <span class="doccomment">/// Starting block height to fallback to if no point of agreement if found
     </span><span class="attr">#[clap(env = <span class="string">&quot;FALLBACK_HEIGHT&quot;</span>, long, default_value = <span class="string">&quot;0&quot;</span>)]
     </span>fallback_height: u32,
-    <span class="doccomment">/// The unused-scripts lookahead will be kept at this size
-    </span><span class="attr">#[clap(long, default_value = <span class="string">&quot;10&quot;</span>)]
-    </span>lookahead: u32,
 }
 
 <span class="kw">impl </span>From&lt;RpcArgs&gt; <span class="kw">for </span>Auth {
@@ -500,10 +497,11 @@
         <span class="string">&quot;[{:&gt;10}s] loaded initial changeset from db&quot;</span>,
         start.elapsed().as_secs_f32()
     );
+    <span class="kw">let </span>(init_chain_changeset, init_graph_changeset) = init_changeset;
 
     <span class="kw">let </span>graph = Mutex::new({
         <span class="kw">let </span><span class="kw-2">mut </span>graph = IndexedTxGraph::new(index);
-        graph.apply_changeset(init_changeset.<span class="number">1</span>);
+        graph.apply_changeset(init_graph_changeset);
         graph
     });
     <span class="macro">println!</span>(
@@ -511,7 +509,16 @@
         start.elapsed().as_secs_f32()
     );
 
-    <span class="kw">let </span>chain = Mutex::new(LocalChain::from_changeset(init_changeset.<span class="number">0</span>)<span class="question-mark">?</span>);
+    <span class="kw">let </span>chain = Mutex::new(<span class="kw">if </span>init_chain_changeset.is_empty() {
+        <span class="kw">let </span>genesis_hash = genesis_block(args.network).block_hash();
+        <span class="kw">let </span>(chain, chain_changeset) = LocalChain::from_genesis_hash(genesis_hash);
+        <span class="kw">let </span><span class="kw-2">mut </span>db = db.lock().unwrap();
+        db.stage((chain_changeset, Default::default()));
+        db.commit()<span class="question-mark">?</span>;
+        chain
+    } <span class="kw">else </span>{
+        LocalChain::from_changeset(init_chain_changeset)<span class="question-mark">?
+    </span>});
     <span class="macro">println!</span>(
         <span class="string">&quot;[{:&gt;10}s] loaded local chain from changeset&quot;</span>,
         start.elapsed().as_secs_f32()
@@ -541,12 +548,8 @@
     <span class="kw">match </span>rpc_cmd {
         RpcCommands::Sync { rpc_args } =&gt; {
             <span class="kw">let </span>RpcArgs {
-                fallback_height,
-                lookahead,
-                ..
+                fallback_height, ..
             } = rpc_args;
-
-            graph.lock().unwrap().index.set_lookahead_for_all(lookahead);
 
             <span class="kw">let </span>chain_tip = chain.lock().unwrap().tip();
             <span class="kw">let </span>rpc_client = rpc_args.new_client()<span class="question-mark">?</span>;
@@ -613,13 +616,10 @@
         }
         RpcCommands::Live { rpc_args } =&gt; {
             <span class="kw">let </span>RpcArgs {
-                fallback_height,
-                lookahead,
-                ..
+                fallback_height, ..
             } = rpc_args;
             <span class="kw">let </span>sigterm_flag = start_ctrlc_handler();
 
-            graph.lock().unwrap().index.set_lookahead_for_all(lookahead);
             <span class="kw">let </span>last_cp = chain.lock().unwrap().tip();
 
             <span class="macro">println!</span>(
