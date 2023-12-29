@@ -532,35 +532,6 @@
 <a href="#532" id="532">532</a>
 <a href="#533" id="533">533</a>
 <a href="#534" id="534">534</a>
-<a href="#535" id="535">535</a>
-<a href="#536" id="536">536</a>
-<a href="#537" id="537">537</a>
-<a href="#538" id="538">538</a>
-<a href="#539" id="539">539</a>
-<a href="#540" id="540">540</a>
-<a href="#541" id="541">541</a>
-<a href="#542" id="542">542</a>
-<a href="#543" id="543">543</a>
-<a href="#544" id="544">544</a>
-<a href="#545" id="545">545</a>
-<a href="#546" id="546">546</a>
-<a href="#547" id="547">547</a>
-<a href="#548" id="548">548</a>
-<a href="#549" id="549">549</a>
-<a href="#550" id="550">550</a>
-<a href="#551" id="551">551</a>
-<a href="#552" id="552">552</a>
-<a href="#553" id="553">553</a>
-<a href="#554" id="554">554</a>
-<a href="#555" id="555">555</a>
-<a href="#556" id="556">556</a>
-<a href="#557" id="557">557</a>
-<a href="#558" id="558">558</a>
-<a href="#559" id="559">559</a>
-<a href="#560" id="560">560</a>
-<a href="#561" id="561">561</a>
-<a href="#562" id="562">562</a>
-<a href="#563" id="563">563</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     collections::<span class="kw-2">*</span>,
     indexed_tx_graph::Indexer,
@@ -568,11 +539,12 @@
     spk_iter::BIP32_MAX_INDEX,
     SpkIterator, SpkTxOutIndex,
 };
-<span class="kw">use </span>alloc::vec::Vec;
 <span class="kw">use </span>bitcoin::{OutPoint, Script, TxOut};
 <span class="kw">use </span>core::{fmt::Debug, ops::Deref};
 
 <span class="kw">use </span><span class="kw">crate</span>::Append;
+
+<span class="kw">const </span>DEFAULT_LOOKAHEAD: u32 = <span class="number">1_000</span>;
 
 <span class="doccomment">/// A convenient wrapper around [`SpkTxOutIndex`] that relates script pubkeys to miniscript public
 /// [`Descriptor`]s.
@@ -609,7 +581,7 @@
 /// # let secp = bdk_chain::bitcoin::secp256k1::Secp256k1::signing_only();
 /// # let (external_descriptor,_) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(&amp;secp, &quot;tr([73c5da0a/86&#39;/0&#39;/0&#39;]xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/0/*)&quot;).unwrap();
 /// # let (internal_descriptor,_) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(&amp;secp, &quot;tr([73c5da0a/86&#39;/0&#39;/0&#39;]xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/1/*)&quot;).unwrap();
-/// # let descriptor_for_user_42 = external_descriptor.clone();
+/// # let (descriptor_for_user_42, _) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(&amp;secp, &quot;tr([73c5da0a/86&#39;/0&#39;/0&#39;]xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/2/*)&quot;).unwrap();
 /// txout_index.add_keychain(MyKeychain::External, external_descriptor);
 /// txout_index.add_keychain(MyKeychain::Internal, internal_descriptor);
 /// txout_index.add_keychain(MyKeychain::MyAppUser { user_id: 42 }, descriptor_for_user_42);
@@ -628,17 +600,12 @@
     <span class="comment">// last revealed indexes
     </span>last_revealed: BTreeMap&lt;K, u32&gt;,
     <span class="comment">// lookahead settings for each keychain
-    </span>lookahead: BTreeMap&lt;K, u32&gt;,
+    </span>lookahead: u32,
 }
 
 <span class="kw">impl</span>&lt;K&gt; Default <span class="kw">for </span>KeychainTxOutIndex&lt;K&gt; {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            inner: SpkTxOutIndex::default(),
-            keychains: BTreeMap::default(),
-            last_revealed: BTreeMap::default(),
-            lookahead: BTreeMap::default(),
-        }
+        <span class="self">Self</span>::new(DEFAULT_LOOKAHEAD)
     }
 }
 
@@ -681,6 +648,25 @@
     }
 }
 
+<span class="kw">impl</span>&lt;K&gt; KeychainTxOutIndex&lt;K&gt; {
+    <span class="doccomment">/// Construct a [`KeychainTxOutIndex`] with the given `lookahead`.
+    ///
+    /// The `lookahead` is the number of script pubkeys to derive and cache from the internal
+    /// descriptors over and above the last revealed script index. Without a lookahead the index
+    /// will miss outputs you own when processing transactions whose output script pubkeys lie
+    /// beyond the last revealed index. In certain situations, such as when performing an initial
+    /// scan of the blockchain during wallet import, it may be uncertain or unknown what the index
+    /// of the last revealed script pubkey actually is.
+    </span><span class="kw">pub fn </span>new(lookahead: u32) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            inner: SpkTxOutIndex::default(),
+            keychains: BTreeMap::new(),
+            last_revealed: BTreeMap::new(),
+            lookahead,
+        }
+    }
+}
+
 <span class="kw">impl</span>&lt;K: Clone + Ord + Debug&gt; KeychainTxOutIndex&lt;K&gt; {
     <span class="doccomment">/// Return a reference to the internal [`SpkTxOutIndex`].
     </span><span class="kw">pub fn </span>inner(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>SpkTxOutIndex&lt;(K, u32)&gt; {
@@ -708,54 +694,22 @@
     </span><span class="kw">pub fn </span>add_keychain(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: K, descriptor: Descriptor&lt;DescriptorPublicKey&gt;) {
         <span class="kw">let </span>old_descriptor = <span class="kw-2">&amp;*</span><span class="self">self
             </span>.keychains
-            .entry(keychain)
+            .entry(keychain.clone())
             .or_insert_with(|| descriptor.clone());
         <span class="macro">assert_eq!</span>(
             <span class="kw-2">&amp;</span>descriptor, old_descriptor,
             <span class="string">&quot;keychain already contains a different descriptor&quot;
         </span>);
+        <span class="self">self</span>.replenish_lookahead(<span class="kw-2">&amp;</span>keychain, <span class="self">self</span>.lookahead);
     }
 
-    <span class="doccomment">/// Return the lookahead setting for each keychain.
+    <span class="doccomment">/// Get the lookahead setting.
     ///
-    /// Refer to [`set_lookahead`] for a deeper explanation of the `lookahead`.
+    /// Refer to [`new`] for more information on the `lookahead`.
     ///
-    /// [`set_lookahead`]: Self::set_lookahead
-    </span><span class="kw">pub fn </span>lookaheads(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeMap&lt;K, u32&gt; {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.lookahead
-    }
-
-    <span class="doccomment">/// Convenience method to call [`set_lookahead`] for all keychains.
-    ///
-    /// [`set_lookahead`]: Self::set_lookahead
-    </span><span class="kw">pub fn </span>set_lookahead_for_all(<span class="kw-2">&amp;mut </span><span class="self">self</span>, lookahead: u32) {
-        <span class="kw">for </span>keychain <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.keychains.keys().cloned().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;() {
-            <span class="self">self</span>.set_lookahead(keychain, lookahead);
-        }
-    }
-
-    <span class="doccomment">/// Set the lookahead count for `keychain`.
-    ///
-    /// The lookahead is the number of scripts to cache ahead of the last revealed script index. This
-    /// is useful to find outputs you own when processing block data that lie beyond the last revealed
-    /// index. In certain situations, such as when performing an initial scan of the blockchain during
-    /// wallet import, it may be uncertain or unknown what the last revealed index is.
-    ///
-    /// # Panics
-    ///
-    /// This will panic if the `keychain` does not exist.
-    </span><span class="kw">pub fn </span>set_lookahead(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K, lookahead: u32) {
-        <span class="self">self</span>.lookahead.insert(keychain.clone(), lookahead);
-        <span class="self">self</span>.replenish_lookahead(keychain);
-    }
-
-    <span class="doccomment">/// Convenience method to call [`lookahead_to_target`] for multiple keychains.
-    ///
-    /// [`lookahead_to_target`]: Self::lookahead_to_target
-    </span><span class="kw">pub fn </span>lookahead_to_target_multi(<span class="kw-2">&amp;mut </span><span class="self">self</span>, target_indexes: BTreeMap&lt;K, u32&gt;) {
-        <span class="kw">for </span>(keychain, target_index) <span class="kw">in </span>target_indexes {
-            <span class="self">self</span>.lookahead_to_target(<span class="kw-2">&amp;</span>keychain, target_index)
-        }
+    /// [`new`]: Self::new
+    </span><span class="kw">pub fn </span>lookahead(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
+        <span class="self">self</span>.lookahead
     }
 
     <span class="doccomment">/// Store lookahead scripts until `target_index`.
@@ -764,22 +718,14 @@
     </span><span class="kw">pub fn </span>lookahead_to_target(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K, target_index: u32) {
         <span class="kw">let </span>next_index = <span class="self">self</span>.next_store_index(keychain);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(temp_lookahead) = target_index.checked_sub(next_index).filter(|<span class="kw-2">&amp;</span>v| v &gt; <span class="number">0</span>) {
-            <span class="kw">let </span>old_lookahead = <span class="self">self</span>.lookahead.insert(keychain.clone(), temp_lookahead);
-            <span class="self">self</span>.replenish_lookahead(keychain);
-
-            <span class="comment">// revert
-            </span><span class="kw">match </span>old_lookahead {
-                <span class="prelude-val">Some</span>(lookahead) =&gt; <span class="self">self</span>.lookahead.insert(keychain.clone(), lookahead),
-                <span class="prelude-val">None </span>=&gt; <span class="self">self</span>.lookahead.remove(keychain),
-            };
+            <span class="self">self</span>.replenish_lookahead(keychain, temp_lookahead);
         }
     }
 
-    <span class="kw">fn </span>replenish_lookahead(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) {
+    <span class="kw">fn </span>replenish_lookahead(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K, lookahead: u32) {
         <span class="kw">let </span>descriptor = <span class="self">self</span>.keychains.get(keychain).expect(<span class="string">&quot;keychain must exist&quot;</span>);
         <span class="kw">let </span>next_store_index = <span class="self">self</span>.next_store_index(keychain);
         <span class="kw">let </span>next_reveal_index = <span class="self">self</span>.last_revealed.get(keychain).map_or(<span class="number">0</span>, |v| <span class="kw-2">*</span>v + <span class="number">1</span>);
-        <span class="kw">let </span>lookahead = <span class="self">self</span>.lookahead.get(keychain).map_or(<span class="number">0</span>, |v| <span class="kw-2">*</span>v);
 
         <span class="kw">for </span>(new_index, new_spk) <span class="kw">in
             </span>SpkIterator::new_with_range(descriptor, next_store_index..next_reveal_index + lookahead)
@@ -951,12 +897,8 @@
 
         <span class="kw">let </span>target_index = <span class="kw">if </span>has_wildcard { target_index } <span class="kw">else </span>{ <span class="number">0 </span>};
         <span class="kw">let </span>next_reveal_index = <span class="self">self</span>.last_revealed.get(keychain).map_or(<span class="number">0</span>, |v| <span class="kw-2">*</span>v + <span class="number">1</span>);
-        <span class="kw">let </span>lookahead = <span class="self">self</span>.lookahead.get(keychain).map_or(<span class="number">0</span>, |v| <span class="kw-2">*</span>v);
 
-        <span class="macro">debug_assert_eq!</span>(
-            next_reveal_index + lookahead,
-            <span class="self">self</span>.next_store_index(keychain)
-        );
+        <span class="macro">debug_assert!</span>(next_reveal_index + <span class="self">self</span>.lookahead &gt;= <span class="self">self</span>.next_store_index(keychain));
 
         <span class="comment">// if we need to reveal new indices, the latest revealed index goes here
         </span><span class="kw">let </span><span class="kw-2">mut </span>reveal_to_index = <span class="prelude-val">None</span>;
@@ -964,12 +906,12 @@
         <span class="comment">// if the target is not yet revealed, but is already stored (due to lookahead), we need to
         // set the `reveal_to_index` as target here (as the `for` loop below only updates
         // `reveal_to_index` for indexes that are NOT stored)
-        </span><span class="kw">if </span>next_reveal_index &lt;= target_index &amp;&amp; target_index &lt; next_reveal_index + lookahead {
+        </span><span class="kw">if </span>next_reveal_index &lt;= target_index &amp;&amp; target_index &lt; next_reveal_index + <span class="self">self</span>.lookahead {
             reveal_to_index = <span class="prelude-val">Some</span>(target_index);
         }
 
         <span class="comment">// we range over indexes that are not stored
-        </span><span class="kw">let </span>range = next_reveal_index + lookahead..=target_index + lookahead;
+        </span><span class="kw">let </span>range = next_reveal_index + <span class="self">self</span>.lookahead..=target_index + <span class="self">self</span>.lookahead;
         <span class="kw">for </span>(new_index, new_spk) <span class="kw">in </span>SpkIterator::new_with_range(descriptor, range) {
             <span class="kw">let </span>_inserted = <span class="self">self
                 </span>.inner

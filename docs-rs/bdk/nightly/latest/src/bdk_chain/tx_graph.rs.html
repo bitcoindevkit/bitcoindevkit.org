@@ -1537,9 +1537,6 @@
 <a href="#1537" id="1537">1537</a>
 <a href="#1538" id="1538">1538</a>
 <a href="#1539" id="1539">1539</a>
-<a href="#1540" id="1540">1540</a>
-<a href="#1541" id="1541">1541</a>
-<a href="#1542" id="1542">1542</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
 //! [`TxGraph`] contains transactions and indexes them so you can easily traverse the graph of those transactions.
@@ -2123,10 +2120,7 @@
         }
 
         <span class="kw">for </span>(outpoint, txout) <span class="kw">in </span>changeset.txouts {
-            <span class="kw">let </span>tx_entry = <span class="self">self
-                </span>.txs
-                .entry(outpoint.txid)
-                .or_insert_with(Default::default);
+            <span class="kw">let </span>tx_entry = <span class="self">self</span>.txs.entry(outpoint.txid).or_default();
 
             <span class="kw">match </span>tx_entry {
                 (TxNodeInternal::Whole(<span class="kw">_</span>), <span class="kw">_</span>, <span class="kw">_</span>) =&gt; { <span class="comment">/* do nothing since we already have full tx */
@@ -2139,13 +2133,13 @@
 
         <span class="kw">for </span>(anchor, txid) <span class="kw">in </span>changeset.anchors {
             <span class="kw">if </span><span class="self">self</span>.anchors.insert((anchor.clone(), txid)) {
-                <span class="kw">let </span>(<span class="kw">_</span>, anchors, <span class="kw">_</span>) = <span class="self">self</span>.txs.entry(txid).or_insert_with(Default::default);
+                <span class="kw">let </span>(<span class="kw">_</span>, anchors, <span class="kw">_</span>) = <span class="self">self</span>.txs.entry(txid).or_default();
                 anchors.insert(anchor);
             }
         }
 
         <span class="kw">for </span>(txid, new_last_seen) <span class="kw">in </span>changeset.last_seen {
-            <span class="kw">let </span>(<span class="kw">_</span>, <span class="kw">_</span>, last_seen) = <span class="self">self</span>.txs.entry(txid).or_insert_with(Default::default);
+            <span class="kw">let </span>(<span class="kw">_</span>, <span class="kw">_</span>, last_seen) = <span class="self">self</span>.txs.entry(txid).or_default();
             <span class="kw">if </span>new_last_seen &gt; <span class="kw-2">*</span>last_seen {
                 <span class="kw-2">*</span>last_seen = new_last_seen;
             }
