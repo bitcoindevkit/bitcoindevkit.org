@@ -111,6 +111,16 @@ lastUpdated: false
         </h3>
         <p>Open-source wallet for Bitcoin and RGB assets.</p>
       </div>
+      <!-- Stackmate -->
+      <div class="case-study-item">
+        <a href="https://github.com/StackmateNetwork" target="_blank">
+          <img src="/img/case-studies-logos/stackmate-130.png" />
+        </a>
+        <h3>
+          <a href="https://github.com/StackmateNetwork" target="_blank">Stackmate</a>
+        </h3>
+        <p>A multi-purpose Bitcoin Wallet.</p>
+      </div>
     </div>
   </template>
 
@@ -369,6 +379,16 @@ lastUpdated: false
           <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">Spotbit</a>
         </h3>
         <p>Spotbit is a portable API for Bitcoin price data and candles.</p>
+      </div>
+      <!-- Stackmate -->
+      <div class="case-study-item">
+        <a href="https://github.com/StackmateNetwork" target="_blank">
+          <img src="/img/case-studies-logos/stackmate-130.png" />
+        </a>
+        <h3>
+          <a href="https://github.com/StackmateNetwork" target="_blank">Stackmate</a>
+        </h3>
+        <p>A multi-purpose Bitcoin Wallet.</p>
       </div>
     </div>
   </template>
