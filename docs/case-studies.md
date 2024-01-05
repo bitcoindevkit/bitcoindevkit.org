@@ -121,6 +121,16 @@ lastUpdated: false
         </h3>
         <p>A multi-purpose Bitcoin Wallet.</p>
       </div>
+      <!-- Lipa -->
+      <div class="case-study-item">
+        <a href="https://lipa.swiss/en" target="_blank">
+          <img src="/img/case-studies-logos/lipa-130.png" />
+        </a>
+        <h3>
+          <a href="https://lipa.swiss/en" target="_blank">Lipa</a>
+        </h3>
+        <p>The Swiss app for cashless payments with Bitcoin.</p>
+      </div>
     </div>
   </template>
 
@@ -390,7 +400,16 @@ lastUpdated: false
         </h3>
         <p>A multi-purpose Bitcoin Wallet.</p>
       </div>
+      <!-- Lipa -->
+      <div class="case-study-item">
+        <a href="https://lipa.swiss/en" target="_blank">
+          <img src="/img/case-studies-logos/lipa-130.png" />
+        </a>
+        <h3>
+          <a href="https://lipa.swiss/en" target="_blank">Lipa</a>
+        </h3>
+        <p>The Swiss app for cashless payments with Bitcoin.</p>
+      </div>
     </div>
   </template>
-
 </CodeSwitcher>
