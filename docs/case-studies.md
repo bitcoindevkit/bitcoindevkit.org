@@ -165,6 +165,16 @@ lastUpdated: false
         </h3>
         <p>A self-custodial Bitcoin Wallet and Exchange app that lets users buy, sell, spend and get paid with Bitcoin. Bitcoins are automatically sent from the exchange to the user's wallet.</p>
       </div>
+      <!-- 10101 -->
+      <div class="case-study-item">
+        <a href="https://10101.finance/" target="_blank">
+          <img src="/img/case-studies-logos/10101-130.png" />
+        </a>
+        <h3>
+          <a href="https://10101.finance/" target="_blank">10101</a>
+        </h3>
+        <p>Decentralised finance. For real. BTC trading without counterparty risk in one easy and fast app.</p>
+      </div>
     </div>
   </template>
 
