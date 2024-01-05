@@ -131,6 +131,16 @@ lastUpdated: false
         </h3>
         <p>The Swiss app for cashless payments with Bitcoin.</p>
       </div>
+      <!-- Lexe -->
+      <div class="case-study-item">
+        <a href="https://lexe.app/" target="_blank">
+          <img src="/img/case-studies-logos/lexe-130.png" />
+        </a>
+        <h3>
+          <a href="https://lexe.app/" target="_blank">Lexe Wallet</a>
+        </h3>
+        <p>Lexe is a self-custodial Bitcoin and Lightning wallet that can receive payments 24/7.</p>
+      </div>
     </div>
   </template>
 
@@ -409,6 +419,16 @@ lastUpdated: false
           <a href="https://lipa.swiss/en" target="_blank">Lipa</a>
         </h3>
         <p>The Swiss app for cashless payments with Bitcoin.</p>
+      </div>
+      <!-- Lexe -->
+      <div class="case-study-item">
+        <a href="https://lexe.app/" target="_blank">
+          <img src="/img/case-studies-logos/lexe-130.png" />
+        </a>
+        <h3>
+          <a href="https://lexe.app/" target="_blank">Lexe Wallet</a>
+        </h3>
+        <p>Lexe is a self-custodial Bitcoin and Lightning wallet that can receive payments 24/7.</p>
       </div>
     </div>
   </template>
