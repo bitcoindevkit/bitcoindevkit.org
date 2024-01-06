@@ -346,12 +346,6 @@
 <a href="#346" id="346">346</a>
 <a href="#347" id="347">347</a>
 <a href="#348" id="348">348</a>
-<a href="#349" id="349">349</a>
-<a href="#350" id="350">350</a>
-<a href="#351" id="351">351</a>
-<a href="#352" id="352">352</a>
-<a href="#353" id="353">353</a>
-<a href="#354" id="354">354</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::{BTreeMap, BTreeSet},
     io::{<span class="self">self</span>, Write},
@@ -542,13 +536,7 @@
             // represents the last active spk derivation indices of keychains
             // (`keychain_indices_update`).
             </span><span class="kw">let </span>(graph_update, last_active_indices) = client
-                .scan_txs_with_keychains(
-                    keychain_spks,
-                    core::iter::empty(),
-                    core::iter::empty(),
-                    <span class="kw-2">*</span>stop_gap,
-                    scan_options.parallel_requests,
-                )
+                .full_scan(keychain_spks, <span class="kw-2">*</span>stop_gap, scan_options.parallel_requests)
                 .context(<span class="string">&quot;scanning for transactions&quot;</span>)<span class="question-mark">?</span>;
 
             <span class="kw">let </span><span class="kw-2">mut </span>graph = graph.lock().expect(<span class="string">&quot;mutex must not be poisoned&quot;</span>);
@@ -666,7 +654,7 @@
             }
 
             <span class="kw">let </span>graph_update =
-                client.scan_txs(spks, txids, outpoints, scan_options.parallel_requests)<span class="question-mark">?</span>;
+                client.sync(spks, txids, outpoints, scan_options.parallel_requests)<span class="question-mark">?</span>;
 
             graph.lock().unwrap().apply_update(graph_update)
         }
