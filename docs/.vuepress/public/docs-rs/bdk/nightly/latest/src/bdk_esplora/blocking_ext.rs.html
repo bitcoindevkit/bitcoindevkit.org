@@ -321,6 +321,16 @@
 <a href="#321" id="321">321</a>
 <a href="#322" id="322">322</a>
 <a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::thread::JoinHandle;
 
 <span class="kw">use </span>bdk_chain::collections::btree_map;
@@ -342,8 +352,8 @@
 </span><span class="kw">pub trait </span>EsploraExt {
     <span class="doccomment">/// Prepare an [`LocalChain`] update with blocks fetched from Esplora.
     ///
-    /// * `prev_tip` is the previous tip of [`LocalChain::tip`].
-    /// * `get_heights` is the block heights that we are interested in fetching from Esplora.
+    /// * `local_tip` is the previous tip of [`LocalChain::tip`].
+    /// * `request_heights` is the block heights that we are interested in fetching from Esplora.
     ///
     /// The result of this method can be applied to [`LocalChain::apply_update`].
     ///
@@ -357,54 +367,42 @@
         request_heights: <span class="kw">impl </span>IntoIterator&lt;Item = u32&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;local_chain::Update, Error&gt;;
 
-    <span class="doccomment">/// Scan Esplora for the data specified and return a [`TxGraph`] and a map of last active
-    /// indices.
+    <span class="doccomment">/// Full scan the keychain scripts specified with the blockchain (via an Esplora client) and
+    /// returns a [`TxGraph`] and a map of last active indices.
     ///
     /// * `keychain_spks`: keychains that we want to scan transactions for
-    /// * `txids`: transactions for which we want updated [`ConfirmationTimeHeightAnchor`]s
-    /// * `outpoints`: transactions associated with these outpoints (residing, spending) that we
-    ///     want to include in the update
     ///
-    /// The scan for each keychain stops after a gap of `stop_gap` script pubkeys with no associated
+    /// The full scan for each keychain stops after a gap of `stop_gap` script pubkeys with no associated
     /// transactions. `parallel_requests` specifies the max number of HTTP requests to make in
     /// parallel.
     </span><span class="attr">#[allow(clippy::result_large_err)]
-    </span><span class="kw">fn </span>scan_txs_with_keychains&lt;K: Ord + Clone&gt;(
+    </span><span class="kw">fn </span>full_scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, ScriptBuf)&gt;&gt;,
-        txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
-        outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         stop_gap: usize,
         parallel_requests: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationTimeHeightAnchor&gt;, BTreeMap&lt;K, u32&gt;), Error&gt;;
 
-    <span class="doccomment">/// Convenience method to call [`scan_txs_with_keychains`] without requiring a keychain.
+    <span class="doccomment">/// Sync a set of scripts with the blockchain (via an Esplora client) for the data
+    /// specified and return a [`TxGraph`].
     ///
-    /// [`scan_txs_with_keychains`]: EsploraExt::scan_txs_with_keychains
+    /// * `misc_spks`: scripts that we want to sync transactions for
+    /// * `txids`: transactions for which we want updated [`ConfirmationTimeHeightAnchor`]s
+    /// * `outpoints`: transactions associated with these outpoints (residing, spending) that we
+    ///     want to include in the update
+    ///
+    /// If the scripts to sync are unknown, such as when restoring or importing a keychain that
+    /// may include scripts that have been used, use [`full_scan`] with the keychain.
+    ///
+    /// [`full_scan`]: EsploraExt::full_scan
     </span><span class="attr">#[allow(clippy::result_large_err)]
-    </span><span class="kw">fn </span>scan_txs(
+    </span><span class="kw">fn </span>sync(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         misc_spks: <span class="kw">impl </span>IntoIterator&lt;Item = ScriptBuf&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationTimeHeightAnchor&gt;, Error&gt; {
-        <span class="self">self</span>.scan_txs_with_keychains(
-            [(
-                (),
-                misc_spks
-                    .into_iter()
-                    .enumerate()
-                    .map(|(i, spk)| (i <span class="kw">as </span>u32, spk)),
-            )]
-            .into(),
-            txids,
-            outpoints,
-            usize::MAX,
-            parallel_requests,
-        )
-        .map(|(g, <span class="kw">_</span>)| g)
-    }
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationTimeHeightAnchor&gt;, Error&gt;;
 }
 
 <span class="kw">impl </span>EsploraExt <span class="kw">for </span>esplora_client::BlockingClient {
@@ -513,11 +511,9 @@
         })
     }
 
-    <span class="kw">fn </span>scan_txs_with_keychains&lt;K: Ord + Clone&gt;(
+    <span class="kw">fn </span>full_scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, ScriptBuf)&gt;&gt;,
-        txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
-        outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
         stop_gap: usize,
         parallel_requests: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationTimeHeightAnchor&gt;, BTreeMap&lt;K, u32&gt;), Error&gt; {
@@ -589,6 +585,31 @@
             }
         }
 
+        <span class="prelude-val">Ok</span>((graph, last_active_indexes))
+    }
+
+    <span class="kw">fn </span>sync(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        misc_spks: <span class="kw">impl </span>IntoIterator&lt;Item = ScriptBuf&gt;,
+        txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
+        outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
+        parallel_requests: usize,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationTimeHeightAnchor&gt;, Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>graph = <span class="self">self
+            </span>.full_scan(
+                [(
+                    (),
+                    misc_spks
+                        .into_iter()
+                        .enumerate()
+                        .map(|(i, spk)| (i <span class="kw">as </span>u32, spk)),
+                )]
+                .into(),
+                usize::MAX,
+                parallel_requests,
+            )
+            .map(|(g, <span class="kw">_</span>)| g)<span class="question-mark">?</span>;
+
         <span class="kw">let </span><span class="kw-2">mut </span>txids = txids.into_iter();
         <span class="kw">loop </span>{
             <span class="kw">let </span>handles = txids
@@ -615,7 +636,7 @@
             }
         }
 
-        <span class="kw">for </span>op <span class="kw">in </span>outpoints.into_iter() {
+        <span class="kw">for </span>op <span class="kw">in </span>outpoints {
             <span class="kw">if </span>graph.get_tx(op.txid).is_none() {
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(tx) = <span class="self">self</span>.get_tx(<span class="kw-2">&amp;</span>op.txid)<span class="question-mark">? </span>{
                     <span class="kw">let _ </span>= graph.insert_tx(tx);
@@ -640,8 +661,7 @@
                 }
             }
         }
-
-        <span class="prelude-val">Ok</span>((graph, last_active_indexes))
+        <span class="prelude-val">Ok</span>(graph)
     }
 }
 </code></pre></div>
