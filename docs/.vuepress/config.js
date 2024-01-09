@@ -102,10 +102,6 @@ module.exports = {
         link: '/getting-started/'
       },
       {
-        text: 'Tutorials',
-        link: '/tutorials/hello-world'
-      },
-      {
         text: 'Case Studies',
         link: '/case-studies'
       },
@@ -117,15 +113,6 @@ module.exports = {
         text: 'Blog',
         link: '/blog/'
       },
-      {
-        text: 'Discord',
-        link: discordUrl
-      },
-      {
-        text: 'GitHub',
-        link: githubUrl,
-        rel: 'noopener noreferrer'
-      }
     ],
     sidebar: {
       '/_blog/': blogSidebar,

@@ -2,7 +2,7 @@
 title: "bdk-cli basics multi-sig 2 of 3 tutorial"
 description: "Tutorial using command-line to create a 2 of 3 multi-sig Wallet and Spend"
 authors:
-    - waterstone
+    - waterst0ne
 date: "2022-10-17"
 tags: ["tutorial", "bdk-cli","multi-sig"]
 hidden: false
