@@ -324,6 +324,11 @@
 <a href="#324" id="324">324</a>
 <a href="#325" id="325">325</a>
 <a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::BTreeMap,
     io::{<span class="self">self</span>, Write},
@@ -331,7 +336,7 @@
 };
 
 <span class="kw">use </span>bdk_chain::{
-    bitcoin::{Address, Network, OutPoint, ScriptBuf, Txid},
+    bitcoin::{constants::genesis_block, Address, Network, OutPoint, ScriptBuf, Txid},
     indexed_tx_graph::{<span class="self">self</span>, IndexedTxGraph},
     keychain,
     local_chain::{<span class="self">self</span>, LocalChain},
@@ -438,7 +443,12 @@
         graph
     });
 
-    <span class="kw">let </span>chain = Mutex::new(LocalChain::from_changeset(disk_local_chain)<span class="question-mark">?</span>);
+    <span class="kw">let </span>chain = Mutex::new({
+        <span class="kw">let </span>genesis_hash = genesis_block(args.network).block_hash();
+        <span class="kw">let </span>(<span class="kw-2">mut </span>chain, <span class="kw">_</span>) = LocalChain::from_genesis_hash(genesis_hash);
+        chain.apply_changeset(<span class="kw-2">&amp;</span>disk_local_chain)<span class="question-mark">?</span>;
+        chain
+    });
 
     <span class="kw">let </span>electrum_cmd = <span class="kw">match </span><span class="kw-2">&amp;</span>args.command {
         example_cli::Commands::ChainSpecific(electrum_cmd) =&gt; electrum_cmd,
