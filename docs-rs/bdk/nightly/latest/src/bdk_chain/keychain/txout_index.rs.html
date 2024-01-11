@@ -528,10 +528,6 @@
 <a href="#528" id="528">528</a>
 <a href="#529" id="529">529</a>
 <a href="#530" id="530">530</a>
-<a href="#531" id="531">531</a>
-<a href="#532" id="532">532</a>
-<a href="#533" id="533">533</a>
-<a href="#534" id="534">534</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     collections::<span class="kw-2">*</span>,
     indexed_tx_graph::Indexer,
@@ -740,9 +736,11 @@
     <span class="kw">fn </span>next_store_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; u32 {
         <span class="self">self</span>.inner()
             .all_spks()
-            .range((keychain.clone(), u32::MIN)..(keychain.clone(), u32::MAX))
+            <span class="comment">// This range is filtering out the spks with a keychain different than
+            // `keychain`. We don&#39;t use filter here as range is more optimized.
+            </span>.range((keychain.clone(), u32::MIN)..(keychain.clone(), u32::MAX))
             .last()
-            .map_or(<span class="number">0</span>, |((<span class="kw">_</span>, v), <span class="kw">_</span>)| <span class="kw-2">*</span>v + <span class="number">1</span>)
+            .map_or(<span class="number">0</span>, |((<span class="kw">_</span>, index), <span class="kw">_</span>)| <span class="kw-2">*</span>index + <span class="number">1</span>)
     }
 
     <span class="doccomment">/// Generates script pubkey iterators for every `keychain`. The iterators iterate over all
@@ -896,51 +894,45 @@
         <span class="kw">let </span>has_wildcard = descriptor.has_wildcard();
 
         <span class="kw">let </span>target_index = <span class="kw">if </span>has_wildcard { target_index } <span class="kw">else </span>{ <span class="number">0 </span>};
-        <span class="kw">let </span>next_reveal_index = <span class="self">self</span>.last_revealed.get(keychain).map_or(<span class="number">0</span>, |v| <span class="kw-2">*</span>v + <span class="number">1</span>);
+        <span class="kw">let </span>next_reveal_index = <span class="self">self
+            </span>.last_revealed
+            .get(keychain)
+            .map_or(<span class="number">0</span>, |index| <span class="kw-2">*</span>index + <span class="number">1</span>);
 
         <span class="macro">debug_assert!</span>(next_reveal_index + <span class="self">self</span>.lookahead &gt;= <span class="self">self</span>.next_store_index(keychain));
 
-        <span class="comment">// if we need to reveal new indices, the latest revealed index goes here
-        </span><span class="kw">let </span><span class="kw-2">mut </span>reveal_to_index = <span class="prelude-val">None</span>;
-
-        <span class="comment">// if the target is not yet revealed, but is already stored (due to lookahead), we need to
-        // set the `reveal_to_index` as target here (as the `for` loop below only updates
-        // `reveal_to_index` for indexes that are NOT stored)
-        </span><span class="kw">if </span>next_reveal_index &lt;= target_index &amp;&amp; target_index &lt; next_reveal_index + <span class="self">self</span>.lookahead {
-            reveal_to_index = <span class="prelude-val">Some</span>(target_index);
-        }
-
-        <span class="comment">// we range over indexes that are not stored
-        </span><span class="kw">let </span>range = next_reveal_index + <span class="self">self</span>.lookahead..=target_index + <span class="self">self</span>.lookahead;
-        <span class="kw">for </span>(new_index, new_spk) <span class="kw">in </span>SpkIterator::new_with_range(descriptor, range) {
-            <span class="kw">let </span>_inserted = <span class="self">self
-                </span>.inner
-                .insert_spk((keychain.clone(), new_index), new_spk);
-            <span class="macro">debug_assert!</span>(_inserted, <span class="string">&quot;must not have existing spk&quot;</span>,);
-
-            <span class="comment">// everything after `target_index` is stored for lookahead only
-            </span><span class="kw">if </span>new_index &lt;= target_index {
-                reveal_to_index = <span class="prelude-val">Some</span>(new_index);
-            }
-        }
-
-        <span class="kw">match </span>reveal_to_index {
-            <span class="prelude-val">Some</span>(index) =&gt; {
-                <span class="kw">let </span>_old_index = <span class="self">self</span>.last_revealed.insert(keychain.clone(), index);
-                <span class="macro">debug_assert!</span>(_old_index &lt; <span class="prelude-val">Some</span>(index));
-                (
-                    SpkIterator::new_with_range(descriptor.clone(), next_reveal_index..index + <span class="number">1</span>),
-                    <span class="kw">super</span>::ChangeSet(core::iter::once((keychain.clone(), index)).collect()),
-                )
-            }
-            <span class="prelude-val">None </span>=&gt; (
+        <span class="comment">// If the target_index is already revealed, we are done
+        </span><span class="kw">if </span>next_reveal_index &gt; target_index {
+            <span class="kw">return </span>(
                 SpkIterator::new_with_range(
                     descriptor.clone(),
                     next_reveal_index..next_reveal_index,
                 ),
                 <span class="kw">super</span>::ChangeSet::default(),
-            ),
+            );
         }
+
+        <span class="comment">// We range over the indexes that are not stored and insert their spks in the index.
+        // Indexes from next_reveal_index to next_reveal_index + lookahead are already stored (due
+        // to lookahead), so we only range from next_reveal_index + lookahead to target + lookahead
+        </span><span class="kw">let </span>range = next_reveal_index + <span class="self">self</span>.lookahead..=target_index + <span class="self">self</span>.lookahead;
+        <span class="kw">for </span>(new_index, new_spk) <span class="kw">in </span>SpkIterator::new_with_range(descriptor, range) {
+            <span class="kw">let </span>_inserted = <span class="self">self
+                </span>.inner
+                .insert_spk((keychain.clone(), new_index), new_spk);
+            <span class="macro">debug_assert!</span>(_inserted, <span class="string">&quot;must not have existing spk&quot;</span>);
+            <span class="macro">debug_assert!</span>(
+                has_wildcard || new_index == <span class="number">0</span>,
+                <span class="string">&quot;non-wildcard descriptors must not iterate past index 0&quot;
+            </span>);
+        }
+
+        <span class="kw">let </span>_old_index = <span class="self">self</span>.last_revealed.insert(keychain.clone(), target_index);
+        <span class="macro">debug_assert!</span>(_old_index &lt; <span class="prelude-val">Some</span>(target_index));
+        (
+            SpkIterator::new_with_range(descriptor.clone(), next_reveal_index..target_index + <span class="number">1</span>),
+            <span class="kw">super</span>::ChangeSet(core::iter::once((keychain.clone(), target_index)).collect()),
+        )
     }
 
     <span class="doccomment">/// Attempts to reveal the next script pubkey for `keychain`.
