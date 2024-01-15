@@ -639,6 +639,28 @@
 <a href="#639" id="639">639</a>
 <a href="#640" id="640">640</a>
 <a href="#641" id="641">641</a>
+<a href="#642" id="642">642</a>
+<a href="#643" id="643">643</a>
+<a href="#644" id="644">644</a>
+<a href="#645" id="645">645</a>
+<a href="#646" id="646">646</a>
+<a href="#647" id="647">647</a>
+<a href="#648" id="648">648</a>
+<a href="#649" id="649">649</a>
+<a href="#650" id="650">650</a>
+<a href="#651" id="651">651</a>
+<a href="#652" id="652">652</a>
+<a href="#653" id="653">653</a>
+<a href="#654" id="654">654</a>
+<a href="#655" id="655">655</a>
+<a href="#656" id="656">656</a>
+<a href="#657" id="657">657</a>
+<a href="#658" id="658">658</a>
+<a href="#659" id="659">659</a>
+<a href="#660" id="660">660</a>
+<a href="#661" id="661">661</a>
+<a href="#662" id="662">662</a>
+<a href="#663" id="663">663</a>
 </pre><pre class="rust"><code><span class="doccomment">//! The [`LocalChain`] is a local implementation of [`ChainOracle`].
 
 </span><span class="kw">use </span>core::convert::Infallible;
@@ -1059,6 +1081,28 @@
                 update_hash: changeset.get(<span class="kw-2">&amp;</span><span class="number">0</span>).cloned().flatten(),
             })<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(changeset)
+    }
+
+    <span class="doccomment">/// Removes blocks from (and inclusive of) the given `block_id`.
+    ///
+    /// This will remove blocks with a height equal or greater than `block_id`, but only if
+    /// `block_id` exists in the chain.
+    ///
+    /// # Errors
+    ///
+    /// This will fail with [`MissingGenesisError`] if the caller attempts to disconnect from the
+    /// genesis block.
+    </span><span class="kw">pub fn </span>disconnect_from(<span class="kw-2">&amp;mut </span><span class="self">self</span>, block_id: BlockId) -&gt; <span class="prelude-ty">Result</span>&lt;ChangeSet, MissingGenesisError&gt; {
+        <span class="kw">if </span><span class="self">self</span>.index.get(<span class="kw-2">&amp;</span>block_id.height) != <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>block_id.hash) {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(ChangeSet::default());
+        }
+
+        <span class="kw">let </span>changeset = <span class="self">self
+            </span>.index
+            .range(block_id.height..)
+            .map(|(<span class="kw-2">&amp;</span>height, <span class="kw">_</span>)| (height, <span class="prelude-val">None</span>))
+            .collect::&lt;ChangeSet&gt;();
+        <span class="self">self</span>.apply_changeset(<span class="kw-2">&amp;</span>changeset).map(|<span class="kw">_</span>| changeset)
     }
 
     <span class="doccomment">/// Reindex the heights in the chain from (and including) `from` height
