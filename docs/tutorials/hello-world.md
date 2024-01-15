@@ -130,7 +130,7 @@ let faucet_address = Address::from_str("mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt")?;
 
 let mut tx_builder = wallet.build_tx();
 tx_builder
-    .add_recipient(faucet_address.script_pubkey(), (balance.trusted_pending + balance.confirmed) / 2)
+    .add_recipient(faucet_address.payload.script_pubkey(), (balance.trusted_pending + balance.confirmed) / 2)
     .enable_rbf();
 let (mut psbt, tx_details) = tx_builder.finish()?;
 
