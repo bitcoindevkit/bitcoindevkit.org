@@ -513,7 +513,7 @@
                 .lock()
                 .expect(<span class="string">&quot;mutex must not be poisoned&quot;</span>)
                 .index
-                .spks_of_all_keychains()
+                .all_unbounded_spk_iters()
                 .into_iter()
                 <span class="comment">// This `map` is purely for logging.
                 </span>.map(|(keychain, iter)| {
@@ -583,32 +583,32 @@
                 <span class="kw">if </span><span class="kw-2">*</span>all_spks {
                     <span class="kw">let </span>all_spks = graph
                         .index
-                        .all_spks()
-                        .iter()
-                        .map(|(k, v)| (<span class="kw-2">*</span>k, v.clone()))
+                        .revealed_spks()
+                        .map(|(k, i, spk)| (k, i, spk.to_owned()))
                         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-                    spks = Box::new(spks.chain(all_spks.into_iter().map(|(index, script)| {
-                        <span class="macro">eprintln!</span>(<span class="string">&quot;scanning {:?}&quot;</span>, index);
+                    spks = Box::new(spks.chain(all_spks.into_iter().map(|(k, i, spk)| {
+                        <span class="macro">eprintln!</span>(<span class="string">&quot;scanning {}:{}&quot;</span>, k, i);
                         <span class="comment">// Flush early to ensure we print at every iteration.
                         </span><span class="kw">let _ </span>= io::stderr().flush();
-                        script
+                        spk
                     })));
                 }
                 <span class="kw">if </span>unused_spks {
                     <span class="kw">let </span>unused_spks = graph
                         .index
-                        .unused_spks(..)
-                        .map(|(k, v)| (<span class="kw-2">*</span>k, v.to_owned()))
+                        .unused_spks()
+                        .map(|(k, i, spk)| (k, i, spk.to_owned()))
                         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-                    spks = Box::new(spks.chain(unused_spks.into_iter().map(|(index, script)| {
+                    spks = Box::new(spks.chain(unused_spks.into_iter().map(|(k, i, spk)| {
                         <span class="macro">eprintln!</span>(
-                            <span class="string">&quot;Checking if address {} {:?} has been used&quot;</span>,
-                            Address::from_script(<span class="kw-2">&amp;</span>script, args.network).unwrap(),
-                            index
+                            <span class="string">&quot;Checking if address {} {}:{} has been used&quot;</span>,
+                            Address::from_script(<span class="kw-2">&amp;</span>spk, args.network).unwrap(),
+                            k,
+                            i,
                         );
                         <span class="comment">// Flush early to ensure we print at every iteration.
                         </span><span class="kw">let _ </span>= io::stderr().flush();
-                        script
+                        spk
                     })));
                 }
                 <span class="kw">if </span>utxos {

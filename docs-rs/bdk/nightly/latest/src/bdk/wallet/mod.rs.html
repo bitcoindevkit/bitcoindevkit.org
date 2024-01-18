@@ -2441,6 +2441,33 @@
 <a href="#2440" id="2440">2440</a>
 <a href="#2441" id="2441">2441</a>
 <a href="#2442" id="2442">2442</a>
+<a href="#2443" id="2443">2443</a>
+<a href="#2444" id="2444">2444</a>
+<a href="#2445" id="2445">2445</a>
+<a href="#2446" id="2446">2446</a>
+<a href="#2447" id="2447">2447</a>
+<a href="#2448" id="2448">2448</a>
+<a href="#2449" id="2449">2449</a>
+<a href="#2450" id="2450">2450</a>
+<a href="#2451" id="2451">2451</a>
+<a href="#2452" id="2452">2452</a>
+<a href="#2453" id="2453">2453</a>
+<a href="#2454" id="2454">2454</a>
+<a href="#2455" id="2455">2455</a>
+<a href="#2456" id="2456">2456</a>
+<a href="#2457" id="2457">2457</a>
+<a href="#2458" id="2458">2458</a>
+<a href="#2459" id="2459">2459</a>
+<a href="#2460" id="2460">2460</a>
+<a href="#2461" id="2461">2461</a>
+<a href="#2462" id="2462">2462</a>
+<a href="#2463" id="2463">2463</a>
+<a href="#2464" id="2464">2464</a>
+<a href="#2465" id="2465">2465</a>
+<a href="#2466" id="2466">2466</a>
+<a href="#2467" id="2467">2467</a>
+<a href="#2468" id="2468">2468</a>
+<a href="#2469" id="2469">2469</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2705,6 +2732,11 @@
     <span class="doccomment">/// Infallibly return a derived address using the external descriptor, see [`AddressIndex`] for
     /// available address index selection strategies. If none of the keys in the descriptor are derivable
     /// (i.e. does not end with /*) then the same address will always be returned for any [`AddressIndex`].
+    ///
+    /// # Panics
+    ///
+    /// This panics when the caller requests for an address of derivation index greater than the
+    /// BIP32 max index.
     </span><span class="kw">pub fn </span>get_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, address_index: AddressIndex) -&gt; AddressInfo {
         <span class="self">self</span>.try_get_address(address_index).unwrap()
     }
@@ -2716,6 +2748,11 @@
     /// see [`AddressIndex`] for available address index selection strategies. If none of the keys
     /// in the descriptor are derivable (i.e. does not end with /*) then the same address will always
     /// be returned for any [`AddressIndex`].
+    ///
+    /// # Panics
+    ///
+    /// This panics when the caller requests for an address of derivation index greater than the
+    /// BIP32 max index.
     </span><span class="kw">pub fn </span>get_internal_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, address_index: AddressIndex) -&gt; AddressInfo {
         <span class="self">self</span>.try_get_internal_address(address_index).unwrap()
     }
@@ -3092,6 +3129,11 @@
     ///
     /// A `PersistBackend&lt;ChangeSet&gt;::WriteError` will result if unable to persist the new address
     /// to the `PersistBackend`.
+    ///
+    /// # Panics
+    ///
+    /// This panics when the caller requests for an address of derivation index greater than the
+    /// BIP32 max index.
     </span><span class="kw">pub fn </span>try_get_address(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         address_index: AddressIndex,
@@ -3112,6 +3154,11 @@
     /// see [`AddressIndex`] for available address index selection strategies. If none of the keys
     /// in the descriptor are derivable (i.e. does not end with /*) then the same address will always
     /// be returned for any [`AddressIndex`].
+    ///
+    /// # Panics
+    ///
+    /// This panics when the caller requests for an address of derivation index greater than the
+    /// BIP32 max index.
     </span><span class="kw">pub fn </span>try_get_internal_address(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         address_index: AddressIndex,
@@ -3134,6 +3181,11 @@
     /// See [`AddressIndex`] for available address index selection strategies. If none of the keys
     /// in the descriptor are derivable (i.e. does not end with /*) then the same address will
     /// always be returned for any [`AddressIndex`].
+    ///
+    /// # Panics
+    ///
+    /// This panics when the caller requests for an address of derivation index greater than the
+    /// BIP32 max index.
     </span><span class="kw">fn </span>_get_address(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         keychain: KeychainKind,
@@ -3153,12 +3205,14 @@
                 <span class="kw">let </span>((index, spk), index_changeset) = txout_index.next_unused_spk(<span class="kw-2">&amp;</span>keychain);
                 (index, spk.into(), <span class="prelude-val">Some</span>(index_changeset))
             }
-            AddressIndex::Peek(index) =&gt; {
-                <span class="kw">let </span>(index, spk) = txout_index
-                    .spks_of_keychain(<span class="kw-2">&amp;</span>keychain)
-                    .take(index <span class="kw">as </span>usize + <span class="number">1</span>)
-                    .last()
-                    .unwrap();
+            AddressIndex::Peek(<span class="kw-2">mut </span>peek_index) =&gt; {
+                <span class="kw">let </span><span class="kw-2">mut </span>spk_iter = txout_index.unbounded_spk_iter(<span class="kw-2">&amp;</span>keychain);
+                <span class="kw">if </span>!spk_iter.descriptor().has_wildcard() {
+                    peek_index = <span class="number">0</span>;
+                }
+                <span class="kw">let </span>(index, spk) = spk_iter
+                    .nth(peek_index <span class="kw">as </span>usize)
+                    .expect(<span class="string">&quot;derivation index is out of bounds&quot;</span>);
                 (index, spk, <span class="prelude-val">None</span>)
             }
         };
@@ -3188,7 +3242,7 @@
     ///
     /// Will only return `Some(_)` if the wallet has given out the spk.
     </span><span class="kw">pub fn </span>derivation_of_spk(<span class="kw-2">&amp;</span><span class="self">self</span>, spk: <span class="kw-2">&amp;</span>Script) -&gt; <span class="prelude-ty">Option</span>&lt;(KeychainKind, u32)&gt; {
-        <span class="self">self</span>.indexed_graph.index.index_of_spk(spk).copied()
+        <span class="self">self</span>.indexed_graph.index.index_of_spk(spk)
     }
 
     <span class="doccomment">/// Return the list of unspent outputs of this wallet
@@ -3227,7 +3281,7 @@
         <span class="self">self</span>.chain.tip()
     }
 
-    <span class="doccomment">/// Returns a iterators of all the script pubkeys for the `Internal` and External` variants in `KeychainKind`.
+    <span class="doccomment">/// Get unbounded script pubkey iterators for both `Internal` and `External` keychains.
     ///
     /// This is intended to be used when doing a full scan of your addresses (e.g. after restoring
     /// from seed words). You pass the `BTreeMap` of iterators to a blockchain data source (e.g.
@@ -3235,36 +3289,36 @@
     ///
     /// Note carefully that iterators go over **all** script pubkeys on the keychains (not what
     /// script pubkeys the wallet is storing internally).
-    </span><span class="kw">pub fn </span>spks_of_all_keychains(
+    </span><span class="kw">pub fn </span>all_unbounded_spk_iters(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
     ) -&gt; BTreeMap&lt;KeychainKind, <span class="kw">impl </span>Iterator&lt;Item = (u32, ScriptBuf)&gt; + Clone&gt; {
-        <span class="self">self</span>.indexed_graph.index.spks_of_all_keychains()
+        <span class="self">self</span>.indexed_graph.index.all_unbounded_spk_iters()
     }
 
-    <span class="doccomment">/// Gets an iterator over all the script pubkeys in a single keychain.
+    <span class="doccomment">/// Get an unbounded script pubkey iterator for the given `keychain`.
     ///
-    /// See [`spks_of_all_keychains`] for more documentation
+    /// See [`all_unbounded_spk_iters`] for more documentation
     ///
-    /// [`spks_of_all_keychains`]: Self::spks_of_all_keychains
-    </span><span class="kw">pub fn </span>spks_of_keychain(
+    /// [`all_unbounded_spk_iters`]: Self::all_unbounded_spk_iters
+    </span><span class="kw">pub fn </span>unbounded_spk_iter(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain: KeychainKind,
     ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (u32, ScriptBuf)&gt; + Clone {
-        <span class="self">self</span>.indexed_graph.index.spks_of_keychain(<span class="kw-2">&amp;</span>keychain)
+        <span class="self">self</span>.indexed_graph.index.unbounded_spk_iter(<span class="kw-2">&amp;</span>keychain)
     }
 
     <span class="doccomment">/// Returns the utxo owned by this wallet corresponding to `outpoint` if it exists in the
     /// wallet&#39;s database.
     </span><span class="kw">pub fn </span>get_utxo(<span class="kw-2">&amp;</span><span class="self">self</span>, op: OutPoint) -&gt; <span class="prelude-ty">Option</span>&lt;LocalOutput&gt; {
-        <span class="kw">let </span>(<span class="kw-2">&amp;</span>spk_i, <span class="kw">_</span>) = <span class="self">self</span>.indexed_graph.index.txout(op)<span class="question-mark">?</span>;
+        <span class="kw">let </span>(keychain, index, <span class="kw">_</span>) = <span class="self">self</span>.indexed_graph.index.txout(op)<span class="question-mark">?</span>;
         <span class="self">self</span>.indexed_graph
             .graph()
             .filter_chain_unspents(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
                 <span class="self">self</span>.chain.tip().block_id(),
-                core::iter::once((spk_i, op)),
+                core::iter::once(((), op)),
             )
-            .map(|((k, i), full_txo)| new_local_utxo(k, i, full_txo))
+            .map(|(<span class="kw">_</span>, full_txo)| new_local_utxo(keychain, index, full_txo))
             .next()
     }
 
@@ -3902,7 +3956,7 @@
                 <span class="kw">let </span>((index, spk), index_changeset) =
                     <span class="self">self</span>.indexed_graph.index.next_unused_spk(<span class="kw-2">&amp;</span>change_keychain);
                 <span class="kw">let </span>spk = spk.into();
-                <span class="self">self</span>.indexed_graph.index.mark_used(<span class="kw-2">&amp;</span>change_keychain, index);
+                <span class="self">self</span>.indexed_graph.index.mark_used(change_keychain, index);
                 <span class="self">self</span>.persist
                     .stage(ChangeSet::from(indexed_tx_graph::ChangeSet::from(
                         index_changeset,
@@ -4083,7 +4137,7 @@
                     .into();
 
                 <span class="kw">let </span>weighted_utxo = <span class="kw">match </span>txout_index.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
-                    <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(keychain, derivation_index)) =&gt; {
+                    <span class="prelude-val">Some</span>((keychain, derivation_index)) =&gt; {
                         <span class="attr">#[allow(deprecated)]
                         </span><span class="kw">let </span>satisfaction_weight = <span class="self">self
                             </span>.get_descriptor_for_keychain(keychain)
@@ -4127,7 +4181,7 @@
             <span class="kw">for </span>(index, txout) <span class="kw">in </span>tx.output.iter().enumerate() {
                 <span class="kw">let </span>change_type = <span class="self">self</span>.map_keychain(KeychainKind::Internal);
                 <span class="kw">match </span>txout_index.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
-                    <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(keychain, <span class="kw">_</span>)) <span class="kw">if </span>keychain == change_type =&gt; change_index = <span class="prelude-val">Some</span>(index),
+                    <span class="prelude-val">Some</span>((keychain, <span class="kw">_</span>)) <span class="kw">if </span>keychain == change_type =&gt; change_index = <span class="prelude-val">Some</span>(index),
                     <span class="kw">_ </span>=&gt; {}
                 }
             }
@@ -4382,10 +4436,10 @@
     </span><span class="kw">pub fn </span>cancel_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) {
         <span class="kw">let </span>txout_index = <span class="kw-2">&amp;mut </span><span class="self">self</span>.indexed_graph.index;
         <span class="kw">for </span>txout <span class="kw">in </span><span class="kw-2">&amp;</span>tx.output {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(keychain, index)) = txout_index.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>((keychain, index)) = txout_index.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
                 <span class="comment">// NOTE: unmark_used will **not** make something unused if it has actually been used
                 // by a tx in the tracker. It only removes the superficial marking.
-                </span>txout_index.unmark_used(<span class="kw-2">&amp;</span>keychain, index);
+                </span>txout_index.unmark_used(keychain, index);
             }
         }
     }
@@ -4401,7 +4455,7 @@
     }
 
     <span class="kw">fn </span>get_descriptor_for_txout(<span class="kw-2">&amp;</span><span class="self">self</span>, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="prelude-ty">Option</span>&lt;DerivedDescriptor&gt; {
-        <span class="kw">let </span><span class="kw-2">&amp;</span>(keychain, child) = <span class="self">self
+        <span class="kw">let </span>(keychain, child) = <span class="self">self
             </span>.indexed_graph
             .index
             .index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey)<span class="question-mark">?</span>;
@@ -4615,7 +4669,7 @@
     {
         <span class="comment">// Try to find the prev_script in our db to figure out if this is internal or external,
         // and the derivation index
-        </span><span class="kw">let </span><span class="kw-2">&amp;</span>(keychain, child) = <span class="self">self
+        </span><span class="kw">let </span>(keychain, child) = <span class="self">self
             </span>.indexed_graph
             .index
             .index_of_spk(<span class="kw-2">&amp;</span>utxo.txout.script_pubkey)
@@ -4669,7 +4723,7 @@
 
         <span class="comment">// Try to figure out the keychain and derivation for every input and output
         </span><span class="kw">for </span>(is_input, index, out) <span class="kw">in </span>utxos.into_iter() {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(keychain, child)) =
+            <span class="kw">if let </span><span class="prelude-val">Some</span>((keychain, child)) =
                 <span class="self">self</span>.indexed_graph.index.index_of_spk(<span class="kw-2">&amp;</span>out.script_pubkey)
             {
                 <span class="kw">let </span>desc = <span class="self">self</span>.get_descriptor_for_keychain(keychain);
