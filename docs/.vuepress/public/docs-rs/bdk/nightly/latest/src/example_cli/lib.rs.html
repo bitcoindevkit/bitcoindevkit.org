@@ -1177,14 +1177,14 @@
                         <span class="bool-val">true </span>=&gt; Keychain::Internal,
                         <span class="bool-val">false </span>=&gt; Keychain::External,
                     };
-                    <span class="kw">for </span>(spk_i, spk) <span class="kw">in </span>index.revealed_spks_of_keychain(<span class="kw-2">&amp;</span>target_keychain) {
+                    <span class="kw">for </span>(spk_i, spk) <span class="kw">in </span>index.revealed_keychain_spks(<span class="kw-2">&amp;</span>target_keychain) {
                         <span class="kw">let </span>address = Address::from_script(spk, network)
                             .expect(<span class="string">&quot;should always be able to derive address&quot;</span>);
                         <span class="macro">println!</span>(
                             <span class="string">&quot;{:?} {} used:{}&quot;</span>,
                             spk_i,
                             address,
-                            index.is_used(<span class="kw-2">&amp;</span>(target_keychain, spk_i))
+                            index.is_used(target_keychain, spk_i)
                         );
                     }
                     <span class="prelude-val">Ok</span>(())
@@ -1310,7 +1310,7 @@
                     <span class="comment">// We don&#39;t want other callers/threads to use this address while we&#39;re using it
                     // but we also don&#39;t want to scan the tx we just created because it&#39;s not
                     // technically in the blockchain yet.
-                    </span>graph.index.mark_used(<span class="kw-2">&amp;</span>change_keychain, index);
+                    </span>graph.index.mark_used(change_keychain, index);
                     (tx, <span class="prelude-val">Some</span>((change_keychain, index)))
                 } <span class="kw">else </span>{
                     (tx, <span class="prelude-val">None</span>)
@@ -1335,7 +1335,7 @@
                 <span class="prelude-val">Err</span>(e) =&gt; {
                     <span class="kw">if let </span><span class="prelude-val">Some</span>((keychain, index)) = change_index {
                         <span class="comment">// We failed to broadcast, so allow our change address to be used in the future
-                        </span>graph.lock().unwrap().index.unmark_used(<span class="kw-2">&amp;</span>keychain, index);
+                        </span>graph.lock().unwrap().index.unmark_used(keychain, index);
                     }
                     <span class="prelude-val">Err</span>(e)
                 }

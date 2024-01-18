@@ -328,7 +328,6 @@
 <a href="#328" id="328">328</a>
 <a href="#329" id="329">329</a>
 <a href="#330" id="330">330</a>
-<a href="#331" id="331">331</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::BTreeMap,
     io::{<span class="self">self</span>, Write},
@@ -336,7 +335,7 @@
 };
 
 <span class="kw">use </span>bdk_chain::{
-    bitcoin::{constants::genesis_block, Address, Network, OutPoint, ScriptBuf, Txid},
+    bitcoin::{constants::genesis_block, Address, Network, OutPoint, Txid},
     indexed_tx_graph::{<span class="self">self</span>, IndexedTxGraph},
     keychain,
     local_chain::{<span class="self">self</span>, LocalChain},
@@ -486,7 +485,7 @@
 
                 <span class="kw">let </span>keychain_spks = graph
                     .index
-                    .spks_of_all_keychains()
+                    .all_unbounded_spk_iters()
                     .into_iter()
                     .map(|(keychain, iter)| {
                         <span class="kw">let </span><span class="kw-2">mut </span>first = <span class="bool-val">true</span>;
@@ -537,29 +536,28 @@
             <span class="kw">if </span>all_spks {
                 <span class="kw">let </span>all_spks = graph
                     .index
-                    .all_spks()
-                    .iter()
-                    .map(|(k, v)| (<span class="kw-2">*</span>k, v.clone()))
+                    .revealed_spks()
+                    .map(|(k, i, spk)| (k, i, spk.to_owned()))
                     .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-                spks = Box::new(spks.chain(all_spks.into_iter().map(|(index, script)| {
-                    <span class="macro">eprintln!</span>(<span class="string">&quot;scanning {:?}&quot;</span>, index);
-                    script
+                spks = Box::new(spks.chain(all_spks.into_iter().map(|(k, i, spk)| {
+                    <span class="macro">eprintln!</span>(<span class="string">&quot;scanning {}:{}&quot;</span>, k, i);
+                    spk
                 })));
             }
             <span class="kw">if </span>unused_spks {
                 <span class="kw">let </span>unused_spks = graph
                     .index
-                    .unused_spks(..)
-                    .map(|(k, v)| (<span class="kw-2">*</span>k, ScriptBuf::from(v)))
+                    .unused_spks()
+                    .map(|(k, i, spk)| (k, i, spk.to_owned()))
                     .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-                spks = Box::new(spks.chain(unused_spks.into_iter().map(|(index, script)| {
+                spks = Box::new(spks.chain(unused_spks.into_iter().map(|(k, i, spk)| {
                     <span class="macro">eprintln!</span>(
-                        <span class="string">&quot;Checking if address {} {:?} has been used&quot;</span>,
-                        Address::from_script(<span class="kw-2">&amp;</span>script, args.network).unwrap(),
-                        index
+                        <span class="string">&quot;Checking if address {} {}:{} has been used&quot;</span>,
+                        Address::from_script(<span class="kw-2">&amp;</span>spk, args.network).unwrap(),
+                        k,
+                        i,
                     );
-
-                    script
+                    spk
                 })));
             }
 
