@@ -358,13 +358,13 @@
 ///
 /// The changesets are the results of altering a tracker implementation (`T`).
 </span><span class="attr">#[derive(Debug)]
-</span><span class="kw">pub struct </span>Store&lt;<span class="lifetime">&#39;a</span>, C&gt; {
-    magic: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8],
+</span><span class="kw">pub struct </span>Store&lt;C&gt; {
+    magic_len: usize,
     db_file: File,
     marker: PhantomData&lt;C&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; PersistBackend&lt;C&gt; <span class="kw">for </span>Store&lt;<span class="lifetime">&#39;a</span>, C&gt;
+<span class="kw">impl</span>&lt;C&gt; PersistBackend&lt;C&gt; <span class="kw">for </span>Store&lt;C&gt;
 <span class="kw">where
     </span>C: Append + serde::Serialize + serde::de::DeserializeOwned,
 {
@@ -381,7 +381,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, C&gt; Store&lt;<span class="lifetime">&#39;a</span>, C&gt;
+<span class="kw">impl</span>&lt;C&gt; Store&lt;C&gt;
 <span class="kw">where
     </span>C: Append + serde::Serialize + serde::de::DeserializeOwned,
 {
@@ -391,7 +391,7 @@
     /// the `Store` in the future with [`open`].
     ///
     /// [`open`]: Store::open
-    </span><span class="kw">pub fn </span>create_new&lt;P&gt;(magic: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8], file_path: P) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, FileError&gt;
+    </span><span class="kw">pub fn </span>create_new&lt;P&gt;(magic: <span class="kw-2">&amp;</span>[u8], file_path: P) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, FileError&gt;
     <span class="kw">where
         </span>P: AsRef&lt;Path&gt;,
     {
@@ -410,7 +410,7 @@
             .open(file_path)<span class="question-mark">?</span>;
         f.write_all(magic)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            magic,
+            magic_len: magic.len(),
             db_file: f,
             marker: Default::default(),
         })
@@ -426,7 +426,7 @@
     /// [`FileError::InvalidMagicBytes`] error variant will be returned.
     ///
     /// [`create_new`]: Store::create_new
-    </span><span class="kw">pub fn </span>open&lt;P&gt;(magic: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8], file_path: P) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, FileError&gt;
+    </span><span class="kw">pub fn </span>open&lt;P&gt;(magic: <span class="kw-2">&amp;</span>[u8], file_path: P) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, FileError&gt;
     <span class="kw">where
         </span>P: AsRef&lt;Path&gt;,
     {
@@ -442,7 +442,7 @@
         }
 
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            magic,
+            magic_len: magic.len(),
             db_file: f,
             marker: Default::default(),
         })
@@ -454,7 +454,7 @@
     ///
     /// [`open`]: Store::open
     /// [`create_new`]: Store::create_new
-    </span><span class="kw">pub fn </span>open_or_create_new&lt;P&gt;(magic: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8], file_path: P) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, FileError&gt;
+    </span><span class="kw">pub fn </span>open_or_create_new&lt;P&gt;(magic: <span class="kw-2">&amp;</span>[u8], file_path: P) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, FileError&gt;
     <span class="kw">where
         </span>P: AsRef&lt;Path&gt;,
     {
@@ -475,7 +475,7 @@
     /// always iterate over all entries until `None` is returned if you want your next write to go
     /// at the end; otherwise, you will write over existing entries.
     </span><span class="kw">pub fn </span>iter_changesets(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; EntryIter&lt;C&gt; {
-        EntryIter::new(<span class="self">self</span>.magic.len() <span class="kw">as </span>u64, <span class="kw-2">&amp;mut </span><span class="self">self</span>.db_file)
+        EntryIter::new(<span class="self">self</span>.magic_len <span class="kw">as </span>u64, <span class="kw-2">&amp;mut </span><span class="self">self</span>.db_file)
     }
 
     <span class="doccomment">/// Loads all the changesets that have been stored as one giant changeset.
