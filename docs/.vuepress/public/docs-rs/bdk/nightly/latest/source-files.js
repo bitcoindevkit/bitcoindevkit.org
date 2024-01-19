@@ -14,6 +14,7 @@ var sourcesIndex = JSON.parse('{\
 "example_esplora":["",[],["main.rs"]],\
 "wallet_electrum_example":["",[],["main.rs"]],\
 "wallet_esplora_async":["",[],["main.rs"]],\
-"wallet_esplora_blocking":["",[],["main.rs"]]\
+"wallet_esplora_blocking":["",[],["main.rs"]],\
+"wallet_rpc":["",[],["main.rs"]]\
 }');
 createSourceSidebar();

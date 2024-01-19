@@ -378,6 +378,14 @@
 <a href="#378" id="378">378</a>
 <a href="#379" id="379">379</a>
 <a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     path::PathBuf,
     sync::{
@@ -394,7 +402,7 @@
 <span class="kw">use </span>bdk_chain::{
     bitcoin::{constants::genesis_block, Block, Transaction},
     indexed_tx_graph, keychain,
-    local_chain::{<span class="self">self</span>, CheckPoint, LocalChain},
+    local_chain::{<span class="self">self</span>, LocalChain},
     ConfirmationTimeHeightAnchor, IndexedTxGraph,
 };
 <span class="kw">use </span>example_cli::{
@@ -422,7 +430,7 @@
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">enum </span>Emission {
-    Block { height: u32, block: Block },
+    Block(bdk_bitcoind_rpc::BlockEvent&lt;Block&gt;),
     Mempool(Vec&lt;(Transaction, u64)&gt;),
     Tip(u32),
 }
@@ -558,17 +566,20 @@
             <span class="kw">let </span><span class="kw-2">mut </span>last_db_commit = Instant::now();
             <span class="kw">let </span><span class="kw-2">mut </span>last_print = Instant::now();
 
-            <span class="kw">while let </span><span class="prelude-val">Some</span>((height, block)) = emitter.next_block()<span class="question-mark">? </span>{
+            <span class="kw">while let </span><span class="prelude-val">Some</span>(emission) = emitter.next_block()<span class="question-mark">? </span>{
+                <span class="kw">let </span>height = emission.block_height();
+
                 <span class="kw">let </span><span class="kw-2">mut </span>chain = chain.lock().unwrap();
                 <span class="kw">let </span><span class="kw-2">mut </span>graph = graph.lock().unwrap();
                 <span class="kw">let </span><span class="kw-2">mut </span>db = db.lock().unwrap();
 
-                <span class="kw">let </span>chain_update =
-                    CheckPoint::from_header(<span class="kw-2">&amp;</span>block.header, height).into_update(<span class="bool-val">false</span>);
                 <span class="kw">let </span>chain_changeset = chain
-                    .apply_update(chain_update)
+                    .apply_update(local_chain::Update {
+                        tip: emission.checkpoint,
+                        introduce_older_blocks: <span class="bool-val">false</span>,
+                    })
                     .expect(<span class="string">&quot;must always apply as we receive blocks in order from emitter&quot;</span>);
-                <span class="kw">let </span>graph_changeset = graph.apply_block_relevant(block, height);
+                <span class="kw">let </span>graph_changeset = graph.apply_block_relevant(<span class="kw-2">&amp;</span>emission.block, height);
                 db.stage((chain_changeset, graph_changeset));
 
                 <span class="comment">// commit staged db changes in intervals
@@ -636,7 +647,8 @@
 
                 <span class="kw">loop </span>{
                     <span class="kw">match </span>emitter.next_block()<span class="question-mark">? </span>{
-                        <span class="prelude-val">Some</span>((height, block)) =&gt; {
+                        <span class="prelude-val">Some</span>(block_emission) =&gt; {
+                            <span class="kw">let </span>height = block_emission.block_height();
                             <span class="kw">if </span>sigterm_flag.load(Ordering::Acquire) {
                                 <span class="kw">break</span>;
                             }
@@ -644,7 +656,7 @@
                                 block_count = rpc_client.get_block_count()<span class="question-mark">? </span><span class="kw">as </span>u32;
                                 tx.send(Emission::Tip(block_count))<span class="question-mark">?</span>;
                             }
-                            tx.send(Emission::Block { height, block })<span class="question-mark">?</span>;
+                            tx.send(Emission::Block(block_emission))<span class="question-mark">?</span>;
                         }
                         <span class="prelude-val">None </span>=&gt; {
                             <span class="kw">if </span>await_flag(<span class="kw-2">&amp;</span>sigterm_flag, MEMPOOL_EMIT_DELAY) {
@@ -673,13 +685,17 @@
                 <span class="kw">let </span><span class="kw-2">mut </span>chain = chain.lock().unwrap();
 
                 <span class="kw">let </span>changeset = <span class="kw">match </span>emission {
-                    Emission::Block { height, block } =&gt; {
-                        <span class="kw">let </span>chain_update =
-                            CheckPoint::from_header(<span class="kw-2">&amp;</span>block.header, height).into_update(<span class="bool-val">false</span>);
+                    Emission::Block(block_emission) =&gt; {
+                        <span class="kw">let </span>height = block_emission.block_height();
+                        <span class="kw">let </span>chain_update = local_chain::Update {
+                            tip: block_emission.checkpoint,
+                            introduce_older_blocks: <span class="bool-val">false</span>,
+                        };
                         <span class="kw">let </span>chain_changeset = chain
                             .apply_update(chain_update)
                             .expect(<span class="string">&quot;must always apply as we receive blocks in order from emitter&quot;</span>);
-                        <span class="kw">let </span>graph_changeset = graph.apply_block_relevant(block, height);
+                        <span class="kw">let </span>graph_changeset =
+                            graph.apply_block_relevant(<span class="kw-2">&amp;</span>block_emission.block, height);
                         (chain_changeset, graph_changeset)
                     }
                     Emission::Mempool(mempool_txs) =&gt; {
