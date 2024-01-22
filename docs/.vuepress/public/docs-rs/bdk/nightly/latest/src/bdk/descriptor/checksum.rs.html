@@ -146,41 +146,6 @@
 <a href="#145" id="145">145</a>
 <a href="#146" id="146">146</a>
 <a href="#147" id="147">147</a>
-<a href="#148" id="148">148</a>
-<a href="#149" id="149">149</a>
-<a href="#150" id="150">150</a>
-<a href="#151" id="151">151</a>
-<a href="#152" id="152">152</a>
-<a href="#153" id="153">153</a>
-<a href="#154" id="154">154</a>
-<a href="#155" id="155">155</a>
-<a href="#156" id="156">156</a>
-<a href="#157" id="157">157</a>
-<a href="#158" id="158">158</a>
-<a href="#159" id="159">159</a>
-<a href="#160" id="160">160</a>
-<a href="#161" id="161">161</a>
-<a href="#162" id="162">162</a>
-<a href="#163" id="163">163</a>
-<a href="#164" id="164">164</a>
-<a href="#165" id="165">165</a>
-<a href="#166" id="166">166</a>
-<a href="#167" id="167">167</a>
-<a href="#168" id="168">168</a>
-<a href="#169" id="169">169</a>
-<a href="#170" id="170">170</a>
-<a href="#171" id="171">171</a>
-<a href="#172" id="172">172</a>
-<a href="#173" id="173">173</a>
-<a href="#174" id="174">174</a>
-<a href="#175" id="175">175</a>
-<a href="#176" id="176">176</a>
-<a href="#177" id="177">177</a>
-<a href="#178" id="178">178</a>
-<a href="#179" id="179">179</a>
-<a href="#180" id="180">180</a>
-<a href="#181" id="181">181</a>
-<a href="#182" id="182">182</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -225,22 +190,16 @@
     c
 }
 
-<span class="doccomment">/// Computes the checksum bytes of a descriptor.
-/// `exclude_hash = true` ignores all data after the first &#39;#&#39; (inclusive).
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>calc_checksum_bytes_internal(
-    <span class="kw-2">mut </span>desc: <span class="kw-2">&amp;</span>str,
-    exclude_hash: bool,
-) -&gt; <span class="prelude-ty">Result</span>&lt;[u8; <span class="number">8</span>], DescriptorError&gt; {
+<span class="doccomment">/// Compute the checksum bytes of a descriptor, excludes any existing checksum in the descriptor string from the calculation
+</span><span class="kw">pub fn </span>calc_checksum_bytes(<span class="kw-2">mut </span>desc: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;[u8; <span class="number">8</span>], DescriptorError&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>c = <span class="number">1</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>cls = <span class="number">0</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>clscount = <span class="number">0</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>original_checksum = <span class="prelude-val">None</span>;
-    <span class="kw">if </span>exclude_hash {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(split) = desc.split_once(<span class="string">&#39;#&#39;</span>) {
-            desc = split.<span class="number">0</span>;
-            original_checksum = <span class="prelude-val">Some</span>(split.<span class="number">1</span>);
-        }
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(split) = desc.split_once(<span class="string">&#39;#&#39;</span>) {
+        desc = split.<span class="number">0</span>;
+        original_checksum = <span class="prelude-val">Some</span>(split.<span class="number">1</span>);
     }
 
     <span class="kw">for </span>ch <span class="kw">in </span>desc.as_bytes() {
@@ -278,39 +237,10 @@
     <span class="prelude-val">Ok</span>(checksum)
 }
 
-<span class="doccomment">/// Compute the checksum bytes of a descriptor, excludes any existing checksum in the descriptor string from the calculation
-</span><span class="kw">pub fn </span>calc_checksum_bytes(desc: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;[u8; <span class="number">8</span>], DescriptorError&gt; {
-    calc_checksum_bytes_internal(desc, <span class="bool-val">true</span>)
-}
-
 <span class="doccomment">/// Compute the checksum of a descriptor, excludes any existing checksum in the descriptor string from the calculation
 </span><span class="kw">pub fn </span>calc_checksum(desc: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, DescriptorError&gt; {
     <span class="comment">// unsafe is okay here as the checksum only uses bytes in `CHECKSUM_CHARSET`
-    </span>calc_checksum_bytes_internal(desc, <span class="bool-val">true</span>)
-        .map(|b| <span class="kw">unsafe </span>{ String::from_utf8_unchecked(b.to_vec()) })
-}
-
-<span class="comment">// TODO in release 0.25.0, remove get_checksum_bytes and get_checksum
-// TODO in release 0.25.0, consolidate calc_checksum_bytes_internal into calc_checksum_bytes
-
-</span><span class="doccomment">/// Compute the checksum bytes of a descriptor
-</span><span class="attr">#[deprecated(
-    since = <span class="string">&quot;0.24.0&quot;</span>,
-    note = <span class="string">&quot;Use new `calc_checksum_bytes` function which excludes any existing checksum in the descriptor string before calculating the checksum hash bytes. See https://github.com/bitcoindevkit/bdk/pull/765.&quot;
-</span>)]
-</span><span class="kw">pub fn </span>get_checksum_bytes(desc: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;[u8; <span class="number">8</span>], DescriptorError&gt; {
-    calc_checksum_bytes_internal(desc, <span class="bool-val">false</span>)
-}
-
-<span class="doccomment">/// Compute the checksum of a descriptor
-</span><span class="attr">#[deprecated(
-    since = <span class="string">&quot;0.24.0&quot;</span>,
-    note = <span class="string">&quot;Use new `calc_checksum` function which excludes any existing checksum in the descriptor string before calculating the checksum hash. See https://github.com/bitcoindevkit/bdk/pull/765.&quot;
-</span>)]
-</span><span class="kw">pub fn </span>get_checksum(desc: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, DescriptorError&gt; {
-    <span class="comment">// unsafe is okay here as the checksum only uses bytes in `CHECKSUM_CHARSET`
-    </span>calc_checksum_bytes_internal(desc, <span class="bool-val">false</span>)
-        .map(|b| <span class="kw">unsafe </span>{ String::from_utf8_unchecked(b.to_vec()) })
+    </span>calc_checksum_bytes(desc).map(|b| <span class="kw">unsafe </span>{ String::from_utf8_unchecked(b.to_vec()) })
 }
 
 <span class="attr">#[cfg(test)]
