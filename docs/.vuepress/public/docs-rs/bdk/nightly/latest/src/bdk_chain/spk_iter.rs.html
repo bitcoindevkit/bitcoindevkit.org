@@ -265,6 +265,13 @@
 <a href="#265" id="265">265</a>
 <a href="#266" id="266">266</a>
 <a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     bitcoin::{secp256k1::Secp256k1, ScriptBuf},
     miniscript::{Descriptor, DescriptorPublicKey},
@@ -310,18 +317,24 @@
 <span class="kw">where
     </span>D: Borrow&lt;Descriptor&lt;DescriptorPublicKey&gt;&gt;,
 {
-    <span class="doccomment">/// Creates a new script pubkey iterator starting at 0 from a descriptor.
+    <span class="doccomment">/// Create a new script pubkey iterator from `descriptor`.
+    ///
+    /// This iterates from derivation index 0 and stops at index 0x7FFFFFFF (as specified in
+    /// BIP-32). Non-wildcard descriptors will only return one script pubkey at derivation index 0.
+    ///
+    /// Use [`new_with_range`](SpkIterator::new_with_range) to create an iterator with a specified
+    /// derivation index range.
     </span><span class="kw">pub fn </span>new(descriptor: D) -&gt; <span class="self">Self </span>{
         SpkIterator::new_with_range(descriptor, <span class="number">0</span>..=BIP32_MAX_INDEX)
     }
 
-    <span class="comment">// Creates a new script pubkey iterator from a descriptor with a given range.
-    // If the descriptor doesn&#39;t have a wildcard, we shorten whichever range you pass in
-    // to have length &lt;= 1. This means that if you pass in 0..0 or 0..1 the range will
-    // remain the same, but if you pass in 0..10, we&#39;ll shorten it to 0..1
-    // Also note that if the descriptor doesn&#39;t have a wildcard, passing in a range starting
-    // from n &gt; 0, will return an empty iterator.
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new_with_range&lt;R&gt;(descriptor: D, range: R) -&gt; <span class="self">Self
+    <span class="doccomment">/// Create a new script pubkey iterator from `descriptor` and a given `range`.
+    ///
+    /// Non-wildcard descriptors will only emit a single script pubkey (at derivation index 0).
+    /// Wildcard descriptors have an end-bound of 0x7FFFFFFF (inclusive).
+    ///
+    /// Refer to [`new`](SpkIterator::new) for more.
+    </span><span class="kw">pub fn </span>new_with_range&lt;R&gt;(descriptor: D, range: R) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span>R: RangeBounds&lt;u32&gt;,
     {
@@ -339,13 +352,6 @@
 
         <span class="comment">// Because `end` is exclusive, we want the maximum value to be BIP32_MAX_INDEX + 1.
         </span>end = end.min(BIP32_MAX_INDEX + <span class="number">1</span>);
-
-        <span class="kw">if </span>!descriptor.borrow().has_wildcard() {
-            <span class="comment">// The length of the range should be at most 1
-            </span><span class="kw">if </span>end != start {
-                end = start + <span class="number">1</span>;
-            }
-        }
 
         <span class="self">Self </span>{
             next_index: start,
@@ -515,6 +521,14 @@
         </span>);
         <span class="macro">assert_eq!</span>(
             SpkIterator::new_with_range(<span class="kw-2">&amp;</span>no_wildcard_descriptor, <span class="number">1</span>..=<span class="number">2</span>).next(),
+            <span class="prelude-val">None
+        </span>);
+        <span class="macro">assert_eq!</span>(
+            SpkIterator::new_with_range(<span class="kw-2">&amp;</span>no_wildcard_descriptor, <span class="number">10</span>..<span class="number">11</span>).next(),
+            <span class="prelude-val">None
+        </span>);
+        <span class="macro">assert_eq!</span>(
+            SpkIterator::new_with_range(<span class="kw-2">&amp;</span>no_wildcard_descriptor, <span class="number">10</span>..=<span class="number">10</span>).next(),
             <span class="prelude-val">None
         </span>);
     }
