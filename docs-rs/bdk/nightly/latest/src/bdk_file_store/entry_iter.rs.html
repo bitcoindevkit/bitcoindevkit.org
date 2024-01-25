@@ -98,10 +98,18 @@
 <a href="#98" id="98">98</a>
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bincode::Options;
 <span class="kw">use </span>std::{
     fs::File,
-    io::{<span class="self">self</span>, Seek},
+    io::{<span class="self">self</span>, BufReader, Seek},
     marker::PhantomData,
 };
 
@@ -114,8 +122,9 @@
 ///
 /// [`next`]: Self::next
 </span><span class="kw">pub struct </span>EntryIter&lt;<span class="lifetime">&#39;t</span>, T&gt; {
-    db_file: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;t </span><span class="kw-2">mut </span>File&gt;,
-
+    <span class="doccomment">/// Buffered reader around the file
+    </span>db_file: BufReader&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;t </span><span class="kw-2">mut </span>File&gt;,
+    finished: bool,
     <span class="doccomment">/// The file position for the first read of `db_file`.
     </span>start_pos: <span class="prelude-ty">Option</span>&lt;u64&gt;,
     types: PhantomData&lt;T&gt;,
@@ -124,8 +133,9 @@
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;t</span>, T&gt; EntryIter&lt;<span class="lifetime">&#39;t</span>, T&gt; {
     <span class="kw">pub fn </span>new(start_pos: u64, db_file: <span class="kw-2">&amp;</span><span class="lifetime">&#39;t </span><span class="kw-2">mut </span>File) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            db_file: <span class="prelude-val">Some</span>(db_file),
+            db_file: BufReader::new(db_file),
             start_pos: <span class="prelude-val">Some</span>(start_pos),
+            finished: <span class="bool-val">false</span>,
             types: PhantomData,
         }
     }
@@ -138,44 +148,44 @@
     <span class="kw">type </span>Item = <span class="prelude-ty">Result</span>&lt;T, IterError&gt;;
 
     <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
-        <span class="comment">// closure which reads a single entry starting from `self.pos`
-        </span><span class="kw">let </span>read_one = |f: <span class="kw-2">&amp;mut </span>File, start_pos: <span class="prelude-ty">Option</span>&lt;u64&gt;| -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;T&gt;, IterError&gt; {
-            <span class="kw">let </span>pos = <span class="kw">match </span>start_pos {
-                <span class="prelude-val">Some</span>(pos) =&gt; f.seek(io::SeekFrom::Start(pos))<span class="question-mark">?</span>,
-                <span class="prelude-val">None </span>=&gt; f.stream_position()<span class="question-mark">?</span>,
-            };
+        <span class="kw">if </span><span class="self">self</span>.finished {
+            <span class="kw">return </span><span class="prelude-val">None</span>;
+        }
+        (|| {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(start) = <span class="self">self</span>.start_pos.take() {
+                <span class="self">self</span>.db_file.seek(io::SeekFrom::Start(start))<span class="question-mark">?</span>;
+            }
 
-            <span class="kw">match </span>bincode_options().deserialize_from(<span class="kw-2">&amp;*</span>f) {
-                <span class="prelude-val">Ok</span>(changeset) =&gt; {
-                    f.stream_position()<span class="question-mark">?</span>;
-                    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(changeset))
-                }
+            <span class="kw">let </span>pos_before_read = <span class="self">self</span>.db_file.stream_position()<span class="question-mark">?</span>;
+            <span class="kw">match </span>bincode_options().deserialize_from(<span class="kw-2">&amp;mut </span><span class="self">self</span>.db_file) {
+                <span class="prelude-val">Ok</span>(changeset) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(changeset)),
                 <span class="prelude-val">Err</span>(e) =&gt; {
-                    <span class="kw">if let </span>bincode::ErrorKind::Io(inner) = <span class="kw-2">&amp;*</span>e {
-                        <span class="kw">if </span>inner.kind() == io::ErrorKind::UnexpectedEof {
-                            <span class="kw">let </span>eof = f.seek(io::SeekFrom::End(<span class="number">0</span>))<span class="question-mark">?</span>;
-                            <span class="kw">if </span>pos == eof {
-                                <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
-                            }
+                    <span class="self">self</span>.finished = <span class="bool-val">true</span>;
+                    <span class="kw">let </span>pos_after_read = <span class="self">self</span>.db_file.stream_position()<span class="question-mark">?</span>;
+                    <span class="comment">// allow unexpected EOF if 0 bytes were read
+                    </span><span class="kw">if let </span>bincode::ErrorKind::Io(inner) = <span class="kw-2">&amp;*</span>e {
+                        <span class="kw">if </span>inner.kind() == io::ErrorKind::UnexpectedEof
+                            &amp;&amp; pos_after_read == pos_before_read
+                        {
+                            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
                         }
                     }
-                    f.seek(io::SeekFrom::Start(pos))<span class="question-mark">?</span>;
+                    <span class="self">self</span>.db_file.seek(io::SeekFrom::Start(pos_before_read))<span class="question-mark">?</span>;
                     <span class="prelude-val">Err</span>(IterError::Bincode(<span class="kw-2">*</span>e))
                 }
             }
-        };
-
-        <span class="kw">let </span>result = read_one(<span class="self">self</span>.db_file.as_mut()<span class="question-mark">?</span>, <span class="self">self</span>.start_pos.take());
-        <span class="kw">if </span>result.is_err() {
-            <span class="self">self</span>.db_file = <span class="prelude-val">None</span>;
-        }
-        result.transpose()
+        })()
+        .transpose()
     }
 }
 
-<span class="kw">impl </span>From&lt;io::Error&gt; <span class="kw">for </span>IterError {
-    <span class="kw">fn </span>from(value: io::Error) -&gt; <span class="self">Self </span>{
-        IterError::Io(value)
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;t</span>, T&gt; Drop <span class="kw">for </span>EntryIter&lt;<span class="lifetime">&#39;t</span>, T&gt; {
+    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="comment">// This syncs the underlying file&#39;s offset with the buffer&#39;s position. This way, we
+        // maintain the correct position to start the next read/write.
+        </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(pos) = <span class="self">self</span>.db_file.stream_position() {
+            <span class="kw">let _ </span>= <span class="self">self</span>.db_file.get_mut().seek(io::SeekFrom::Start(pos));
+        }
     }
 }
 
@@ -194,6 +204,12 @@
             IterError::Io(e) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;io error trying to read entry {}&quot;</span>, e),
             IterError::Bincode(e) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;bincode error while reading entry {}&quot;</span>, e),
         }
+    }
+}
+
+<span class="kw">impl </span>From&lt;io::Error&gt; <span class="kw">for </span>IterError {
+    <span class="kw">fn </span>from(value: io::Error) -&gt; <span class="self">Self </span>{
+        IterError::Io(value)
     }
 }
 
