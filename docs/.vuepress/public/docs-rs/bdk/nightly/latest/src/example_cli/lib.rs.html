@@ -700,6 +700,23 @@
 <a href="#700" id="700">700</a>
 <a href="#701" id="701">701</a>
 <a href="#702" id="702">702</a>
+<a href="#703" id="703">703</a>
+<a href="#704" id="704">704</a>
+<a href="#705" id="705">705</a>
+<a href="#706" id="706">706</a>
+<a href="#707" id="707">707</a>
+<a href="#708" id="708">708</a>
+<a href="#709" id="709">709</a>
+<a href="#710" id="710">710</a>
+<a href="#711" id="711">711</a>
+<a href="#712" id="712">712</a>
+<a href="#713" id="713">713</a>
+<a href="#714" id="714">714</a>
+<a href="#715" id="715">715</a>
+<a href="#716" id="716">716</a>
+<a href="#717" id="717">717</a>
+<a href="#718" id="718">718</a>
+<a href="#719" id="719">719</a>
 </pre><pre class="rust"><code><span class="kw">pub use </span>anyhow;
 <span class="kw">use </span>anyhow::Context;
 <span class="kw">use </span>bdk_coin_select::{coin_select_bnb, CoinSelector, CoinSelectorOpt, WeightedValue};
@@ -755,8 +772,7 @@
     </span><span class="kw">pub </span>command: Commands&lt;CS, S&gt;,
 }
 
-<span class="attr">#[allow(clippy::almost_swapped)]
-#[derive(Subcommand, Debug, Clone)]
+<span class="attr">#[derive(Subcommand, Debug, Clone)]
 </span><span class="kw">pub enum </span>Commands&lt;CS: clap::Subcommand, S: clap::Args&gt; {
     <span class="attr">#[clap(flatten)]
     </span>ChainSpecific(CS),
@@ -839,8 +855,7 @@
     }
 }
 
-<span class="attr">#[allow(clippy::almost_swapped)]
-#[derive(Subcommand, Debug, Clone)]
+<span class="attr">#[derive(Subcommand, Debug, Clone)]
 </span><span class="kw">pub enum </span>AddressCmd {
     <span class="doccomment">/// Get the next unused address.
     </span>Next,
@@ -892,18 +907,20 @@
     }
 }
 
-<span class="attr">#[allow(clippy::type_complexity)]
-</span><span class="kw">pub fn </span>create_tx&lt;A: Anchor, O: ChainOracle&gt;(
+<span class="kw">pub struct </span>CreateTxChange {
+    <span class="kw">pub </span>index_changeset: keychain::ChangeSet&lt;Keychain&gt;,
+    <span class="kw">pub </span>change_keychain: Keychain,
+    <span class="kw">pub </span>index: u32,
+}
+
+<span class="kw">pub fn </span>create_tx&lt;A: Anchor, O: ChainOracle&gt;(
     graph: <span class="kw-2">&amp;mut </span>KeychainTxGraph&lt;A&gt;,
     chain: <span class="kw-2">&amp;</span>O,
     keymap: <span class="kw-2">&amp;</span>HashMap&lt;DescriptorPublicKey, DescriptorSecretKey&gt;,
     cs_algorithm: CoinSelectionAlgo,
     address: Address,
     value: u64,
-) -&gt; anyhow::Result&lt;(
-    Transaction,
-    <span class="prelude-ty">Option</span>&lt;(keychain::ChangeSet&lt;Keychain&gt;, (Keychain, u32))&gt;,
-)&gt;
+) -&gt; anyhow::Result&lt;(Transaction, <span class="prelude-ty">Option</span>&lt;CreateTxChange&gt;)&gt;
 <span class="kw">where
     </span>O::Error: std::error::Error + Send + Sync + <span class="lifetime">&#39;static</span>,
 {
@@ -1095,7 +1112,11 @@
     }
 
     <span class="kw">let </span>change_info = <span class="kw">if </span>selection_meta.drain_value.is_some() {
-        <span class="prelude-val">Some</span>((changeset, (internal_keychain, change_index)))
+        <span class="prelude-val">Some</span>(CreateTxChange {
+            index_changeset: changeset,
+            change_keychain: internal_keychain,
+            index: change_index,
+        })
     } <span class="kw">else </span>{
         <span class="prelude-val">None
     </span>};
@@ -1103,35 +1124,34 @@
     <span class="prelude-val">Ok</span>((transaction, change_info))
 }
 
-<span class="attr">#[allow(clippy::type_complexity)]
-</span><span class="kw">pub fn </span>planned_utxos&lt;A: Anchor, O: ChainOracle, K: Clone + bdk_tmp_plan::CanDerive&gt;(
+<span class="comment">// Alias the elements of `Result` of `planned_utxos`
+</span><span class="kw">pub type </span>PlannedUtxo&lt;K, A&gt; = (bdk_tmp_plan::Plan&lt;K&gt;, FullTxOut&lt;A&gt;);
+
+<span class="kw">pub fn </span>planned_utxos&lt;A: Anchor, O: ChainOracle, K: Clone + bdk_tmp_plan::CanDerive&gt;(
     graph: <span class="kw-2">&amp;</span>KeychainTxGraph&lt;A&gt;,
     chain: <span class="kw-2">&amp;</span>O,
     assets: <span class="kw-2">&amp;</span>bdk_tmp_plan::Assets&lt;K&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(bdk_tmp_plan::Plan&lt;K&gt;, FullTxOut&lt;A&gt;)&gt;, O::Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;PlannedUtxo&lt;K, A&gt;&gt;, O::Error&gt; {
     <span class="kw">let </span>chain_tip = chain.get_chain_tip()<span class="question-mark">?</span>;
     <span class="kw">let </span>outpoints = graph.index.outpoints().iter().cloned();
     graph
         .graph()
         .try_filter_chain_unspents(chain, chain_tip, outpoints)
-        .filter_map(
-            <span class="attr">#[allow(clippy::type_complexity)]
-            </span>|r| -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;(bdk_tmp_plan::Plan&lt;K&gt;, FullTxOut&lt;A&gt;), <span class="kw">_</span>&gt;&gt; {
-                <span class="kw">let </span>(k, i, full_txo) = <span class="kw">match </span>r {
-                    <span class="prelude-val">Err</span>(err) =&gt; <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(err)),
-                    <span class="prelude-val">Ok</span>(((k, i), full_txo)) =&gt; (k, i, full_txo),
-                };
-                <span class="kw">let </span>desc = graph
-                    .index
-                    .keychains()
-                    .get(<span class="kw-2">&amp;</span>k)
-                    .expect(<span class="string">&quot;keychain must exist&quot;</span>)
-                    .at_derivation_index(i)
-                    .expect(<span class="string">&quot;i can&#39;t be hardened&quot;</span>);
-                <span class="kw">let </span>plan = bdk_tmp_plan::plan_satisfaction(<span class="kw-2">&amp;</span>desc, assets)<span class="question-mark">?</span>;
-                <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((plan, full_txo)))
-            },
-        )
+        .filter_map(|r| -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;PlannedUtxo&lt;K, A&gt;, <span class="kw">_</span>&gt;&gt; {
+            <span class="kw">let </span>(k, i, full_txo) = <span class="kw">match </span>r {
+                <span class="prelude-val">Err</span>(err) =&gt; <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(err)),
+                <span class="prelude-val">Ok</span>(((k, i), full_txo)) =&gt; (k, i, full_txo),
+            };
+            <span class="kw">let </span>desc = graph
+                .index
+                .keychains()
+                .get(<span class="kw-2">&amp;</span>k)
+                .expect(<span class="string">&quot;keychain must exist&quot;</span>)
+                .at_derivation_index(i)
+                .expect(<span class="string">&quot;i can&#39;t be hardened&quot;</span>);
+            <span class="kw">let </span>plan = bdk_tmp_plan::plan_satisfaction(<span class="kw-2">&amp;</span>desc, assets)<span class="question-mark">?</span>;
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((plan, full_txo)))
+        })
         .collect()
 }
 
@@ -1301,7 +1321,12 @@
                 </span><span class="kw">let </span>(tx, change_info) =
                     create_tx(graph, chain, keymap, coin_select, address, value)<span class="question-mark">?</span>;
 
-                <span class="kw">if let </span><span class="prelude-val">Some</span>((index_changeset, (change_keychain, index))) = change_info {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(CreateTxChange {
+                    index_changeset,
+                    change_keychain,
+                    index,
+                }) = change_info
+                {
                     <span class="comment">// We must first persist to disk the fact that we&#39;ve got a new address from the
                     // change keychain so future scans will find the tx we&#39;re about to broadcast.
                     // If we&#39;re unable to persist this, then we don&#39;t want to broadcast.
@@ -1350,17 +1375,26 @@
     }
 }
 
-<span class="attr">#[allow(clippy::type_complexity)]
+<span class="doccomment">/// The initial state returned by [`init`].
+</span><span class="kw">pub struct </span>Init&lt;CS: clap::Subcommand, S: clap::Args, C&gt; {
+    <span class="doccomment">/// Arguments parsed by the cli.
+    </span><span class="kw">pub </span>args: Args&lt;CS, S&gt;,
+    <span class="doccomment">/// Descriptor keymap.
+    </span><span class="kw">pub </span>keymap: KeyMap,
+    <span class="doccomment">/// Keychain-txout index.
+    </span><span class="kw">pub </span>index: KeychainTxOutIndex&lt;Keychain&gt;,
+    <span class="doccomment">/// Persistence backend.
+    </span><span class="kw">pub </span>db: Mutex&lt;Database&lt;C&gt;&gt;,
+    <span class="doccomment">/// Initial changeset.
+    </span><span class="kw">pub </span>init_changeset: C,
+}
+
+<span class="doccomment">/// Parses command line arguments and initializes all components, creating
+/// a file store with the given parameters, or loading one if it exists.
 </span><span class="kw">pub fn </span>init&lt;CS: clap::Subcommand, S: clap::Args, C&gt;(
     db_magic: <span class="kw-2">&amp;</span>[u8],
     db_default_path: <span class="kw-2">&amp;</span>str,
-) -&gt; anyhow::Result&lt;(
-    Args&lt;CS, S&gt;,
-    KeyMap,
-    KeychainTxOutIndex&lt;Keychain&gt;,
-    Mutex&lt;Database&lt;C&gt;&gt;,
-    C,
-)&gt;
+) -&gt; anyhow::Result&lt;Init&lt;CS, S, C&gt;&gt;
 <span class="kw">where
     </span>C: Default + Append + Serialize + DeserializeOwned,
 {
@@ -1394,13 +1428,13 @@
 
     <span class="kw">let </span>init_changeset = db_backend.load_from_persistence()<span class="question-mark">?</span>.unwrap_or_default();
 
-    <span class="prelude-val">Ok</span>((
+    <span class="prelude-val">Ok</span>(Init {
         args,
         keymap,
         index,
-        Mutex::new(Database::new(db_backend)),
+        db: Mutex::new(Database::new(db_backend)),
         init_changeset,
-    ))
+    })
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="example_cli" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

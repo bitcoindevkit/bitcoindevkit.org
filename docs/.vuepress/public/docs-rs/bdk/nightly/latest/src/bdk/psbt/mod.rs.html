@@ -70,14 +70,6 @@
 <a href="#69" id="69">69</a>
 <a href="#70" id="70">70</a>
 <a href="#71" id="71">71</a>
-<a href="#72" id="72">72</a>
-<a href="#73" id="73">73</a>
-<a href="#74" id="74">74</a>
-<a href="#75" id="75">75</a>
-<a href="#76" id="76">76</a>
-<a href="#77" id="77">77</a>
-<a href="#78" id="78">78</a>
-<a href="#79" id="79">79</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -115,25 +107,17 @@
 }
 
 <span class="kw">impl </span>PsbtUtils <span class="kw">for </span>Psbt {
-    <span class="attr">#[allow(clippy::all)] </span><span class="comment">// We want to allow `manual_map` but it is too new.
-    </span><span class="kw">fn </span>get_utxo_for(<span class="kw-2">&amp;</span><span class="self">self</span>, input_index: usize) -&gt; <span class="prelude-ty">Option</span>&lt;TxOut&gt; {
+    <span class="kw">fn </span>get_utxo_for(<span class="kw-2">&amp;</span><span class="self">self</span>, input_index: usize) -&gt; <span class="prelude-ty">Option</span>&lt;TxOut&gt; {
         <span class="kw">let </span>tx = <span class="kw-2">&amp;</span><span class="self">self</span>.unsigned_tx;
+        <span class="kw">let </span>input = <span class="self">self</span>.inputs.get(input_index)<span class="question-mark">?</span>;
 
-        <span class="kw">if </span>input_index &gt;= tx.input.len() {
-            <span class="kw">return </span><span class="prelude-val">None</span>;
+        <span class="kw">match </span>(<span class="kw-2">&amp;</span>input.witness_utxo, <span class="kw-2">&amp;</span>input.non_witness_utxo) {
+            (<span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="kw">_</span>) =&gt; input.witness_utxo.clone(),
+            (<span class="kw">_</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) =&gt; input.non_witness_utxo.as_ref().map(|in_tx| {
+                in_tx.output[tx.input[input_index].previous_output.vout <span class="kw">as </span>usize].clone()
+            }),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         }
-
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(input) = <span class="self">self</span>.inputs.get(input_index) {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(wit_utxo) = <span class="kw-2">&amp;</span>input.witness_utxo {
-                <span class="prelude-val">Some</span>(wit_utxo.clone())
-            } <span class="kw">else if let </span><span class="prelude-val">Some</span>(in_tx) = <span class="kw-2">&amp;</span>input.non_witness_utxo {
-                <span class="prelude-val">Some</span>(in_tx.output[tx.input[input_index].previous_output.vout <span class="kw">as </span>usize].clone())
-            } <span class="kw">else </span>{
-                <span class="prelude-val">None
-            </span>}
-        } <span class="kw">else </span>{
-            <span class="prelude-val">None
-        </span>}
     }
 
     <span class="kw">fn </span>fee_amount(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;u64&gt; {
