@@ -292,49 +292,10 @@
 <a href="#292" id="292">292</a>
 <a href="#293" id="293">293</a>
 <a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
-<a href="#307" id="307">307</a>
-<a href="#308" id="308">308</a>
-<a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
-<a href="#312" id="312">312</a>
-<a href="#313" id="313">313</a>
-<a href="#314" id="314">314</a>
-<a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
-<a href="#320" id="320">320</a>
-<a href="#321" id="321">321</a>
-<a href="#322" id="322">322</a>
-<a href="#323" id="323">323</a>
-<a href="#324" id="324">324</a>
-<a href="#325" id="325">325</a>
-<a href="#326" id="326">326</a>
-<a href="#327" id="327">327</a>
-<a href="#328" id="328">328</a>
-<a href="#329" id="329">329</a>
-<a href="#330" id="330">330</a>
-<a href="#331" id="331">331</a>
-<a href="#332" id="332">332</a>
-<a href="#333" id="333">333</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::thread::JoinHandle;
 
 <span class="kw">use </span>bdk_chain::collections::btree_map;
-<span class="kw">use </span>bdk_chain::collections::{BTreeMap, BTreeSet};
+<span class="kw">use </span>bdk_chain::collections::BTreeMap;
 <span class="kw">use </span>bdk_chain::{
     bitcoin::{BlockHash, OutPoint, ScriptBuf, Txid},
     local_chain::{<span class="self">self</span>, CheckPoint},
@@ -342,7 +303,7 @@
 };
 <span class="kw">use </span>esplora_client::{Error, TxStatus};
 
-<span class="kw">use crate</span>::{anchor_from_status, ASSUME_FINAL_DEPTH};
+<span class="kw">use </span><span class="kw">crate</span>::anchor_from_status;
 
 <span class="doccomment">/// Trait to extend the functionality of [`esplora_client::BlockingClient`].
 ///
@@ -356,6 +317,12 @@
     /// * `request_heights` is the block heights that we are interested in fetching from Esplora.
     ///
     /// The result of this method can be applied to [`LocalChain::apply_update`].
+    ///
+    /// ## Consistency
+    ///
+    /// The chain update returned is guaranteed to be consistent as long as there is not a *large* re-org
+    /// during the call. The size of re-org we can tollerate is server dependent but will be at
+    /// least 10.
     ///
     /// [`LocalChain`]: bdk_chain::local_chain::LocalChain
     /// [`LocalChain::tip`]: bdk_chain::local_chain::LocalChain::tip
@@ -411,20 +378,21 @@
         local_tip: CheckPoint,
         request_heights: <span class="kw">impl </span>IntoIterator&lt;Item = u32&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;local_chain::Update, Error&gt; {
-        <span class="kw">let </span>request_heights = request_heights.into_iter().collect::&lt;BTreeSet&lt;<span class="kw">_</span>&gt;&gt;();
-        <span class="kw">let </span>new_tip_height = <span class="self">self</span>.get_height()<span class="question-mark">?</span>;
+        <span class="comment">// Fetch latest N (server dependent) blocks from Esplora. The server guarantees these are
+        // consistent.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>fetched_blocks = <span class="self">self
+            </span>.get_blocks(<span class="prelude-val">None</span>)<span class="question-mark">?
+            </span>.into_iter()
+            .map(|b| (b.time.height, b.id))
+            .collect::&lt;BTreeMap&lt;u32, BlockHash&gt;&gt;();
+        <span class="kw">let </span>new_tip_height = fetched_blocks
+            .keys()
+            .last()
+            .copied()
+            .expect(<span class="string">&quot;must atleast have one block&quot;</span>);
 
-        <span class="comment">// atomically fetch blocks from esplora
-        </span><span class="kw">let </span><span class="kw-2">mut </span>fetched_blocks = {
-            <span class="kw">let </span>heights = (<span class="number">0</span>..=new_tip_height).rev();
-            <span class="kw">let </span>hashes = <span class="self">self
-                </span>.get_blocks(<span class="prelude-val">Some</span>(new_tip_height))<span class="question-mark">?
-                </span>.into_iter()
-                .map(|b| b.id);
-            heights.zip(hashes).collect::&lt;BTreeMap&lt;u32, BlockHash&gt;&gt;()
-        };
-
-        <span class="comment">// fetch heights that the caller is interested in
+        <span class="comment">// Fetch blocks of heights that the caller is interested in, skipping blocks that are
+        // already fetched when constructing `fetched_blocks`.
         </span><span class="kw">for </span>height <span class="kw">in </span>request_heights {
             <span class="comment">// do not fetch blocks higher than remote tip
             </span><span class="kw">if </span>height &gt; new_tip_height {
@@ -432,81 +400,35 @@
             }
             <span class="comment">// only fetch what is missing
             </span><span class="kw">if let </span>btree_map::Entry::Vacant(entry) = fetched_blocks.entry(height) {
-                <span class="kw">let </span>hash = <span class="self">self</span>.get_block_hash(height)<span class="question-mark">?</span>;
-                entry.insert(hash);
+                <span class="comment">// ❗The return value of `get_block_hash` is not strictly guaranteed to be consistent
+                // with the chain at the time of `get_blocks` above (there could have been a deep
+                // re-org). Since `get_blocks` returns 10 (or so) blocks we are assuming that it&#39;s
+                // not possible to have a re-org deeper than that.
+                </span>entry.insert(<span class="self">self</span>.get_block_hash(height)<span class="question-mark">?</span>);
             }
         }
 
-        <span class="comment">// find the earliest point of agreement between local chain and fetched chain
-        </span><span class="kw">let </span>earliest_agreement_cp = {
-            <span class="kw">let </span><span class="kw-2">mut </span>earliest_agreement_cp = <span class="prelude-ty">Option</span>::&lt;CheckPoint&gt;::None;
-
-            <span class="kw">let </span>local_tip_height = local_tip.height();
-            <span class="kw">for </span>local_cp <span class="kw">in </span>local_tip.iter() {
-                <span class="kw">let </span>local_block = local_cp.block_id();
-
-                <span class="comment">// the updated hash (block hash at this height after the update), can either be:
-                // 1. a block that already existed in `fetched_blocks`
-                // 2. a block that exists locally and at least has a depth of ASSUME_FINAL_DEPTH
-                // 3. otherwise we can freshly fetch the block from remote, which is safe as it
-                //    is guaranteed that this would be at or below ASSUME_FINAL_DEPTH from the
-                //    remote tip
-                </span><span class="kw">let </span>updated_hash = <span class="kw">match </span>fetched_blocks.entry(local_block.height) {
-                    btree_map::Entry::Occupied(entry) =&gt; <span class="kw-2">*</span>entry.get(),
-                    btree_map::Entry::Vacant(entry) =&gt; <span class="kw-2">*</span>entry.insert(
-                        <span class="kw">if </span>local_tip_height - local_block.height &gt;= ASSUME_FINAL_DEPTH {
-                            local_block.hash
-                        } <span class="kw">else </span>{
-                            <span class="self">self</span>.get_block_hash(local_block.height)<span class="question-mark">?
-                        </span>},
-                    ),
-                };
-
-                <span class="comment">// since we may introduce blocks below the point of agreement, we cannot break
-                // here unconditionally - we only break if we guarantee there are no new heights
-                // below our current local checkpoint
-                </span><span class="kw">if </span>local_block.hash == updated_hash {
-                    earliest_agreement_cp = <span class="prelude-val">Some</span>(local_cp);
-
-                    <span class="kw">let </span>first_new_height = <span class="kw-2">*</span>fetched_blocks
-                        .keys()
-                        .next()
-                        .expect(<span class="string">&quot;must have at least one new block&quot;</span>);
-                    <span class="kw">if </span>first_new_height &gt;= local_block.height {
-                        <span class="kw">break</span>;
-                    }
-                }
+        <span class="comment">// Ensure `fetched_blocks` can create an update that connects with the original chain by
+        // finding a &quot;Point of Agreement&quot;.
+        </span><span class="kw">for </span>(height, local_hash) <span class="kw">in </span>local_tip.iter().map(|cp| (cp.height(), cp.hash())) {
+            <span class="kw">if </span>height &gt; new_tip_height {
+                <span class="kw">continue</span>;
             }
 
-            earliest_agreement_cp
-        };
-
-        <span class="kw">let </span>tip = {
-            <span class="comment">// first checkpoint to use for the update chain
-            </span><span class="kw">let </span>first_cp = <span class="kw">match </span>earliest_agreement_cp {
-                <span class="prelude-val">Some</span>(cp) =&gt; cp,
-                <span class="prelude-val">None </span>=&gt; {
-                    <span class="kw">let </span>(<span class="kw-2">&amp;</span>height, <span class="kw-2">&amp;</span>hash) = fetched_blocks
-                        .iter()
-                        .next()
-                        .expect(<span class="string">&quot;must have at least one new block&quot;</span>);
-                    CheckPoint::new(BlockId { height, hash })
-                }
+            <span class="kw">let </span>fetched_hash = <span class="kw">match </span>fetched_blocks.entry(height) {
+                btree_map::Entry::Occupied(entry) =&gt; <span class="kw-2">*</span>entry.get(),
+                btree_map::Entry::Vacant(entry) =&gt; <span class="kw-2">*</span>entry.insert(<span class="self">self</span>.get_block_hash(height)<span class="question-mark">?</span>),
             };
-            <span class="comment">// transform fetched chain into the update chain
-            </span>fetched_blocks
-                <span class="comment">// we exclude anything at or below the first cp of the update chain otherwise
-                // building the chain will fail
-                </span>.split_off(<span class="kw-2">&amp;</span>(first_cp.height() + <span class="number">1</span>))
-                .into_iter()
-                .map(|(height, hash)| BlockId { height, hash })
-                .fold(first_cp, |prev_cp, block| {
-                    prev_cp.push(block).expect(<span class="string">&quot;must extend checkpoint&quot;</span>)
-                })
-        };
+
+            <span class="comment">// We have found point of agreement so the update will connect!
+            </span><span class="kw">if </span>fetched_hash == local_hash {
+                <span class="kw">break</span>;
+            }
+        }
 
         <span class="prelude-val">Ok</span>(local_chain::Update {
-            tip,
+            tip: CheckPoint::from_block_ids(fetched_blocks.into_iter().map(BlockId::from))
+                .expect(<span class="string">&quot;must be in height order&quot;</span>),
             introduce_older_blocks: <span class="bool-val">true</span>,
         })
     }
