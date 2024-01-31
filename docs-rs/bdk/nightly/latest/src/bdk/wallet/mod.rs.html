@@ -2600,7 +2600,6 @@
 <a href="#2599" id="2599">2599</a>
 <a href="#2600" id="2600">2600</a>
 <a href="#2601" id="2601">2601</a>
-<a href="#2602" id="2602">2602</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2615,7 +2614,7 @@
 </span><span class="doccomment">//! Wallet
 //!
 //! This module defines the [`Wallet`].
-</span><span class="kw">use </span><span class="kw">crate</span>::collections::{BTreeMap, HashMap, HashSet};
+</span><span class="kw">use </span><span class="kw">crate</span>::collections::{BTreeMap, HashMap};
 <span class="kw">use </span>alloc::{
     boxed::Box,
     string::{String, ToString},
@@ -4121,15 +4120,8 @@
             <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::ChangePolicyDescriptor);
         }
 
-        <span class="kw">let </span>(required_utxos, optional_utxos) = <span class="self">self</span>.preselect_utxos(
-            params.change_policy,
-            <span class="kw-2">&amp;</span>params.unspendable,
-            params.utxos.clone(),
-            params.drain_wallet,
-            params.manually_selected_only,
-            params.bumping_fee.is_some(), <span class="comment">// we mandate confirmed transactions if we&#39;re bumping the fee
-            </span><span class="prelude-val">Some</span>(current_height.to_consensus_u32()),
-        );
+        <span class="kw">let </span>(required_utxos, optional_utxos) =
+            <span class="self">self</span>.preselect_utxos(<span class="kw-2">&amp;</span>params, <span class="prelude-val">Some</span>(current_height.to_consensus_u32()));
 
         <span class="comment">// get drain script
         </span><span class="kw">let </span>drain_script = <span class="kw">match </span>params.drain_to {
@@ -4666,17 +4658,26 @@
 
     <span class="doccomment">/// Given the options returns the list of utxos that must be used to form the
     /// transaction and any further that may be used if needed.
-    </span><span class="attr">#[allow(clippy::too_many_arguments)]
     </span><span class="kw">fn </span>preselect_utxos(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        change_policy: tx_builder::ChangeSpendPolicy,
-        unspendable: <span class="kw-2">&amp;</span>HashSet&lt;OutPoint&gt;,
-        manually_selected: Vec&lt;WeightedUtxo&gt;,
-        must_use_all_available: bool,
-        manual_only: bool,
-        must_only_use_confirmed_tx: bool,
+        params: <span class="kw-2">&amp;</span>TxParams,
         current_height: <span class="prelude-ty">Option</span>&lt;u32&gt;,
     ) -&gt; (Vec&lt;WeightedUtxo&gt;, Vec&lt;WeightedUtxo&gt;) {
+        <span class="kw">let </span>TxParams {
+            change_policy,
+            unspendable,
+            utxos,
+            drain_wallet,
+            manually_selected_only,
+            bumping_fee,
+            ..
+        } = params;
+
+        <span class="kw">let </span>manually_selected = utxos.clone();
+        <span class="comment">// we mandate confirmed transactions if we&#39;re bumping the fee
+        </span><span class="kw">let </span>must_only_use_confirmed_tx = bumping_fee.is_some();
+        <span class="kw">let </span>must_use_all_available = <span class="kw-2">*</span>drain_wallet;
+
         <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().block_id();
         <span class="comment">//    must_spend &lt;- manually selected utxos
         //    may_spend  &lt;- all other available utxos
@@ -4691,7 +4692,7 @@
 
         <span class="comment">// NOTE: we are intentionally ignoring `unspendable` here. i.e manual
         // selection overrides unspendable.
-        </span><span class="kw">if </span>manual_only {
+        </span><span class="kw">if </span><span class="kw-2">*</span>manually_selected_only {
             <span class="kw">return </span>(must_spend, <span class="macro">vec!</span>[]);
         }
 
@@ -4893,9 +4894,6 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), MiniscriptPsbtError&gt; {
         <span class="comment">// We need to borrow `psbt` mutably within the loops, so we have to allocate a vec for all
         // the input utxos and outputs
-        //
-        // Clippy complains that the collect is not required, but that&#39;s wrong
-        </span><span class="attr">#[allow(clippy::needless_collect)]
         </span><span class="kw">let </span>utxos = (<span class="number">0</span>..psbt.inputs.len())
             .filter_map(|i| psbt.get_utxo_for(i).map(|utxo| (<span class="bool-val">true</span>, i, utxo)))
             .chain(
