@@ -738,7 +738,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;ElectrumUpdate, Error&gt;;
 }
 
-<span class="kw">impl </span>ElectrumExt <span class="kw">for </span>Client {
+<span class="kw">impl</span>&lt;A: ElectrumApi&gt; ElectrumExt <span class="kw">for </span>A {
     <span class="kw">fn </span>full_scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         prev_tip: CheckPoint,
@@ -862,7 +862,7 @@
 
 <span class="doccomment">/// Return a [`CheckPoint`] of the latest tip, that connects with `prev_tip`.
 </span><span class="kw">fn </span>construct_update_tip(
-    client: <span class="kw-2">&amp;</span>Client,
+    client: <span class="kw-2">&amp;</span><span class="kw">impl </span>ElectrumApi,
     prev_tip: CheckPoint,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(CheckPoint, <span class="prelude-ty">Option</span>&lt;u32&gt;), Error&gt; {
     <span class="kw">let </span>HeaderNotification { height, .. } = client.block_headers_subscribe()<span class="question-mark">?</span>;
@@ -976,7 +976,7 @@
 }
 
 <span class="kw">fn </span>populate_with_outpoints(
-    client: <span class="kw-2">&amp;</span>Client,
+    client: <span class="kw-2">&amp;</span><span class="kw">impl </span>ElectrumApi,
     cps: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, CheckPoint&gt;,
     relevant_txids: <span class="kw-2">&amp;mut </span>RelevantTxids,
     outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
@@ -1037,7 +1037,7 @@
 }
 
 <span class="kw">fn </span>populate_with_txids(
-    client: <span class="kw-2">&amp;</span>Client,
+    client: <span class="kw-2">&amp;</span><span class="kw">impl </span>ElectrumApi,
     cps: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, CheckPoint&gt;,
     relevant_txids: <span class="kw-2">&amp;mut </span>RelevantTxids,
     txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
@@ -1073,7 +1073,7 @@
 }
 
 <span class="kw">fn </span>populate_with_spks&lt;I: Ord + Clone&gt;(
-    client: <span class="kw-2">&amp;</span>Client,
+    client: <span class="kw-2">&amp;</span><span class="kw">impl </span>ElectrumApi,
     cps: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, CheckPoint&gt;,
     relevant_txids: <span class="kw-2">&amp;mut </span>RelevantTxids,
     spks: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Iterator&lt;Item = (I, ScriptBuf)&gt;,
