@@ -2600,6 +2600,9 @@
 <a href="#2599" id="2599">2599</a>
 <a href="#2600" id="2600">2600</a>
 <a href="#2601" id="2601">2601</a>
+<a href="#2602" id="2602">2602</a>
+<a href="#2603" id="2603">2603</a>
+<a href="#2604" id="2604">2604</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -3949,7 +3952,7 @@
             }
             <span class="prelude-val">Some</span>(tx_builder::Version(x)) =&gt; x,
             <span class="prelude-val">None </span><span class="kw">if </span>requirements.csv.is_some() =&gt; <span class="number">2</span>,
-            <span class="kw">_ </span>=&gt; <span class="number">1</span>,
+            <span class="prelude-val">None </span>=&gt; <span class="number">1</span>,
         };
 
         <span class="comment">// We use a match here instead of a unwrap_or_else as it&#39;s way more readable :)
@@ -4002,7 +4005,8 @@
             }
         };
 
-        <span class="kw">let </span>n_sequence = <span class="kw">match </span>(params.rbf, requirements.csv) {
+        <span class="comment">// The nSequence to be by default for inputs unless an explicit sequence is specified.
+        </span><span class="kw">let </span>n_sequence = <span class="kw">match </span>(params.rbf, requirements.csv) {
             <span class="comment">// No RBF or CSV but there&#39;s an nLockTime, so the nSequence cannot be final
             </span>(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="kw">if </span>lock_time != absolute::LockTime::ZERO =&gt; {
                 Sequence::ENABLE_LOCKTIME_NO_RBF
@@ -4160,7 +4164,7 @@
             .map(|u| bitcoin::TxIn {
                 previous_output: u.outpoint(),
                 script_sig: ScriptBuf::default(),
-                sequence: n_sequence,
+                sequence: u.sequence().unwrap_or(n_sequence),
                 witness: Witness::new(),
             })
             .collect();
@@ -4340,6 +4344,7 @@
                             satisfaction_weight,
                             utxo: Utxo::Foreign {
                                 outpoint: txin.previous_output,
+                                sequence: <span class="prelude-val">Some</span>(txin.sequence),
                                 psbt_input: Box::new(psbt::Input {
                                     witness_utxo: <span class="prelude-val">Some</span>(txout.clone()),
                                     non_witness_utxo: <span class="prelude-val">Some</span>(prev_tx.clone()),
@@ -4820,8 +4825,9 @@
                         }
                 }
                 Utxo::Foreign {
-                    psbt_input: foreign_psbt_input,
                     outpoint,
+                    psbt_input: foreign_psbt_input,
+                    ..
                 } =&gt; {
                     <span class="kw">let </span>is_taproot = foreign_psbt_input
                         .witness_utxo
