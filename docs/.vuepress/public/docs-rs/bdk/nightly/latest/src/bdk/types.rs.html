@@ -304,6 +304,17 @@
 <a href="#303" id="303">303</a>
 <a href="#304" id="304">304</a>
 <a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -320,7 +331,7 @@
 <span class="kw">use </span>core::ops::Sub;
 
 <span class="kw">use </span>bdk_chain::ConfirmationTime;
-<span class="kw">use </span>bitcoin::blockdata::transaction::{OutPoint, TxOut};
+<span class="kw">use </span>bitcoin::blockdata::transaction::{OutPoint, Sequence, TxOut};
 <span class="kw">use </span>bitcoin::{psbt, Weight};
 
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -503,6 +514,8 @@
     </span>Foreign {
         <span class="doccomment">/// The location of the output.
         </span>outpoint: OutPoint,
+        <span class="doccomment">/// The nSequence value to set for this input.
+        </span>sequence: <span class="prelude-ty">Option</span>&lt;Sequence&gt;,
         <span class="doccomment">/// The information about the input we require to add it to a PSBT.
         </span><span class="comment">// Box it to stop the type being too big.
         </span>psbt_input: Box&lt;psbt::Input&gt;,
@@ -525,6 +538,7 @@
             Utxo::Foreign {
                 outpoint,
                 psbt_input,
+                ..
             } =&gt; {
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(prev_tx) = <span class="kw-2">&amp;</span>psbt_input.non_witness_utxo {
                     <span class="kw">return </span><span class="kw-2">&amp;</span>prev_tx.output[outpoint.vout <span class="kw">as </span>usize];
@@ -536,6 +550,14 @@
 
                 <span class="macro">unreachable!</span>(<span class="string">&quot;Foreign UTXOs will always have one of these set&quot;</span>)
             }
+        }
+    }
+
+    <span class="doccomment">/// Get the sequence number if an explicit sequence number has to be set for this input.
+    </span><span class="kw">pub fn </span>sequence(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Sequence&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            Utxo::Local(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
+            Utxo::Foreign { sequence, .. } =&gt; <span class="kw-2">*</span>sequence,
         }
     }
 }
