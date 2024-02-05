@@ -297,12 +297,30 @@
 <a href="#297" id="297">297</a>
 <a href="#298" id="298">298</a>
 <a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::thread::JoinHandle;
 
 <span class="kw">use </span>bdk_chain::collections::btree_map;
 <span class="kw">use </span>bdk_chain::collections::BTreeMap;
 <span class="kw">use </span>bdk_chain::{
-    bitcoin::{BlockHash, OutPoint, ScriptBuf, Txid},
+    bitcoin::{BlockHash, OutPoint, ScriptBuf, TxOut, Txid},
     local_chain::{<span class="self">self</span>, CheckPoint},
     BlockId, ConfirmationTimeHeightAnchor, TxGraph,
 };
@@ -492,6 +510,24 @@
                         <span class="kw">let _ </span>= graph.insert_tx(tx.to_tx());
                         <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor_from_status(<span class="kw-2">&amp;</span>tx.status) {
                             <span class="kw">let _ </span>= graph.insert_anchor(tx.txid, anchor);
+                        }
+
+                        <span class="kw">let </span>previous_outputs = tx.vin.iter().filter_map(|vin| {
+                            <span class="kw">let </span>prevout = vin.prevout.as_ref()<span class="question-mark">?</span>;
+                            <span class="prelude-val">Some</span>((
+                                OutPoint {
+                                    txid: vin.txid,
+                                    vout: vin.vout,
+                                },
+                                TxOut {
+                                    script_pubkey: prevout.scriptpubkey.clone(),
+                                    value: prevout.value,
+                                },
+                            ))
+                        });
+
+                        <span class="kw">for </span>(outpoint, txout) <span class="kw">in </span>previous_outputs {
+                            <span class="kw">let _ </span>= graph.insert_txout(outpoint, txout);
                         }
                     }
                 }
