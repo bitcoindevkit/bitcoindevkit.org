@@ -299,6 +299,37 @@
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
 <a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bitcoin::{hashes::Hash, BlockHash, OutPoint, TxOut, Txid};
 
 <span class="kw">use crate</span>::{Anchor, AnchorFromBlockPosition, COINBASE_MATURITY};
@@ -310,7 +341,7 @@
 </span><span class="kw">pub enum </span>ChainPosition&lt;A&gt; {
     <span class="doccomment">/// The chain data is seen as confirmed, and in anchored by `A`.
     </span>Confirmed(A),
-    <span class="doccomment">/// The chain data is seen in mempool at this given timestamp.
+    <span class="doccomment">/// The chain data is not confirmed and last seen in the mempool at this timestamp.
     </span>Unconfirmed(u64),
 }
 
@@ -349,14 +380,14 @@
     serde(<span class="kw">crate </span>= <span class="string">&quot;serde_crate&quot;</span>)
 )]
 </span><span class="kw">pub enum </span>ConfirmationTime {
-    <span class="doccomment">/// The confirmed variant.
+    <span class="doccomment">/// The transaction is confirmed
     </span>Confirmed {
         <span class="doccomment">/// Confirmation height.
         </span>height: u32,
         <span class="doccomment">/// Confirmation time in unix seconds.
         </span>time: u64,
     },
-    <span class="doccomment">/// The unconfirmed variant.
+    <span class="doccomment">/// The transaction is unconfirmed
     </span>Unconfirmed {
         <span class="doccomment">/// The last-seen timestamp in unix seconds.
         </span>last_seen: u64,
@@ -458,13 +489,12 @@
     serde(<span class="kw">crate </span>= <span class="string">&quot;serde_crate&quot;</span>)
 )]
 </span><span class="kw">pub struct </span>ConfirmationHeightAnchor {
-    <span class="doccomment">/// The anchor block.
-    </span><span class="kw">pub </span>anchor_block: BlockId,
-
     <span class="doccomment">/// The exact confirmation height of the transaction.
     ///
     /// It is assumed that this value is never larger than the height of the anchor block.
     </span><span class="kw">pub </span>confirmation_height: u32,
+    <span class="doccomment">/// The anchor block.
+    </span><span class="kw">pub </span>anchor_block: BlockId,
 }
 
 <span class="kw">impl </span>Anchor <span class="kw">for </span>ConfirmationHeightAnchor {
@@ -499,12 +529,12 @@
     serde(<span class="kw">crate </span>= <span class="string">&quot;serde_crate&quot;</span>)
 )]
 </span><span class="kw">pub struct </span>ConfirmationTimeHeightAnchor {
+    <span class="doccomment">/// The confirmation height of the transaction being anchored.
+    </span><span class="kw">pub </span>confirmation_height: u32,
+    <span class="doccomment">/// The confirmation time of the transaction being anchored.
+    </span><span class="kw">pub </span>confirmation_time: u64,
     <span class="doccomment">/// The anchor block.
     </span><span class="kw">pub </span>anchor_block: BlockId,
-    <span class="doccomment">/// The confirmation height of the chain data being anchored.
-    </span><span class="kw">pub </span>confirmation_height: u32,
-    <span class="doccomment">/// The confirmation time of the chain data being anchored.
-    </span><span class="kw">pub </span>confirmation_time: u64,
 }
 
 <span class="kw">impl </span>Anchor <span class="kw">for </span>ConfirmationTimeHeightAnchor {
@@ -530,12 +560,12 @@
 <span class="doccomment">/// A `TxOut` with as much data as we can retrieve about it
 </span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 </span><span class="kw">pub struct </span>FullTxOut&lt;A&gt; {
+    <span class="doccomment">/// The position of the transaction in `outpoint` in the overall chain.
+    </span><span class="kw">pub </span>chain_position: ChainPosition&lt;A&gt;,
     <span class="doccomment">/// The location of the `TxOut`.
     </span><span class="kw">pub </span>outpoint: OutPoint,
     <span class="doccomment">/// The `TxOut`.
     </span><span class="kw">pub </span>txout: TxOut,
-    <span class="doccomment">/// The position of the transaction in `outpoint` in the overall chain.
-    </span><span class="kw">pub </span>chain_position: ChainPosition&lt;A&gt;,
     <span class="doccomment">/// The txid and chain position of the transaction (if any) that has spent this output.
     </span><span class="kw">pub </span>spent_by: <span class="prelude-ty">Option</span>&lt;(ChainPosition&lt;A&gt;, Txid)&gt;,
     <span class="doccomment">/// Whether this output is on a coinbase transaction.
@@ -599,6 +629,38 @@
 
         <span class="bool-val">true
     </span>}
+}
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>chain_position_ord() {
+        <span class="kw">let </span>unconf1 = ChainPosition::&lt;ConfirmationHeightAnchor&gt;::Unconfirmed(<span class="number">10</span>);
+        <span class="kw">let </span>unconf2 = ChainPosition::&lt;ConfirmationHeightAnchor&gt;::Unconfirmed(<span class="number">20</span>);
+        <span class="kw">let </span>conf1 = ChainPosition::Confirmed(ConfirmationHeightAnchor {
+            confirmation_height: <span class="number">9</span>,
+            anchor_block: BlockId {
+                height: <span class="number">20</span>,
+                ..Default::default()
+            },
+        });
+        <span class="kw">let </span>conf2 = ChainPosition::Confirmed(ConfirmationHeightAnchor {
+            confirmation_height: <span class="number">12</span>,
+            anchor_block: BlockId {
+                height: <span class="number">15</span>,
+                ..Default::default()
+            },
+        });
+
+        <span class="macro">assert!</span>(unconf2 &gt; unconf1, <span class="string">&quot;higher last_seen means higher ord&quot;</span>);
+        <span class="macro">assert!</span>(unconf1 &gt; conf1, <span class="string">&quot;unconfirmed is higher ord than confirmed&quot;</span>);
+        <span class="macro">assert!</span>(
+            conf2 &gt; conf1,
+            <span class="string">&quot;confirmation_height is higher then it should be higher ord&quot;
+        </span>);
+    }
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
