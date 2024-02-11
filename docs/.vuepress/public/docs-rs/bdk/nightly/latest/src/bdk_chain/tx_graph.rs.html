@@ -1537,8 +1537,6 @@
 <a href="#1537" id="1537">1537</a>
 <a href="#1538" id="1538">1538</a>
 <a href="#1539" id="1539">1539</a>
-<a href="#1540" id="1540">1540</a>
-<a href="#1541" id="1541">1541</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
 //! [`TxGraph`] contains transactions and indexes them so you can easily traverse the graph of those transactions.
@@ -1581,20 +1579,23 @@
 //! # use bdk_chain::example_utils::*;
 //! # use bitcoin::Transaction;
 //! # let tx_a = tx_from_hex(RAW_TX_1);
-//! let mut graph: TxGraph = TxGraph::default();
-//! let mut another_graph: TxGraph = TxGraph::default();
+//! let mut tx_graph: TxGraph = TxGraph::default();
 //!
 //! // insert a transaction
-//! let changeset = graph.insert_tx(tx_a);
+//! let changeset = tx_graph.insert_tx(tx_a);
 //!
-//! // the resulting changeset can be applied to another tx graph
-//! another_graph.apply_changeset(changeset);
+//! // We can restore the state of the `tx_graph` by applying all
+//! // the changesets obtained by mutating the original (the order doesn&#39;t matter).
+//! let mut restored_tx_graph: TxGraph = TxGraph::default();
+//! restored_tx_graph.apply_changeset(changeset);
+//!
+//! assert_eq!(tx_graph, restored_tx_graph);
 //! ```
 //!
-//! A [`TxGraph`] can also be updated with another [`TxGraph`].
+//! A [`TxGraph`] can also be updated with another [`TxGraph`] which merges them together.
 //!
 //! ```
-//! # use bdk_chain::BlockId;
+//! # use bdk_chain::{Append, BlockId};
 //! # use bdk_chain::tx_graph::TxGraph;
 //! # use bdk_chain::example_utils::*;
 //! # use bitcoin::Transaction;
@@ -2753,11 +2754,6 @@
 }
 
 <span class="kw">impl</span>&lt;A&gt; ChangeSet&lt;A&gt; {
-    <span class="doccomment">/// Returns true if the [`ChangeSet`] is empty (no transactions or txouts).
-    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.txs.is_empty() &amp;&amp; <span class="self">self</span>.txouts.is_empty()
-    }
-
     <span class="doccomment">/// Iterates over all outpoints contained within [`ChangeSet`].
     </span><span class="kw">pub fn </span>txouts(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (OutPoint, <span class="kw-2">&amp;</span>TxOut)&gt; {
         <span class="self">self</span>.txs
