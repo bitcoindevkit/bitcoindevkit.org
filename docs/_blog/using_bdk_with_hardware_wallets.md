@@ -2,7 +2,7 @@
 title: "Using BDK with hardware wallets"
 description: "Tutorial showing how to send funds to a HW and then spend from it using BDK"
 authors:
-    - danielabrozzoni
+    - Daniela Brozzoni
 date: "2022-10-27"
 tags: ["BDK", "Development", "Hardware Wallets"]
 hidden: true
