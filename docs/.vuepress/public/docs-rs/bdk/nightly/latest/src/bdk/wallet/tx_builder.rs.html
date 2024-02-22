@@ -1083,6 +1083,8 @@
 <a href="#1082" id="1082">1082</a>
 <a href="#1083" id="1083">1083</a>
 <a href="#1084" id="1084">1084</a>
+<a href="#1085" id="1085">1085</a>
+<a href="#1086" id="1086">1086</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1275,7 +1277,7 @@
 }
 
 <span class="comment">// methods supported by both contexts, for any CoinSelectionAlgorithm
-</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, D, Cs: CoinSelectionAlgorithm, Ctx: TxBuilderContext&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, D, Cs, Ctx&gt; {
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, D, Cs, Ctx&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, D, Cs, Ctx&gt; {
     <span class="doccomment">/// Set a custom fee rate
     /// The fee_rate method sets the mining fee paid by the transaction as a rate on its size.
     /// This means that the total fee paid is equal to this rate * size of the transaction in virtual Bytes (vB) or Weight Unit (wu).
@@ -1659,20 +1661,6 @@
         }
     }
 
-    <span class="doccomment">/// Finish building the transaction.
-    ///
-    /// Returns a new [`Psbt`] per [`BIP174`].
-    ///
-    /// [`BIP174`]: https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki
-    </span><span class="kw">pub fn </span>finish(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Psbt, CreateTxError&lt;D::WriteError&gt;&gt;
-    <span class="kw">where
-        </span>D: PersistBackend&lt;ChangeSet&gt;,
-    {
-        <span class="self">self</span>.wallet
-            .borrow_mut()
-            .create_tx(<span class="self">self</span>.coin_selection, <span class="self">self</span>.params)
-    }
-
     <span class="doccomment">/// Enable signaling RBF
     ///
     /// This will use the default nSequence value of `0xFFFFFFFD`.
@@ -1717,6 +1705,22 @@
         <span class="self">self</span>.params.allow_dust = allow_dust;
         <span class="self">self
     </span>}
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, D, Cs: CoinSelectionAlgorithm, Ctx&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, D, Cs, Ctx&gt; {
+    <span class="doccomment">/// Finish building the transaction.
+    ///
+    /// Returns a new [`Psbt`] per [`BIP174`].
+    ///
+    /// [`BIP174`]: https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki
+    </span><span class="kw">pub fn </span>finish(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Psbt, CreateTxError&lt;D::WriteError&gt;&gt;
+    <span class="kw">where
+        </span>D: PersistBackend&lt;ChangeSet&gt;,
+    {
+        <span class="self">self</span>.wallet
+            .borrow_mut()
+            .create_tx(<span class="self">self</span>.coin_selection, <span class="self">self</span>.params)
+    }
 }
 
 <span class="attr">#[derive(Debug)]
