@@ -670,6 +670,11 @@
 <a href="#670" id="670">670</a>
 <a href="#671" id="671">671</a>
 <a href="#672" id="672">672</a>
+<a href="#673" id="673">673</a>
+<a href="#674" id="674">674</a>
+<a href="#675" id="675">675</a>
+<a href="#676" id="676">676</a>
+<a href="#677" id="677">677</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     collections::<span class="kw-2">*</span>,
     indexed_tx_graph::Indexer,
@@ -998,12 +1003,17 @@
         <span class="self">self</span>.lookahead
     }
 
-    <span class="doccomment">/// Store lookahead scripts until `target_index`.
+    <span class="doccomment">/// Store lookahead scripts until `target_index` (inclusive).
     ///
-    /// This does not change the `lookahead` setting.
+    /// This does not change the global `lookahead` setting.
     </span><span class="kw">pub fn </span>lookahead_to_target(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K, target_index: u32) {
-        <span class="kw">let </span>next_index = <span class="self">self</span>.next_store_index(keychain);
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(temp_lookahead) = target_index.checked_sub(next_index).filter(|<span class="kw-2">&amp;</span>v| v &gt; <span class="number">0</span>) {
+        <span class="kw">let </span>(next_index, <span class="kw">_</span>) = <span class="self">self</span>.next_index(keychain);
+
+        <span class="kw">let </span>temp_lookahead = (target_index + <span class="number">1</span>)
+            .checked_sub(next_index)
+            .filter(|<span class="kw-2">&amp;</span>index| index &gt; <span class="number">0</span>);
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(temp_lookahead) = temp_lookahead {
             <span class="self">self</span>.replenish_lookahead(keychain, temp_lookahead);
         }
     }
