@@ -1,4 +1,4 @@
-# BDK-CLI
+# BDK-CLI > [Introduction](https://bitcoindevkit.org/bdk-cli/introduction/)
 
 The [bdk-cli](https://github.com/bitcoindevkit/bdk-cli) repo has an example interactive shell built
 using the `bdk` library called `bdk-cli` that acts both as a reference implementation of a wallet
