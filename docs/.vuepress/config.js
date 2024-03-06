@@ -6,6 +6,7 @@ const baseUrl = 'https://bitcoindevkit.org'
 const githubUrl = 'https://github.com/bitcoindevkit'
 const discordUrl = 'https://discord.gg/dstn4dQ'
 const twitterUrl = 'https://twitter.com/intent/follow?screen_name=bitcoindevkit'
+const nostrUrl = 'nostr:npub13dk3dke4zm9vdkucm7f6vv7vhqgkevgg3gju9kr2wzumz7nrykdq0dgnvc'
 const themeColor = '#ffffff'
 
 const docsSidebar = [
@@ -145,6 +146,11 @@ module.exports = {
             {
               text: 'GitHub',
               link: githubUrl,
+              rel: 'noopener noreferrer'
+            },
+            {
+              text: 'Nostr',
+              link: nostrUrl,
               rel: 'noopener noreferrer'
             },
             {
