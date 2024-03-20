@@ -251,6 +251,16 @@ lastUpdated: false
         </h3>
         <p>Spotbit is a portable API for Bitcoin price data and candles.</p>
       </div>
+      <!-- utreexod -->
+      <div class="case-study-item">
+        <a href="https://github.com/utreexo/utreexod" target="_blank">
+          <img src="/img/case-studies-logos/utreexod-130.png" />
+        </a>
+        <h3>
+          <a href="https://github.com/utreexo/utreexod" target="_blank">utreexod</a>
+        </h3>
+        <p>A fully validating Bitcoin node with Utreexo support.</p>
+      </div>
       <!-- Galoy -->
       <div class="case-study-item">
         <a href="https://galoy.io/" target="_blank">
@@ -520,6 +530,16 @@ lastUpdated: false
           <a href="https://wizardsardine.com/liana/" target="_blank">Liana</a>
         </h3>
         <p>Never lose your coins. Liana is a simple Bitcoin wallet with built-in loss protection and inheritance.</p>
+      </div>
+      <!-- utreexod -->
+      <div class="case-study-item">
+        <a href="https://github.com/utreexo/utreexod" target="_blank">
+          <img src="/img/case-studies-logos/utreexod-130.png" />
+        </a>
+        <h3>
+          <a href="https://github.com/utreexo/utreexod" target="_blank">utreexod</a>
+        </h3>
+        <p>A fully validating Bitcoin node with Utreexo support.</p>
       </div>
     </div>
   </template>
