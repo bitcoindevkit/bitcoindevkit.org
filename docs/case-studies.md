@@ -266,6 +266,16 @@ lastUpdated: false
 
   <template v-slot:web>
     <div class="case-studies">
+      <!-- mempool.space -->
+      <div class="case-study-item">
+        <a href="https://mempool.space/" target="_blank">
+          <img src="/img/case-studies-logos/mempool-130.png" />
+        </a>
+        <h3>
+          <a href="https://mempool.space/" target="_blank">mempool.space</a>
+        </h3>
+        <p>Explore the full Bitcoin ecosystem.</p>
+      </div>
       <!-- BitMask -->
       <div class="case-study-item">
         <a href="https://bitmask.app/" target="_blank">
@@ -340,6 +350,16 @@ lastUpdated: false
           <a href="https://foundationdevices.com/" target="_blank">Envoy By Foundation</a> 
         </h3>
         <p>A Bitcoin wallet with powerful account management and privacy features. Use alongside your Passport hardware wallet to take true ownership of your Bitcoin.</p>
+      </div>
+      <!-- mempool.space -->
+      <div class="case-study-item">
+        <a href="https://mempool.space/" target="_blank">
+          <img src="/img/case-studies-logos/mempool-130.png" />
+        </a>
+        <h3>
+          <a href="https://mempool.space/" target="_blank">mempool.space</a>
+        </h3>
+        <p>Explore the full Bitcoin ecosystem.</p>
       </div>
       <!-- Caravan -->
       <div class="case-study-item">
