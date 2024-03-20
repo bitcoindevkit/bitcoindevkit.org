@@ -189,6 +189,16 @@ lastUpdated: false
         </h3>
         <p>Protect your bitcoin with regulated insurance and enterprise-grade multi-institutional custody.</p>
       </div>
+      <!-- Liana -->
+      <div class="case-study-item">
+        <a href="https://wizardsardine.com/liana/" target="_blank">
+          <img src="/img/case-studies-logos/liana-130.png" />
+        </a>
+        <h3>
+          <a href="https://wizardsardine.com/liana/" target="_blank">Liana</a>
+        </h3>
+        <p>Never lose your coins. Liana is a simple Bitcoin wallet with built-in loss protection and inheritance.</p>
+      </div>
     </div>
   </template>
 
@@ -480,6 +490,16 @@ lastUpdated: false
           <a href="https://10101.finance/" target="_blank">10101</a>
         </h3>
         <p>Decentralised finance. For real. BTC trading without counterparty risk in one easy and fast app.</p>
+      </div>
+      <!-- Liana -->
+      <div class="case-study-item">
+        <a href="https://wizardsardine.com/liana/" target="_blank">
+          <img src="/img/case-studies-logos/liana-130.png" />
+        </a>
+        <h3>
+          <a href="https://wizardsardine.com/liana/" target="_blank">Liana</a>
+        </h3>
+        <p>Never lose your coins. Liana is a simple Bitcoin wallet with built-in loss protection and inheritance.</p>
       </div>
     </div>
   </template>
