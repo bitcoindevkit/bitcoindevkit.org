@@ -256,6 +256,7 @@ lastUpdated: false
 
   <template v-slot:web>
     <div class="case-studies">
+      <!-- BitMask -->
       <div class="case-study-item">
         <a href="https://bitmask.app/" target="_blank">
           <img src="/img/case-studies-logos/bitmask-130.png" />
@@ -264,6 +265,16 @@ lastUpdated: false
           <a href="https://bitmask.app/" target="_blank">BitMask Wallet</a>
         </h3>
         <p>Your Gateway to DeepWeb3 on Bitcoin. A browser extension for decentralized applications on Bitcoin.</p>
+      </div>
+      <!-- Caravan -->
+      <div class="case-study-item">
+        <a href="https://www.caravanmultisig.com/" target="_blank">
+          <img src="/img/case-studies-logos/caravan-130.png" />
+        </a>
+        <h3>
+          <a href="https://www.caravanmultisig.com/#/" target="_blank">Caravan</a>
+        </h3>
+        <p>Caravan is a multi-sig coordinator application, and an Unchained-sponsored open source project.</p>
       </div>
     </div>
   </template>
@@ -319,6 +330,16 @@ lastUpdated: false
           <a href="https://foundationdevices.com/" target="_blank">Envoy By Foundation</a> 
         </h3>
         <p>A Bitcoin wallet with powerful account management and privacy features. Use alongside your Passport hardware wallet to take true ownership of your Bitcoin.</p>
+      </div>
+      <!-- Caravan -->
+      <div class="case-study-item">
+        <a href="https://www.caravanmultisig.com/" target="_blank">
+          <img src="/img/case-studies-logos/caravan-130.png" />
+        </a>
+        <h3>
+          <a href="https://www.caravanmultisig.com/#/" target="_blank">Caravan</a>
+        </h3>
+        <p>Caravan is a multi-sig coordinator application, and an Unchained-sponsored open source project.</p>
       </div>
       <!-- Bull Bitcoin -->
       <div class="case-study-item">
