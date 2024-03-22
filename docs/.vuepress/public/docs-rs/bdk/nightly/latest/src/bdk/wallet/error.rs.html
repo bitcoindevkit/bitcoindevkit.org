@@ -291,6 +291,8 @@
 <a href="#290" id="290">290</a>
 <a href="#291" id="291">291</a>
 <a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -307,7 +309,7 @@
 </span><span class="kw">use </span><span class="kw">crate</span>::descriptor::policy::PolicyError;
 <span class="kw">use </span><span class="kw">crate</span>::descriptor::DescriptorError;
 <span class="kw">use </span><span class="kw">crate</span>::wallet::coin_selection;
-<span class="kw">use crate</span>::{descriptor, FeeRate, KeychainKind};
+<span class="kw">use crate</span>::{descriptor, KeychainKind};
 <span class="kw">use </span>alloc::string::String;
 <span class="kw">use </span>bitcoin::{absolute, psbt, OutPoint, Sequence, Txid};
 <span class="kw">use </span>core::fmt;
@@ -376,8 +378,8 @@
     },
     <span class="doccomment">/// When bumping a tx the fee rate requested is lower than required
     </span>FeeRateTooLow {
-        <span class="doccomment">/// Required fee rate (satoshi/vbyte)
-        </span>required: FeeRate,
+        <span class="doccomment">/// Required fee rate
+        </span>required: bitcoin::FeeRate,
     },
     <span class="doccomment">/// `manually_selected_only` option is selected but no utxo has been passed
     </span>NoUtxosSelected,
@@ -461,8 +463,10 @@
             CreateTxError::FeeRateTooLow { required } =&gt; {
                 <span class="macro">write!</span>(
                     f,
-                    <span class="string">&quot;Fee rate too low: required {} sat/vbyte&quot;</span>,
-                    required.as_sat_per_vb()
+                    <span class="comment">// Note: alternate fmt as sat/vb (ceil) available in bitcoin-0.31
+                    //&quot;Fee rate too low: required {required:#}&quot;
+                    </span><span class="string">&quot;Fee rate too low: required {} sat/vb&quot;</span>,
+                    <span class="macro">crate::floating_rate!</span>(required)
                 )
             }
             CreateTxError::NoUtxosSelected =&gt; {
