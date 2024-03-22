@@ -1596,6 +1596,7 @@
 <a href="#1595" id="1595">1595</a>
 <a href="#1596" id="1596">1596</a>
 <a href="#1597" id="1597">1597</a>
+<a href="#1598" id="1598">1598</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1639,7 +1640,7 @@
 //!         &amp;self,
 //!         required_utxos: Vec&lt;WeightedUtxo&gt;,
 //!         optional_utxos: Vec&lt;WeightedUtxo&gt;,
-//!         fee_rate: bdk::FeeRate,
+//!         fee_rate: FeeRate,
 //!         target_amount: u64,
 //!         drain_script: &amp;Script,
 //!     ) -&gt; Result&lt;CoinSelectionResult, coin_selection::Error&gt; {
@@ -1659,7 +1660,7 @@
 //!                 },
 //!             )
 //!             .collect::&lt;Vec&lt;_&gt;&gt;();
-//!         let additional_fees = fee_rate.fee_wu(additional_weight);
+//!         let additional_fees = (fee_rate * additional_weight).to_sat();
 //!         let amount_needed_with_fees = additional_fees + target_amount;
 //!         if selected_amount &lt; amount_needed_with_fees {
 //!             return Err(coin_selection::Error::InsufficientFunds {
@@ -1699,10 +1700,10 @@
 //! ```
 
 </span><span class="kw">use </span><span class="kw">crate</span>::chain::collections::HashSet;
-<span class="kw">use </span><span class="kw">crate</span>::types::FeeRate;
 <span class="kw">use </span><span class="kw">crate</span>::wallet::utils::IsDust;
 <span class="kw">use </span><span class="kw">crate</span>::Utxo;
 <span class="kw">use </span><span class="kw">crate</span>::WeightedUtxo;
+<span class="kw">use </span>bitcoin::FeeRate;
 
 <span class="kw">use </span>alloc::vec::Vec;
 <span class="kw">use </span>bitcoin::consensus::encode::serialize;
@@ -1911,7 +1912,8 @@
 </span><span class="kw">pub fn </span>decide_change(remaining_amount: u64, fee_rate: FeeRate, drain_script: <span class="kw-2">&amp;</span>Script) -&gt; Excess {
     <span class="comment">// drain_output_len = size(len(script_pubkey)) + len(script_pubkey) + size(output_value)
     </span><span class="kw">let </span>drain_output_len = serialize(drain_script).len() + <span class="number">8usize</span>;
-    <span class="kw">let </span>change_fee = fee_rate.fee_vb(drain_output_len);
+    <span class="kw">let </span>change_fee =
+        (fee_rate * Weight::from_vb(drain_output_len <span class="kw">as </span>u64).expect(<span class="string">&quot;overflow occurred&quot;</span>)).to_sat();
     <span class="kw">let </span>drain_val = remaining_amount.saturating_sub(change_fee);
 
     <span class="kw">if </span>drain_val.is_dust(drain_script) {
@@ -1942,9 +1944,12 @@
             (<span class="kw-2">&amp;mut </span>selected_amount, <span class="kw-2">&amp;mut </span>fee_amount),
             |(selected_amount, fee_amount), (must_use, weighted_utxo)| {
                 <span class="kw">if </span>must_use || <span class="kw-2">**</span>selected_amount &lt; target_amount + <span class="kw-2">**</span>fee_amount {
-                    <span class="kw-2">**</span>fee_amount += fee_rate.fee_wu(Weight::from_wu(
-                        (TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight) <span class="kw">as </span>u64,
-                    ));
+                    <span class="kw-2">**</span>fee_amount += (fee_rate
+                        * Weight::from_wu(
+                            (TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight) <span class="kw">as </span>u64,
+                        ))
+                    .to_sat();
+
                     <span class="kw-2">**</span>selected_amount += weighted_utxo.utxo.txout().value;
                     <span class="prelude-val">Some</span>(weighted_utxo.utxo)
                 } <span class="kw">else </span>{
@@ -1985,9 +1990,10 @@
 
 <span class="kw">impl </span>OutputGroup {
     <span class="kw">fn </span>new(weighted_utxo: WeightedUtxo, fee_rate: FeeRate) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span>fee = fee_rate.fee_wu(Weight::from_wu(
-            (TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight) <span class="kw">as </span>u64,
-        ));
+        <span class="kw">let </span>fee = (fee_rate
+            * Weight::from_wu((TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight) <span class="kw">as </span>u64))
+        .to_sat();
+
         <span class="kw">let </span>effective_value = weighted_utxo.utxo.txout().value <span class="kw">as </span>i64 - fee <span class="kw">as </span>i64;
         OutputGroup {
             weighted_utxo,
@@ -2054,7 +2060,8 @@
             .iter()
             .fold(<span class="number">0</span>, |acc, x| acc + x.effective_value);
 
-        <span class="kw">let </span>cost_of_change = <span class="self">self</span>.size_of_change <span class="kw">as </span>f32 * fee_rate.as_sat_per_vb();
+        <span class="kw">let </span>cost_of_change =
+            (Weight::from_vb(<span class="self">self</span>.size_of_change).expect(<span class="string">&quot;overflow occurred&quot;</span>) * fee_rate).to_sat();
 
         <span class="comment">// `curr_value` and `curr_available_value` are both the sum of *effective_values* of
         // the UTXOs. For the optional UTXOs (curr_available_value) we filter out UTXOs with
@@ -2145,7 +2152,7 @@
         <span class="kw-2">mut </span>curr_value: i64,
         <span class="kw-2">mut </span>curr_available_value: i64,
         target_amount: i64,
-        cost_of_change: f32,
+        cost_of_change: u64,
         drain_script: <span class="kw-2">&amp;</span>Script,
         fee_rate: FeeRate,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;CoinSelectionResult, Error&gt; {
@@ -2336,12 +2343,11 @@
     <span class="kw">use </span>core::str::FromStr;
 
     <span class="kw">use </span>bdk_chain::ConfirmationTime;
-    <span class="kw">use </span>bitcoin::{OutPoint, ScriptBuf, TxOut};
+    <span class="kw">use </span>bitcoin::{Amount, OutPoint, ScriptBuf, TxOut};
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::types::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::wallet::coin_selection::filter_duplicates;
-    <span class="kw">use </span><span class="kw">crate</span>::wallet::Vbytes;
 
     <span class="kw">use </span>rand::rngs::StdRng;
     <span class="kw">use </span>rand::seq::SliceRandom;
@@ -2491,7 +2497,7 @@
             .coin_select(
                 utxos,
                 <span class="macro">vec!</span>[],
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2512,7 +2518,7 @@
             .coin_select(
                 utxos,
                 <span class="macro">vec!</span>[],
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2533,7 +2539,7 @@
             .coin_select(
                 <span class="macro">vec!</span>[],
                 utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2555,7 +2561,7 @@
             .coin_select(
                 <span class="macro">vec!</span>[],
                 utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2573,7 +2579,7 @@
             .coin_select(
                 <span class="macro">vec!</span>[],
                 utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1000.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1000</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2590,7 +2596,7 @@
             .coin_select(
                 <span class="macro">vec!</span>[],
                 utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2611,7 +2617,7 @@
             .coin_select(
                 utxos,
                 <span class="macro">vec!</span>[],
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2632,7 +2638,7 @@
             .coin_select(
                 <span class="macro">vec!</span>[],
                 utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2654,7 +2660,7 @@
             .coin_select(
                 <span class="macro">vec!</span>[],
                 utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2673,7 +2679,7 @@
             .coin_select(
                 <span class="macro">vec!</span>[],
                 utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1000.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1000</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2694,7 +2700,7 @@
             .coin_select(
                 <span class="macro">vec!</span>[],
                 utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2715,7 +2721,7 @@
             .coin_select(
                 utxos.clone(),
                 utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2736,7 +2742,7 @@
             .coin_select(
                 <span class="macro">vec!</span>[],
                 utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2773,7 +2779,7 @@
             .coin_select(
                 required,
                 optional,
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2795,7 +2801,7 @@
             .coin_select(
                 <span class="macro">vec!</span>[],
                 utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2813,7 +2819,7 @@
             .coin_select(
                 <span class="macro">vec!</span>[],
                 utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1000.0</span>),
+                FeeRate::from_sat_per_vb_unchecked(<span class="number">1000</span>),
                 target_amount,
                 <span class="kw-2">&amp;</span>drain_script,
             )
@@ -2825,22 +2831,18 @@
         <span class="kw">let </span>utxos = get_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">99932</span>; <span class="comment">// first utxo&#39;s effective value
+        </span><span class="kw">let </span>feerate = FeeRate::BROADCAST_MIN;
 
-        </span><span class="kw">let </span>result = BranchAndBoundCoinSelection::new(<span class="number">0</span>)
-            .coin_select(
-                <span class="macro">vec!</span>[],
-                utxos,
-                FeeRate::from_sat_per_vb(<span class="number">1.0</span>),
-                target_amount,
-                <span class="kw-2">&amp;</span>drain_script,
-            )
+        <span class="kw">let </span>result = BranchAndBoundCoinSelection::new(<span class="number">0</span>)
+            .coin_select(<span class="macro">vec!</span>[], utxos, feerate, target_amount, <span class="kw-2">&amp;</span>drain_script)
             .unwrap();
 
         <span class="macro">assert_eq!</span>(result.selected.len(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(result.selected_amount(), <span class="number">100_000</span>);
-        <span class="kw">let </span>input_size = (TXIN_BASE_WEIGHT + P2WPKH_SATISFACTION_SIZE).vbytes();
+        <span class="kw">let </span>input_weight = (TXIN_BASE_WEIGHT + P2WPKH_SATISFACTION_SIZE) <span class="kw">as </span>u64;
         <span class="comment">// the final fee rate should be exactly the same as the fee rate given
-        </span><span class="macro">assert!</span>((<span class="number">1.0 </span>- (result.fee_amount <span class="kw">as </span>f32 / input_size <span class="kw">as </span>f32)).abs() &lt; f32::EPSILON);
+        </span><span class="kw">let </span>result_feerate = Amount::from_sat(result.fee_amount) / Weight::from_wu(input_weight);
+        <span class="macro">assert_eq!</span>(result_feerate, feerate);
     }
 
     <span class="attr">#[test]
@@ -2856,7 +2858,7 @@
                 .coin_select(
                     <span class="macro">vec!</span>[],
                     optional_utxos,
-                    FeeRate::from_sat_per_vb(<span class="number">0.0</span>),
+                    FeeRate::ZERO,
                     target_amount,
                     <span class="kw-2">&amp;</span>drain_script,
                 )
@@ -2868,7 +2870,7 @@
     <span class="attr">#[test]
     #[should_panic(expected = <span class="string">&quot;BnBNoExactMatch&quot;</span>)]
     </span><span class="kw">fn </span>test_bnb_function_no_exact_match() {
-        <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb(<span class="number">10.0</span>);
+        <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb_unchecked(<span class="number">10</span>);
         <span class="kw">let </span>utxos: Vec&lt;OutputGroup&gt; = get_test_utxos()
             .into_iter()
             .map(|u| OutputGroup::new(u, fee_rate))
@@ -2877,7 +2879,7 @@
         <span class="kw">let </span>curr_available_value = utxos.iter().fold(<span class="number">0</span>, |acc, x| acc + x.effective_value);
 
         <span class="kw">let </span>size_of_change = <span class="number">31</span>;
-        <span class="kw">let </span>cost_of_change = size_of_change <span class="kw">as </span>f32 * fee_rate.as_sat_per_vb();
+        <span class="kw">let </span>cost_of_change = (Weight::from_vb_unchecked(size_of_change) * fee_rate).to_sat();
 
         <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">20_000 </span>+ FEE_AMOUNT;
@@ -2898,7 +2900,7 @@
     <span class="attr">#[test]
     #[should_panic(expected = <span class="string">&quot;BnBTotalTriesExceeded&quot;</span>)]
     </span><span class="kw">fn </span>test_bnb_function_tries_exceeded() {
-        <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb(<span class="number">10.0</span>);
+        <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb_unchecked(<span class="number">10</span>);
         <span class="kw">let </span>utxos: Vec&lt;OutputGroup&gt; = generate_same_value_utxos(<span class="number">100_000</span>, <span class="number">100_000</span>)
             .into_iter()
             .map(|u| OutputGroup::new(u, fee_rate))
@@ -2907,7 +2909,7 @@
         <span class="kw">let </span>curr_available_value = utxos.iter().fold(<span class="number">0</span>, |acc, x| acc + x.effective_value);
 
         <span class="kw">let </span>size_of_change = <span class="number">31</span>;
-        <span class="kw">let </span>cost_of_change = size_of_change <span class="kw">as </span>f32 * fee_rate.as_sat_per_vb();
+        <span class="kw">let </span>cost_of_change = (Weight::from_vb_unchecked(size_of_change) * fee_rate).to_sat();
         <span class="kw">let </span>target_amount = <span class="number">20_000 </span>+ FEE_AMOUNT;
 
         <span class="kw">let </span>drain_script = ScriptBuf::default();
@@ -2929,9 +2931,9 @@
     <span class="comment">// The match won&#39;t be exact but still in the range
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>test_bnb_function_almost_exact_match_with_fees() {
-        <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb(<span class="number">1.0</span>);
+        <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>);
         <span class="kw">let </span>size_of_change = <span class="number">31</span>;
-        <span class="kw">let </span>cost_of_change = size_of_change <span class="kw">as </span>f32 * fee_rate.as_sat_per_vb();
+        <span class="kw">let </span>cost_of_change = (Weight::from_vb_unchecked(size_of_change) * fee_rate).to_sat();
 
         <span class="kw">let </span>utxos: Vec&lt;<span class="kw">_</span>&gt; = generate_same_value_utxos(<span class="number">50_000</span>, <span class="number">10</span>)
             .into_iter()
@@ -2944,7 +2946,7 @@
 
         <span class="comment">// 2*(value of 1 utxo)  - 2*(1 utxo fees with 1.0sat/vbyte fee rate) -
         // cost_of_change + 5.
-        </span><span class="kw">let </span>target_amount = <span class="number">2 </span>* <span class="number">50_000 </span>- <span class="number">2 </span>* <span class="number">67 </span>- cost_of_change.ceil() <span class="kw">as </span>i64 + <span class="number">5</span>;
+        </span><span class="kw">let </span>target_amount = <span class="number">2 </span>* <span class="number">50_000 </span>- <span class="number">2 </span>* <span class="number">67 </span>- cost_of_change <span class="kw">as </span>i64 + <span class="number">5</span>;
 
         <span class="kw">let </span>drain_script = ScriptBuf::default();
 
@@ -2969,7 +2971,7 @@
     </span><span class="kw">fn </span>test_bnb_function_exact_match_more_utxos() {
         <span class="kw">let </span>seed = [<span class="number">0</span>; <span class="number">32</span>];
         <span class="kw">let </span><span class="kw-2">mut </span>rng: StdRng = SeedableRng::from_seed(seed);
-        <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb(<span class="number">0.0</span>);
+        <span class="kw">let </span>fee_rate = FeeRate::ZERO;
 
         <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">200 </span>{
             <span class="kw">let </span>optional_utxos: Vec&lt;<span class="kw">_</span>&gt; = generate_random_utxos(<span class="kw-2">&amp;mut </span>rng, <span class="number">40</span>)
@@ -2995,7 +2997,7 @@
                     curr_value,
                     curr_available_value,
                     target_amount,
-                    <span class="number">0.0</span>,
+                    <span class="number">0</span>,
                     <span class="kw-2">&amp;</span>drain_script,
                     fee_rate,
                 )
@@ -3011,7 +3013,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>utxos = generate_random_utxos(<span class="kw-2">&amp;mut </span>rng, <span class="number">300</span>);
         <span class="kw">let </span>target_amount = sum_random_utxos(<span class="kw-2">&amp;mut </span>rng, <span class="kw-2">&amp;mut </span>utxos) + FEE_AMOUNT;
 
-        <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb(<span class="number">1.0</span>);
+        <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>);
         <span class="kw">let </span>utxos: Vec&lt;OutputGroup&gt; = utxos
             .into_iter()
             .map(|u| OutputGroup::new(u, fee_rate))
@@ -3040,7 +3042,7 @@
         <span class="kw">let </span>selection = BranchAndBoundCoinSelection::default().coin_select(
             <span class="macro">vec!</span>[],
             utxos,
-            FeeRate::from_sat_per_vb(<span class="number">10.0</span>),
+            FeeRate::from_sat_per_vb_unchecked(<span class="number">10</span>),
             <span class="number">500_000</span>,
             <span class="kw-2">&amp;</span>drain_script,
         );
@@ -3066,7 +3068,7 @@
         <span class="kw">let </span>selection = BranchAndBoundCoinSelection::default().coin_select(
             required,
             optional,
-            FeeRate::from_sat_per_vb(<span class="number">10.0</span>),
+            FeeRate::from_sat_per_vb_unchecked(<span class="number">10</span>),
             <span class="number">500_000</span>,
             <span class="kw-2">&amp;</span>drain_script,
         );
@@ -3088,7 +3090,7 @@
         <span class="kw">let </span>selection = BranchAndBoundCoinSelection::default().coin_select(
             utxos,
             <span class="macro">vec!</span>[],
-            FeeRate::from_sat_per_vb(<span class="number">10_000.0</span>),
+            FeeRate::from_sat_per_vb_unchecked(<span class="number">10_000</span>),
             <span class="number">500_000</span>,
             <span class="kw-2">&amp;</span>drain_script,
         );

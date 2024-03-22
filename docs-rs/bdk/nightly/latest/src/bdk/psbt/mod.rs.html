@@ -70,6 +70,7 @@
 <a href="#69" id="69">69</a>
 <a href="#70" id="70">70</a>
 <a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -83,9 +84,10 @@
 
 </span><span class="doccomment">//! Additional functions on the `rust-bitcoin` `PartiallySignedTransaction` structure.
 
-</span><span class="kw">use </span><span class="kw">crate</span>::FeeRate;
-<span class="kw">use </span>alloc::vec::Vec;
+</span><span class="kw">use </span>alloc::vec::Vec;
 <span class="kw">use </span>bitcoin::psbt::PartiallySignedTransaction <span class="kw">as </span>Psbt;
+<span class="kw">use </span>bitcoin::Amount;
+<span class="kw">use </span>bitcoin::FeeRate;
 <span class="kw">use </span>bitcoin::TxOut;
 
 <span class="comment">// TODO upstream the functions here to `rust-bitcoin`?
@@ -137,7 +139,7 @@
         <span class="kw">let </span>fee_amount = <span class="self">self</span>.fee_amount();
         fee_amount.map(|fee| {
             <span class="kw">let </span>weight = <span class="self">self</span>.clone().extract_tx().weight();
-            FeeRate::from_wu(fee, weight)
+            Amount::from_sat(fee) / weight
         })
     }
 }

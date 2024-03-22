@@ -2603,6 +2603,14 @@
 <a href="#2602" id="2602">2602</a>
 <a href="#2603" id="2603">2603</a>
 <a href="#2604" id="2604">2604</a>
+<a href="#2605" id="2605">2605</a>
+<a href="#2606" id="2606">2606</a>
+<a href="#2607" id="2607">2607</a>
+<a href="#2608" id="2608">2608</a>
+<a href="#2609" id="2609">2609</a>
+<a href="#2610" id="2610">2610</a>
+<a href="#2611" id="2611">2611</a>
+<a href="#2612" id="2612">2612</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2638,8 +2646,8 @@
 <span class="kw">use </span>bitcoin::secp256k1::{All, Secp256k1};
 <span class="kw">use </span>bitcoin::sighash::{EcdsaSighashType, TapSighashType};
 <span class="kw">use </span>bitcoin::{
-    absolute, Address, Block, Network, OutPoint, Script, ScriptBuf, Sequence, Transaction, TxOut,
-    Txid, Weight, Witness,
+    absolute, Address, Block, FeeRate, Network, OutPoint, Script, ScriptBuf, Sequence, Transaction,
+    TxOut, Txid, Weight, Witness,
 };
 <span class="kw">use </span>bitcoin::{consensus::encode::serialize, BlockHash};
 <span class="kw">use </span>bitcoin::{constants::genesis_block, psbt};
@@ -3591,10 +3599,8 @@
     /// ```
     /// [`insert_txout`]: Self::insert_txout
     </span><span class="kw">pub fn </span>calculate_fee_rate(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="prelude-ty">Result</span>&lt;FeeRate, CalculateFeeError&gt; {
-        <span class="self">self</span>.calculate_fee(tx).map(|fee| {
-            <span class="kw">let </span>weight = tx.weight();
-            FeeRate::from_wu(fee, weight)
-        })
+        <span class="self">self</span>.calculate_fee(tx)
+            .map(|fee| bitcoin::Amount::from_sat(fee) / tx.weight())
     }
 
     <span class="doccomment">/// Compute the `tx`&#39;s sent and received amounts (in satoshis).
@@ -4037,32 +4043,31 @@
             </span>(<span class="prelude-val">Some</span>(rbf), <span class="kw">_</span>) =&gt; rbf.get_value(),
         };
 
-        <span class="kw">let </span>(fee_rate, <span class="kw-2">mut </span>fee_amount) = <span class="kw">match </span>params
-            .fee_policy
-            .as_ref()
-            .unwrap_or(<span class="kw-2">&amp;</span>FeePolicy::FeeRate(FeeRate::default()))
-        {
+        <span class="kw">let </span>(fee_rate, <span class="kw-2">mut </span>fee_amount) = <span class="kw">match </span>params.fee_policy.unwrap_or_default() {
             <span class="comment">//FIXME: see https://github.com/bitcoindevkit/bdk/issues/256
             </span>FeePolicy::FeeAmount(fee) =&gt; {
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(previous_fee) = params.bumping_fee {
-                    <span class="kw">if </span><span class="kw-2">*</span>fee &lt; previous_fee.absolute {
+                    <span class="kw">if </span>fee &lt; previous_fee.absolute {
                         <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::FeeTooLow {
                             required: previous_fee.absolute,
                         });
                     }
                 }
-                (FeeRate::from_sat_per_vb(<span class="number">0.0</span>), <span class="kw-2">*</span>fee)
+                (FeeRate::ZERO, fee)
             }
             FeePolicy::FeeRate(rate) =&gt; {
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(previous_fee) = params.bumping_fee {
-                    <span class="kw">let </span>required_feerate = FeeRate::from_sat_per_vb(previous_fee.rate + <span class="number">1.0</span>);
-                    <span class="kw">if </span><span class="kw-2">*</span>rate &lt; required_feerate {
+                    <span class="kw">let </span>required_feerate = FeeRate::from_sat_per_kwu(
+                        previous_fee.rate.to_sat_per_kwu()
+                            + FeeRate::BROADCAST_MIN.to_sat_per_kwu(), <span class="comment">// +1 sat/vb
+                    </span>);
+                    <span class="kw">if </span>rate &lt; required_feerate {
                         <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::FeeRateTooLow {
                             required: required_feerate,
                         });
                     }
                 }
-                (<span class="kw-2">*</span>rate, <span class="number">0</span>)
+                (rate, <span class="number">0</span>)
             }
         };
 
@@ -4105,7 +4110,7 @@
             outgoing += value;
         }
 
-        fee_amount += fee_rate.fee_wu(tx.weight());
+        fee_amount += (fee_rate * tx.weight()).to_sat();
 
         <span class="comment">// Segwit transactions&#39; header is 2WU larger than legacy txs&#39; header,
         // as they contain a witness marker (1WU) and a witness flag (1WU) (see BIP144).
@@ -4116,7 +4121,7 @@
         // end up with a transaction with a slightly higher fee rate than the requested one.
         // If, instead, we undershoot, we may end up with a feerate lower than the requested one
         // - we might come up with non broadcastable txs!
-        </span>fee_amount += fee_rate.fee_wu(Weight::from_wu(<span class="number">2</span>));
+        </span>fee_amount += (fee_rate * Weight::from_wu(<span class="number">2</span>)).to_sat();
 
         <span class="kw">if </span>params.change_policy != tx_builder::ChangeSpendPolicy::ChangeAllowed
             &amp;&amp; internal_descriptor.is_none()
@@ -4257,7 +4262,7 @@
     /// let mut psbt =  {
     ///     let mut builder = wallet.build_fee_bump(tx.txid())?;
     ///     builder
-    ///         .fee_rate(bdk::FeeRate::from_sat_per_vb(5.0));
+    ///         .fee_rate(FeeRate::from_sat_per_vb(5).expect(&quot;valid feerate&quot;));
     ///     builder.finish()?
     /// };
     ///
@@ -4385,7 +4390,7 @@
             utxos: original_utxos,
             bumping_fee: <span class="prelude-val">Some</span>(tx_builder::PreviousFee {
                 absolute: fee,
-                rate: fee_rate.as_sat_per_vb(),
+                rate: fee_rate,
             }),
             ..Default::default()
         };
@@ -5169,6 +5174,17 @@
     };
 
     <span class="prelude-val">Ok</span>((signers, change_signers))
+}
+
+<span class="doccomment">/// Transforms a [`FeeRate`] to `f64` with unit as sat/vb.
+</span><span class="attr">#[macro_export]
+#[doc(hidden)]
+</span><span class="macro">macro_rules! </span>floating_rate {
+    (<span class="macro-nonterminal">$rate</span>:expr) =&gt; {{
+        <span class="kw">use </span><span class="macro-nonterminal">$crate::bitcoin::blockdata::constants::WITNESS_SCALE_FACTOR</span>;
+        <span class="comment">// sat_kwu / 250.0 -&gt; sat_vb
+        </span><span class="macro-nonterminal">$rate</span>.to_sat_per_kwu() <span class="kw">as </span>f64 / ((<span class="number">1000 </span>/ WITNESS_SCALE_FACTOR) <span class="kw">as </span>f64)
+    }};
 }
 
 <span class="attr">#[macro_export]
