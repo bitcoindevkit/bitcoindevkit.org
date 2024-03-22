@@ -2611,6 +2611,21 @@
 <a href="#2610" id="2610">2610</a>
 <a href="#2611" id="2611">2611</a>
 <a href="#2612" id="2612">2612</a>
+<a href="#2613" id="2613">2613</a>
+<a href="#2614" id="2614">2614</a>
+<a href="#2615" id="2615">2615</a>
+<a href="#2616" id="2616">2616</a>
+<a href="#2617" id="2617">2617</a>
+<a href="#2618" id="2618">2618</a>
+<a href="#2619" id="2619">2619</a>
+<a href="#2620" id="2620">2620</a>
+<a href="#2621" id="2621">2621</a>
+<a href="#2622" id="2622">2622</a>
+<a href="#2623" id="2623">2623</a>
+<a href="#2624" id="2624">2624</a>
+<a href="#2625" id="2625">2625</a>
+<a href="#2626" id="2626">2626</a>
+<a href="#2627" id="2627">2627</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -4584,11 +4599,26 @@
                             <span class="kw">if </span>sign_options.remove_partial_sigs {
                                 psbt_input.partial_sigs.clear();
                             }
+                            <span class="kw">if </span>sign_options.remove_taproot_extras {
+                                <span class="comment">// We just constructed the final witness, clear these fields.
+                                </span>psbt_input.tap_key_sig = <span class="prelude-val">None</span>;
+                                psbt_input.tap_script_sigs.clear();
+                                psbt_input.tap_scripts.clear();
+                                psbt_input.tap_key_origins.clear();
+                                psbt_input.tap_internal_key = <span class="prelude-val">None</span>;
+                                psbt_input.tap_merkle_root = <span class="prelude-val">None</span>;
+                            }
                         }
                         <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; finished = <span class="bool-val">false</span>,
                     }
                 }
                 <span class="prelude-val">None </span>=&gt; finished = <span class="bool-val">false</span>,
+            }
+        }
+
+        <span class="kw">if </span>finished &amp;&amp; sign_options.remove_taproot_extras {
+            <span class="kw">for </span>output <span class="kw">in </span><span class="kw-2">&amp;mut </span>psbt.outputs {
+                output.tap_key_origins.clear();
             }
         }
 
