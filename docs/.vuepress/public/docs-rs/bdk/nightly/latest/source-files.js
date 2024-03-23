@@ -7,6 +7,7 @@ var sourcesIndex = JSON.parse('{\
 "bdk_esplora":["",[],["async_ext.rs","blocking_ext.rs","lib.rs"]],\
 "bdk_file_store":["",[],["entry_iter.rs","lib.rs","store.rs"]],\
 "bdk_hwi":["",[],["lib.rs","signer.rs"]],\
+"bdk_testenv":["",[],["lib.rs"]],\
 "bdk_tmp_plan":["",[],["lib.rs","plan_impls.rs","requirements.rs","template.rs"]],\
 "example_bitcoind_rpc_polling":["",[],["main.rs"]],\
 "example_cli":["",[],["lib.rs"]],\
