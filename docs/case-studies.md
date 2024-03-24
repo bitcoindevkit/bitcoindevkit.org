@@ -189,6 +189,16 @@ lastUpdated: false
         </h3>
         <p>Protect your bitcoin with regulated insurance and enterprise-grade multi-institutional custody.</p>
       </div>
+      <!-- Liana -->
+      <div class="case-study-item">
+        <a href="https://wizardsardine.com/liana/" target="_blank">
+          <img src="/img/case-studies-logos/liana-130.png" />
+        </a>
+        <h3>
+          <a href="https://wizardsardine.com/liana/" target="_blank">Liana</a>
+        </h3>
+        <p>Never lose your coins. Liana is a simple Bitcoin wallet with built-in loss protection and inheritance.</p>
+      </div>
     </div>
   </template>
 
@@ -241,6 +251,16 @@ lastUpdated: false
         </h3>
         <p>Spotbit is a portable API for Bitcoin price data and candles.</p>
       </div>
+      <!-- utreexod -->
+      <div class="case-study-item">
+        <a href="https://github.com/utreexo/utreexod" target="_blank">
+          <img src="/img/case-studies-logos/utreexod-130.png" />
+        </a>
+        <h3>
+          <a href="https://github.com/utreexo/utreexod" target="_blank">utreexod</a>
+        </h3>
+        <p>A fully validating Bitcoin node with Utreexo support.</p>
+      </div>
       <!-- Galoy -->
       <div class="case-study-item">
         <a href="https://galoy.io/" target="_blank">
@@ -256,6 +276,17 @@ lastUpdated: false
 
   <template v-slot:web>
     <div class="case-studies">
+      <!-- mempool.space -->
+      <div class="case-study-item">
+        <a href="https://mempool.space/" target="_blank">
+          <img src="/img/case-studies-logos/mempool-130.png" />
+        </a>
+        <h3>
+          <a href="https://mempool.space/" target="_blank">mempool.space</a>
+        </h3>
+        <p>Explore the full Bitcoin ecosystem.</p>
+      </div>
+      <!-- BitMask -->
       <div class="case-study-item">
         <a href="https://bitmask.app/" target="_blank">
           <img src="/img/case-studies-logos/bitmask-130.png" />
@@ -264,6 +295,16 @@ lastUpdated: false
           <a href="https://bitmask.app/" target="_blank">BitMask Wallet</a>
         </h3>
         <p>Your Gateway to DeepWeb3 on Bitcoin. A browser extension for decentralized applications on Bitcoin.</p>
+      </div>
+      <!-- Caravan -->
+      <div class="case-study-item">
+        <a href="https://www.caravanmultisig.com/" target="_blank">
+          <img src="/img/case-studies-logos/caravan-130.png" />
+        </a>
+        <h3>
+          <a href="https://www.caravanmultisig.com/#/" target="_blank">Caravan</a>
+        </h3>
+        <p>Caravan is a multi-sig coordinator application, and an Unchained-sponsored open source project.</p>
       </div>
     </div>
   </template>
@@ -319,6 +360,26 @@ lastUpdated: false
           <a href="https://foundationdevices.com/" target="_blank">Envoy By Foundation</a> 
         </h3>
         <p>A Bitcoin wallet with powerful account management and privacy features. Use alongside your Passport hardware wallet to take true ownership of your Bitcoin.</p>
+      </div>
+      <!-- mempool.space -->
+      <div class="case-study-item">
+        <a href="https://mempool.space/" target="_blank">
+          <img src="/img/case-studies-logos/mempool-130.png" />
+        </a>
+        <h3>
+          <a href="https://mempool.space/" target="_blank">mempool.space</a>
+        </h3>
+        <p>Explore the full Bitcoin ecosystem.</p>
+      </div>
+      <!-- Caravan -->
+      <div class="case-study-item">
+        <a href="https://www.caravanmultisig.com/" target="_blank">
+          <img src="/img/case-studies-logos/caravan-130.png" />
+        </a>
+        <h3>
+          <a href="https://www.caravanmultisig.com/#/" target="_blank">Caravan</a>
+        </h3>
+        <p>Caravan is a multi-sig coordinator application, and an Unchained-sponsored open source project.</p>
       </div>
       <!-- Bull Bitcoin -->
       <div class="case-study-item">
@@ -459,6 +520,26 @@ lastUpdated: false
           <a href="https://10101.finance/" target="_blank">10101</a>
         </h3>
         <p>Decentralised finance. For real. BTC trading without counterparty risk in one easy and fast app.</p>
+      </div>
+      <!-- Liana -->
+      <div class="case-study-item">
+        <a href="https://wizardsardine.com/liana/" target="_blank">
+          <img src="/img/case-studies-logos/liana-130.png" />
+        </a>
+        <h3>
+          <a href="https://wizardsardine.com/liana/" target="_blank">Liana</a>
+        </h3>
+        <p>Never lose your coins. Liana is a simple Bitcoin wallet with built-in loss protection and inheritance.</p>
+      </div>
+      <!-- utreexod -->
+      <div class="case-study-item">
+        <a href="https://github.com/utreexo/utreexod" target="_blank">
+          <img src="/img/case-studies-logos/utreexod-130.png" />
+        </a>
+        <h3>
+          <a href="https://github.com/utreexo/utreexod" target="_blank">utreexod</a>
+        </h3>
+        <p>A fully validating Bitcoin node with Utreexo support.</p>
       </div>
     </div>
   </template>
