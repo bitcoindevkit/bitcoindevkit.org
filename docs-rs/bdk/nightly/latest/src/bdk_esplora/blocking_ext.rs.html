@@ -315,6 +315,20 @@
 <a href="#315" id="315">315</a>
 <a href="#316" id="316">316</a>
 <a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::thread::JoinHandle;
 
 <span class="kw">use </span>bdk_chain::collections::btree_map;
@@ -367,6 +381,19 @@
     /// The full scan for each keychain stops after a gap of `stop_gap` script pubkeys with no associated
     /// transactions. `parallel_requests` specifies the max number of HTTP requests to make in
     /// parallel.
+    ///
+    /// ## Note
+    ///
+    /// `stop_gap` is defined as &quot;the maximum number of consecutive unused addresses&quot;.
+    /// For example, with a `stop_gap` of  3, `full_scan` will keep scanning
+    /// until it encounters 3 consecutive script pubkeys with no associated transactions.
+    ///
+    /// This follows the same approach as other Bitcoin-related software,
+    /// such as [Electrum](https://electrum.readthedocs.io/en/latest/faq.html#what-is-the-gap-limit),
+    /// [BTCPay Server](https://docs.btcpayserver.org/FAQ/Wallet/#the-gap-limit-problem),
+    /// and [Sparrow](https://www.sparrowwallet.com/docs/faq.html#ive-restored-my-wallet-but-some-of-my-funds-are-missing).
+    ///
+    /// A `stop_gap` of 0 will be treated as a `stop_gap` of 1.
     </span><span class="kw">fn </span>full_scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, ScriptBuf)&gt;&gt;,
@@ -466,6 +493,7 @@
         <span class="kw">let </span>parallel_requests = Ord::max(parallel_requests, <span class="number">1</span>);
         <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::&lt;ConfirmationTimeHeightAnchor&gt;::default();
         <span class="kw">let </span><span class="kw-2">mut </span>last_active_indexes = BTreeMap::&lt;K, u32&gt;::new();
+        <span class="kw">let </span>stop_gap = Ord::max(stop_gap, <span class="number">1</span>);
 
         <span class="kw">for </span>(keychain, spks) <span class="kw">in </span>keychain_spks {
             <span class="kw">let </span><span class="kw-2">mut </span>spks = spks.into_iter();
@@ -533,12 +561,12 @@
                 }
 
                 <span class="kw">let </span>last_index = last_index.expect(<span class="string">&quot;Must be set since handles wasn&#39;t empty.&quot;</span>);
-                <span class="kw">let </span>past_gap_limit = <span class="kw">if let </span><span class="prelude-val">Some</span>(i) = last_active_index {
-                    last_index &gt; i.saturating_add(stop_gap <span class="kw">as </span>u32)
+                <span class="kw">let </span>gap_limit_reached = <span class="kw">if let </span><span class="prelude-val">Some</span>(i) = last_active_index {
+                    last_index &gt;= i.saturating_add(stop_gap <span class="kw">as </span>u32)
                 } <span class="kw">else </span>{
-                    last_index &gt;= stop_gap <span class="kw">as </span>u32
+                    last_index + <span class="number">1 </span>&gt;= stop_gap <span class="kw">as </span>u32
                 };
-                <span class="kw">if </span>past_gap_limit {
+                <span class="kw">if </span>gap_limit_reached {
                     <span class="kw">break</span>;
                 }
             }
