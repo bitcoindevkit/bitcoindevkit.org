@@ -2626,6 +2626,8 @@
 <a href="#2625" id="2625">2625</a>
 <a href="#2626" id="2626">2626</a>
 <a href="#2627" id="2627">2627</a>
+<a href="#2628" id="2628">2628</a>
+<a href="#2629" id="2629">2629</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -3570,7 +3572,7 @@
     /// # let mut wallet: Wallet&lt;()&gt; = todo!();
     /// # let txid:Txid = todo!();
     /// let tx = wallet.get_tx(txid).expect(&quot;transaction&quot;).tx_node.tx;
-    /// let fee = wallet.calculate_fee(tx).expect(&quot;fee&quot;);
+    /// let fee = wallet.calculate_fee(&amp;tx).expect(&quot;fee&quot;);
     /// ```
     ///
     /// ```rust, no_run
@@ -3601,7 +3603,7 @@
     /// # let mut wallet: Wallet&lt;()&gt; = todo!();
     /// # let txid:Txid = todo!();
     /// let tx = wallet.get_tx(txid).expect(&quot;transaction&quot;).tx_node.tx;
-    /// let fee_rate = wallet.calculate_fee_rate(tx).expect(&quot;fee rate&quot;);
+    /// let fee_rate = wallet.calculate_fee_rate(&amp;tx).expect(&quot;fee rate&quot;);
     /// ```
     ///
     /// ```rust, no_run
@@ -3609,8 +3611,8 @@
     /// # use bdk::Wallet;
     /// # let mut wallet: Wallet&lt;()&gt; = todo!();
     /// # let mut psbt: PartiallySignedTransaction = todo!();
-    /// let tx = &amp;psbt.clone().extract_tx();
-    /// let fee_rate = wallet.calculate_fee_rate(tx).expect(&quot;fee rate&quot;);
+    /// let tx = psbt.clone().extract_tx();
+    /// let fee_rate = wallet.calculate_fee_rate(&amp;tx).expect(&quot;fee rate&quot;);
     /// ```
     /// [`insert_txout`]: Self::insert_txout
     </span><span class="kw">pub fn </span>calculate_fee_rate(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="prelude-ty">Result</span>&lt;FeeRate, CalculateFeeError&gt; {
@@ -3631,8 +3633,8 @@
     /// # use bdk::Wallet;
     /// # let mut wallet: Wallet&lt;()&gt; = todo!();
     /// # let txid:Txid = todo!();
-    /// let tx = wallet.get_tx(txid).expect(&quot;transaction&quot;).tx_node.tx;
-    /// let (sent, received) = wallet.sent_and_received(tx);
+    /// let tx = wallet.get_tx(txid).expect(&quot;tx exists&quot;).tx_node.tx;
+    /// let (sent, received) = wallet.sent_and_received(&amp;tx);
     /// ```
     ///
     /// ```rust, no_run
@@ -3693,7 +3695,7 @@
     </span><span class="kw">pub fn </span>get_tx(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         txid: Txid,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;CanonicalTx&lt;<span class="lifetime">&#39;_</span>, Transaction, ConfirmationTimeHeightAnchor&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;CanonicalTx&lt;<span class="lifetime">&#39;_</span>, Arc&lt;Transaction&gt;, ConfirmationTimeHeightAnchor&gt;&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.indexed_graph.graph();
 
         <span class="prelude-val">Some</span>(CanonicalTx {
@@ -3795,7 +3797,8 @@
     <span class="doccomment">/// Iterate over the transactions in the wallet.
     </span><span class="kw">pub fn </span>transactions(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = CanonicalTx&lt;<span class="lifetime">&#39;_</span>, Transaction, ConfirmationTimeHeightAnchor&gt;&gt; + <span class="lifetime">&#39;_ </span>{
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = CanonicalTx&lt;<span class="lifetime">&#39;_</span>, Arc&lt;Transaction&gt;, ConfirmationTimeHeightAnchor&gt;&gt; + <span class="lifetime">&#39;_
+    </span>{
         <span class="self">self</span>.indexed_graph
             .graph()
             .list_chain_txs(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, <span class="self">self</span>.chain.tip().block_id())
@@ -4298,7 +4301,8 @@
         <span class="kw">let </span><span class="kw-2">mut </span>tx = graph
             .get_tx(txid)
             .ok_or(BuildFeeBumpError::TransactionNotFound(txid))<span class="question-mark">?
-            </span>.clone();
+            </span>.as_ref()
+            .clone();
 
         <span class="kw">let </span>pos = graph
             .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, txid)
@@ -4367,7 +4371,7 @@
                                 sequence: <span class="prelude-val">Some</span>(txin.sequence),
                                 psbt_input: Box::new(psbt::Input {
                                     witness_utxo: <span class="prelude-val">Some</span>(txout.clone()),
-                                    non_witness_utxo: <span class="prelude-val">Some</span>(prev_tx.clone()),
+                                    non_witness_utxo: <span class="prelude-val">Some</span>(prev_tx.as_ref().clone()),
                                     ..Default::default()
                                 }),
                             },
@@ -4923,7 +4927,7 @@
                 psbt_input.witness_utxo = <span class="prelude-val">Some</span>(prev_tx.output[prev_output.vout <span class="kw">as </span>usize].clone());
             }
             <span class="kw">if </span>!desc.is_taproot() &amp;&amp; (!desc.is_witness() || !only_witness_utxo) {
-                psbt_input.non_witness_utxo = <span class="prelude-val">Some</span>(prev_tx.clone());
+                psbt_input.non_witness_utxo = <span class="prelude-val">Some</span>(prev_tx.as_ref().clone());
             }
         }
         <span class="prelude-val">Ok</span>(psbt_input)
