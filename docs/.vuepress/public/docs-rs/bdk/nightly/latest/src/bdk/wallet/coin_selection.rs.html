@@ -1595,8 +1595,6 @@
 <a href="#1594" id="1594">1594</a>
 <a href="#1595" id="1595">1595</a>
 <a href="#1596" id="1596">1596</a>
-<a href="#1597" id="1597">1597</a>
-<a href="#1598" id="1598">1598</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1631,7 +1629,6 @@
 //! # use bdk::*;
 //! # use bdk::wallet::coin_selection::decide_change;
 //! # use anyhow::Error;
-//! # const TXIN_BASE_WEIGHT: usize = (32 + 4 + 4) * 4;
 //! #[derive(Debug)]
 //! struct AlwaysSpendEverything;
 //!
@@ -1654,7 +1651,8 @@
 //!                 |(selected_amount, additional_weight), weighted_utxo| {
 //!                     **selected_amount += weighted_utxo.utxo.txout().value;
 //!                     **additional_weight += Weight::from_wu(
-//!                         (TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight) as u64,
+//!                         (TxIn::default().segwit_weight() + weighted_utxo.satisfaction_weight)
+//!                             as u64,
 //!                     );
 //!                     Some(weighted_utxo.utxo)
 //!                 },
@@ -1708,6 +1706,7 @@
 <span class="kw">use </span>alloc::vec::Vec;
 <span class="kw">use </span>bitcoin::consensus::encode::serialize;
 <span class="kw">use </span>bitcoin::OutPoint;
+<span class="kw">use </span>bitcoin::TxIn;
 <span class="kw">use </span>bitcoin::{Script, Weight};
 
 <span class="kw">use </span>core::convert::TryInto;
@@ -1717,10 +1716,6 @@
 <span class="doccomment">/// Default coin selection algorithm used by [`TxBuilder`](super::tx_builder::TxBuilder) if not
 /// overridden
 </span><span class="kw">pub type </span>DefaultCoinSelectionAlgorithm = BranchAndBoundCoinSelection;
-
-<span class="comment">// Base weight of a Txin, not counting the weight needed for satisfying it.
-// prev_txid (32 bytes) + prev_vout (4 bytes) + sequence (4 bytes)
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>TXIN_BASE_WEIGHT: usize = (<span class="number">32 </span>+ <span class="number">4 </span>+ <span class="number">4</span>) * <span class="number">4</span>;
 
 <span class="doccomment">/// Errors that can be thrown by the [`coin_selection`](crate::wallet::coin_selection) module
 </span><span class="attr">#[derive(Debug)]
@@ -1946,10 +1941,10 @@
                 <span class="kw">if </span>must_use || <span class="kw-2">**</span>selected_amount &lt; target_amount + <span class="kw-2">**</span>fee_amount {
                     <span class="kw-2">**</span>fee_amount += (fee_rate
                         * Weight::from_wu(
-                            (TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight) <span class="kw">as </span>u64,
+                            (TxIn::default().segwit_weight() + weighted_utxo.satisfaction_weight)
+                                <span class="kw">as </span>u64,
                         ))
                     .to_sat();
-
                     <span class="kw-2">**</span>selected_amount += weighted_utxo.utxo.txout().value;
                     <span class="prelude-val">Some</span>(weighted_utxo.utxo)
                 } <span class="kw">else </span>{
@@ -1991,9 +1986,10 @@
 <span class="kw">impl </span>OutputGroup {
     <span class="kw">fn </span>new(weighted_utxo: WeightedUtxo, fee_rate: FeeRate) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>fee = (fee_rate
-            * Weight::from_wu((TXIN_BASE_WEIGHT + weighted_utxo.satisfaction_weight) <span class="kw">as </span>u64))
+            * Weight::from_wu(
+                (TxIn::default().segwit_weight() + weighted_utxo.satisfaction_weight) <span class="kw">as </span>u64,
+            ))
         .to_sat();
-
         <span class="kw">let </span>effective_value = weighted_utxo.utxo.txout().value <span class="kw">as </span>i64 - fee <span class="kw">as </span>i64;
         OutputGroup {
             weighted_utxo,
@@ -2343,7 +2339,7 @@
     <span class="kw">use </span>core::str::FromStr;
 
     <span class="kw">use </span>bdk_chain::ConfirmationTime;
-    <span class="kw">use </span>bitcoin::{Amount, OutPoint, ScriptBuf, TxOut};
+    <span class="kw">use </span>bitcoin::{Amount, OutPoint, ScriptBuf, TxIn, TxOut};
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::types::<span class="kw-2">*</span>;
@@ -2353,9 +2349,9 @@
     <span class="kw">use </span>rand::seq::SliceRandom;
     <span class="kw">use </span>rand::{Rng, RngCore, SeedableRng};
 
-    <span class="comment">// n. of items on witness (1WU) + signature len (1WU) + signature and sighash (72WU)
-    // + pubkey len (1WU) + pubkey (33WU) + script sig len (1 byte, 4WU)
-    </span><span class="kw">const </span>P2WPKH_SATISFACTION_SIZE: usize = <span class="number">1 </span>+ <span class="number">1 </span>+ <span class="number">72 </span>+ <span class="number">1 </span>+ <span class="number">33 </span>+ <span class="number">4</span>;
+    <span class="comment">// signature len (1WU) + signature and sighash (72WU)
+    // + pubkey len (1WU) + pubkey (33WU)
+    </span><span class="kw">const </span>P2WPKH_SATISFACTION_SIZE: usize = <span class="number">1 </span>+ <span class="number">72 </span>+ <span class="number">1 </span>+ <span class="number">33</span>;
 
     <span class="kw">const </span>FEE_AMOUNT: u64 = <span class="number">50</span>;
 
@@ -2839,7 +2835,7 @@
 
         <span class="macro">assert_eq!</span>(result.selected.len(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(result.selected_amount(), <span class="number">100_000</span>);
-        <span class="kw">let </span>input_weight = (TXIN_BASE_WEIGHT + P2WPKH_SATISFACTION_SIZE) <span class="kw">as </span>u64;
+        <span class="kw">let </span>input_weight = (TxIn::default().segwit_weight() + P2WPKH_SATISFACTION_SIZE) <span class="kw">as </span>u64;
         <span class="comment">// the final fee rate should be exactly the same as the fee rate given
         </span><span class="kw">let </span>result_feerate = Amount::from_sat(result.fee_amount) / Weight::from_wu(input_weight);
         <span class="macro">assert_eq!</span>(result_feerate, feerate);

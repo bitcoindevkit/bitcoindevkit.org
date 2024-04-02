@@ -1080,7 +1080,6 @@
 <a href="#1079" id="1079">1079</a>
 <a href="#1080" id="1080">1080</a>
 <a href="#1081" id="1081">1081</a>
-<a href="#1082" id="1082">1082</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1397,8 +1396,7 @@
 
             <span class="kw">for </span>utxo <span class="kw">in </span>utxos {
                 <span class="kw">let </span>descriptor = wallet.get_descriptor_for_keychain(utxo.keychain);
-                <span class="attr">#[allow(deprecated)]
-                </span><span class="kw">let </span>satisfaction_weight = descriptor.max_satisfaction_weight().unwrap();
+                <span class="kw">let </span>satisfaction_weight = descriptor.max_weight_to_satisfy().unwrap();
                 <span class="self">self</span>.params.utxos.push(WeightedUtxo {
                     satisfaction_weight,
                     utxo: Utxo::Local(utxo),
@@ -1439,9 +1437,9 @@
     /// causing you to pay a fee that is too high. The party who is broadcasting the transaction can
     /// of course check the real input weight matches the expected weight prior to broadcasting.
     ///
-    /// To guarantee the `satisfaction_weight` is correct, you can require the party providing the
+    /// To guarantee the `max_weight_to_satisfy` is correct, you can require the party providing the
     /// `psbt_input` provide a miniscript descriptor for the input so you can check it against the
-    /// `script_pubkey` and then ask it for the [`max_satisfaction_weight`].
+    /// `script_pubkey` and then ask it for the [`max_weight_to_satisfy`].
     ///
     /// This is an **EXPERIMENTAL** feature, API and other major changes are expected.
     ///
@@ -1462,7 +1460,7 @@
     ///
     /// [`only_witness_utxo`]: Self::only_witness_utxo
     /// [`finish`]: Self::finish
-    /// [`max_satisfaction_weight`]: miniscript::Descriptor::max_satisfaction_weight
+    /// [`max_weight_to_satisfy`]: miniscript::Descriptor::max_weight_to_satisfy
     </span><span class="kw">pub fn </span>add_foreign_utxo(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         outpoint: OutPoint,
