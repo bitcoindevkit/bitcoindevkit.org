@@ -2624,10 +2624,6 @@
 <a href="#2623" id="2623">2623</a>
 <a href="#2624" id="2624">2624</a>
 <a href="#2625" id="2625">2625</a>
-<a href="#2626" id="2626">2626</a>
-<a href="#2627" id="2627">2627</a>
-<a href="#2628" id="2628">2628</a>
-<a href="#2629" id="2629">2629</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2684,8 +2680,7 @@
 <span class="kw">pub mod </span>error;
 <span class="kw">pub use </span>utils::IsDust;
 
-<span class="attr">#[allow(deprecated)]
-</span><span class="kw">use </span>coin_selection::DefaultCoinSelectionAlgorithm;
+<span class="kw">use </span>coin_selection::DefaultCoinSelectionAlgorithm;
 <span class="kw">use </span>signer::{SignOptions, SignerOrdering, SignersContainer, TransactionSigner};
 <span class="kw">use </span>tx_builder::{BumpFee, CreateTx, FeePolicy, TxBuilder, TxParams};
 <span class="kw">use </span>utils::{check_nsequence_rbf, After, Older, SecpCtx};
@@ -4344,10 +4339,9 @@
 
                 <span class="kw">let </span>weighted_utxo = <span class="kw">match </span>txout_index.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
                     <span class="prelude-val">Some</span>((keychain, derivation_index)) =&gt; {
-                        <span class="attr">#[allow(deprecated)]
-                        </span><span class="kw">let </span>satisfaction_weight = <span class="self">self
+                        <span class="kw">let </span>satisfaction_weight = <span class="self">self
                             </span>.get_descriptor_for_keychain(keychain)
-                            .max_satisfaction_weight()
+                            .max_weight_to_satisfy()
                             .unwrap();
                         WeightedUtxo {
                             utxo: Utxo::Local(LocalOutput {
@@ -4365,7 +4359,6 @@
                         <span class="kw">let </span>satisfaction_weight =
                             serialize(<span class="kw-2">&amp;</span>txin.script_sig).len() * <span class="number">4 </span>+ serialize(<span class="kw-2">&amp;</span>txin.witness).len();
                         WeightedUtxo {
-                            satisfaction_weight,
                             utxo: Utxo::Foreign {
                                 outpoint: txin.previous_output,
                                 sequence: <span class="prelude-val">Some</span>(txin.sequence),
@@ -4375,6 +4368,7 @@
                                     ..Default::default()
                                 }),
                             },
+                            satisfaction_weight,
                         }
                     }
                 };
@@ -4689,13 +4683,11 @@
         <span class="self">self</span>.list_unspent()
             .map(|utxo| {
                 <span class="kw">let </span>keychain = utxo.keychain;
-                <span class="attr">#[allow(deprecated)]
-                </span>(
-                    utxo,
+                (utxo, {
                     <span class="self">self</span>.get_descriptor_for_keychain(keychain)
-                        .max_satisfaction_weight()
-                        .unwrap(),
-                )
+                        .max_weight_to_satisfy()
+                        .unwrap()
+                })
             })
             .collect()
     }
