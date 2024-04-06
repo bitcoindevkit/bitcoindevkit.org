@@ -2321,13 +2321,13 @@
                     };
                     <span class="kw">let </span><span class="kw-2">mut </span>has_missing_height = <span class="bool-val">false</span>;
                     <span class="kw">for </span>anchor_block <span class="kw">in </span>tx_anchors.iter().map(Anchor::anchor_block) {
-                        <span class="kw">match </span>chain.blocks().get(<span class="kw-2">&amp;</span>anchor_block.height) {
+                        <span class="kw">match </span>chain.get(anchor_block.height) {
                             <span class="prelude-val">None </span>=&gt; {
                                 has_missing_height = <span class="bool-val">true</span>;
                                 <span class="kw">continue</span>;
                             }
-                            <span class="prelude-val">Some</span>(chain_hash) =&gt; {
-                                <span class="kw">if </span>chain_hash == <span class="kw-2">&amp;</span>anchor_block.hash {
+                            <span class="prelude-val">Some</span>(chain_cp) =&gt; {
+                                <span class="kw">if </span>chain_cp.hash() == anchor_block.hash {
                                     <span class="kw">return </span><span class="bool-val">true</span>;
                                 }
                             }
@@ -2345,7 +2345,7 @@
             .filter_map(<span class="kw">move </span>|(a, <span class="kw">_</span>)| {
                 <span class="kw">let </span>anchor_block = a.anchor_block();
                 <span class="kw">if </span><span class="prelude-val">Some</span>(anchor_block.height) != last_height_emitted
-                    &amp;&amp; !chain.blocks().contains_key(<span class="kw-2">&amp;</span>anchor_block.height)
+                    &amp;&amp; chain.get(anchor_block.height).is_none()
                 {
                     last_height_emitted = <span class="prelude-val">Some</span>(anchor_block.height);
                     <span class="prelude-val">Some</span>(anchor_block.height)
@@ -2895,7 +2895,7 @@
         </span>A: Anchor,
     {
         <span class="self">self</span>.anchor_heights()
-            .filter(<span class="kw">move </span>|height| !local_chain.blocks().contains_key(height))
+            .filter(<span class="kw">move </span>|<span class="kw-2">&amp;</span>height| local_chain.get(height).is_none())
     }
 }
 

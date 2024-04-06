@@ -797,9 +797,47 @@
 <a href="#797" id="797">797</a>
 <a href="#798" id="798">798</a>
 <a href="#799" id="799">799</a>
+<a href="#800" id="800">800</a>
+<a href="#801" id="801">801</a>
+<a href="#802" id="802">802</a>
+<a href="#803" id="803">803</a>
+<a href="#804" id="804">804</a>
+<a href="#805" id="805">805</a>
+<a href="#806" id="806">806</a>
+<a href="#807" id="807">807</a>
+<a href="#808" id="808">808</a>
+<a href="#809" id="809">809</a>
+<a href="#810" id="810">810</a>
+<a href="#811" id="811">811</a>
+<a href="#812" id="812">812</a>
+<a href="#813" id="813">813</a>
+<a href="#814" id="814">814</a>
+<a href="#815" id="815">815</a>
+<a href="#816" id="816">816</a>
+<a href="#817" id="817">817</a>
+<a href="#818" id="818">818</a>
+<a href="#819" id="819">819</a>
+<a href="#820" id="820">820</a>
+<a href="#821" id="821">821</a>
+<a href="#822" id="822">822</a>
+<a href="#823" id="823">823</a>
+<a href="#824" id="824">824</a>
+<a href="#825" id="825">825</a>
+<a href="#826" id="826">826</a>
+<a href="#827" id="827">827</a>
+<a href="#828" id="828">828</a>
+<a href="#829" id="829">829</a>
+<a href="#830" id="830">830</a>
+<a href="#831" id="831">831</a>
+<a href="#832" id="832">832</a>
+<a href="#833" id="833">833</a>
+<a href="#834" id="834">834</a>
+<a href="#835" id="835">835</a>
+<a href="#836" id="836">836</a>
 </pre><pre class="rust"><code><span class="doccomment">//! The [`LocalChain`] is a local implementation of [`ChainOracle`].
 
 </span><span class="kw">use </span>core::convert::Infallible;
+<span class="kw">use </span>core::ops::RangeBounds;
 
 <span class="kw">use </span><span class="kw">crate</span>::collections::BTreeMap;
 <span class="kw">use crate</span>::{BlockId, ChainOracle};
@@ -831,6 +869,14 @@
     </span>block: BlockId,
     <span class="doccomment">/// Previous checkpoint (if any).
     </span>prev: <span class="prelude-ty">Option</span>&lt;Arc&lt;CPInner&gt;&gt;,
+}
+
+<span class="kw">impl </span>PartialEq <span class="kw">for </span>CheckPoint {
+    <span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; bool {
+        <span class="kw">let </span>self_cps = <span class="self">self</span>.iter().map(|cp| cp.block_id());
+        <span class="kw">let </span>other_cps = other.iter().map(|cp| cp.block_id());
+        self_cps.eq(other_cps)
+    }
 }
 
 <span class="kw">impl </span>CheckPoint {
@@ -947,6 +993,36 @@
     </span><span class="kw">pub fn </span>iter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; CheckPointIter {
         <span class="self">self</span>.clone().into_iter()
     }
+
+    <span class="doccomment">/// Get checkpoint at `height`.
+    ///
+    /// Returns `None` if checkpoint at `height` does not exist`.
+    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, height: u32) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="self">self</span>.range(height..=height).next()
+    }
+
+    <span class="doccomment">/// Iterate checkpoints over a height range.
+    ///
+    /// Note that we always iterate checkpoints in reverse height order (iteration starts at tip
+    /// height).
+    </span><span class="kw">pub fn </span>range&lt;R&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, range: R) -&gt; <span class="kw">impl </span>Iterator&lt;Item = CheckPoint&gt;
+    <span class="kw">where
+        </span>R: RangeBounds&lt;u32&gt;,
+    {
+        <span class="kw">let </span>start_bound = range.start_bound().cloned();
+        <span class="kw">let </span>end_bound = range.end_bound().cloned();
+        <span class="self">self</span>.iter()
+            .skip_while(<span class="kw">move </span>|cp| <span class="kw">match </span>end_bound {
+                core::ops::Bound::Included(inc_bound) =&gt; cp.height() &gt; inc_bound,
+                core::ops::Bound::Excluded(exc_bound) =&gt; cp.height() &gt;= exc_bound,
+                core::ops::Bound::Unbounded =&gt; <span class="bool-val">false</span>,
+            })
+            .take_while(<span class="kw">move </span>|cp| <span class="kw">match </span>start_bound {
+                core::ops::Bound::Included(inc_bound) =&gt; cp.height() &gt;= inc_bound,
+                core::ops::Bound::Excluded(exc_bound) =&gt; cp.height() &gt; exc_bound,
+                core::ops::Bound::Unbounded =&gt; <span class="bool-val">true</span>,
+            })
+    }
 }
 
 <span class="doccomment">/// Iterates over checkpoints backwards.
@@ -987,7 +1063,7 @@
 /// Script-pubkey based syncing mechanisms may not introduce transactions in a chronological order
 /// so some updates require introducing older blocks (to anchor older transactions). For
 /// script-pubkey based syncing, `introduce_older_blocks` would typically be `true`.
-</span><span class="attr">#[derive(Debug, Clone)]
+</span><span class="attr">#[derive(Debug, Clone, PartialEq)]
 </span><span class="kw">pub struct </span>Update {
     <span class="doccomment">/// The update chain&#39;s new tip.
     </span><span class="kw">pub </span>tip: CheckPoint,
@@ -1001,22 +1077,9 @@
 }
 
 <span class="doccomment">/// This is a local implementation of [`ChainOracle`].
-</span><span class="attr">#[derive(Debug, Clone)]
+</span><span class="attr">#[derive(Debug, Clone, PartialEq)]
 </span><span class="kw">pub struct </span>LocalChain {
     tip: CheckPoint,
-    index: BTreeMap&lt;u32, BlockHash&gt;,
-}
-
-<span class="kw">impl </span>PartialEq <span class="kw">for </span>LocalChain {
-    <span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; bool {
-        <span class="self">self</span>.index == other.index
-    }
-}
-
-<span class="kw">impl </span>From&lt;LocalChain&gt; <span class="kw">for </span>BTreeMap&lt;u32, BlockHash&gt; {
-    <span class="kw">fn </span>from(value: LocalChain) -&gt; <span class="self">Self </span>{
-        value.index
-    }
 }
 
 <span class="kw">impl </span>ChainOracle <span class="kw">for </span>LocalChain {
@@ -1027,18 +1090,16 @@
         block: BlockId,
         chain_tip: BlockId,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;bool&gt;, <span class="self">Self</span>::Error&gt; {
-        <span class="kw">if </span>block.height &gt; chain_tip.height {
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
+        <span class="kw">let </span>chain_tip_cp = <span class="kw">match </span><span class="self">self</span>.tip.get(chain_tip.height) {
+            <span class="comment">// we can only determine whether `block` is in chain of `chain_tip` if `chain_tip` can
+            // be identified in chain
+            </span><span class="prelude-val">Some</span>(cp) <span class="kw">if </span>cp.hash() == chain_tip.hash =&gt; cp,
+            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+        };
+        <span class="kw">match </span>chain_tip_cp.get(block.height) {
+            <span class="prelude-val">Some</span>(cp) =&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(cp.hash() == block.hash)),
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
-        <span class="prelude-val">Ok</span>(
-            <span class="kw">match </span>(
-                <span class="self">self</span>.index.get(<span class="kw-2">&amp;</span>block.height),
-                <span class="self">self</span>.index.get(<span class="kw-2">&amp;</span>chain_tip.height),
-            ) {
-                (<span class="prelude-val">Some</span>(cp), <span class="prelude-val">Some</span>(tip_cp)) =&gt; <span class="prelude-val">Some</span>(<span class="kw-2">*</span>cp == block.hash &amp;&amp; <span class="kw-2">*</span>tip_cp == chain_tip.hash),
-                <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
-            },
-        )
     }
 
     <span class="kw">fn </span>get_chain_tip(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;BlockId, <span class="self">Self</span>::Error&gt; {
@@ -1049,7 +1110,7 @@
 <span class="kw">impl </span>LocalChain {
     <span class="doccomment">/// Get the genesis hash.
     </span><span class="kw">pub fn </span>genesis_hash(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; BlockHash {
-        <span class="self">self</span>.index.get(<span class="kw-2">&amp;</span><span class="number">0</span>).copied().expect(<span class="string">&quot;must have genesis hash&quot;</span>)
+        <span class="self">self</span>.tip.get(<span class="number">0</span>).expect(<span class="string">&quot;genesis must exist&quot;</span>).hash()
     }
 
     <span class="doccomment">/// Construct [`LocalChain`] from genesis `hash`.
@@ -1058,7 +1119,6 @@
         <span class="kw">let </span>height = <span class="number">0</span>;
         <span class="kw">let </span>chain = <span class="self">Self </span>{
             tip: CheckPoint::new(BlockId { height, hash }),
-            index: core::iter::once((height, hash)).collect(),
         };
         <span class="kw">let </span>changeset = chain.initial_changeset();
         (chain, changeset)
@@ -1075,7 +1135,6 @@
         <span class="kw">let </span>(<span class="kw-2">mut </span>chain, <span class="kw">_</span>) = <span class="self">Self</span>::from_genesis_hash(genesis_hash);
         chain.apply_changeset(<span class="kw-2">&amp;</span>changeset)<span class="question-mark">?</span>;
 
-        <span class="macro">debug_assert!</span>(chain._check_index_is_consistent_with_tip());
         <span class="macro">debug_assert!</span>(chain._check_changeset_is_applied(<span class="kw-2">&amp;</span>changeset));
 
         <span class="prelude-val">Ok</span>(chain)
@@ -1083,18 +1142,11 @@
 
     <span class="doccomment">/// Construct a [`LocalChain`] from a given `checkpoint` tip.
     </span><span class="kw">pub fn </span>from_tip(tip: CheckPoint) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, MissingGenesisError&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>chain = <span class="self">Self </span>{
-            tip,
-            index: BTreeMap::new(),
-        };
-        chain.reindex(<span class="number">0</span>);
-
-        <span class="kw">if </span>chain.index.get(<span class="kw-2">&amp;</span><span class="number">0</span>).copied().is_none() {
+        <span class="kw">let </span>genesis_cp = tip.iter().last().expect(<span class="string">&quot;must have at least one element&quot;</span>);
+        <span class="kw">if </span>genesis_cp.height() != <span class="number">0 </span>{
             <span class="kw">return </span><span class="prelude-val">Err</span>(MissingGenesisError);
         }
-
-        <span class="macro">debug_assert!</span>(chain._check_index_is_consistent_with_tip());
-        <span class="prelude-val">Ok</span>(chain)
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ tip })
     }
 
     <span class="doccomment">/// Constructs a [`LocalChain`] from a [`BTreeMap`] of height to [`BlockHash`].
@@ -1102,12 +1154,11 @@
     /// The [`BTreeMap`] enforces the height order. However, the caller must ensure the blocks are
     /// all of the same chain.
     </span><span class="kw">pub fn </span>from_blocks(blocks: BTreeMap&lt;u32, BlockHash&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, MissingGenesisError&gt; {
-        <span class="kw">if </span>!blocks.contains_key(<span class="kw-2">&amp;</span><span class="number">0</span>) {
+        <span class="kw">if </span>blocks.get(<span class="kw-2">&amp;</span><span class="number">0</span>).is_none() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(MissingGenesisError);
         }
 
         <span class="kw">let </span><span class="kw-2">mut </span>tip: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt; = <span class="prelude-val">None</span>;
-
         <span class="kw">for </span>block <span class="kw">in </span><span class="kw-2">&amp;</span>blocks {
             <span class="kw">match </span>tip {
                 <span class="prelude-val">Some</span>(curr) =&gt; {
@@ -1120,13 +1171,9 @@
             }
         }
 
-        <span class="kw">let </span>chain = <span class="self">Self </span>{
-            index: blocks,
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             tip: tip.expect(<span class="string">&quot;already checked to have genesis&quot;</span>),
-        };
-
-        <span class="macro">debug_assert!</span>(chain._check_index_is_consistent_with_tip());
-        <span class="prelude-val">Ok</span>(chain)
+        })
     }
 
     <span class="doccomment">/// Get the highest checkpoint.
@@ -1293,9 +1340,7 @@
                 <span class="prelude-val">None </span>=&gt; LocalChain::from_blocks(extension)<span class="question-mark">?</span>.tip(),
             };
             <span class="self">self</span>.tip = new_tip;
-            <span class="self">self</span>.reindex(start_height);
 
-            <span class="macro">debug_assert!</span>(<span class="self">self</span>._check_index_is_consistent_with_tip());
             <span class="macro">debug_assert!</span>(<span class="self">self</span>._check_changeset_is_applied(changeset));
         }
 
@@ -1308,16 +1353,16 @@
     ///
     /// Replacing the block hash of an existing checkpoint will result in an error.
     </span><span class="kw">pub fn </span>insert_block(<span class="kw-2">&amp;mut </span><span class="self">self</span>, block_id: BlockId) -&gt; <span class="prelude-ty">Result</span>&lt;ChangeSet, AlterCheckPointError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>original_hash) = <span class="self">self</span>.index.get(<span class="kw-2">&amp;</span>block_id.height) {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(original_cp) = <span class="self">self</span>.tip.get(block_id.height) {
+            <span class="kw">let </span>original_hash = original_cp.hash();
             <span class="kw">if </span>original_hash != block_id.hash {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(AlterCheckPointError {
                     height: block_id.height,
                     original_hash,
                     update_hash: <span class="prelude-val">Some</span>(block_id.hash),
                 });
-            } <span class="kw">else </span>{
-                <span class="kw">return </span><span class="prelude-val">Ok</span>(ChangeSet::default());
             }
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(ChangeSet::default());
         }
 
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
@@ -1341,33 +1386,41 @@
     /// This will fail with [`MissingGenesisError`] if the caller attempts to disconnect from the
     /// genesis block.
     </span><span class="kw">pub fn </span>disconnect_from(<span class="kw-2">&amp;mut </span><span class="self">self</span>, block_id: BlockId) -&gt; <span class="prelude-ty">Result</span>&lt;ChangeSet, MissingGenesisError&gt; {
-        <span class="kw">if </span><span class="self">self</span>.index.get(<span class="kw-2">&amp;</span>block_id.height) != <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>block_id.hash) {
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(ChangeSet::default());
-        }
-
-        <span class="kw">let </span>changeset = <span class="self">self
-            </span>.index
-            .range(block_id.height..)
-            .map(|(<span class="kw-2">&amp;</span>height, <span class="kw">_</span>)| (height, <span class="prelude-val">None</span>))
-            .collect::&lt;ChangeSet&gt;();
-        <span class="self">self</span>.apply_changeset(<span class="kw-2">&amp;</span>changeset).map(|<span class="kw">_</span>| changeset)
-    }
-
-    <span class="doccomment">/// Reindex the heights in the chain from (and including) `from` height
-    </span><span class="kw">fn </span>reindex(<span class="kw-2">&amp;mut </span><span class="self">self</span>, from: u32) {
-        <span class="kw">let _ </span>= <span class="self">self</span>.index.split_off(<span class="kw-2">&amp;</span>from);
-        <span class="kw">for </span>cp <span class="kw">in </span><span class="self">self</span>.iter_checkpoints() {
-            <span class="kw">if </span>cp.height() &lt; from {
+        <span class="kw">let </span><span class="kw-2">mut </span>remove_from = <span class="prelude-ty">Option</span>::&lt;CheckPoint&gt;::None;
+        <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
+        <span class="kw">for </span>cp <span class="kw">in </span><span class="self">self</span>.tip().iter() {
+            <span class="kw">let </span>cp_id = cp.block_id();
+            <span class="kw">if </span>cp_id.height &lt; block_id.height {
                 <span class="kw">break</span>;
             }
-            <span class="self">self</span>.index.insert(cp.height(), cp.hash());
+            changeset.insert(cp_id.height, <span class="prelude-val">None</span>);
+            <span class="kw">if </span>cp_id == block_id {
+                remove_from = <span class="prelude-val">Some</span>(cp);
+            }
         }
+        <span class="self">self</span>.tip = <span class="kw">match </span>remove_from.map(|cp| cp.prev()) {
+            <span class="comment">// The checkpoint below the earliest checkpoint to remove will be the new tip.
+            </span><span class="prelude-val">Some</span>(<span class="prelude-val">Some</span>(new_tip)) =&gt; new_tip,
+            <span class="comment">// If there is no checkpoint below the earliest checkpoint to remove, it means the
+            // &quot;earliest checkpoint to remove&quot; is the genesis block. We disallow removing the
+            // genesis block.
+            </span><span class="prelude-val">Some</span>(<span class="prelude-val">None</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(MissingGenesisError),
+            <span class="comment">// If there is nothing to remove, we return an empty changeset.
+            </span><span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(ChangeSet::default()),
+        };
+        <span class="prelude-val">Ok</span>(changeset)
     }
 
     <span class="doccomment">/// Derives an initial [`ChangeSet`], meaning that it can be applied to an empty chain to
     /// recover the current chain.
     </span><span class="kw">pub fn </span>initial_changeset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ChangeSet {
-        <span class="self">self</span>.index.iter().map(|(k, v)| (<span class="kw-2">*</span>k, <span class="prelude-val">Some</span>(<span class="kw-2">*</span>v))).collect()
+        <span class="self">self</span>.tip
+            .iter()
+            .map(|cp| {
+                <span class="kw">let </span>block_id = cp.block_id();
+                (block_id.height, <span class="prelude-val">Some</span>(block_id.hash))
+            })
+            .collect()
     }
 
     <span class="doccomment">/// Iterate over checkpoints in descending height order.
@@ -1377,28 +1430,49 @@
         }
     }
 
-    <span class="doccomment">/// Get a reference to the internal index mapping the height to block hash.
-    </span><span class="kw">pub fn </span>blocks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BTreeMap&lt;u32, BlockHash&gt; {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.index
-    }
-
-    <span class="kw">fn </span>_check_index_is_consistent_with_tip(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="kw">let </span>tip_history = <span class="self">self
-            </span>.tip
-            .iter()
-            .map(|cp| (cp.height(), cp.hash()))
-            .collect::&lt;BTreeMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;&gt;();
-        <span class="self">self</span>.index == tip_history
-    }
-
     <span class="kw">fn </span>_check_changeset_is_applied(<span class="kw-2">&amp;</span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>ChangeSet) -&gt; bool {
-        <span class="kw">for </span>(height, exp_hash) <span class="kw">in </span>changeset {
-            <span class="kw">if </span><span class="self">self</span>.index.get(height) != exp_hash.as_ref() {
-                <span class="kw">return </span><span class="bool-val">false</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>curr_cp = <span class="self">self</span>.tip.clone();
+        <span class="kw">for </span>(height, exp_hash) <span class="kw">in </span>changeset.iter().rev() {
+            <span class="kw">match </span>curr_cp.get(<span class="kw-2">*</span>height) {
+                <span class="prelude-val">Some</span>(query_cp) =&gt; {
+                    <span class="kw">if </span>query_cp.height() != <span class="kw-2">*</span>height || <span class="prelude-val">Some</span>(query_cp.hash()) != <span class="kw-2">*</span>exp_hash {
+                        <span class="kw">return </span><span class="bool-val">false</span>;
+                    }
+                    curr_cp = query_cp;
+                }
+                <span class="prelude-val">None </span>=&gt; {
+                    <span class="kw">if </span>exp_hash.is_some() {
+                        <span class="kw">return </span><span class="bool-val">false</span>;
+                    }
+                }
             }
         }
         <span class="bool-val">true
     </span>}
+
+    <span class="doccomment">/// Get checkpoint at given `height` (if it exists).
+    ///
+    /// This is a shorthand for calling [`CheckPoint::get`] on the [`tip`].
+    ///
+    /// [`tip`]: LocalChain::tip
+    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, height: u32) -&gt; <span class="prelude-ty">Option</span>&lt;CheckPoint&gt; {
+        <span class="self">self</span>.tip.get(height)
+    }
+
+    <span class="doccomment">/// Iterate checkpoints over a height range.
+    ///
+    /// Note that we always iterate checkpoints in reverse height order (iteration starts at tip
+    /// height).
+    ///
+    /// This is a shorthand for calling [`CheckPoint::range`] on the [`tip`].
+    ///
+    /// [`tip`]: LocalChain::tip
+    </span><span class="kw">pub fn </span>range&lt;R&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, range: R) -&gt; <span class="kw">impl </span>Iterator&lt;Item = CheckPoint&gt;
+    <span class="kw">where
+        </span>R: RangeBounds&lt;u32&gt;,
+    {
+        <span class="self">self</span>.tip.range(range)
+    }
 }
 
 <span class="doccomment">/// An error which occurs when a [`LocalChain`] is constructed without a genesis checkpoint.

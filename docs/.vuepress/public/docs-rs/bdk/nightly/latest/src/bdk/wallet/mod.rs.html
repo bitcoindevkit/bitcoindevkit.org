@@ -2620,10 +2620,6 @@
 <a href="#2619" id="2619">2619</a>
 <a href="#2620" id="2620">2620</a>
 <a href="#2621" id="2621">2621</a>
-<a href="#2622" id="2622">2622</a>
-<a href="#2623" id="2623">2623</a>
-<a href="#2624" id="2624">2624</a>
-<a href="#2625" id="2625">2625</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -3753,18 +3749,14 @@
                 <span class="comment">// anchor tx to checkpoint with lowest height that is &gt;= position&#39;s height
                 </span><span class="kw">let </span>anchor = <span class="self">self
                     </span>.chain
-                    .blocks()
                     .range(height..)
-                    .next()
+                    .last()
                     .ok_or(InsertTxError::ConfirmationHeightCannotBeGreaterThanTip {
                         tip_height: <span class="self">self</span>.chain.tip().height(),
                         tx_height: height,
                     })
-                    .map(|(<span class="kw-2">&amp;</span>anchor_height, <span class="kw-2">&amp;</span>hash)| ConfirmationTimeHeightAnchor {
-                        anchor_block: BlockId {
-                            height: anchor_height,
-                            hash,
-                        },
+                    .map(|anchor_cp| ConfirmationTimeHeightAnchor {
+                        anchor_block: anchor_cp.block_id(),
                         confirmation_height: height,
                         confirmation_time: time,
                     })<span class="question-mark">?</span>;
