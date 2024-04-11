@@ -348,6 +348,14 @@
 <a href="#348" id="348">348</a>
 <a href="#349" id="349">349</a>
 <a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
     collections::{BTreeMap, BTreeSet},
     io::{<span class="self">self</span>, Write},
@@ -539,9 +547,13 @@
             // is reached. It returns a `TxGraph` update (`graph_update`) and a structure that
             // represents the last active spk derivation indices of keychains
             // (`keychain_indices_update`).
-            </span><span class="kw">let </span>(graph_update, last_active_indices) = client
+            </span><span class="kw">let </span>(<span class="kw-2">mut </span>graph_update, last_active_indices) = client
                 .full_scan(keychain_spks, <span class="kw-2">*</span>stop_gap, scan_options.parallel_requests)
                 .context(<span class="string">&quot;scanning for transactions&quot;</span>)<span class="question-mark">?</span>;
+
+            <span class="comment">// We want to keep track of the latest time a transaction was seen unconfirmed.
+            </span><span class="kw">let </span>now = std::time::UNIX_EPOCH.elapsed().unwrap().as_secs();
+            <span class="kw">let _ </span>= graph_update.update_last_seen_unconfirmed(now);
 
             <span class="kw">let </span><span class="kw-2">mut </span>graph = graph.lock().expect(<span class="string">&quot;mutex must not be poisoned&quot;</span>);
             <span class="comment">// Because we did a stop gap based scan we are likely to have some updates to our
@@ -657,8 +669,12 @@
                 }
             }
 
-            <span class="kw">let </span>graph_update =
+            <span class="kw">let </span><span class="kw-2">mut </span>graph_update =
                 client.sync(spks, txids, outpoints, scan_options.parallel_requests)<span class="question-mark">?</span>;
+
+            <span class="comment">// Update last seen unconfirmed
+            </span><span class="kw">let </span>now = std::time::UNIX_EPOCH.elapsed().unwrap().as_secs();
+            <span class="kw">let _ </span>= graph_update.update_last_seen_unconfirmed(now);
 
             graph.lock().unwrap().apply_update(graph_update)
         }

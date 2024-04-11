@@ -96,6 +96,9 @@
 <a href="#96" id="96">96</a>
 <a href="#97" id="97">97</a>
 <a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{io::Write, str::FromStr};
 
 <span class="kw">use </span>bdk::{
@@ -151,9 +154,12 @@
             (k, k_spks)
         })
         .collect();
-    <span class="kw">let </span>(update_graph, last_active_indices) = client
+    <span class="kw">let </span>(<span class="kw-2">mut </span>update_graph, last_active_indices) = client
         .full_scan(keychain_spks, STOP_GAP, PARALLEL_REQUESTS)
         .<span class="kw">await</span><span class="question-mark">?</span>;
+
+    <span class="kw">let </span>now = std::time::UNIX_EPOCH.elapsed().unwrap().as_secs();
+    <span class="kw">let _ </span>= update_graph.update_last_seen_unconfirmed(now);
     <span class="kw">let </span>missing_heights = update_graph.missing_heights(wallet.local_chain());
     <span class="kw">let </span>chain_update = client.update_local_chain(prev_tip, missing_heights).<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="kw">let </span>update = Update {
