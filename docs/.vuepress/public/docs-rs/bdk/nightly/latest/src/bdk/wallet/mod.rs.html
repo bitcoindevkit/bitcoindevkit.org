@@ -2602,24 +2602,6 @@
 <a href="#2601" id="2601">2601</a>
 <a href="#2602" id="2602">2602</a>
 <a href="#2603" id="2603">2603</a>
-<a href="#2604" id="2604">2604</a>
-<a href="#2605" id="2605">2605</a>
-<a href="#2606" id="2606">2606</a>
-<a href="#2607" id="2607">2607</a>
-<a href="#2608" id="2608">2608</a>
-<a href="#2609" id="2609">2609</a>
-<a href="#2610" id="2610">2610</a>
-<a href="#2611" id="2611">2611</a>
-<a href="#2612" id="2612">2612</a>
-<a href="#2613" id="2613">2613</a>
-<a href="#2614" id="2614">2614</a>
-<a href="#2615" id="2615">2615</a>
-<a href="#2616" id="2616">2616</a>
-<a href="#2617" id="2617">2617</a>
-<a href="#2618" id="2618">2618</a>
-<a href="#2619" id="2619">2619</a>
-<a href="#2620" id="2620">2620</a>
-<a href="#2621" id="2621">2621</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2652,14 +2634,14 @@
     Append, BlockId, ChainPosition, ConfirmationTime, ConfirmationTimeHeightAnchor, FullTxOut,
     IndexedTxGraph, Persist, PersistBackend,
 };
+<span class="kw">use </span>bitcoin::constants::genesis_block;
 <span class="kw">use </span>bitcoin::secp256k1::{All, Secp256k1};
 <span class="kw">use </span>bitcoin::sighash::{EcdsaSighashType, TapSighashType};
 <span class="kw">use </span>bitcoin::{
-    absolute, Address, Block, FeeRate, Network, OutPoint, Script, ScriptBuf, Sequence, Transaction,
-    TxOut, Txid, Weight, Witness,
+    absolute, psbt, Address, Block, FeeRate, Network, OutPoint, Script, ScriptBuf, Sequence,
+    Transaction, TxOut, Txid, Witness,
 };
-<span class="kw">use </span>bitcoin::{consensus::encode::serialize, BlockHash};
-<span class="kw">use </span>bitcoin::{constants::genesis_block, psbt};
+<span class="kw">use </span>bitcoin::{consensus::encode::serialize, transaction, Amount, BlockHash, Psbt};
 <span class="kw">use </span>core::fmt;
 <span class="kw">use </span>core::ops::Deref;
 <span class="kw">use </span>descriptor::error::Error <span class="kw">as </span>DescriptorError;
@@ -3567,11 +3549,11 @@
     /// ```
     ///
     /// ```rust, no_run
-    /// # use bitcoin::psbt::PartiallySignedTransaction;
+    /// # use bitcoin::Psbt;
     /// # use bdk::Wallet;
     /// # let mut wallet: Wallet&lt;()&gt; = todo!();
-    /// # let mut psbt: PartiallySignedTransaction = todo!();
-    /// let tx = &amp;psbt.clone().extract_tx();
+    /// # let mut psbt: Psbt = todo!();
+    /// let tx = &amp;psbt.clone().extract_tx().expect(&quot;tx&quot;);
     /// let fee = wallet.calculate_fee(tx).expect(&quot;fee&quot;);
     /// ```
     /// [`insert_txout`]: Self::insert_txout
@@ -3598,12 +3580,12 @@
     /// ```
     ///
     /// ```rust, no_run
-    /// # use bitcoin::psbt::PartiallySignedTransaction;
+    /// # use bitcoin::Psbt;
     /// # use bdk::Wallet;
     /// # let mut wallet: Wallet&lt;()&gt; = todo!();
-    /// # let mut psbt: PartiallySignedTransaction = todo!();
-    /// let tx = psbt.clone().extract_tx();
-    /// let fee_rate = wallet.calculate_fee_rate(&amp;tx).expect(&quot;fee rate&quot;);
+    /// # let mut psbt: Psbt = todo!();
+    /// let tx = &amp;psbt.clone().extract_tx().expect(&quot;tx&quot;);
+    /// let fee_rate = wallet.calculate_fee_rate(tx).expect(&quot;fee rate&quot;);
     /// ```
     /// [`insert_txout`]: Self::insert_txout
     </span><span class="kw">pub fn </span>calculate_fee_rate(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="prelude-ty">Result</span>&lt;FeeRate, CalculateFeeError&gt; {
@@ -3629,11 +3611,11 @@
     /// ```
     ///
     /// ```rust, no_run
-    /// # use bitcoin::psbt::PartiallySignedTransaction;
+    /// # use bitcoin::Psbt;
     /// # use bdk::Wallet;
     /// # let mut wallet: Wallet&lt;()&gt; = todo!();
-    /// # let mut psbt: PartiallySignedTransaction = todo!();
-    /// let tx = &amp;psbt.clone().extract_tx();
+    /// # let mut psbt: Psbt = todo!();
+    /// let tx = &amp;psbt.clone().extract_tx().expect(&quot;tx&quot;);
     /// let (sent, received) = wallet.sent_and_received(tx);
     /// ```
     </span><span class="kw">pub fn </span>sent_and_received(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; (u64, u64) {
@@ -3883,7 +3865,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         coin_selection: Cs,
         params: TxParams,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;psbt::PartiallySignedTransaction, CreateTxError&lt;D::WriteError&gt;&gt;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Psbt, CreateTxError&lt;D::WriteError&gt;&gt;
     <span class="kw">where
         </span>D: PersistBackend&lt;ChangeSet&gt;,
     {
@@ -4077,7 +4059,7 @@
         };
 
         <span class="kw">let </span><span class="kw-2">mut </span>tx = Transaction {
-            version,
+            version: transaction::Version::non_standard(version),
             lock_time,
             input: <span class="macro">vec!</span>[],
             output: <span class="macro">vec!</span>[],
@@ -4107,7 +4089,7 @@
 
             <span class="kw">let </span>new_out = TxOut {
                 script_pubkey: script_pubkey.clone(),
-                value,
+                value: Amount::from_sat(value),
             };
 
             tx.output.push(new_out);
@@ -4116,17 +4098,6 @@
         }
 
         fee_amount += (fee_rate * tx.weight()).to_sat();
-
-        <span class="comment">// Segwit transactions&#39; header is 2WU larger than legacy txs&#39; header,
-        // as they contain a witness marker (1WU) and a witness flag (1WU) (see BIP144).
-        // At this point we really don&#39;t know if the resulting transaction will be segwit
-        // or legacy, so we just add this 2WU to the fee_amount - overshooting the fee amount
-        // is better than undershooting it.
-        // If we pass a fee_amount that is slightly higher than the final fee_amount, we
-        // end up with a transaction with a slightly higher fee rate than the requested one.
-        // If, instead, we undershoot, we may end up with a feerate lower than the requested one
-        // - we might come up with non broadcastable txs!
-        </span>fee_amount += (fee_rate * Weight::from_wu(<span class="number">2</span>)).to_sat();
 
         <span class="kw">if </span>params.change_policy != tx_builder::ChangeSpendPolicy::ChangeAllowed
             &amp;&amp; internal_descriptor.is_none()
@@ -4216,7 +4187,7 @@
 
                 <span class="comment">// create drain output
                 </span><span class="kw">let </span>drain_output = TxOut {
-                    value: <span class="kw-2">*</span>amount,
+                    value: Amount::from_sat(<span class="kw-2">*</span>amount),
                     script_pubkey: drain_script,
                 };
 
@@ -4262,7 +4233,7 @@
     ///     builder.finish()?
     /// };
     /// let _ = wallet.sign(&amp;mut psbt, SignOptions::default())?;
-    /// let tx = psbt.extract_tx();
+    /// let tx = psbt.clone().extract_tx().expect(&quot;tx&quot;);
     /// // broadcast tx but it&#39;s taking too long to confirm so we want to bump the fee
     /// let mut psbt =  {
     ///     let mut builder = wallet.build_fee_bump(tx.txid())?;
@@ -4386,11 +4357,11 @@
 
         <span class="kw">let </span>params = TxParams {
             <span class="comment">// TODO: figure out what rbf option should be?
-            </span>version: <span class="prelude-val">Some</span>(tx_builder::Version(tx.version)),
+            </span>version: <span class="prelude-val">Some</span>(tx_builder::Version(tx.version.<span class="number">0</span>)),
             recipients: tx
                 .output
                 .into_iter()
-                .map(|txout| (txout.script_pubkey, txout.value))
+                .map(|txout| (txout.script_pubkey, txout.value.to_sat()))
                 .collect(),
             utxos: original_utxos,
             bumping_fee: <span class="prelude-val">Some</span>(tx_builder::PreviousFee {
@@ -4436,11 +4407,7 @@
     /// let finalized = wallet.sign(&amp;mut psbt, SignOptions::default())?;
     /// assert!(finalized, &quot;we should have signed all the inputs&quot;);
     /// # Ok::&lt;(),anyhow::Error&gt;(())
-    </span><span class="kw">pub fn </span>sign(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
-        sign_options: SignOptions,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, SignerError&gt; {
+    </span><span class="kw">pub fn </span>sign(<span class="kw-2">&amp;</span><span class="self">self</span>, psbt: <span class="kw-2">&amp;mut </span>Psbt, sign_options: SignOptions) -&gt; <span class="prelude-ty">Result</span>&lt;bool, SignerError&gt; {
         <span class="comment">// This adds all the PSBT metadata for the inputs, which will help us later figure out how
         // to derive our keys
         </span><span class="self">self</span>.update_psbt_with_descriptor(psbt)
@@ -4520,7 +4487,7 @@
     /// The [`SignOptions`] can be used to tweak the behavior of the finalizer.
     </span><span class="kw">pub fn </span>finalize_psbt(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
+        psbt: <span class="kw-2">&amp;mut </span>Psbt,
         sign_options: SignOptions,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, SignerError&gt; {
         <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().block_id();
@@ -4746,7 +4713,7 @@
                 <span class="kw">if </span>must_only_use_confirmed_tx &amp;&amp; !confirmation_time.is_confirmed() {
                     <span class="kw">return </span><span class="bool-val">false</span>;
                 }
-                <span class="kw">if </span>tx.is_coin_base() {
+                <span class="kw">if </span>tx.is_coinbase() {
                     <span class="macro">debug_assert!</span>(
                         confirmation_time.is_confirmed(),
                         <span class="string">&quot;coinbase must always be confirmed&quot;
@@ -4795,11 +4762,11 @@
         tx: Transaction,
         selected: Vec&lt;Utxo&gt;,
         params: TxParams,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;psbt::PartiallySignedTransaction, CreateTxError&lt;D::WriteError&gt;&gt;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Psbt, CreateTxError&lt;D::WriteError&gt;&gt;
     <span class="kw">where
         </span>D: PersistBackend&lt;ChangeSet&gt;,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>psbt = psbt::PartiallySignedTransaction::from_unsigned_tx(tx)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>psbt = Psbt::from_unsigned_tx(tx)<span class="question-mark">?</span>;
 
         <span class="kw">if </span>params.add_global_xpubs {
             <span class="kw">let </span>all_xpubs = <span class="self">self
@@ -4855,7 +4822,7 @@
                     <span class="kw">let </span>is_taproot = foreign_psbt_input
                         .witness_utxo
                         .as_ref()
-                        .map(|txout| txout.script_pubkey.is_v1_p2tr())
+                        .map(|txout| txout.script_pubkey.is_p2tr())
                         .unwrap_or(<span class="bool-val">false</span>);
                     <span class="kw">if </span>!is_taproot
                         &amp;&amp; !params.only_witness_utxo
@@ -4917,10 +4884,7 @@
         <span class="prelude-val">Ok</span>(psbt_input)
     }
 
-    <span class="kw">fn </span>update_psbt_with_descriptor(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), MiniscriptPsbtError&gt; {
+    <span class="kw">fn </span>update_psbt_with_descriptor(<span class="kw-2">&amp;</span><span class="self">self</span>, psbt: <span class="kw-2">&amp;mut </span>Psbt) -&gt; <span class="prelude-ty">Result</span>&lt;(), MiniscriptPsbtError&gt; {
         <span class="comment">// We need to borrow `psbt` mutably within the loops, so we have to allocate a vec for all
         // the input utxos and outputs
         </span><span class="kw">let </span>utxos = (<span class="number">0</span>..psbt.inputs.len())
@@ -5224,11 +5188,11 @@
         .unwrap();
         <span class="kw">let </span>address = wallet.get_address(AddressIndex::New).address;
         <span class="kw">let </span>tx = Transaction {
-            version: <span class="number">1</span>,
+            version: transaction::Version::ONE,
             lock_time: absolute::LockTime::ZERO,
             input: <span class="macro">vec!</span>[],
             output: <span class="macro">vec!</span>[TxOut {
-                value: <span class="number">500_000</span>,
+                value: Amount::from_sat(<span class="number">500_000</span>),
                 script_pubkey: address.script_pubkey(),
             }],
         };

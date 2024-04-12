@@ -899,7 +899,6 @@
 <a href="#898" id="898">898</a>
 <a href="#899" id="899">899</a>
 <a href="#900" id="900">900</a>
-<a href="#901" id="901">901</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -920,7 +919,7 @@
 <span class="kw">use </span>alloc::string::String;
 <span class="kw">use </span>alloc::vec::Vec;
 
-<span class="kw">use </span>bitcoin::bip32::{ChildNumber, DerivationPath, ExtendedPubKey, Fingerprint, KeySource};
+<span class="kw">use </span>bitcoin::bip32::{ChildNumber, DerivationPath, Fingerprint, KeySource, Xpub};
 <span class="kw">use </span>bitcoin::{key::XOnlyPublicKey, secp256k1, PublicKey};
 <span class="kw">use </span>bitcoin::{psbt, taproot};
 <span class="kw">use </span>bitcoin::{Network, TxOut};
@@ -1279,7 +1278,7 @@
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait </span>DescriptorMeta {
     <span class="kw">fn </span>is_witness(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool;
     <span class="kw">fn </span>is_taproot(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool;
-    <span class="kw">fn </span>get_extended_keys(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;DescriptorXKey&lt;ExtendedPubKey&gt;&gt;;
+    <span class="kw">fn </span>get_extended_keys(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;DescriptorXKey&lt;Xpub&gt;&gt;;
     <span class="kw">fn </span>derive_from_hd_keypaths(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         hd_keypaths: <span class="kw-2">&amp;</span>HdKeyPaths,
@@ -1320,7 +1319,7 @@
         <span class="self">self</span>.desc_type() == DescriptorType::Tr
     }
 
-    <span class="kw">fn </span>get_extended_keys(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;DescriptorXKey&lt;ExtendedPubKey&gt;&gt; {
+    <span class="kw">fn </span>get_extended_keys(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;DescriptorXKey&lt;Xpub&gt;&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>answer = Vec::new();
 
         <span class="self">self</span>.for_each_key(|pk| {
@@ -1340,21 +1339,20 @@
         secp: <span class="kw-2">&amp;</span>SecpCtx,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;DerivedDescriptor&gt; {
         <span class="comment">// Ensure that deriving `xpub` with `path` yields `expected`
-        </span><span class="kw">let </span>verify_key = |xpub: <span class="kw-2">&amp;</span>DescriptorXKey&lt;ExtendedPubKey&gt;,
-                          path: <span class="kw-2">&amp;</span>DerivationPath,
-                          expected: <span class="kw-2">&amp;</span>SinglePubKey| {
-            <span class="kw">let </span>derived = xpub
-                .xkey
-                .derive_pub(secp, path)
-                .expect(<span class="string">&quot;The path should never contain hardened derivation steps&quot;</span>)
-                .public_key;
+        </span><span class="kw">let </span>verify_key =
+            |xpub: <span class="kw-2">&amp;</span>DescriptorXKey&lt;Xpub&gt;, path: <span class="kw-2">&amp;</span>DerivationPath, expected: <span class="kw-2">&amp;</span>SinglePubKey| {
+                <span class="kw">let </span>derived = xpub
+                    .xkey
+                    .derive_pub(secp, path)
+                    .expect(<span class="string">&quot;The path should never contain hardened derivation steps&quot;</span>)
+                    .public_key;
 
-            <span class="kw">match </span>expected {
-                SinglePubKey::FullKey(pk) <span class="kw">if </span><span class="kw-2">&amp;</span>PublicKey::new(derived) == pk =&gt; <span class="bool-val">true</span>,
-                SinglePubKey::XOnly(pk) <span class="kw">if </span><span class="kw-2">&amp;</span>XOnlyPublicKey::from(derived) == pk =&gt; <span class="bool-val">true</span>,
-                <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
-            }
-        };
+                <span class="kw">match </span>expected {
+                    SinglePubKey::FullKey(pk) <span class="kw">if </span><span class="kw-2">&amp;</span>PublicKey::new(derived) == pk =&gt; <span class="bool-val">true</span>,
+                    SinglePubKey::XOnly(pk) <span class="kw">if </span><span class="kw-2">&amp;</span>XOnlyPublicKey::from(derived) == pk =&gt; <span class="bool-val">true</span>,
+                    <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
+                }
+            };
 
         <span class="kw">let </span><span class="kw-2">mut </span>path_found = <span class="prelude-val">None</span>;
 
@@ -1507,10 +1505,10 @@
     <span class="kw">use </span>core::str::FromStr;
 
     <span class="kw">use </span>assert_matches::assert_matches;
-    <span class="kw">use </span>bitcoin::hashes::hex::FromHex;
+    <span class="kw">use </span>bitcoin::hex::FromHex;
     <span class="kw">use </span>bitcoin::secp256k1::Secp256k1;
     <span class="kw">use </span>bitcoin::ScriptBuf;
-    <span class="kw">use </span>bitcoin::{bip32, psbt::Psbt};
+    <span class="kw">use </span>bitcoin::{bip32, Psbt};
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::psbt::PsbtUtils;
@@ -1629,7 +1627,7 @@
 
         <span class="kw">let </span>secp = Secp256k1::new();
 
-        <span class="kw">let </span>xprv = bip32::ExtendedPrivKey::from_str(<span class="string">&quot;xprv9s21ZrQH143K3c3gF1DUWpWNr2SG2XrG8oYPpqYh7hoWsJy9NjabErnzriJPpnGHyKz5NgdXmq1KVbqS1r4NXdCoKitWg5e86zqXHa8kxyB&quot;</span>).unwrap();
+        <span class="kw">let </span>xprv = bip32::Xpriv::from_str(<span class="string">&quot;xprv9s21ZrQH143K3c3gF1DUWpWNr2SG2XrG8oYPpqYh7hoWsJy9NjabErnzriJPpnGHyKz5NgdXmq1KVbqS1r4NXdCoKitWg5e86zqXHa8kxyB&quot;</span>).unwrap();
         <span class="kw">let </span>path = bip32::DerivationPath::from_str(<span class="string">&quot;m/0&quot;</span>).unwrap();
 
         <span class="comment">// here `to_descriptor_key` will set the valid networks for the key to only mainnet, since
@@ -1648,7 +1646,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>xprv_testnet = xprv;
         xprv_testnet.network = Network::Testnet;
 
-        <span class="kw">let </span>xpub_testnet = bip32::ExtendedPubKey::from_priv(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>xprv_testnet);
+        <span class="kw">let </span>xpub_testnet = bip32::Xpub::from_priv(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>xprv_testnet);
         <span class="kw">let </span>desc_pubkey = DescriptorPublicKey::XPub(DescriptorXKey {
             xkey: xpub_testnet,
             origin: <span class="prelude-val">None</span>,
@@ -1738,7 +1736,7 @@
     </span><span class="kw">fn </span>test_descriptor_from_str_from_output_of_macro() {
         <span class="kw">let </span>secp = Secp256k1::new();
 
-        <span class="kw">let </span>tpub = bip32::ExtendedPubKey::from_str(<span class="string">&quot;tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK&quot;</span>).unwrap();
+        <span class="kw">let </span>tpub = bip32::Xpub::from_str(<span class="string">&quot;tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK&quot;</span>).unwrap();
         <span class="kw">let </span>path = bip32::DerivationPath::from_str(<span class="string">&quot;m/1/2&quot;</span>).unwrap();
         <span class="kw">let </span>key = (tpub, path).into_descriptor_key().unwrap();
 
@@ -1797,7 +1795,7 @@
             .update_with_descriptor_unchecked(<span class="kw-2">&amp;</span>descriptor)
             .unwrap();
 
-        <span class="macro">assert_eq!</span>(psbt_input.redeem_script, <span class="prelude-val">Some</span>(script.to_v0_p2wsh()));
+        <span class="macro">assert_eq!</span>(psbt_input.redeem_script, <span class="prelude-val">Some</span>(script.to_p2wsh()));
         <span class="macro">assert_eq!</span>(psbt_input.witness_script, <span class="prelude-val">Some</span>(script));
     }
 }

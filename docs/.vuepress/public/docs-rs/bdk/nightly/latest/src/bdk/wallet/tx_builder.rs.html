@@ -1080,6 +1080,7 @@
 <a href="#1079" id="1079">1079</a>
 <a href="#1080" id="1080">1080</a>
 <a href="#1081" id="1081">1081</a>
+<a href="#1082" id="1082">1082</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1128,7 +1129,7 @@
 <span class="kw">use </span>core::marker::PhantomData;
 
 <span class="kw">use </span>bdk_chain::PersistBackend;
-<span class="kw">use </span>bitcoin::psbt::{<span class="self">self</span>, PartiallySignedTransaction <span class="kw">as </span>Psbt};
+<span class="kw">use </span>bitcoin::psbt::{<span class="self">self</span>, Psbt};
 <span class="kw">use </span>bitcoin::script::PushBytes;
 <span class="kw">use </span>bitcoin::{absolute, FeeRate, OutPoint, ScriptBuf, Sequence, Transaction, Txid};
 
@@ -2009,7 +2010,8 @@
 
     <span class="kw">use </span>bdk_chain::ConfirmationTime;
     <span class="kw">use </span>bitcoin::consensus::deserialize;
-    <span class="kw">use </span>bitcoin::hashes::hex::FromHex;
+    <span class="kw">use </span>bitcoin::hex::FromHex;
+    <span class="kw">use </span>bitcoin::TxOut;
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
@@ -2080,7 +2082,7 @@
             .unwrap()
         );
 
-        <span class="macro">assert_eq!</span>(tx.output[<span class="number">0</span>].value, <span class="number">800</span>);
+        <span class="macro">assert_eq!</span>(tx.output[<span class="number">0</span>].value.to_sat(), <span class="number">800</span>);
         <span class="macro">assert_eq!</span>(tx.output[<span class="number">1</span>].script_pubkey, ScriptBuf::from(<span class="macro">vec!</span>[<span class="number">0xAA</span>]));
         <span class="macro">assert_eq!</span>(
             tx.output[<span class="number">2</span>].script_pubkey,
@@ -2097,7 +2099,7 @@
                     txid: bitcoin::Txid::from_slice(<span class="kw-2">&amp;</span>[<span class="number">0</span>; <span class="number">32</span>]).unwrap(),
                     vout: <span class="number">0</span>,
                 },
-                txout: Default::default(),
+                txout: TxOut::NULL,
                 keychain: KeychainKind::External,
                 is_spent: <span class="bool-val">false</span>,
                 confirmation_time: ConfirmationTime::Unconfirmed { last_seen: <span class="number">0 </span>},
@@ -2108,7 +2110,7 @@
                     txid: bitcoin::Txid::from_slice(<span class="kw-2">&amp;</span>[<span class="number">0</span>; <span class="number">32</span>]).unwrap(),
                     vout: <span class="number">1</span>,
                 },
-                txout: Default::default(),
+                txout: TxOut::NULL,
                 keychain: KeychainKind::Internal,
                 is_spent: <span class="bool-val">false</span>,
                 confirmation_time: ConfirmationTime::Confirmed {

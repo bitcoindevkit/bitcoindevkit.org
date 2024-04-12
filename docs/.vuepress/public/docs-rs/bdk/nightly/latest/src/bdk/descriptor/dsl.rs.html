@@ -1215,7 +1215,6 @@
 <a href="#1214" id="1214">1214</a>
 <a href="#1215" id="1215">1215</a>
 <a href="#1216" id="1216">1216</a>
-<a href="#1217" id="1217">1217</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1492,14 +1491,13 @@
 #[macro_export]
 </span><span class="macro">macro_rules! </span>parse_tap_tree {
     ( @merge <span class="macro-nonterminal">$tree_a</span>:expr, <span class="macro-nonterminal">$tree_b</span>:expr) =&gt; {{
-        <span class="kw">use </span><span class="macro-nonterminal">$crate::alloc::sync::Arc</span>;
         <span class="kw">use </span><span class="macro-nonterminal">$crate::miniscript::descriptor::TapTree</span>;
 
         <span class="macro-nonterminal">$tree_a
             </span>.and_then(|tree_a| <span class="prelude-val">Ok</span>((tree_a, <span class="macro-nonterminal">$tree_b</span><span class="question-mark">?</span>)))
             .and_then(|((a_tree, <span class="kw-2">mut </span>a_keymap, a_networks), (b_tree, b_keymap, b_networks))| {
                 a_keymap.extend(b_keymap.into_iter());
-                <span class="prelude-val">Ok</span>((TapTree::Tree(Arc::new(a_tree), Arc::new(b_tree)), a_keymap, <span class="macro-nonterminal">$crate::keys::merge_networks</span>(<span class="kw-2">&amp;</span>a_networks, <span class="kw-2">&amp;</span>b_networks)))
+                <span class="prelude-val">Ok</span>((TapTree::combine(a_tree, b_tree), a_keymap, <span class="macro-nonterminal">$crate::keys::merge_networks</span>(<span class="kw-2">&amp;</span>a_networks, <span class="kw-2">&amp;</span>b_networks)))
             })
 
     }};
@@ -2024,7 +2022,7 @@
     <span class="kw">use </span><span class="kw">crate</span>::descriptor::{DescriptorError, DescriptorMeta};
     <span class="kw">use </span><span class="kw">crate</span>::keys::{DescriptorKey, IntoDescriptorKey, ValidNetworks};
     <span class="kw">use </span>bitcoin::bip32;
-    <span class="kw">use </span>bitcoin::network::constants::Network::{Bitcoin, Regtest, Signet, Testnet};
+    <span class="kw">use </span>bitcoin::Network::{Bitcoin, Regtest, Signet, Testnet};
     <span class="kw">use </span>bitcoin::PrivateKey;
 
     <span class="comment">// test the descriptor!() macro
@@ -2154,7 +2152,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_bip32_legacy_descriptors() {
-        <span class="kw">let </span>xprv = bip32::ExtendedPrivKey::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).unwrap();
+        <span class="kw">let </span>xprv = bip32::Xpriv::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).unwrap();
 
         <span class="kw">let </span>path = bip32::DerivationPath::from_str(<span class="string">&quot;m/0&quot;</span>).unwrap();
         <span class="kw">let </span>desc_key = (xprv, path.clone()).into_descriptor_key().unwrap();
@@ -2199,7 +2197,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_bip32_segwitv0_descriptors() {
-        <span class="kw">let </span>xprv = bip32::ExtendedPrivKey::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).unwrap();
+        <span class="kw">let </span>xprv = bip32::Xpriv::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).unwrap();
 
         <span class="kw">let </span>path = bip32::DerivationPath::from_str(<span class="string">&quot;m/0&quot;</span>).unwrap();
         <span class="kw">let </span>desc_key = (xprv, path.clone()).into_descriptor_key().unwrap();
@@ -2256,10 +2254,10 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_dsl_sortedmulti() {
-        <span class="kw">let </span>key_1 = bip32::ExtendedPrivKey::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).unwrap();
+        <span class="kw">let </span>key_1 = bip32::Xpriv::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).unwrap();
         <span class="kw">let </span>path_1 = bip32::DerivationPath::from_str(<span class="string">&quot;m/0&quot;</span>).unwrap();
 
-        <span class="kw">let </span>key_2 = bip32::ExtendedPrivKey::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPegBHHnq7YEgM815dG24M2Jk5RVqipgDxF1HJ1tsnT815X5Fd5FRfMVUs8NZs9XCb6y9an8hRPThnhfwfXJ36intaekySHGF&quot;</span>).unwrap();
+        <span class="kw">let </span>key_2 = bip32::Xpriv::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPegBHHnq7YEgM815dG24M2Jk5RVqipgDxF1HJ1tsnT815X5Fd5FRfMVUs8NZs9XCb6y9an8hRPThnhfwfXJ36intaekySHGF&quot;</span>).unwrap();
         <span class="kw">let </span>path_2 = bip32::DerivationPath::from_str(<span class="string">&quot;m/1&quot;</span>).unwrap();
 
         <span class="kw">let </span>desc_key1 = (key_1, path_1);
@@ -2315,7 +2313,7 @@
     <span class="comment">// - verify the valid_networks returned is correctly computed based on the keys present in the descriptor
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>test_valid_networks() {
-        <span class="kw">let </span>xprv = bip32::ExtendedPrivKey::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).unwrap();
+        <span class="kw">let </span>xprv = bip32::Xpriv::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).unwrap();
         <span class="kw">let </span>path = bip32::DerivationPath::from_str(<span class="string">&quot;m/0&quot;</span>).unwrap();
         <span class="kw">let </span>desc_key = (xprv, path).into_descriptor_key().unwrap();
 
@@ -2325,7 +2323,7 @@
             [Testnet, Regtest, Signet].iter().cloned().collect()
         );
 
-        <span class="kw">let </span>xprv = bip32::ExtendedPrivKey::from_str(<span class="string">&quot;xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi&quot;</span>).unwrap();
+        <span class="kw">let </span>xprv = bip32::Xpriv::from_str(<span class="string">&quot;xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi&quot;</span>).unwrap();
         <span class="kw">let </span>path = bip32::DerivationPath::from_str(<span class="string">&quot;m/10/20/30/40&quot;</span>).unwrap();
         <span class="kw">let </span>desc_key = (xprv, path).into_descriptor_key().unwrap();
 
@@ -2338,15 +2336,15 @@
     </span><span class="kw">fn </span>test_key_maps_merged() {
         <span class="kw">let </span>secp = Secp256k1::new();
 
-        <span class="kw">let </span>xprv1 = bip32::ExtendedPrivKey::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).unwrap();
+        <span class="kw">let </span>xprv1 = bip32::Xpriv::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).unwrap();
         <span class="kw">let </span>path1 = bip32::DerivationPath::from_str(<span class="string">&quot;m/0&quot;</span>).unwrap();
         <span class="kw">let </span>desc_key1 = (xprv1, path1.clone()).into_descriptor_key().unwrap();
 
-        <span class="kw">let </span>xprv2 = bip32::ExtendedPrivKey::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPegBHHnq7YEgM815dG24M2Jk5RVqipgDxF1HJ1tsnT815X5Fd5FRfMVUs8NZs9XCb6y9an8hRPThnhfwfXJ36intaekySHGF&quot;</span>).unwrap();
+        <span class="kw">let </span>xprv2 = bip32::Xpriv::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPegBHHnq7YEgM815dG24M2Jk5RVqipgDxF1HJ1tsnT815X5Fd5FRfMVUs8NZs9XCb6y9an8hRPThnhfwfXJ36intaekySHGF&quot;</span>).unwrap();
         <span class="kw">let </span>path2 = bip32::DerivationPath::from_str(<span class="string">&quot;m/2147483647&#39;/0&quot;</span>).unwrap();
         <span class="kw">let </span>desc_key2 = (xprv2, path2.clone()).into_descriptor_key().unwrap();
 
-        <span class="kw">let </span>xprv3 = bip32::ExtendedPrivKey::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPdZXrcHNLf5JAJWFAoJ2TrstMRdSKtEggz6PddbuSkvHKM9oKJyFgZV1B7rw8oChspxyYbtmEXYyg1AjfWbL3ho3XHDpHRZf&quot;</span>).unwrap();
+        <span class="kw">let </span>xprv3 = bip32::Xpriv::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPdZXrcHNLf5JAJWFAoJ2TrstMRdSKtEggz6PddbuSkvHKM9oKJyFgZV1B7rw8oChspxyYbtmEXYyg1AjfWbL3ho3XHDpHRZf&quot;</span>).unwrap();
         <span class="kw">let </span>path3 = bip32::DerivationPath::from_str(<span class="string">&quot;m/10/20/30/40&quot;</span>).unwrap();
         <span class="kw">let </span>desc_key3 = (xprv3, path3.clone()).into_descriptor_key().unwrap();
 
@@ -2370,7 +2368,7 @@
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>test_script_context_validation() {
         <span class="comment">// this compiles
-        </span><span class="kw">let </span>xprv = bip32::ExtendedPrivKey::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).unwrap();
+        </span><span class="kw">let </span>xprv = bip32::Xpriv::from_str(<span class="string">&quot;tprv8ZgxMBicQKsPcx5nBGsR63Pe8KnRUqmbJNENAfGftF3yuXoMMoVJJcYeUw5eVkm9WBPjWYt6HMWYJNesB5HaNVBaFc1M6dRjWSYnmewUMYy&quot;</span>).unwrap();
         <span class="kw">let </span>path = bip32::DerivationPath::from_str(<span class="string">&quot;m/0&quot;</span>).unwrap();
         <span class="kw">let </span>desc_key: DescriptorKey&lt;Legacy&gt; = (xprv, path).into_descriptor_key().unwrap();
 

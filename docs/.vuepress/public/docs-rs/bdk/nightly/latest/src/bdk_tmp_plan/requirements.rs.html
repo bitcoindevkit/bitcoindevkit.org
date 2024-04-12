@@ -227,19 +227,16 @@
 <a href="#227" id="227">227</a>
 <a href="#228" id="228">228</a>
 <a href="#229" id="229">229</a>
-<a href="#230" id="230">230</a>
-<a href="#231" id="231">231</a>
 </pre><pre class="rust"><code><span class="kw">use </span>bdk_chain::{bitcoin, collections::<span class="kw-2">*</span>, miniscript};
 <span class="kw">use </span>core::ops::Deref;
 
 <span class="kw">use </span>bitcoin::{
     bip32,
-    hashes::{hash160, ripemd160, sha256},
+    hashes::{hash160, ripemd160, sha256, Hash},
     key::XOnlyPublicKey,
-    psbt::Prevouts,
-    secp256k1::{KeyPair, Message, PublicKey, Signing, Verification},
+    secp256k1::{Keypair, Message, PublicKey, Signing, Verification},
     sighash,
-    sighash::{EcdsaSighashType, SighashCache, TapSighashType},
+    sighash::{EcdsaSighashType, Prevouts, SighashCache, TapSighashType},
     taproot, Transaction, TxOut,
 };
 
@@ -394,11 +391,11 @@
 
                 <span class="kw">let </span>tweak =
                     taproot::TapTweakHash::from_key_and_tweak(x_only_pubkey, merkle_root.clone());
-                <span class="kw">let </span>keypair = KeyPair::from_secret_key(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>secret_key.clone())
+                <span class="kw">let </span>keypair = Keypair::from_secret_key(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>secret_key.clone())
                     .add_xonly_tweak(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>tweak.to_scalar())
                     .unwrap();
 
-                <span class="kw">let </span>msg = Message::from_slice(sighash.as_ref()).expect(<span class="string">&quot;Sighashes are 32 bytes&quot;</span>);
+                <span class="kw">let </span>msg = Message::from_digest(sighash.to_byte_array());
                 <span class="kw">let </span>sig = secp.sign_schnorr_no_aux_rand(<span class="kw-2">&amp;</span>msg, <span class="kw-2">&amp;</span>keypair);
 
                 <span class="kw">let </span>bitcoin_sig = taproot::Signature {
@@ -440,9 +437,8 @@
                                 </span><span class="macro">todo!</span>();
                             }
                         };
-                        <span class="kw">let </span>keypair = KeyPair::from_secret_key(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>secret_key.clone());
-                        <span class="kw">let </span>msg =
-                            Message::from_slice(sighash.as_ref()).expect(<span class="string">&quot;Sighashes are 32 bytes&quot;</span>);
+                        <span class="kw">let </span>keypair = Keypair::from_secret_key(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>secret_key.clone());
+                        <span class="kw">let </span>msg = Message::from_digest(sighash.to_byte_array());
                         <span class="kw">let </span>sig = secp.sign_schnorr_no_aux_rand(<span class="kw-2">&amp;</span>msg, <span class="kw-2">&amp;</span>keypair);
                         <span class="kw">let </span>bitcoin_sig = taproot::Signature {
                             sig,
