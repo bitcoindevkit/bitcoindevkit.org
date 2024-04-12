@@ -71,6 +71,9 @@
 <a href="#70" id="70">70</a>
 <a href="#71" id="71">71</a>
 <a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -82,12 +85,12 @@
 // You may not use this file except in accordance with one or both of these
 // licenses.
 
-</span><span class="doccomment">//! Additional functions on the `rust-bitcoin` `PartiallySignedTransaction` structure.
+</span><span class="doccomment">//! Additional functions on the `rust-bitcoin` `Psbt` structure.
 
 </span><span class="kw">use </span>alloc::vec::Vec;
-<span class="kw">use </span>bitcoin::psbt::PartiallySignedTransaction <span class="kw">as </span>Psbt;
 <span class="kw">use </span>bitcoin::Amount;
 <span class="kw">use </span>bitcoin::FeeRate;
+<span class="kw">use </span>bitcoin::Psbt;
 <span class="kw">use </span>bitcoin::TxOut;
 
 <span class="comment">// TODO upstream the functions here to `rust-bitcoin`?
@@ -102,7 +105,7 @@
     </span><span class="kw">fn </span>fee_amount(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;u64&gt;;
 
     <span class="doccomment">/// The transaction&#39;s fee rate. This value will only be accurate if calculated AFTER the
-    /// `PartiallySignedTransaction` is finalized and all witness/signature data is added to the
+    /// `Psbt` is finalized and all witness/signature data is added to the
     /// transaction.
     /// If the PSBT is missing a TxOut for an input returns None.
     </span><span class="kw">fn </span>fee_rate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;FeeRate&gt;;
@@ -127,8 +130,13 @@
         <span class="kw">let </span>utxos: <span class="prelude-ty">Option</span>&lt;Vec&lt;TxOut&gt;&gt; = (<span class="number">0</span>..tx.input.len()).map(|i| <span class="self">self</span>.get_utxo_for(i)).collect();
 
         utxos.map(|inputs| {
-            <span class="kw">let </span>input_amount: u64 = inputs.iter().map(|i| i.value).sum();
-            <span class="kw">let </span>output_amount: u64 = <span class="self">self</span>.unsigned_tx.output.iter().map(|o| o.value).sum();
+            <span class="kw">let </span>input_amount: u64 = inputs.iter().map(|i| i.value.to_sat()).sum();
+            <span class="kw">let </span>output_amount: u64 = <span class="self">self
+                </span>.unsigned_tx
+                .output
+                .iter()
+                .map(|o| o.value.to_sat())
+                .sum();
             input_amount
                 .checked_sub(output_amount)
                 .expect(<span class="string">&quot;input amount must be greater than output amount&quot;</span>)
@@ -137,10 +145,8 @@
 
     <span class="kw">fn </span>fee_rate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;FeeRate&gt; {
         <span class="kw">let </span>fee_amount = <span class="self">self</span>.fee_amount();
-        fee_amount.map(|fee| {
-            <span class="kw">let </span>weight = <span class="self">self</span>.clone().extract_tx().weight();
-            Amount::from_sat(fee) / weight
-        })
+        <span class="kw">let </span>weight = <span class="self">self</span>.clone().extract_tx().ok()<span class="question-mark">?</span>.weight();
+        fee_amount.map(|fee| Amount::from_sat(fee) / weight)
     }
 }
 </code></pre></div>

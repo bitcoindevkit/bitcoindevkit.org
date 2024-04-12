@@ -1978,7 +1978,7 @@
     ///
     /// [`insert_txout`]: Self::insert_txout
     </span><span class="kw">pub fn </span>calculate_fee(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="prelude-ty">Result</span>&lt;u64, CalculateFeeError&gt; {
-        <span class="kw">if </span>tx.is_coin_base() {
+        <span class="kw">if </span>tx.is_coinbase() {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="number">0</span>);
         }
 
@@ -1990,7 +1990,7 @@
                     (sum, missing_outpoints)
                 }
                 <span class="prelude-val">Some</span>(txout) =&gt; {
-                    sum += txout.value <span class="kw">as </span>i64;
+                    sum += txout.value.to_sat() <span class="kw">as </span>i64;
                     (sum, missing_outpoints)
                 }
             },
@@ -2002,7 +2002,7 @@
         <span class="kw">let </span>outputs_sum = tx
             .output
             .iter()
-            .map(|txout| txout.value <span class="kw">as </span>i64)
+            .map(|txout| txout.value.to_sat() <span class="kw">as </span>i64)
             .sum::&lt;i64&gt;();
 
         <span class="kw">let </span>fee = inputs_sum - outputs_sum;
@@ -2529,7 +2529,7 @@
             TxNodeInternal::Whole(tx) =&gt; {
                 <span class="comment">// A coinbase tx that is not anchored in the best chain cannot be unconfirmed and
                 // should always be filtered out.
-                </span><span class="kw">if </span>tx.as_ref().is_coin_base() {
+                </span><span class="kw">if </span>tx.is_coinbase() {
                     <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
                 }
                 tx.clone()
@@ -2785,7 +2785,7 @@
                             txout,
                             chain_position,
                             spent_by,
-                            is_on_coinbase: tx_node.tx.as_ref().is_coin_base(),
+                            is_on_coinbase: tx_node.tx.is_coinbase(),
                         },
                     )))
                 },
@@ -2888,16 +2888,16 @@
             <span class="kw">match </span><span class="kw-2">&amp;</span>txout.chain_position {
                 ChainPosition::Confirmed(<span class="kw">_</span>) =&gt; {
                     <span class="kw">if </span>txout.is_confirmed_and_spendable(chain_tip.height) {
-                        confirmed += txout.txout.value;
+                        confirmed += txout.txout.value.to_sat();
                     } <span class="kw">else if </span>!txout.is_mature(chain_tip.height) {
-                        immature += txout.txout.value;
+                        immature += txout.txout.value.to_sat();
                     }
                 }
                 ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; {
                     <span class="kw">if </span>trust_predicate(<span class="kw-2">&amp;</span>spk_i, <span class="kw-2">&amp;</span>txout.txout.script_pubkey) {
-                        trusted_pending += txout.txout.value;
+                        trusted_pending += txout.txout.value.to_sat();
                     } <span class="kw">else </span>{
-                        untrusted_pending += txout.txout.value;
+                        untrusted_pending += txout.txout.value.to_sat();
                     }
                 }
             }

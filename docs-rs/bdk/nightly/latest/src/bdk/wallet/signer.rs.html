@@ -1192,8 +1192,6 @@
 <a href="#1191" id="1191">1191</a>
 <a href="#1192" id="1192">1192</a>
 <a href="#1193" id="1193">1193</a>
-<a href="#1194" id="1194">1194</a>
-<a href="#1195" id="1195">1195</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1215,13 +1213,12 @@
 //! # use core::str::FromStr;
 //! # use bitcoin::secp256k1::{Secp256k1, All};
 //! # use bitcoin::*;
-//! # use bitcoin::psbt;
 //! # use bdk::signer::*;
 //! # use bdk::*;
 //! # #[derive(Debug)]
 //! # struct CustomHSM;
 //! # impl CustomHSM {
-//! #     fn hsm_sign_input(&amp;self, _psbt: &amp;mut psbt::PartiallySignedTransaction, _input: usize) -&gt; Result&lt;(), SignerError&gt; {
+//! #     fn hsm_sign_input(&amp;self, _psbt: &amp;mut Psbt, _input: usize) -&gt; Result&lt;(), SignerError&gt; {
 //! #         Ok(())
 //! #     }
 //! #     fn connect() -&gt; Self {
@@ -1251,7 +1248,7 @@
 //! impl InputSigner for CustomSigner {
 //!     fn sign_input(
 //!         &amp;self,
-//!         psbt: &amp;mut psbt::PartiallySignedTransaction,
+//!         psbt: &amp;mut Psbt,
 //!         input_index: usize,
 //!         _sign_options: &amp;SignOptions,
 //!         _secp: &amp;Secp256k1&lt;All&gt;,
@@ -1283,13 +1280,13 @@
 <span class="kw">use </span>core::fmt;
 <span class="kw">use </span>core::ops::{Bound::Included, Deref};
 
-<span class="kw">use </span>bitcoin::bip32::{ChildNumber, DerivationPath, ExtendedPrivKey, Fingerprint};
+<span class="kw">use </span>bitcoin::bip32::{ChildNumber, DerivationPath, Fingerprint, Xpriv};
 <span class="kw">use </span>bitcoin::hashes::hash160;
 <span class="kw">use </span>bitcoin::secp256k1::Message;
 <span class="kw">use </span>bitcoin::sighash::{EcdsaSighashType, TapSighash, TapSighashType};
 <span class="kw">use </span>bitcoin::{ecdsa, psbt, sighash, taproot};
 <span class="kw">use </span>bitcoin::{key::TapTweak, key::XOnlyPublicKey, secp256k1};
-<span class="kw">use </span>bitcoin::{PrivateKey, PublicKey};
+<span class="kw">use </span>bitcoin::{PrivateKey, Psbt, PublicKey};
 
 <span class="kw">use </span>miniscript::descriptor::{
     Descriptor, DescriptorMultiXKey, DescriptorPublicKey, DescriptorSecretKey, DescriptorXKey,
@@ -1460,7 +1457,7 @@
     <span class="doccomment">/// Sign a single psbt input
     </span><span class="kw">fn </span>sign_input(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
+        psbt: <span class="kw-2">&amp;mut </span>Psbt,
         input_index: usize,
         sign_options: <span class="kw-2">&amp;</span>SignOptions,
         secp: <span class="kw-2">&amp;</span>SecpCtx,
@@ -1475,7 +1472,7 @@
     <span class="doccomment">/// Sign all the inputs of the psbt
     </span><span class="kw">fn </span>sign_transaction(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
+        psbt: <span class="kw-2">&amp;mut </span>Psbt,
         sign_options: <span class="kw-2">&amp;</span>SignOptions,
         secp: <span class="kw-2">&amp;</span>SecpCtx,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), SignerError&gt;;
@@ -1484,7 +1481,7 @@
 <span class="kw">impl</span>&lt;T: InputSigner&gt; TransactionSigner <span class="kw">for </span>T {
     <span class="kw">fn </span>sign_transaction(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
+        psbt: <span class="kw-2">&amp;mut </span>Psbt,
         sign_options: <span class="kw-2">&amp;</span>SignOptions,
         secp: <span class="kw-2">&amp;</span>SecpCtx,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), SignerError&gt; {
@@ -1496,7 +1493,7 @@
     }
 }
 
-<span class="kw">impl </span>SignerCommon <span class="kw">for </span>SignerWrapper&lt;DescriptorXKey&lt;ExtendedPrivKey&gt;&gt; {
+<span class="kw">impl </span>SignerCommon <span class="kw">for </span>SignerWrapper&lt;DescriptorXKey&lt;Xpriv&gt;&gt; {
     <span class="kw">fn </span>id(<span class="kw-2">&amp;</span><span class="self">self</span>, secp: <span class="kw-2">&amp;</span>SecpCtx) -&gt; SignerId {
         SignerId::from(<span class="self">self</span>.root_fingerprint(secp))
     }
@@ -1506,10 +1503,10 @@
     }
 }
 
-<span class="kw">impl </span>InputSigner <span class="kw">for </span>SignerWrapper&lt;DescriptorXKey&lt;ExtendedPrivKey&gt;&gt; {
+<span class="kw">impl </span>InputSigner <span class="kw">for </span>SignerWrapper&lt;DescriptorXKey&lt;Xpriv&gt;&gt; {
     <span class="kw">fn </span>sign_input(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
+        psbt: <span class="kw-2">&amp;mut </span>Psbt,
         input_index: usize,
         sign_options: <span class="kw-2">&amp;</span>SignOptions,
         secp: <span class="kw-2">&amp;</span>SecpCtx,
@@ -1592,7 +1589,7 @@
         .collect()
 }
 
-<span class="kw">impl </span>SignerCommon <span class="kw">for </span>SignerWrapper&lt;DescriptorMultiXKey&lt;ExtendedPrivKey&gt;&gt; {
+<span class="kw">impl </span>SignerCommon <span class="kw">for </span>SignerWrapper&lt;DescriptorMultiXKey&lt;Xpriv&gt;&gt; {
     <span class="kw">fn </span>id(<span class="kw-2">&amp;</span><span class="self">self</span>, secp: <span class="kw-2">&amp;</span>SecpCtx) -&gt; SignerId {
         SignerId::from(<span class="self">self</span>.root_fingerprint(secp))
     }
@@ -1602,10 +1599,10 @@
     }
 }
 
-<span class="kw">impl </span>InputSigner <span class="kw">for </span>SignerWrapper&lt;DescriptorMultiXKey&lt;ExtendedPrivKey&gt;&gt; {
+<span class="kw">impl </span>InputSigner <span class="kw">for </span>SignerWrapper&lt;DescriptorMultiXKey&lt;Xpriv&gt;&gt; {
     <span class="kw">fn </span>sign_input(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
+        psbt: <span class="kw-2">&amp;mut </span>Psbt,
         input_index: usize,
         sign_options: <span class="kw-2">&amp;</span>SignOptions,
         secp: <span class="kw-2">&amp;</span>SecpCtx,
@@ -1634,7 +1631,7 @@
 <span class="kw">impl </span>InputSigner <span class="kw">for </span>SignerWrapper&lt;PrivateKey&gt; {
     <span class="kw">fn </span>sign_input(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
+        psbt: <span class="kw-2">&amp;mut </span>Psbt,
         input_index: usize,
         sign_options: <span class="kw-2">&amp;</span>SignOptions,
         secp: <span class="kw-2">&amp;</span>SecpCtx,
@@ -1773,7 +1770,7 @@
     hash_ty: TapSighashType,
     secp: <span class="kw-2">&amp;</span>SecpCtx,
 ) {
-    <span class="kw">let </span>keypair = secp256k1::KeyPair::from_seckey_slice(secp, secret_key.as_ref()).unwrap();
+    <span class="kw">let </span>keypair = secp256k1::Keypair::from_seckey_slice(secp, secret_key.as_ref()).unwrap();
     <span class="kw">let </span>keypair = <span class="kw">match </span>leaf_hash {
         <span class="prelude-val">None </span>=&gt; keypair
             .tap_tweak(secp, psbt_input.tap_merkle_root)
@@ -2048,7 +2045,7 @@
     <span class="kw">type </span>SighashType;
 
     <span class="kw">fn </span>sighash(
-        psbt: <span class="kw-2">&amp;</span>psbt::PartiallySignedTransaction,
+        psbt: <span class="kw-2">&amp;</span>Psbt,
         input_index: usize,
         extra: <span class="self">Self</span>::Extra,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>::Sighash, <span class="self">Self</span>::SighashType), SignerError&gt;;
@@ -2060,7 +2057,7 @@
     <span class="kw">type </span>SighashType = EcdsaSighashType;
 
     <span class="kw">fn </span>sighash(
-        psbt: <span class="kw-2">&amp;</span>psbt::PartiallySignedTransaction,
+        psbt: <span class="kw-2">&amp;</span>Psbt,
         input_index: usize,
         _extra: (),
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>::Sighash, <span class="self">Self</span>::SighashType), SignerError&gt; {
@@ -2109,7 +2106,7 @@
     <span class="kw">type </span>SighashType = EcdsaSighashType;
 
     <span class="kw">fn </span>sighash(
-        psbt: <span class="kw-2">&amp;</span>psbt::PartiallySignedTransaction,
+        psbt: <span class="kw-2">&amp;</span>Psbt,
         input_index: usize,
         _extra: (),
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>::Sighash, <span class="self">Self</span>::SighashType), SignerError&gt; {
@@ -2120,7 +2117,7 @@
         <span class="kw">let </span>psbt_input = <span class="kw-2">&amp;</span>psbt.inputs[input_index];
         <span class="kw">let </span>tx_input = <span class="kw-2">&amp;</span>psbt.unsigned_tx.input[input_index];
 
-        <span class="kw">let </span>sighash = psbt_input
+        <span class="kw">let </span>sighash_type = psbt_input
             .sighash_type
             .unwrap_or_else(|| EcdsaSighashType::All.into())
             .ecdsa_hash_ty()
@@ -2148,40 +2145,39 @@
         };
         <span class="kw">let </span>value = utxo.value;
 
-        <span class="kw">let </span>script = <span class="kw">match </span>psbt_input.witness_script {
-            <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>witness_script) =&gt; witness_script.clone(),
+        <span class="kw">let </span><span class="kw-2">mut </span>sighasher = sighash::SighashCache::new(<span class="kw-2">&amp;</span>psbt.unsigned_tx);
+
+        <span class="kw">let </span>sighash = <span class="kw">match </span>psbt_input.witness_script {
+            <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>witness_script) =&gt; {
+                sighasher.p2wsh_signature_hash(input_index, witness_script, value, sighash_type)<span class="question-mark">?
+            </span>}
             <span class="prelude-val">None </span>=&gt; {
-                <span class="kw">if </span>utxo.script_pubkey.is_v0_p2wpkh() {
-                    utxo.script_pubkey
-                        .p2wpkh_script_code()
-                        .expect(<span class="string">&quot;We check above that the spk is a p2wpkh&quot;</span>)
-                } <span class="kw">else if </span>psbt_input
+                <span class="kw">if </span>utxo.script_pubkey.is_p2wpkh() {
+                    sighasher.p2wpkh_signature_hash(
+                        input_index,
+                        <span class="kw-2">&amp;</span>utxo.script_pubkey,
+                        value,
+                        sighash_type,
+                    )<span class="question-mark">?
+                </span>} <span class="kw">else if </span>psbt_input
                     .redeem_script
                     .as_ref()
-                    .map(|s| s.is_v0_p2wpkh())
+                    .map(|s| s.is_p2wpkh())
                     .unwrap_or(<span class="bool-val">false</span>)
                 {
-                    psbt_input
-                        .redeem_script
-                        .as_ref()
-                        .unwrap()
-                        .p2wpkh_script_code()
-                        .expect(<span class="string">&quot;We check above that the spk is a p2wpkh&quot;</span>)
-                } <span class="kw">else </span>{
+                    <span class="kw">let </span>script_pubkey = psbt_input.redeem_script.as_ref().unwrap();
+                    sighasher.p2wpkh_signature_hash(
+                        input_index,
+                        script_pubkey,
+                        value,
+                        sighash_type,
+                    )<span class="question-mark">?
+                </span>} <span class="kw">else </span>{
                     <span class="kw">return </span><span class="prelude-val">Err</span>(SignerError::MissingWitnessScript);
                 }
             }
         };
-
-        <span class="prelude-val">Ok</span>((
-            sighash::SighashCache::new(<span class="kw-2">&amp;</span>psbt.unsigned_tx).segwit_signature_hash(
-                input_index,
-                <span class="kw-2">&amp;</span>script,
-                value,
-                sighash,
-            )<span class="question-mark">?</span>,
-            sighash,
-        ))
+        <span class="prelude-val">Ok</span>((sighash, sighash_type))
     }
 }
 
@@ -2191,7 +2187,7 @@
     <span class="kw">type </span>SighashType = TapSighashType;
 
     <span class="kw">fn </span>sighash(
-        psbt: <span class="kw-2">&amp;</span>psbt::PartiallySignedTransaction,
+        psbt: <span class="kw-2">&amp;</span>Psbt,
         input_index: usize,
         extra: <span class="self">Self</span>::Extra,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>::Sighash, TapSighashType), SignerError&gt; {
@@ -2362,7 +2358,7 @@
     <span class="kw">impl </span>TransactionSigner <span class="kw">for </span>DummySigner {
         <span class="kw">fn </span>sign_transaction(
             <span class="kw-2">&amp;</span><span class="self">self</span>,
-            _psbt: <span class="kw-2">&amp;mut </span>psbt::PartiallySignedTransaction,
+            _psbt: <span class="kw-2">&amp;mut </span>Psbt,
             _sign_options: <span class="kw-2">&amp;</span>SignOptions,
             _secp: <span class="kw-2">&amp;</span>SecpCtx,
         ) -&gt; <span class="prelude-ty">Result</span>&lt;(), SignerError&gt; {
@@ -2380,8 +2376,8 @@
     ) -&gt; (DescriptorKey&lt;Ctx&gt;, DescriptorKey&lt;Ctx&gt;, Fingerprint) {
         <span class="kw">let </span>secp: Secp256k1&lt;All&gt; = Secp256k1::new();
         <span class="kw">let </span>path = bip32::DerivationPath::from_str(PATH).unwrap();
-        <span class="kw">let </span>tprv = bip32::ExtendedPrivKey::from_str(tprv).unwrap();
-        <span class="kw">let </span>tpub = bip32::ExtendedPubKey::from_priv(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>tprv);
+        <span class="kw">let </span>tprv = bip32::Xpriv::from_str(tprv).unwrap();
+        <span class="kw">let </span>tpub = bip32::Xpub::from_priv(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>tprv);
         <span class="kw">let </span>fingerprint = tprv.fingerprint(<span class="kw-2">&amp;</span>secp);
         <span class="kw">let </span>prvkey = (tprv, path.clone()).into_descriptor_key().unwrap();
         <span class="kw">let </span>pubkey = (tpub, path).into_descriptor_key().unwrap();

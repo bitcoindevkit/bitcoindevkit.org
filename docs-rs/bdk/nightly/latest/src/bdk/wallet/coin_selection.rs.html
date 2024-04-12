@@ -1595,6 +1595,12 @@
 <a href="#1594" id="1594">1594</a>
 <a href="#1595" id="1595">1595</a>
 <a href="#1596" id="1596">1596</a>
+<a href="#1597" id="1597">1597</a>
+<a href="#1598" id="1598">1598</a>
+<a href="#1599" id="1599">1599</a>
+<a href="#1600" id="1600">1600</a>
+<a href="#1601" id="1601">1601</a>
+<a href="#1602" id="1602">1602</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1649,9 +1655,10 @@
 //!             .scan(
 //!                 (&amp;mut selected_amount, &amp;mut additional_weight),
 //!                 |(selected_amount, additional_weight), weighted_utxo| {
-//!                     **selected_amount += weighted_utxo.utxo.txout().value;
+//!                     **selected_amount += weighted_utxo.utxo.txout().value.to_sat();
 //!                     **additional_weight += Weight::from_wu(
-//!                         (TxIn::default().segwit_weight() + weighted_utxo.satisfaction_weight)
+//!                         (TxIn::default().segwit_weight().to_wu()
+//!                             + weighted_utxo.satisfaction_weight as u64)
 //!                             as u64,
 //!                     );
 //!                     Some(weighted_utxo.utxo)
@@ -1789,7 +1796,7 @@
 <span class="kw">impl </span>CoinSelectionResult {
     <span class="doccomment">/// The total value of the inputs selected.
     </span><span class="kw">pub fn </span>selected_amount(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
-        <span class="self">self</span>.selected.iter().map(|u| u.txout().value).sum()
+        <span class="self">self</span>.selected.iter().map(|u| u.txout().value.to_sat()).sum()
     }
 
     <span class="doccomment">/// The total value of the inputs selected from the local wallet.
@@ -1797,7 +1804,7 @@
         <span class="self">self</span>.selected
             .iter()
             .filter_map(|u| <span class="kw">match </span>u {
-                Utxo::Local(<span class="kw">_</span>) =&gt; <span class="prelude-val">Some</span>(u.txout().value),
+                Utxo::Local(<span class="kw">_</span>) =&gt; <span class="prelude-val">Some</span>(u.txout().value.to_sat()),
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
             })
             .sum()
@@ -1941,11 +1948,11 @@
                 <span class="kw">if </span>must_use || <span class="kw-2">**</span>selected_amount &lt; target_amount + <span class="kw-2">**</span>fee_amount {
                     <span class="kw-2">**</span>fee_amount += (fee_rate
                         * Weight::from_wu(
-                            (TxIn::default().segwit_weight() + weighted_utxo.satisfaction_weight)
-                                <span class="kw">as </span>u64,
+                            TxIn::default().segwit_weight().to_wu()
+                                + weighted_utxo.satisfaction_weight <span class="kw">as </span>u64,
                         ))
                     .to_sat();
-                    <span class="kw-2">**</span>selected_amount += weighted_utxo.utxo.txout().value;
+                    <span class="kw-2">**</span>selected_amount += weighted_utxo.utxo.txout().value.to_sat();
                     <span class="prelude-val">Some</span>(weighted_utxo.utxo)
                 } <span class="kw">else </span>{
                     <span class="prelude-val">None
@@ -1987,10 +1994,10 @@
     <span class="kw">fn </span>new(weighted_utxo: WeightedUtxo, fee_rate: FeeRate) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>fee = (fee_rate
             * Weight::from_wu(
-                (TxIn::default().segwit_weight() + weighted_utxo.satisfaction_weight) <span class="kw">as </span>u64,
+                TxIn::default().segwit_weight().to_wu() + weighted_utxo.satisfaction_weight <span class="kw">as </span>u64,
             ))
         .to_sat();
-        <span class="kw">let </span>effective_value = weighted_utxo.utxo.txout().value <span class="kw">as </span>i64 - fee <span class="kw">as </span>i64;
+        <span class="kw">let </span>effective_value = weighted_utxo.utxo.txout().value.to_sat() <span class="kw">as </span>i64 - fee <span class="kw">as </span>i64;
         OutputGroup {
             weighted_utxo,
             fee,
@@ -2081,7 +2088,7 @@
                     .chain(optional_utxos.iter())
                     .fold((<span class="number">0</span>, <span class="number">0</span>), |(<span class="kw-2">mut </span>fees, <span class="kw-2">mut </span>value), utxo| {
                         fees += utxo.fee;
-                        value += utxo.weighted_utxo.utxo.txout().value;
+                        value += utxo.weighted_utxo.utxo.txout().value.to_sat();
 
                         (fees, value)
                     });
@@ -2185,7 +2192,7 @@
                 <span class="comment">// If we found a solution better than the previous one, or if there wasn&#39;t previous
                 // solution, update the best solution
                 </span><span class="kw">if </span>best_selection_value.is_none() || curr_value &lt; best_selection_value.unwrap() {
-                    best_selection = current_selection.clone();
+                    best_selection.clone_from(<span class="kw-2">&amp;</span>current_selection);
                     best_selection_value = <span class="prelude-val">Some</span>(curr_value);
                 }
 
@@ -2339,7 +2346,7 @@
     <span class="kw">use </span>core::str::FromStr;
 
     <span class="kw">use </span>bdk_chain::ConfirmationTime;
-    <span class="kw">use </span>bitcoin::{Amount, OutPoint, ScriptBuf, TxIn, TxOut};
+    <span class="kw">use </span>bitcoin::{Amount, ScriptBuf, TxIn, TxOut};
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::types::<span class="kw-2">*</span>;
@@ -2367,7 +2374,7 @@
             utxo: Utxo::Local(LocalOutput {
                 outpoint,
                 txout: TxOut {
-                    value,
+                    value: Amount::from_sat(value),
                     script_pubkey: ScriptBuf::new(),
                 },
                 keychain: KeychainKind::External,
@@ -2431,7 +2438,7 @@
                     ))
                     .unwrap(),
                     txout: TxOut {
-                        value: rng.gen_range(<span class="number">0</span>..<span class="number">200000000</span>),
+                        value: Amount::from_sat(rng.gen_range(<span class="number">0</span>..<span class="number">200000000</span>)),
                         script_pubkey: ScriptBuf::new(),
                     },
                     keychain: KeychainKind::External,
@@ -2462,7 +2469,7 @@
                     ))
                     .unwrap(),
                     txout: TxOut {
-                        value: utxos_value,
+                        value: Amount::from_sat(utxos_value),
                         script_pubkey: ScriptBuf::new(),
                     },
                     keychain: KeychainKind::External,
@@ -2479,7 +2486,7 @@
         utxos.shuffle(<span class="kw-2">&amp;mut </span>rng);
         utxos[..utxos_picked_len]
             .iter()
-            .map(|u| u.utxo.txout().value)
+            .map(|u| u.utxo.txout().value.to_sat())
             .sum()
     }
 
@@ -2668,7 +2675,11 @@
     </span><span class="kw">fn </span>test_oldest_first_coin_selection_insufficient_funds_high_fees() {
         <span class="kw">let </span>utxos = get_oldest_first_test_utxos();
 
-        <span class="kw">let </span>target_amount: u64 = utxos.iter().map(|wu| wu.utxo.txout().value).sum::&lt;u64&gt;() - <span class="number">50</span>;
+        <span class="kw">let </span>target_amount: u64 = utxos
+            .iter()
+            .map(|wu| wu.utxo.txout().value.to_sat())
+            .sum::&lt;u64&gt;()
+            - <span class="number">50</span>;
         <span class="kw">let </span>drain_script = ScriptBuf::default();
 
         OldestFirstCoinSelection
@@ -2763,9 +2774,9 @@
         ));
 
         <span class="comment">// Defensive assertions, for sanity and in case someone changes the test utxos vector.
-        </span><span class="kw">let </span>amount: u64 = required.iter().map(|u| u.utxo.txout().value).sum();
+        </span><span class="kw">let </span>amount: u64 = required.iter().map(|u| u.utxo.txout().value.to_sat()).sum();
         <span class="macro">assert_eq!</span>(amount, <span class="number">100_000</span>);
-        <span class="kw">let </span>amount: u64 = optional.iter().map(|u| u.utxo.txout().value).sum();
+        <span class="kw">let </span>amount: u64 = optional.iter().map(|u| u.utxo.txout().value.to_sat()).sum();
         <span class="macro">assert!</span>(amount &gt; <span class="number">150_000</span>);
         <span class="kw">let </span>drain_script = ScriptBuf::default();
 
@@ -2835,7 +2846,8 @@
 
         <span class="macro">assert_eq!</span>(result.selected.len(), <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(result.selected_amount(), <span class="number">100_000</span>);
-        <span class="kw">let </span>input_weight = (TxIn::default().segwit_weight() + P2WPKH_SATISFACTION_SIZE) <span class="kw">as </span>u64;
+        <span class="kw">let </span>input_weight =
+            TxIn::default().segwit_weight().to_wu() + P2WPKH_SATISFACTION_SIZE <span class="kw">as </span>u64;
         <span class="comment">// the final fee rate should be exactly the same as the fee rate given
         </span><span class="kw">let </span>result_feerate = Amount::from_sat(result.fee_amount) / Weight::from_wu(input_weight);
         <span class="macro">assert_eq!</span>(result_feerate, feerate);
@@ -3057,9 +3069,9 @@
         <span class="kw">let </span>utxos = get_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
 
-        <span class="kw">let </span>(required, optional) = utxos
-            .into_iter()
-            .partition(|u| <span class="macro">matches!</span>(u, WeightedUtxo { utxo, .. } <span class="kw">if </span>utxo.txout().value &lt; <span class="number">1000</span>));
+        <span class="kw">let </span>(required, optional) = utxos.into_iter().partition(
+            |u| <span class="macro">matches!</span>(u, WeightedUtxo { utxo, .. } <span class="kw">if </span>utxo.txout().value.to_sat() &lt; <span class="number">1000</span>),
+        );
 
         <span class="kw">let </span>selection = BranchAndBoundCoinSelection::default().coin_select(
             required,
@@ -3108,7 +3120,7 @@
                 utxo: Utxo::Local(LocalOutput {
                     outpoint: OutPoint::new(bitcoin::hashes::Hash::hash(txid.as_bytes()), <span class="number">0</span>),
                     txout: TxOut {
-                        value,
+                        value: Amount::from_sat(value),
                         script_pubkey: ScriptBuf::new(),
                     },
                     keychain: KeychainKind::External,

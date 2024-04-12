@@ -1117,7 +1117,7 @@
                 <span class="prelude-val">Ok</span>((public, KeyMap::default(), valid_networks))
             }
             DescriptorKey::Secret(secret, valid_networks, <span class="kw">_</span>) =&gt; {
-                <span class="kw">let </span><span class="kw-2">mut </span>key_map = KeyMap::with_capacity(<span class="number">1</span>);
+                <span class="kw">let </span><span class="kw-2">mut </span>key_map = KeyMap::new();
 
                 <span class="kw">let </span>public = secret
                     .to_public(secp)
@@ -1316,15 +1316,15 @@
 
 <span class="doccomment">/// Enum for extended keys that can be either `xprv` or `xpub`
 ///
-/// An instance of [`ExtendedKey`] can be constructed from an [`ExtendedPrivKey`](bip32::ExtendedPrivKey)
-/// or an [`ExtendedPubKey`](bip32::ExtendedPubKey) by using the `From` trait.
+/// An instance of [`ExtendedKey`] can be constructed from an [`Xpriv`](bip32::Xpriv)
+/// or an [`Xpub`](bip32::Xpub) by using the `From` trait.
 ///
 /// Defaults to the [`Legacy`](miniscript::Legacy) context.
 </span><span class="kw">pub enum </span>ExtendedKey&lt;Ctx: ScriptContext = miniscript::Legacy&gt; {
     <span class="doccomment">/// A private extended key, aka an `xprv`
-    </span>Private((bip32::ExtendedPrivKey, PhantomData&lt;Ctx&gt;)),
+    </span>Private((bip32::Xpriv, PhantomData&lt;Ctx&gt;)),
     <span class="doccomment">/// A public extended key, aka an `xpub`
-    </span>Public((bip32::ExtendedPubKey, PhantomData&lt;Ctx&gt;)),
+    </span>Public((bip32::Xpub, PhantomData&lt;Ctx&gt;)),
 }
 
 <span class="kw">impl</span>&lt;Ctx: ScriptContext&gt; ExtendedKey&lt;Ctx&gt; {
@@ -1336,9 +1336,9 @@
         }
     }
 
-    <span class="doccomment">/// Transform the [`ExtendedKey`] into an [`ExtendedPrivKey`](bip32::ExtendedPrivKey) for the
+    <span class="doccomment">/// Transform the [`ExtendedKey`] into an [`Xpriv`](bip32::Xpriv) for the
     /// given [`Network`], if the key contains the private data
-    </span><span class="kw">pub fn </span>into_xprv(<span class="self">self</span>, network: Network) -&gt; <span class="prelude-ty">Option</span>&lt;bip32::ExtendedPrivKey&gt; {
+    </span><span class="kw">pub fn </span>into_xprv(<span class="self">self</span>, network: Network) -&gt; <span class="prelude-ty">Option</span>&lt;bip32::Xpriv&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             ExtendedKey::Private((<span class="kw-2">mut </span>xprv, <span class="kw">_</span>)) =&gt; {
                 xprv.network = network;
@@ -1348,15 +1348,15 @@
         }
     }
 
-    <span class="doccomment">/// Transform the [`ExtendedKey`] into an [`ExtendedPubKey`](bip32::ExtendedPubKey) for the
+    <span class="doccomment">/// Transform the [`ExtendedKey`] into an [`Xpub`](bip32::Xpub) for the
     /// given [`Network`]
     </span><span class="kw">pub fn </span>into_xpub&lt;C: Signing&gt;(
         <span class="self">self</span>,
         network: bitcoin::Network,
         secp: <span class="kw-2">&amp;</span>Secp256k1&lt;C&gt;,
-    ) -&gt; bip32::ExtendedPubKey {
+    ) -&gt; bip32::Xpub {
         <span class="kw">let </span><span class="kw-2">mut </span>xpub = <span class="kw">match </span><span class="self">self </span>{
-            ExtendedKey::Private((xprv, <span class="kw">_</span>)) =&gt; bip32::ExtendedPubKey::from_priv(secp, <span class="kw-2">&amp;</span>xprv),
+            ExtendedKey::Private((xprv, <span class="kw">_</span>)) =&gt; bip32::Xpub::from_priv(secp, <span class="kw-2">&amp;</span>xprv),
             ExtendedKey::Public((xpub, <span class="kw">_</span>)) =&gt; xpub,
         };
 
@@ -1365,14 +1365,14 @@
     }
 }
 
-<span class="kw">impl</span>&lt;Ctx: ScriptContext&gt; From&lt;bip32::ExtendedPubKey&gt; <span class="kw">for </span>ExtendedKey&lt;Ctx&gt; {
-    <span class="kw">fn </span>from(xpub: bip32::ExtendedPubKey) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;Ctx: ScriptContext&gt; From&lt;bip32::Xpub&gt; <span class="kw">for </span>ExtendedKey&lt;Ctx&gt; {
+    <span class="kw">fn </span>from(xpub: bip32::Xpub) -&gt; <span class="self">Self </span>{
         ExtendedKey::Public((xpub, PhantomData))
     }
 }
 
-<span class="kw">impl</span>&lt;Ctx: ScriptContext&gt; From&lt;bip32::ExtendedPrivKey&gt; <span class="kw">for </span>ExtendedKey&lt;Ctx&gt; {
-    <span class="kw">fn </span>from(xprv: bip32::ExtendedPrivKey) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;Ctx: ScriptContext&gt; From&lt;bip32::Xpriv&gt; <span class="kw">for </span>ExtendedKey&lt;Ctx&gt; {
+    <span class="kw">fn </span>from(xprv: bip32::Xpriv) -&gt; <span class="self">Self </span>{
         ExtendedKey::Private((xprv, PhantomData))
     }
 }
@@ -1390,8 +1390,8 @@
 ///
 /// ## Examples
 ///
-/// Key types that can be directly converted into an [`ExtendedPrivKey`] or
-/// an [`ExtendedPubKey`] can implement only the required `into_extended_key()` method.
+/// Key types that can be directly converted into an [`Xpriv`] or
+/// an [`Xpub`] can implement only the required `into_extended_key()` method.
 ///
 /// ```
 /// use bdk::bitcoin;
@@ -1406,7 +1406,7 @@
 ///
 /// impl&lt;Ctx: ScriptContext&gt; DerivableKey&lt;Ctx&gt; for MyCustomKeyType {
 ///     fn into_extended_key(self) -&gt; Result&lt;ExtendedKey&lt;Ctx&gt;, KeyError&gt; {
-///         let xprv = bip32::ExtendedPrivKey {
+///         let xprv = bip32::Xpriv {
 ///             network: self.network,
 ///             depth: 0,
 ///             parent_fingerprint: bip32::Fingerprint::default(),
@@ -1422,7 +1422,7 @@
 ///
 /// Types that don&#39;t internally encode the [`Network`] in which they are valid need some extra
 /// steps to override the set of valid networks, otherwise only the network specified in the
-/// [`ExtendedPrivKey`] or [`ExtendedPubKey`] will be considered valid.
+/// [`Xpriv`] or [`Xpub`] will be considered valid.
 ///
 /// ```
 /// use bdk::bitcoin;
@@ -1438,7 +1438,7 @@
 ///
 /// impl&lt;Ctx: ScriptContext&gt; DerivableKey&lt;Ctx&gt; for MyCustomKeyType {
 ///     fn into_extended_key(self) -&gt; Result&lt;ExtendedKey&lt;Ctx&gt;, KeyError&gt; {
-///         let xprv = bip32::ExtendedPrivKey {
+///         let xprv = bip32::Xpriv {
 ///             network: bitcoin::Network::Bitcoin, // pick an arbitrary network here
 ///             depth: 0,
 ///             parent_fingerprint: bip32::Fingerprint::default(),
@@ -1466,8 +1466,8 @@
 /// ```
 ///
 /// [`DerivationPath`]: (bip32::DerivationPath)
-/// [`ExtendedPrivKey`]: (bip32::ExtendedPrivKey)
-/// [`ExtendedPubKey`]: (bip32::ExtendedPubKey)
+/// [`Xpriv`]: (bip32::Xpriv)
+/// [`Xpub`]: (bip32::Xpub)
 </span><span class="kw">pub trait </span>DerivableKey&lt;Ctx: ScriptContext = miniscript::Legacy&gt;: Sized {
     <span class="doccomment">/// Consume `self` and turn it into an [`ExtendedKey`]
     </span><span class="attr">#[cfg_attr(
@@ -1527,13 +1527,13 @@ let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
     }
 }
 
-<span class="kw">impl</span>&lt;Ctx: ScriptContext&gt; DerivableKey&lt;Ctx&gt; <span class="kw">for </span>bip32::ExtendedPubKey {
+<span class="kw">impl</span>&lt;Ctx: ScriptContext&gt; DerivableKey&lt;Ctx&gt; <span class="kw">for </span>bip32::Xpub {
     <span class="kw">fn </span>into_extended_key(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;ExtendedKey&lt;Ctx&gt;, KeyError&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.into())
     }
 }
 
-<span class="kw">impl</span>&lt;Ctx: ScriptContext&gt; DerivableKey&lt;Ctx&gt; <span class="kw">for </span>bip32::ExtendedPrivKey {
+<span class="kw">impl</span>&lt;Ctx: ScriptContext&gt; DerivableKey&lt;Ctx&gt; <span class="kw">for </span>bip32::Xpriv {
     <span class="kw">fn </span>into_extended_key(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;ExtendedKey&lt;Ctx&gt;, KeyError&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.into())
     }
@@ -1677,7 +1677,7 @@ let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
 {
 }
 
-<span class="kw">impl</span>&lt;Ctx: ScriptContext&gt; GeneratableKey&lt;Ctx&gt; <span class="kw">for </span>bip32::ExtendedPrivKey {
+<span class="kw">impl</span>&lt;Ctx: ScriptContext&gt; GeneratableKey&lt;Ctx&gt; <span class="kw">for </span>bip32::Xpriv {
     <span class="kw">type </span>Entropy = [u8; <span class="number">32</span>];
 
     <span class="kw">type </span>Options = ();
@@ -1688,7 +1688,7 @@ let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
         entropy: <span class="self">Self</span>::Entropy,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;GeneratedKey&lt;<span class="self">Self</span>, Ctx&gt;, <span class="self">Self</span>::Error&gt; {
         <span class="comment">// pick a arbitrary network here, but say that we support all of them
-        </span><span class="kw">let </span>xprv = bip32::ExtendedPrivKey::new_master(Network::Bitcoin, entropy.as_ref())<span class="question-mark">?</span>;
+        </span><span class="kw">let </span>xprv = bip32::Xpriv::new_master(Network::Bitcoin, entropy.as_ref())<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(GeneratedKey::new(xprv, any_network()))
     }
 }
@@ -1978,7 +1978,7 @@ let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_keys_generate_xprv() {
         <span class="kw">let </span>generated_xprv: GeneratedKey&lt;<span class="kw">_</span>, miniscript::Segwitv0&gt; =
-            bip32::ExtendedPrivKey::generate_with_entropy_default(TEST_ENTROPY).unwrap();
+            bip32::Xpriv::generate_with_entropy_default(TEST_ENTROPY).unwrap();
 
         <span class="macro">assert_eq!</span>(generated_xprv.valid_networks, any_network());
         <span class="macro">assert_eq!</span>(generated_xprv.to_string(), <span class="string">&quot;xprv9s21ZrQH143K4Xr1cJyqTvuL2FWR8eicgY9boWqMBv8MDVUZ65AXHnzBrK1nyomu6wdcabRgmGTaAKawvhAno1V5FowGpTLVx3jxzE5uk3Q&quot;</span>);
