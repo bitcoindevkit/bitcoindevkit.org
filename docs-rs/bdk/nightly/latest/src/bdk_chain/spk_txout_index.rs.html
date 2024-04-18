@@ -322,6 +322,9 @@
 <a href="#322" id="322">322</a>
 <a href="#323" id="323">323</a>
 <a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
 </pre><pre class="rust"><code><span class="kw">use </span>core::ops::RangeBounds;
 
 <span class="kw">use crate</span>::{
@@ -594,36 +597,39 @@
         <span class="self">self</span>.spk_indices.get(script)
     }
 
-    <span class="doccomment">/// Computes total input value going from script pubkeys in the index (sent) and the total output
-    /// value going to script pubkeys in the index (received) in `tx`. For the `sent` to be computed
-    /// correctly, the output being spent must have already been scanned by the index. Calculating
-    /// received just uses the [`Transaction`] outputs directly, so it will be correct even if it has
-    /// not been scanned.
-    </span><span class="kw">pub fn </span>sent_and_received(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; (u64, u64) {
+    <span class="doccomment">/// Computes the total value transfer effect `tx` has on the script pubkeys in `range`. Value is
+    /// *sent* when a script pubkey in the `range` is on an input and *received* when it is on an
+    /// output. For `sent` to be computed correctly, the output being spent must have already been
+    /// scanned by the index. Calculating received just uses the [`Transaction`] outputs directly,
+    /// so it will be correct even if it has not been scanned.
+    </span><span class="kw">pub fn </span>sent_and_received(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction, range: <span class="kw">impl </span>RangeBounds&lt;I&gt;) -&gt; (u64, u64) {
         <span class="kw">let </span><span class="kw-2">mut </span>sent = <span class="number">0</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>received = <span class="number">0</span>;
 
         <span class="kw">for </span>txin <span class="kw">in </span><span class="kw-2">&amp;</span>tx.input {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, txout)) = <span class="self">self</span>.txout(txin.previous_output) {
-                sent += txout.value.to_sat();
+            <span class="kw">if let </span><span class="prelude-val">Some</span>((index, txout)) = <span class="self">self</span>.txout(txin.previous_output) {
+                <span class="kw">if </span>range.contains(index) {
+                    sent += txout.value.to_sat();
+                }
             }
         }
         <span class="kw">for </span>txout <span class="kw">in </span><span class="kw-2">&amp;</span>tx.output {
-            <span class="kw">if </span><span class="self">self</span>.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey).is_some() {
-                received += txout.value.to_sat();
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(index) = <span class="self">self</span>.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
+                <span class="kw">if </span>range.contains(index) {
+                    received += txout.value.to_sat();
+                }
             }
         }
 
         (sent, received)
     }
 
-    <span class="doccomment">/// Computes the net value that this transaction gives to the script pubkeys in the index and
-    /// *takes* from the transaction outputs in the index. Shorthand for calling
-    /// [`sent_and_received`] and subtracting sent from received.
+    <span class="doccomment">/// Computes the net value transfer effect of `tx` on the script pubkeys in `range`. Shorthand
+    /// for calling [`sent_and_received`] and subtracting sent from received.
     ///
     /// [`sent_and_received`]: Self::sent_and_received
-    </span><span class="kw">pub fn </span>net_value(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; i64 {
-        <span class="kw">let </span>(sent, received) = <span class="self">self</span>.sent_and_received(tx);
+    </span><span class="kw">pub fn </span>net_value(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction, range: <span class="kw">impl </span>RangeBounds&lt;I&gt;) -&gt; i64 {
+        <span class="kw">let </span>(sent, received) = <span class="self">self</span>.sent_and_received(tx, range);
         received <span class="kw">as </span>i64 - sent <span class="kw">as </span>i64
     }
 
