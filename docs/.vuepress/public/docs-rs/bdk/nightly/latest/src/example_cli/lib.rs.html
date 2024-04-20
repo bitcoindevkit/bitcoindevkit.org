@@ -719,6 +719,11 @@
 <a href="#719" id="719">719</a>
 <a href="#720" id="720">720</a>
 <a href="#721" id="721">721</a>
+<a href="#722" id="722">722</a>
+<a href="#723" id="723">723</a>
+<a href="#724" id="724">724</a>
+<a href="#725" id="725">725</a>
+<a href="#726" id="726">726</a>
 </pre><pre class="rust"><code><span class="kw">pub use </span>anyhow;
 <span class="kw">use </span>anyhow::Context;
 <span class="kw">use </span>bdk_coin_select::{coin_select_bnb, CoinSelector, CoinSelectorOpt, WeightedValue};
@@ -752,7 +757,6 @@
     local_chain::ChangeSet,
     indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;Keychain&gt;&gt;,
 );
-<span class="kw">pub type </span>Database&lt;C&gt; = Persist&lt;Store&lt;C&gt;, C&gt;;
 
 <span class="attr">#[derive(Parser)]
 #[clap(author, version, about, long_about = <span class="prelude-val">None</span>)]
@@ -1161,7 +1165,7 @@
 
 <span class="kw">pub fn </span>handle_commands&lt;CS: clap::Subcommand, S: clap::Args, A: Anchor, O: ChainOracle, C&gt;(
     graph: <span class="kw-2">&amp;</span>Mutex&lt;KeychainTxGraph&lt;A&gt;&gt;,
-    db: <span class="kw-2">&amp;</span>Mutex&lt;Database&lt;C&gt;&gt;,
+    db: <span class="kw-2">&amp;</span>Mutex&lt;Persist&lt;C&gt;&gt;,
     chain: <span class="kw-2">&amp;</span>Mutex&lt;O&gt;,
     keymap: <span class="kw-2">&amp;</span>BTreeMap&lt;DescriptorPublicKey, DescriptorSecretKey&gt;,
     network: Network,
@@ -1388,7 +1392,7 @@
     <span class="doccomment">/// Keychain-txout index.
     </span><span class="kw">pub </span>index: KeychainTxOutIndex&lt;Keychain&gt;,
     <span class="doccomment">/// Persistence backend.
-    </span><span class="kw">pub </span>db: Mutex&lt;Database&lt;C&gt;&gt;,
+    </span><span class="kw">pub </span>db: Mutex&lt;Persist&lt;C&gt;&gt;,
     <span class="doccomment">/// Initial changeset.
     </span><span class="kw">pub </span>init_changeset: C,
 }
@@ -1400,7 +1404,13 @@
     db_default_path: <span class="kw-2">&amp;</span>str,
 ) -&gt; anyhow::Result&lt;Init&lt;CS, S, C&gt;&gt;
 <span class="kw">where
-    </span>C: Default + Append + Serialize + DeserializeOwned,
+    </span>C: Default
+        + Append
+        + Serialize
+        + DeserializeOwned
+        + core::marker::Send
+        + core::marker::Sync
+        + <span class="lifetime">&#39;static</span>,
 {
     <span class="kw">if </span>std::env::var(<span class="string">&quot;BDK_DB_PATH&quot;</span>).is_err() {
         std::env::set_var(<span class="string">&quot;BDK_DB_PATH&quot;</span>, db_default_path);
@@ -1436,7 +1446,7 @@
         args,
         keymap,
         index,
-        db: Mutex::new(Database::new(db_backend)),
+        db: Mutex::new(Persist::new(db_backend)),
         init_changeset,
     })
 }
