@@ -1077,10 +1077,6 @@
 <a href="#1076" id="1076">1076</a>
 <a href="#1077" id="1077">1077</a>
 <a href="#1078" id="1078">1078</a>
-<a href="#1079" id="1079">1079</a>
-<a href="#1080" id="1080">1080</a>
-<a href="#1081" id="1081">1081</a>
-<a href="#1082" id="1082">1082</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1128,13 +1124,12 @@
 <span class="kw">use </span>core::fmt;
 <span class="kw">use </span>core::marker::PhantomData;
 
-<span class="kw">use </span>bdk_chain::PersistBackend;
 <span class="kw">use </span>bitcoin::psbt::{<span class="self">self</span>, Psbt};
 <span class="kw">use </span>bitcoin::script::PushBytes;
 <span class="kw">use </span>bitcoin::{absolute, FeeRate, OutPoint, ScriptBuf, Sequence, Transaction, Txid};
 
 <span class="kw">use </span><span class="kw">super</span>::coin_selection::{CoinSelectionAlgorithm, DefaultCoinSelectionAlgorithm};
-<span class="kw">use super</span>::{ChangeSet, CreateTxError, Wallet};
+<span class="kw">use super</span>::{CreateTxError, Wallet};
 <span class="kw">use </span><span class="kw">crate</span>::collections::{BTreeMap, HashSet};
 <span class="kw">use crate</span>::{KeychainKind, LocalOutput, Utxo, WeightedUtxo};
 
@@ -1207,8 +1202,8 @@
 /// [`finish`]: Self::finish
 /// [`coin_selection`]: Self::coin_selection
 </span><span class="attr">#[derive(Debug)]
-</span><span class="kw">pub struct </span>TxBuilder&lt;<span class="lifetime">&#39;a</span>, D, Cs, Ctx&gt; {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) wallet: Rc&lt;RefCell&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Wallet&lt;D&gt;&gt;&gt;,
+</span><span class="kw">pub struct </span>TxBuilder&lt;<span class="lifetime">&#39;a</span>, Cs, Ctx&gt; {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) wallet: Rc&lt;RefCell&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Wallet&gt;&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) params: TxParams,
     <span class="kw">pub</span>(<span class="kw">crate</span>) coin_selection: Cs,
     <span class="kw">pub</span>(<span class="kw">crate</span>) phantom: PhantomData&lt;Ctx&gt;,
@@ -1259,7 +1254,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, D, Cs: Clone, Ctx&gt; Clone <span class="kw">for </span>TxBuilder&lt;<span class="lifetime">&#39;a</span>, D, Cs, Ctx&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, Cs: Clone, Ctx&gt; Clone <span class="kw">for </span>TxBuilder&lt;<span class="lifetime">&#39;a</span>, Cs, Ctx&gt; {
     <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
         TxBuilder {
             wallet: <span class="self">self</span>.wallet.clone(),
@@ -1271,7 +1266,7 @@
 }
 
 <span class="comment">// methods supported by both contexts, for any CoinSelectionAlgorithm
-</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, D, Cs, Ctx&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, D, Cs, Ctx&gt; {
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, Cs, Ctx&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, Cs, Ctx&gt; {
     <span class="doccomment">/// Set a custom fee rate.
     ///
     /// This method sets the mining fee paid by the transaction as a rate on its size.
@@ -1643,7 +1638,7 @@
     </span><span class="kw">pub fn </span>coin_selection&lt;P: CoinSelectionAlgorithm&gt;(
         <span class="self">self</span>,
         coin_selection: P,
-    ) -&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, D, P, Ctx&gt; {
+    ) -&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, P, Ctx&gt; {
         TxBuilder {
             wallet: <span class="self">self</span>.wallet,
             params: <span class="self">self</span>.params,
@@ -1698,16 +1693,13 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, D, Cs: CoinSelectionAlgorithm, Ctx&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, D, Cs, Ctx&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, Cs: CoinSelectionAlgorithm, Ctx&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, Cs, Ctx&gt; {
     <span class="doccomment">/// Finish building the transaction.
     ///
     /// Returns a new [`Psbt`] per [`BIP174`].
     ///
     /// [`BIP174`]: https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki
-    </span><span class="kw">pub fn </span>finish(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Psbt, CreateTxError&lt;D::WriteError&gt;&gt;
-    <span class="kw">where
-        </span>D: PersistBackend&lt;ChangeSet&gt;,
-    {
+    </span><span class="kw">pub fn </span>finish(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Psbt, CreateTxError&gt; {
         <span class="self">self</span>.wallet
             .borrow_mut()
             .create_tx(<span class="self">self</span>.coin_selection, <span class="self">self</span>.params)
@@ -1798,7 +1790,7 @@
 <span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>AllowShrinkingError {}
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, D, Cs: CoinSelectionAlgorithm&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, D, Cs, CreateTx&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, Cs: CoinSelectionAlgorithm&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, Cs, CreateTx&gt; {
     <span class="doccomment">/// Replace the recipients already added with a new list
     </span><span class="kw">pub fn </span>set_recipients(<span class="kw-2">&amp;mut </span><span class="self">self</span>, recipients: Vec&lt;(ScriptBuf, u64)&gt;) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.recipients = recipients;
@@ -1876,7 +1868,7 @@
 }
 
 <span class="comment">// methods supported only by bump_fee
-</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, D&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, D, DefaultCoinSelectionAlgorithm, BumpFee&gt; {
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, DefaultCoinSelectionAlgorithm, BumpFee&gt; {
     <span class="doccomment">/// Explicitly tells the wallet that it is allowed to reduce the amount of the output matching this
     /// `script_pubkey` in order to bump the transaction fee. Without specifying this the wallet
     /// will attempt to find a change output to shrink instead.

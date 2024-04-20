@@ -290,9 +290,6 @@
 <a href="#289" id="289">289</a>
 <a href="#290" id="290">290</a>
 <a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -342,11 +339,11 @@
 </span><span class="doccomment">/// Error returned from [`TxBuilder::finish`]
 ///
 /// [`TxBuilder::finish`]: crate::wallet::tx_builder::TxBuilder::finish
-</span><span class="kw">pub enum </span>CreateTxError&lt;P&gt; {
+</span><span class="kw">pub enum </span>CreateTxError {
     <span class="doccomment">/// There was a problem with the descriptors passed in
     </span>Descriptor(DescriptorError),
-    <span class="doccomment">/// We were unable to write wallet data to the persistence backend
-    </span>Persist(P),
+    <span class="doccomment">/// We were unable to load wallet data from or write wallet data to the persistence backend
+    </span>Persist(anyhow::Error),
     <span class="doccomment">/// There was a problem while extracting and manipulating policies
     </span>Policy(PolicyError),
     <span class="doccomment">/// Spending policy is not compatible with this [`KeychainKind`]
@@ -414,17 +411,14 @@
     </span>MiniscriptPsbt(MiniscriptPsbtError),
 }
 
-<span class="kw">impl</span>&lt;P&gt; fmt::Display <span class="kw">for </span>CreateTxError&lt;P&gt;
-<span class="kw">where
-    </span>P: fmt::Display,
-{
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>CreateTxError {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Descriptor(e) =&gt; e.fmt(f),
             <span class="self">Self</span>::Persist(e) =&gt; {
                 <span class="macro">write!</span>(
                     f,
-                    <span class="string">&quot;failed to write wallet data to persistence backend: {}&quot;</span>,
+                    <span class="string">&quot;failed to load wallet data from or write wallet data to persistence backend: {}&quot;</span>,
                     e
                 )
             }
@@ -509,38 +503,38 @@
     }
 }
 
-<span class="kw">impl</span>&lt;P&gt; From&lt;descriptor::error::Error&gt; <span class="kw">for </span>CreateTxError&lt;P&gt; {
+<span class="kw">impl </span>From&lt;descriptor::error::Error&gt; <span class="kw">for </span>CreateTxError {
     <span class="kw">fn </span>from(err: descriptor::error::Error) -&gt; <span class="self">Self </span>{
         CreateTxError::Descriptor(err)
     }
 }
 
-<span class="kw">impl</span>&lt;P&gt; From&lt;PolicyError&gt; <span class="kw">for </span>CreateTxError&lt;P&gt; {
+<span class="kw">impl </span>From&lt;PolicyError&gt; <span class="kw">for </span>CreateTxError {
     <span class="kw">fn </span>from(err: PolicyError) -&gt; <span class="self">Self </span>{
         CreateTxError::Policy(err)
     }
 }
 
-<span class="kw">impl</span>&lt;P&gt; From&lt;MiniscriptPsbtError&gt; <span class="kw">for </span>CreateTxError&lt;P&gt; {
+<span class="kw">impl </span>From&lt;MiniscriptPsbtError&gt; <span class="kw">for </span>CreateTxError {
     <span class="kw">fn </span>from(err: MiniscriptPsbtError) -&gt; <span class="self">Self </span>{
         CreateTxError::MiniscriptPsbt(err)
     }
 }
 
-<span class="kw">impl</span>&lt;P&gt; From&lt;psbt::Error&gt; <span class="kw">for </span>CreateTxError&lt;P&gt; {
+<span class="kw">impl </span>From&lt;psbt::Error&gt; <span class="kw">for </span>CreateTxError {
     <span class="kw">fn </span>from(err: psbt::Error) -&gt; <span class="self">Self </span>{
         CreateTxError::Psbt(err)
     }
 }
 
-<span class="kw">impl</span>&lt;P&gt; From&lt;coin_selection::Error&gt; <span class="kw">for </span>CreateTxError&lt;P&gt; {
+<span class="kw">impl </span>From&lt;coin_selection::Error&gt; <span class="kw">for </span>CreateTxError {
     <span class="kw">fn </span>from(err: coin_selection::Error) -&gt; <span class="self">Self </span>{
         CreateTxError::CoinSelection(err)
     }
 }
 
 <span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
-</span><span class="kw">impl</span>&lt;P: core::fmt::Display + core::fmt::Debug&gt; std::error::Error <span class="kw">for </span>CreateTxError&lt;P&gt; {}
+</span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>CreateTxError {}
 
 <span class="attr">#[derive(Debug)]
 </span><span class="doccomment">/// Error returned from [`Wallet::build_fee_bump`]

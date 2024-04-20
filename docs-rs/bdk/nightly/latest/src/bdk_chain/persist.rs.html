@@ -103,33 +103,35 @@
 <a href="#103" id="103">103</a>
 <a href="#104" id="104">104</a>
 <a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-<a href="#107" id="107">107</a>
-<a href="#108" id="108">108</a>
-<a href="#109" id="109">109</a>
-</pre><pre class="rust"><code><span class="kw">use </span>core::convert::Infallible;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::Append;
+<span class="kw">use </span>alloc::boxed::Box;
+<span class="kw">use </span>core::fmt;
 
-<span class="kw">use </span><span class="kw">crate</span>::Append;
-
-<span class="doccomment">/// `Persist` wraps a [`PersistBackend`] (`B`) to create a convenient staging area for changes (`C`)
+<span class="doccomment">/// `Persist` wraps a [`PersistBackend`] to create a convenient staging area for changes (`C`)
 /// before they are persisted.
 ///
 /// Not all changes to the in-memory representation needs to be written to disk right away, so
 /// [`Persist::stage`] can be used to *stage* changes first and then [`Persist::commit`] can be used
 /// to write changes to disk.
-</span><span class="attr">#[derive(Debug)]
-</span><span class="kw">pub struct </span>Persist&lt;B, C&gt; {
-    backend: B,
+</span><span class="kw">pub struct </span>Persist&lt;C&gt; {
+    backend: Box&lt;<span class="kw">dyn </span>PersistBackend&lt;C&gt; + Send + Sync&gt;,
     stage: C,
 }
 
-<span class="kw">impl</span>&lt;B, C&gt; Persist&lt;B, C&gt;
+<span class="kw">impl</span>&lt;C: fmt::Debug&gt; fmt::Debug <span class="kw">for </span>Persist&lt;C&gt; {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, fmt: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), core::fmt::Error&gt; {
+        <span class="macro">write!</span>(fmt, <span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>.stage)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(())
+    }
+}
+
+<span class="kw">impl</span>&lt;C&gt; Persist&lt;C&gt;
 <span class="kw">where
-    </span>B: PersistBackend&lt;C&gt;,
-    C: Default + Append,
+    </span>C: Default + Append,
 {
     <span class="doccomment">/// Create a new [`Persist`] from [`PersistBackend`].
-    </span><span class="kw">pub fn </span>new(backend: B) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new(backend: <span class="kw">impl </span>PersistBackend&lt;C&gt; + Send + Sync + <span class="lifetime">&#39;static</span>) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>backend = Box::new(backend);
         <span class="self">Self </span>{
             backend,
             stage: Default::default(),
@@ -155,7 +157,7 @@
     /// # Error
     ///
     /// Returns a backend-defined error if this fails.
-    </span><span class="kw">pub fn </span>commit(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;C&gt;, B::WriteError&gt; {
+    </span><span class="kw">pub fn </span>commit(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;<span class="prelude-ty">Option</span>&lt;C&gt;&gt; {
         <span class="kw">if </span><span class="self">self</span>.stage.is_empty() {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
         }
@@ -172,7 +174,7 @@
     ///
     /// [`stage`]: Self::stage
     /// [`commit`]: Self::commit
-    </span><span class="kw">pub fn </span>stage_and_commit(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: C) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;C&gt;, B::WriteError&gt; {
+    </span><span class="kw">pub fn </span>stage_and_commit(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: C) -&gt; anyhow::Result&lt;<span class="prelude-ty">Option</span>&lt;C&gt;&gt; {
         <span class="self">self</span>.stage(changeset);
         <span class="self">self</span>.commit()
     }
@@ -183,12 +185,6 @@
 /// `C` represents the changeset; a datatype that records changes made to in-memory data structures
 /// that are to be persisted, or retrieved from persistence.
 </span><span class="kw">pub trait </span>PersistBackend&lt;C&gt; {
-    <span class="doccomment">/// The error the backend returns when it fails to write.
-    </span><span class="kw">type </span>WriteError: core::fmt::Debug;
-
-    <span class="doccomment">/// The error the backend returns when it fails to load changesets `C`.
-    </span><span class="kw">type </span>LoadError: core::fmt::Debug;
-
     <span class="doccomment">/// Writes a changeset to the persistence backend.
     ///
     /// It is up to the backend what it does with this. It could store every changeset in a list or
@@ -197,22 +193,18 @@
     /// changesets had been applied sequentially.
     ///
     /// [`load_from_persistence`]: Self::load_from_persistence
-    </span><span class="kw">fn </span>write_changes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>C) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::WriteError&gt;;
+    </span><span class="kw">fn </span>write_changes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>C) -&gt; anyhow::Result&lt;()&gt;;
 
     <span class="doccomment">/// Return the aggregate changeset `C` from persistence.
-    </span><span class="kw">fn </span>load_from_persistence(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;C&gt;, <span class="self">Self</span>::LoadError&gt;;
+    </span><span class="kw">fn </span>load_from_persistence(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;<span class="prelude-ty">Option</span>&lt;C&gt;&gt;;
 }
 
 <span class="kw">impl</span>&lt;C&gt; PersistBackend&lt;C&gt; <span class="kw">for </span>() {
-    <span class="kw">type </span>WriteError = Infallible;
-
-    <span class="kw">type </span>LoadError = Infallible;
-
-    <span class="kw">fn </span>write_changes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _changeset: <span class="kw-2">&amp;</span>C) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::WriteError&gt; {
+    <span class="kw">fn </span>write_changes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _changeset: <span class="kw-2">&amp;</span>C) -&gt; anyhow::Result&lt;()&gt; {
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn </span>load_from_persistence(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;C&gt;, <span class="self">Self</span>::LoadError&gt; {
+    <span class="kw">fn </span>load_from_persistence(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;<span class="prelude-ty">Option</span>&lt;C&gt;&gt; {
         <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
     }
 }
