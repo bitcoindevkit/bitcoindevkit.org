@@ -98,7 +98,6 @@
 <a href="#98" id="98">98</a>
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
 </pre><pre class="rust"><code><span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">&quot;bdk_wallet_esplora_example&quot;</span>;
 <span class="kw">const </span>SEND_AMOUNT: u64 = <span class="number">1000</span>;
 <span class="kw">const </span>STOP_GAP: usize = <span class="number">5</span>;
@@ -137,7 +136,6 @@
     <span class="kw">let </span>client =
         esplora_client::Builder::new(<span class="string">&quot;https://blockstream.info/testnet/api&quot;</span>).build_blocking();
 
-    <span class="kw">let </span>prev_tip = wallet.latest_checkpoint();
     <span class="kw">let </span>keychain_spks = wallet
         .all_unbounded_spk_iters()
         .into_iter()
@@ -154,20 +152,20 @@
         })
         .collect();
 
-    <span class="kw">let </span>(<span class="kw-2">mut </span>update_graph, last_active_indices) =
-        client.full_scan(keychain_spks, STOP_GAP, PARALLEL_REQUESTS)<span class="question-mark">?</span>;
-
+    <span class="kw">let </span><span class="kw-2">mut </span>update = client.full_scan(
+        wallet.latest_checkpoint(),
+        keychain_spks,
+        STOP_GAP,
+        PARALLEL_REQUESTS,
+    )<span class="question-mark">?</span>;
     <span class="kw">let </span>now = std::time::UNIX_EPOCH.elapsed().unwrap().as_secs();
-    <span class="kw">let _ </span>= update_graph.update_last_seen_unconfirmed(now);
-    <span class="kw">let </span>missing_heights = update_graph.missing_heights(wallet.local_chain());
-    <span class="kw">let </span>chain_update = client.update_local_chain(prev_tip, missing_heights)<span class="question-mark">?</span>;
-    <span class="kw">let </span>update = Update {
-        last_active_indices,
-        graph: update_graph,
-        chain: <span class="prelude-val">Some</span>(chain_update),
-    };
+    <span class="kw">let _ </span>= update.tx_graph.update_last_seen_unconfirmed(now);
 
-    wallet.apply_update(update)<span class="question-mark">?</span>;
+    wallet.apply_update(Update {
+        last_active_indices: update.last_active_indices,
+        graph: update.tx_graph,
+        chain: <span class="prelude-val">Some</span>(update.local_chain),
+    })<span class="question-mark">?</span>;
     wallet.commit()<span class="question-mark">?</span>;
     <span class="macro">println!</span>();
 

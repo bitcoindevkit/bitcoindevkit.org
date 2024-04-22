@@ -834,6 +834,21 @@
 <a href="#834" id="834">834</a>
 <a href="#835" id="835">835</a>
 <a href="#836" id="836">836</a>
+<a href="#837" id="837">837</a>
+<a href="#838" id="838">838</a>
+<a href="#839" id="839">839</a>
+<a href="#840" id="840">840</a>
+<a href="#841" id="841">841</a>
+<a href="#842" id="842">842</a>
+<a href="#843" id="843">843</a>
+<a href="#844" id="844">844</a>
+<a href="#845" id="845">845</a>
+<a href="#846" id="846">846</a>
+<a href="#847" id="847">847</a>
+<a href="#848" id="848">848</a>
+<a href="#849" id="849">849</a>
+<a href="#850" id="850">850</a>
+<a href="#851" id="851">851</a>
 </pre><pre class="rust"><code><span class="doccomment">//! The [`LocalChain`] is a local implementation of [`ChainOracle`].
 
 </span><span class="kw">use </span>core::convert::Infallible;
@@ -932,16 +947,6 @@
             .expect(<span class="string">&quot;must construct checkpoint&quot;</span>)
     }
 
-    <span class="doccomment">/// Convenience method to convert the [`CheckPoint`] into an [`Update`].
-    ///
-    /// For more information, refer to [`Update`].
-    </span><span class="kw">pub fn </span>into_update(<span class="self">self</span>, introduce_older_blocks: bool) -&gt; Update {
-        Update {
-            tip: <span class="self">self</span>,
-            introduce_older_blocks,
-        }
-    }
-
     <span class="doccomment">/// Puts another checkpoint onto the linked list representing the blockchain.
     ///
     /// Returns an `Err(self)` if the block you are pushing on is not at a greater height that the one you
@@ -1023,6 +1028,82 @@
                 core::ops::Bound::Unbounded =&gt; <span class="bool-val">true</span>,
             })
     }
+
+    <span class="doccomment">/// Inserts `block_id` at its height within the chain.
+    ///
+    /// The effect of `insert` depends on whether a height already exists. If it doesn&#39;t the
+    /// `block_id` we inserted and all pre-existing blocks higher than it will be re-inserted after
+    /// it. If the height already existed and has a conflicting block hash then it will be purged
+    /// along with all block followin it. The returned chain will have a tip of the `block_id`
+    /// passed in. Of course, if the `block_id` was already present then this just returns `self`.
+    </span><span class="attr">#[must_use]
+    </span><span class="kw">pub fn </span>insert(<span class="self">self</span>, block_id: BlockId) -&gt; <span class="self">Self </span>{
+        <span class="macro">assert_ne!</span>(block_id.height, <span class="number">0</span>, <span class="string">&quot;cannot insert the genesis block&quot;</span>);
+
+        <span class="kw">let </span><span class="kw-2">mut </span>cp = <span class="self">self</span>.clone();
+        <span class="kw">let </span><span class="kw-2">mut </span>tail = <span class="macro">vec!</span>[];
+        <span class="kw">let </span>base = <span class="kw">loop </span>{
+            <span class="kw">if </span>cp.height() == block_id.height {
+                <span class="kw">if </span>cp.hash() == block_id.hash {
+                    <span class="kw">return </span><span class="self">self</span>;
+                }
+                <span class="comment">// if we have a conflict we just return the inserted block because the tail is by
+                // implication invalid.
+                </span>tail = <span class="macro">vec!</span>[];
+                <span class="kw">break </span>cp.prev().expect(<span class="string">&quot;can&#39;t be called on genesis block&quot;</span>);
+            }
+
+            <span class="kw">if </span>cp.height() &lt; block_id.height {
+                <span class="kw">break </span>cp;
+            }
+
+            tail.push(cp.block_id());
+            cp = cp.prev().expect(<span class="string">&quot;will break before genesis block&quot;</span>);
+        };
+
+        base.extend(core::iter::once(block_id).chain(tail.into_iter().rev()))
+            .expect(<span class="string">&quot;tail is in order&quot;</span>)
+    }
+
+    <span class="doccomment">/// Apply `changeset` to the checkpoint.
+    </span><span class="kw">fn </span>apply_changeset(<span class="kw-2">mut </span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>ChangeSet) -&gt; <span class="prelude-ty">Result</span>&lt;CheckPoint, MissingGenesisError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(start_height) = changeset.keys().next().cloned() {
+            <span class="comment">// changes after point of agreement
+            </span><span class="kw">let </span><span class="kw-2">mut </span>extension = BTreeMap::default();
+            <span class="comment">// point of agreement
+            </span><span class="kw">let </span><span class="kw-2">mut </span>base: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt; = <span class="prelude-val">None</span>;
+
+            <span class="kw">for </span>cp <span class="kw">in </span><span class="self">self</span>.iter() {
+                <span class="kw">if </span>cp.height() &gt;= start_height {
+                    extension.insert(cp.height(), cp.hash());
+                } <span class="kw">else </span>{
+                    base = <span class="prelude-val">Some</span>(cp);
+                    <span class="kw">break</span>;
+                }
+            }
+
+            <span class="kw">for </span>(<span class="kw-2">&amp;</span>height, <span class="kw-2">&amp;</span>hash) <span class="kw">in </span>changeset {
+                <span class="kw">match </span>hash {
+                    <span class="prelude-val">Some</span>(hash) =&gt; {
+                        extension.insert(height, hash);
+                    }
+                    <span class="prelude-val">None </span>=&gt; {
+                        extension.remove(<span class="kw-2">&amp;</span>height);
+                    }
+                };
+            }
+
+            <span class="kw">let </span>new_tip = <span class="kw">match </span>base {
+                <span class="prelude-val">Some</span>(base) =&gt; base
+                    .extend(extension.into_iter().map(BlockId::from))
+                    .expect(<span class="string">&quot;extension is strictly greater than base&quot;</span>),
+                <span class="prelude-val">None </span>=&gt; LocalChain::from_blocks(extension)<span class="question-mark">?</span>.tip(),
+            };
+            <span class="self">self </span>= new_tip;
+        }
+
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>)
+    }
 }
 
 <span class="doccomment">/// Iterates over checkpoints backwards.
@@ -1049,31 +1130,6 @@
             current: <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="number">0</span>),
         }
     }
-}
-
-<span class="doccomment">/// Used to update [`LocalChain`].
-///
-/// This is used as input for [`LocalChain::apply_update`]. It contains the update&#39;s chain `tip` and
-/// a flag `introduce_older_blocks` which signals whether this update intends to introduce missing
-/// blocks to the original chain.
-///
-/// Block-by-block syncing mechanisms would typically create updates that builds upon the previous
-/// tip. In this case, `introduce_older_blocks` would be `false`.
-///
-/// Script-pubkey based syncing mechanisms may not introduce transactions in a chronological order
-/// so some updates require introducing older blocks (to anchor older transactions). For
-/// script-pubkey based syncing, `introduce_older_blocks` would typically be `true`.
-</span><span class="attr">#[derive(Debug, Clone, PartialEq)]
-</span><span class="kw">pub struct </span>Update {
-    <span class="doccomment">/// The update chain&#39;s new tip.
-    </span><span class="kw">pub </span>tip: CheckPoint,
-
-    <span class="doccomment">/// Whether the update allows for introducing older blocks.
-    ///
-    /// Refer to [struct-level documentation] for more.
-    ///
-    /// [struct-level documentation]: Update
-    </span><span class="kw">pub </span>introduce_older_blocks: bool,
 }
 
 <span class="doccomment">/// This is a local implementation of [`ChainOracle`].
@@ -1183,36 +1239,22 @@
 
     <span class="doccomment">/// Applies the given `update` to the chain.
     ///
-    /// The method returns [`ChangeSet`] on success. This represents the applied changes to `self`.
+    /// The method returns [`ChangeSet`] on success. This represents the changes applied to `self`.
     ///
     /// There must be no ambiguity about which of the existing chain&#39;s blocks are still valid and
     /// which are now invalid. That is, the new chain must implicitly connect to a definite block in
     /// the existing chain and invalidate the block after it (if it exists) by including a block at
     /// the same height but with a different hash to explicitly exclude it as a connection point.
     ///
-    /// Additionally, an empty chain can be updated with any chain, and a chain with a single block
-    /// can have it&#39;s block invalidated by an update chain with a block at the same height but
-    /// different hash.
-    ///
     /// # Errors
     ///
     /// An error will occur if the update does not correctly connect with `self`.
     ///
-    /// Refer to [`Update`] for more about the update struct.
-    ///
     /// [module-level documentation]: crate::local_chain
-    </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: Update) -&gt; <span class="prelude-ty">Result</span>&lt;ChangeSet, CannotConnectError&gt; {
-        <span class="kw">let </span>changeset = merge_chains(
-            <span class="self">self</span>.tip.clone(),
-            update.tip.clone(),
-            update.introduce_older_blocks,
-        )<span class="question-mark">?</span>;
-        <span class="comment">// `._check_index_is_consistent_with_tip` and `._check_changeset_is_applied` is called in
-        // `.apply_changeset`
-        </span><span class="self">self</span>.apply_changeset(<span class="kw-2">&amp;</span>changeset)
-            .map_err(|<span class="kw">_</span>| CannotConnectError {
-                try_include_height: <span class="number">0</span>,
-            })<span class="question-mark">?</span>;
+    </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: CheckPoint) -&gt; <span class="prelude-ty">Result</span>&lt;ChangeSet, CannotConnectError&gt; {
+        <span class="kw">let </span>(new_tip, changeset) = merge_chains(<span class="self">self</span>.tip.clone(), update)<span class="question-mark">?</span>;
+        <span class="self">self</span>.tip = new_tip;
+        <span class="self">self</span>._check_changeset_is_applied(<span class="kw-2">&amp;</span>changeset);
         <span class="prelude-val">Ok</span>(changeset)
     }
 
@@ -1264,11 +1306,8 @@
             conn =&gt; <span class="prelude-val">Some</span>(conn),
         };
 
-        <span class="kw">let </span>update = Update {
-            tip: CheckPoint::from_block_ids([conn, prev, <span class="prelude-val">Some</span>(this)].into_iter().flatten())
-                .expect(<span class="string">&quot;block ids must be in order&quot;</span>),
-            introduce_older_blocks: <span class="bool-val">false</span>,
-        };
+        <span class="kw">let </span>update = CheckPoint::from_block_ids([conn, prev, <span class="prelude-val">Some</span>(this)].into_iter().flatten())
+            .expect(<span class="string">&quot;block ids must be in order&quot;</span>);
 
         <span class="self">self</span>.apply_update(update)
             .map_err(ApplyHeaderError::CannotConnect)
@@ -1307,43 +1346,10 @@
 
     <span class="doccomment">/// Apply the given `changeset`.
     </span><span class="kw">pub fn </span>apply_changeset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>ChangeSet) -&gt; <span class="prelude-ty">Result</span>&lt;(), MissingGenesisError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(start_height) = changeset.keys().next().cloned() {
-            <span class="comment">// changes after point of agreement
-            </span><span class="kw">let </span><span class="kw-2">mut </span>extension = BTreeMap::default();
-            <span class="comment">// point of agreement
-            </span><span class="kw">let </span><span class="kw-2">mut </span>base: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt; = <span class="prelude-val">None</span>;
-
-            <span class="kw">for </span>cp <span class="kw">in </span><span class="self">self</span>.iter_checkpoints() {
-                <span class="kw">if </span>cp.height() &gt;= start_height {
-                    extension.insert(cp.height(), cp.hash());
-                } <span class="kw">else </span>{
-                    base = <span class="prelude-val">Some</span>(cp);
-                    <span class="kw">break</span>;
-                }
-            }
-
-            <span class="kw">for </span>(<span class="kw-2">&amp;</span>height, <span class="kw-2">&amp;</span>hash) <span class="kw">in </span>changeset {
-                <span class="kw">match </span>hash {
-                    <span class="prelude-val">Some</span>(hash) =&gt; {
-                        extension.insert(height, hash);
-                    }
-                    <span class="prelude-val">None </span>=&gt; {
-                        extension.remove(<span class="kw-2">&amp;</span>height);
-                    }
-                };
-            }
-
-            <span class="kw">let </span>new_tip = <span class="kw">match </span>base {
-                <span class="prelude-val">Some</span>(base) =&gt; base
-                    .extend(extension.into_iter().map(BlockId::from))
-                    .expect(<span class="string">&quot;extension is strictly greater than base&quot;</span>),
-                <span class="prelude-val">None </span>=&gt; LocalChain::from_blocks(extension)<span class="question-mark">?</span>.tip(),
-            };
-            <span class="self">self</span>.tip = new_tip;
-
-            <span class="macro">debug_assert!</span>(<span class="self">self</span>._check_changeset_is_applied(changeset));
-        }
-
+        <span class="kw">let </span>old_tip = <span class="self">self</span>.tip.clone();
+        <span class="kw">let </span>new_tip = old_tip.apply_changeset(changeset)<span class="question-mark">?</span>;
+        <span class="self">self</span>.tip = new_tip;
+        <span class="macro">debug_assert!</span>(<span class="self">self</span>._check_changeset_is_applied(changeset));
         <span class="prelude-val">Ok</span>(())
     }
 
@@ -1566,14 +1572,17 @@
 <span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>ApplyHeaderError {}
 
-<span class="kw">fn </span>merge_chains(
+<span class="doccomment">/// Applies `update_tip` onto `original_tip`.
+///
+/// On success, a tuple is returned `(changeset, can_replace)`. If `can_replace` is true, then the
+/// `update_tip` can replace the `original_tip`.
+</span><span class="kw">fn </span>merge_chains(
     original_tip: CheckPoint,
     update_tip: CheckPoint,
-    introduce_older_blocks: bool,
-) -&gt; <span class="prelude-ty">Result</span>&lt;ChangeSet, CannotConnectError&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;(CheckPoint, ChangeSet), CannotConnectError&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
-    <span class="kw">let </span><span class="kw-2">mut </span>orig = original_tip.into_iter();
-    <span class="kw">let </span><span class="kw-2">mut </span>update = update_tip.into_iter();
+    <span class="kw">let </span><span class="kw-2">mut </span>orig = original_tip.iter();
+    <span class="kw">let </span><span class="kw-2">mut </span>update = update_tip.iter();
     <span class="kw">let </span><span class="kw-2">mut </span>curr_orig = <span class="prelude-val">None</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>curr_update = <span class="prelude-val">None</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>prev_orig: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt; = <span class="prelude-val">None</span>;
@@ -1581,6 +1590,12 @@
     <span class="kw">let </span><span class="kw-2">mut </span>point_of_agreement_found = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>prev_orig_was_invalidated = <span class="bool-val">false</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>potentially_invalidated_heights = <span class="macro">vec!</span>[];
+
+    <span class="comment">// If we can, we want to return the update tip as the new tip because this allows checkpoints
+    // in multiple locations to keep the same `Arc` pointers when they are being updated from each
+    // other using this function. We can do this as long as long as the update contains every
+    // block&#39;s height of the original chain.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>is_update_height_superset_of_original = <span class="bool-val">true</span>;
 
     <span class="comment">// To find the difference between the new chain and the original we iterate over both of them
     // from the tip backwards in tandem. We always dealing with the highest one from either chain
@@ -1607,6 +1622,8 @@
                 prev_orig_was_invalidated = <span class="bool-val">false</span>;
                 prev_orig = curr_orig.take();
 
+                is_update_height_superset_of_original = <span class="bool-val">false</span>;
+
                 <span class="comment">// OPTIMIZATION: we have run out of update blocks so we don&#39;t need to continue
                 // iterating because there&#39;s no possibility of adding anything to changeset.
                 </span><span class="kw">if </span>u.is_none() {
@@ -1629,12 +1646,20 @@
                     }
                     point_of_agreement_found = <span class="bool-val">true</span>;
                     prev_orig_was_invalidated = <span class="bool-val">false</span>;
-                    <span class="comment">// OPTIMIZATION 1 -- If we know that older blocks cannot be introduced without
-                    // invalidation, we can break after finding the point of agreement.
-                    // OPTIMIZATION 2 -- if we have the same underlying pointer at this point, we
+                    <span class="comment">// OPTIMIZATION 2 -- if we have the same underlying pointer at this point, we
                     // can guarantee that no older blocks are introduced.
-                    </span><span class="kw">if </span>!introduce_older_blocks || Arc::as_ptr(<span class="kw-2">&amp;</span>o.<span class="number">0</span>) == Arc::as_ptr(<span class="kw-2">&amp;</span>u.<span class="number">0</span>) {
-                        <span class="kw">return </span><span class="prelude-val">Ok</span>(changeset);
+                    </span><span class="kw">if </span>Arc::as_ptr(<span class="kw-2">&amp;</span>o.<span class="number">0</span>) == Arc::as_ptr(<span class="kw-2">&amp;</span>u.<span class="number">0</span>) {
+                        <span class="kw">if </span>is_update_height_superset_of_original {
+                            <span class="kw">return </span><span class="prelude-val">Ok</span>((update_tip, changeset));
+                        } <span class="kw">else </span>{
+                            <span class="kw">let </span>new_tip =
+                                original_tip.apply_changeset(<span class="kw-2">&amp;</span>changeset).map_err(|<span class="kw">_</span>| {
+                                    CannotConnectError {
+                                        try_include_height: <span class="number">0</span>,
+                                    }
+                                })<span class="question-mark">?</span>;
+                            <span class="kw">return </span><span class="prelude-val">Ok</span>((new_tip, changeset));
+                        }
                     }
                 } <span class="kw">else </span>{
                     <span class="comment">// We have an invalidation height so we set the height to the updated hash and
@@ -1668,7 +1693,12 @@
         }
     }
 
-    <span class="prelude-val">Ok</span>(changeset)
+    <span class="kw">let </span>new_tip = original_tip
+        .apply_changeset(<span class="kw-2">&amp;</span>changeset)
+        .map_err(|<span class="kw">_</span>| CannotConnectError {
+            try_include_height: <span class="number">0</span>,
+        })<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>((new_tip, changeset))
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>

@@ -354,10 +354,8 @@
 <a href="#354" id="354">354</a>
 <a href="#355" id="355">355</a>
 <a href="#356" id="356">356</a>
-<a href="#357" id="357">357</a>
-<a href="#358" id="358">358</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{
-    collections::{BTreeMap, BTreeSet},
+    collections::BTreeMap,
     io::{<span class="self">self</span>, Write},
     sync::Mutex,
 };
@@ -418,6 +416,7 @@
         </span>esplora_args: EsploraArgs,
     },
 }
+
 <span class="kw">impl </span>EsploraCommands {
     <span class="kw">fn </span>esplora_args(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; EsploraArgs {
         <span class="kw">match </span><span class="self">self </span>{
@@ -507,20 +506,24 @@
     };
 
     <span class="kw">let </span>client = esplora_cmd.esplora_args().client(args.network)<span class="question-mark">?</span>;
-    <span class="comment">// Prepare the `IndexedTxGraph` update based on whether we are scanning or syncing.
+    <span class="comment">// Prepare the `IndexedTxGraph` and `LocalChain` updates based on whether we are scanning or
+    // syncing.
+    //
     // Scanning: We are iterating through spks of all keychains and scanning for transactions for
     //   each spk. We start with the lowest derivation index spk and stop scanning after `stop_gap`
     //   number of consecutive spks have no transaction history. A Scan is done in situations of
     //   wallet restoration. It is a special case. Applications should use &quot;sync&quot; style updates
     //   after an initial scan.
+    //
     // Syncing: We only check for specified spks, utxos and txids to update their confirmation
     //   status or fetch missing transactions.
-    </span><span class="kw">let </span>indexed_tx_graph_changeset = <span class="kw">match </span><span class="kw-2">&amp;</span>esplora_cmd {
+    </span><span class="kw">let </span>(local_chain_changeset, indexed_tx_graph_changeset) = <span class="kw">match </span><span class="kw-2">&amp;</span>esplora_cmd {
         EsploraCommands::Scan {
             stop_gap,
             scan_options,
             ..
         } =&gt; {
+            <span class="kw">let </span>local_tip = chain.lock().expect(<span class="string">&quot;mutex must not be poisoned&quot;</span>).tip();
             <span class="kw">let </span>keychain_spks = graph
                 .lock()
                 .expect(<span class="string">&quot;mutex must not be poisoned&quot;</span>)
@@ -547,23 +550,33 @@
             // is reached. It returns a `TxGraph` update (`graph_update`) and a structure that
             // represents the last active spk derivation indices of keychains
             // (`keychain_indices_update`).
-            </span><span class="kw">let </span>(<span class="kw-2">mut </span>graph_update, last_active_indices) = client
-                .full_scan(keychain_spks, <span class="kw-2">*</span>stop_gap, scan_options.parallel_requests)
+            </span><span class="kw">let </span><span class="kw-2">mut </span>update = client
+                .full_scan(
+                    local_tip,
+                    keychain_spks,
+                    <span class="kw-2">*</span>stop_gap,
+                    scan_options.parallel_requests,
+                )
                 .context(<span class="string">&quot;scanning for transactions&quot;</span>)<span class="question-mark">?</span>;
 
             <span class="comment">// We want to keep track of the latest time a transaction was seen unconfirmed.
             </span><span class="kw">let </span>now = std::time::UNIX_EPOCH.elapsed().unwrap().as_secs();
-            <span class="kw">let _ </span>= graph_update.update_last_seen_unconfirmed(now);
+            <span class="kw">let _ </span>= update.tx_graph.update_last_seen_unconfirmed(now);
 
             <span class="kw">let </span><span class="kw-2">mut </span>graph = graph.lock().expect(<span class="string">&quot;mutex must not be poisoned&quot;</span>);
+            <span class="kw">let </span><span class="kw-2">mut </span>chain = chain.lock().expect(<span class="string">&quot;mutex must not be poisoned&quot;</span>);
             <span class="comment">// Because we did a stop gap based scan we are likely to have some updates to our
             // deriviation indices. Usually before a scan you are on a fresh wallet with no
             // addresses derived so we need to derive up to last active addresses the scan found
             // before adding the transactions.
-            </span><span class="kw">let </span>(<span class="kw">_</span>, index_changeset) = graph.index.reveal_to_target_multi(<span class="kw-2">&amp;</span>last_active_indices);
-            <span class="kw">let </span><span class="kw-2">mut </span>indexed_tx_graph_changeset = graph.apply_update(graph_update);
-            indexed_tx_graph_changeset.append(index_changeset.into());
-            indexed_tx_graph_changeset
+            </span>(chain.apply_update(update.local_chain)<span class="question-mark">?</span>, {
+                <span class="kw">let </span>(<span class="kw">_</span>, index_changeset) = graph
+                    .index
+                    .reveal_to_target_multi(<span class="kw-2">&amp;</span>update.last_active_indices);
+                <span class="kw">let </span><span class="kw-2">mut </span>indexed_tx_graph_changeset = graph.apply_update(update.tx_graph);
+                indexed_tx_graph_changeset.append(index_changeset.into());
+                indexed_tx_graph_changeset
+            })
         }
         EsploraCommands::Sync {
             <span class="kw-2">mut </span>unused_spks,
@@ -589,12 +602,13 @@
             <span class="kw">let </span><span class="kw-2">mut </span>outpoints: Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = OutPoint&gt;&gt; = Box::new(core::iter::empty());
             <span class="kw">let </span><span class="kw-2">mut </span>txids: Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = Txid&gt;&gt; = Box::new(core::iter::empty());
 
+            <span class="kw">let </span>local_tip = chain.lock().expect(<span class="string">&quot;mutex must not be poisoned&quot;</span>).tip();
+
             <span class="comment">// Get a short lock on the structures to get spks, utxos, and txs that we are interested
             // in.
             </span>{
                 <span class="kw">let </span>graph = graph.lock().unwrap();
                 <span class="kw">let </span>chain = chain.lock().unwrap();
-                <span class="kw">let </span>chain_tip = chain.tip().block_id();
 
                 <span class="kw">if </span><span class="kw-2">*</span>all_spks {
                     <span class="kw">let </span>all_spks = graph
@@ -634,7 +648,7 @@
                     </span><span class="kw">let </span>init_outpoints = graph.index.outpoints().iter().cloned();
                     <span class="kw">let </span>utxos = graph
                         .graph()
-                        .filter_chain_unspents(<span class="kw-2">&amp;*</span>chain, chain_tip, init_outpoints)
+                        .filter_chain_unspents(<span class="kw-2">&amp;*</span>chain, local_tip.block_id(), init_outpoints)
                         .map(|(<span class="kw">_</span>, utxo)| utxo)
                         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
                     outpoints = Box::new(
@@ -657,7 +671,7 @@
                     // `EsploraExt::update_tx_graph_without_keychain`.
                     </span><span class="kw">let </span>unconfirmed_txids = graph
                         .graph()
-                        .list_chain_txs(<span class="kw-2">&amp;*</span>chain, chain_tip)
+                        .list_chain_txs(<span class="kw-2">&amp;*</span>chain, local_tip.block_id())
                         .filter(|canonical_tx| !canonical_tx.chain_position.is_confirmed())
                         .map(|canonical_tx| canonical_tx.tx_node.txid)
                         .collect::&lt;Vec&lt;Txid&gt;&gt;();
@@ -669,48 +683,30 @@
                 }
             }
 
-            <span class="kw">let </span><span class="kw-2">mut </span>graph_update =
-                client.sync(spks, txids, outpoints, scan_options.parallel_requests)<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>update = client.sync(
+                local_tip,
+                spks,
+                txids,
+                outpoints,
+                scan_options.parallel_requests,
+            )<span class="question-mark">?</span>;
 
             <span class="comment">// Update last seen unconfirmed
             </span><span class="kw">let </span>now = std::time::UNIX_EPOCH.elapsed().unwrap().as_secs();
-            <span class="kw">let _ </span>= graph_update.update_last_seen_unconfirmed(now);
+            <span class="kw">let _ </span>= update.tx_graph.update_last_seen_unconfirmed(now);
 
-            graph.lock().unwrap().apply_update(graph_update)
+            (
+                chain.lock().unwrap().apply_update(update.local_chain)<span class="question-mark">?</span>,
+                graph.lock().unwrap().apply_update(update.tx_graph),
+            )
         }
     };
 
     <span class="macro">println!</span>();
 
-    <span class="comment">// Now that we&#39;re done updating the `IndexedTxGraph`, it&#39;s time to update the `LocalChain`! We
-    // want the `LocalChain` to have data about all the anchors in the `TxGraph` - for this reason,
-    // we want retrieve the blocks at the heights of the newly added anchors that are missing from
-    // our view of the chain.
-    </span><span class="kw">let </span>(missing_block_heights, tip) = {
-        <span class="kw">let </span>chain = <span class="kw-2">&amp;*</span>chain.lock().unwrap();
-        <span class="kw">let </span>missing_block_heights = indexed_tx_graph_changeset
-            .graph
-            .missing_heights_from(chain)
-            .collect::&lt;BTreeSet&lt;<span class="kw">_</span>&gt;&gt;();
-        <span class="kw">let </span>tip = chain.tip();
-        (missing_block_heights, tip)
-    };
-
-    <span class="macro">println!</span>(<span class="string">&quot;prev tip: {}&quot;</span>, tip.height());
-    <span class="macro">println!</span>(<span class="string">&quot;missing block heights: {:?}&quot;</span>, missing_block_heights);
-
-    <span class="comment">// Here, we actually fetch the missing blocks and create a `local_chain::Update`.
-    </span><span class="kw">let </span>chain_changeset = {
-        <span class="kw">let </span>chain_update = client
-            .update_local_chain(tip, missing_block_heights)
-            .context(<span class="string">&quot;scanning for blocks&quot;</span>)<span class="question-mark">?</span>;
-        <span class="macro">println!</span>(<span class="string">&quot;new tip: {}&quot;</span>, chain_update.tip.height());
-        chain.lock().unwrap().apply_update(chain_update)<span class="question-mark">?
-    </span>};
-
     <span class="comment">// We persist the changes
     </span><span class="kw">let </span><span class="kw-2">mut </span>db = db.lock().unwrap();
-    db.stage((chain_changeset, indexed_tx_graph_changeset));
+    db.stage((local_chain_changeset, indexed_tx_graph_changeset));
     db.commit()<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(())
 }
