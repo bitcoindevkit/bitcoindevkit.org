@@ -36,6 +36,13 @@ cargo install --git https://github.com/bitcoindevkit/bdk-cli --features=esplora-
 cargo install --git https://github.com/bitcoindevkit/bdk-cli
 ```
 
+For Windows users, the default SQLite database requires extensive configuration and `bdk-cli` will not build properly if SQLite is unconfigured. To proceed with the installation using `sled` instead, run:
+
+```bash
+# disable sqlite and use sled
+cargo install bdk-cli --no-default-features --features=key-value-db,esplora-ureq,compiler
+```
+
 This command may take a while to finish, since it will fetch and compile all the dependencies and the `bdk` library itself.
 
 Once it's done, you can check if everything went fine by running `bdk-cli --help` which should print something like this:
