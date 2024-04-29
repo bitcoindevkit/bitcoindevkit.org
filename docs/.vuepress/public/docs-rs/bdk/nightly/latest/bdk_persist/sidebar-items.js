@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Persist","`Persist` wraps a [`PersistBackend`] to create a convenient staging area for changes (`C`) before they are persisted."]],"trait":[["PersistBackend","A persistence backend for [`Persist`]."]]};
