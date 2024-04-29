@@ -462,13 +462,10 @@
 <a href="#462" id="462">462</a>
 <a href="#463" id="463">463</a>
 <a href="#464" id="464">464</a>
-<a href="#465" id="465">465</a>
-<a href="#466" id="466">466</a>
-<a href="#467" id="467">467</a>
-<a href="#468" id="468">468</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{bincode_options, EntryIter, FileError, IterError};
 <span class="kw">use </span>anyhow::anyhow;
-<span class="kw">use </span>bdk_chain::{Append, PersistBackend};
+<span class="kw">use </span>bdk_chain::Append;
+<span class="kw">use </span>bdk_persist::PersistBackend;
 <span class="kw">use </span>bincode::Options;
 <span class="kw">use </span>std::{
     fmt::{<span class="self">self</span>, Debug},
@@ -479,8 +476,6 @@
 };
 
 <span class="doccomment">/// Persists an append-only list of changesets (`C`) to a single file.
-///
-/// The changesets are the results of altering a tracker implementation (`T`).
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>Store&lt;C&gt;
 <span class="kw">where
@@ -620,7 +615,7 @@
     ///
     /// You should usually check the error. In many applications, it may make sense to do a full
     /// wallet scan with a stop-gap after getting an error, since it is likely that one of the
-    /// changesets it was unable to read changed the derivation indices of the tracker.
+    /// changesets was unable to read changes of the derivation indices of a keychain.
     ///
     /// **WARNING**: This method changes the write position of the underlying file. The next
     /// changeset will be written over the erroring entry (or the end of the file if none existed).
@@ -707,9 +702,6 @@
         [<span class="number">98</span>, <span class="number">100</span>, <span class="number">107</span>, <span class="number">102</span>, <span class="number">115</span>, <span class="number">49</span>, <span class="number">49</span>, <span class="number">49</span>, <span class="number">49</span>, <span class="number">49</span>, <span class="number">49</span>, <span class="number">49</span>];
 
     <span class="kw">type </span>TestChangeSet = BTreeSet&lt;String&gt;;
-
-    <span class="attr">#[derive(Debug)]
-    </span><span class="kw">struct </span>TestTracker;
 
     <span class="doccomment">/// Check behavior of [`Store::create_new`] and [`Store::open`].
     </span><span class="attr">#[test]
