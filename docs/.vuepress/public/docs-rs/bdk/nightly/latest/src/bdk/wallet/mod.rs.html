@@ -2512,6 +2512,53 @@
 <a href="#2511" id="2511">2511</a>
 <a href="#2512" id="2512">2512</a>
 <a href="#2513" id="2513">2513</a>
+<a href="#2514" id="2514">2514</a>
+<a href="#2515" id="2515">2515</a>
+<a href="#2516" id="2516">2516</a>
+<a href="#2517" id="2517">2517</a>
+<a href="#2518" id="2518">2518</a>
+<a href="#2519" id="2519">2519</a>
+<a href="#2520" id="2520">2520</a>
+<a href="#2521" id="2521">2521</a>
+<a href="#2522" id="2522">2522</a>
+<a href="#2523" id="2523">2523</a>
+<a href="#2524" id="2524">2524</a>
+<a href="#2525" id="2525">2525</a>
+<a href="#2526" id="2526">2526</a>
+<a href="#2527" id="2527">2527</a>
+<a href="#2528" id="2528">2528</a>
+<a href="#2529" id="2529">2529</a>
+<a href="#2530" id="2530">2530</a>
+<a href="#2531" id="2531">2531</a>
+<a href="#2532" id="2532">2532</a>
+<a href="#2533" id="2533">2533</a>
+<a href="#2534" id="2534">2534</a>
+<a href="#2535" id="2535">2535</a>
+<a href="#2536" id="2536">2536</a>
+<a href="#2537" id="2537">2537</a>
+<a href="#2538" id="2538">2538</a>
+<a href="#2539" id="2539">2539</a>
+<a href="#2540" id="2540">2540</a>
+<a href="#2541" id="2541">2541</a>
+<a href="#2542" id="2542">2542</a>
+<a href="#2543" id="2543">2543</a>
+<a href="#2544" id="2544">2544</a>
+<a href="#2545" id="2545">2545</a>
+<a href="#2546" id="2546">2546</a>
+<a href="#2547" id="2547">2547</a>
+<a href="#2548" id="2548">2548</a>
+<a href="#2549" id="2549">2549</a>
+<a href="#2550" id="2550">2550</a>
+<a href="#2551" id="2551">2551</a>
+<a href="#2552" id="2552">2552</a>
+<a href="#2553" id="2553">2553</a>
+<a href="#2554" id="2554">2554</a>
+<a href="#2555" id="2555">2555</a>
+<a href="#2556" id="2556">2556</a>
+<a href="#2557" id="2557">2557</a>
+<a href="#2558" id="2558">2558</a>
+<a href="#2559" id="2559">2559</a>
+<a href="#2560" id="2560">2560</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2540,6 +2587,7 @@
     local_chain::{
         <span class="self">self</span>, ApplyHeaderError, CannotConnectError, CheckPoint, CheckPointIter, LocalChain,
     },
+    spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult},
     tx_graph::{CanonicalTx, TxGraph},
     Append, BlockId, ChainPosition, ConfirmationTime, ConfirmationTimeHeightAnchor, FullTxOut,
     IndexedTxGraph,
@@ -2623,6 +2671,26 @@
     ///
     /// [`LocalChain`]: local_chain::LocalChain
     </span><span class="kw">pub </span>chain: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
+}
+
+<span class="kw">impl </span>From&lt;FullScanResult&lt;KeychainKind&gt;&gt; <span class="kw">for </span>Update {
+    <span class="kw">fn </span>from(value: FullScanResult&lt;KeychainKind&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            last_active_indices: value.last_active_indices,
+            graph: value.graph_update,
+            chain: <span class="prelude-val">Some</span>(value.chain_update),
+        }
+    }
+}
+
+<span class="kw">impl </span>From&lt;SyncResult&gt; <span class="kw">for </span>Update {
+    <span class="kw">fn </span>from(value: SyncResult) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            last_active_indices: BTreeMap::new(),
+            graph: value.graph_update,
+            chain: <span class="prelude-val">Some</span>(value.chain_update),
+        }
+    }
 }
 
 <span class="doccomment">/// The changes made to a wallet by applying an [`Update`].
@@ -4777,7 +4845,8 @@
     /// transactions related to your wallet into it.
     ///
     /// [`commit`]: Self::commit
-    </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: Update) -&gt; <span class="prelude-ty">Result</span>&lt;(), CannotConnectError&gt; {
+    </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: <span class="kw">impl </span>Into&lt;Update&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), CannotConnectError&gt; {
+        <span class="kw">let </span>update = update.into();
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = <span class="kw">match </span>update.chain {
             <span class="prelude-val">Some</span>(chain_update) =&gt; ChangeSet::from(<span class="self">self</span>.chain.apply_update(chain_update)<span class="question-mark">?</span>),
             <span class="prelude-val">None </span>=&gt; ChangeSet::default(),
@@ -4899,6 +4968,31 @@
             </span>.indexed_graph
             .batch_insert_relevant_unconfirmed(unconfirmed_txs);
         <span class="self">self</span>.persist.stage(ChangeSet::from(indexed_graph_changeset));
+    }
+}
+
+<span class="doccomment">/// Methods to construct sync/full-scan requests for spk-based chain sources.
+</span><span class="kw">impl </span>Wallet {
+    <span class="doccomment">/// Create a partial [`SyncRequest`] for this wallet for all revealed spks.
+    ///
+    /// This is the first step when performing a spk-based wallet partial sync, the returned
+    /// [`SyncRequest`] collects all revealed script pubkeys from the wallet keychain needed to
+    /// start a blockchain sync with a spk based blockchain client.
+    </span><span class="kw">pub fn </span>start_sync_with_revealed_spks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SyncRequest {
+        SyncRequest::from_chain_tip(<span class="self">self</span>.chain.tip())
+            .populate_with_revealed_spks(<span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index, ..)
+    }
+
+    <span class="doccomment">/// Create a [`FullScanRequest] for this wallet.
+    ///
+    /// This is the first step when performing a spk-based wallet full scan, the returned
+    /// [`FullScanRequest] collects iterators for the wallet&#39;s keychain script pub keys needed to
+    /// start a blockchain full scan with a spk based blockchain client.
+    ///
+    /// This operation is generally only used when importing or restoring a previously used wallet
+    /// in which the list of used scripts is not known.
+    </span><span class="kw">pub fn </span>start_full_scan(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FullScanRequest&lt;KeychainKind&gt; {
+        FullScanRequest::from_keychain_txout_index(<span class="self">self</span>.chain.tip(), <span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index)
     }
 }
 

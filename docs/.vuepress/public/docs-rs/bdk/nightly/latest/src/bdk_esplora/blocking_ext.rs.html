@@ -791,18 +791,12 @@
 <a href="#791" id="791">791</a>
 <a href="#792" id="792">792</a>
 <a href="#793" id="793">793</a>
-<a href="#794" id="794">794</a>
-<a href="#795" id="795">795</a>
-<a href="#796" id="796">796</a>
-<a href="#797" id="797">797</a>
-<a href="#798" id="798">798</a>
-<a href="#799" id="799">799</a>
-<a href="#800" id="800">800</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeSet;
 <span class="kw">use </span>std::thread::JoinHandle;
 <span class="kw">use </span>std::usize;
 
 <span class="kw">use </span>bdk_chain::collections::BTreeMap;
+<span class="kw">use </span>bdk_chain::spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult};
 <span class="kw">use </span>bdk_chain::Anchor;
 <span class="kw">use </span>bdk_chain::{
     bitcoin::{Amount, BlockHash, OutPoint, ScriptBuf, TxOut, Txid},
@@ -812,8 +806,6 @@
 <span class="kw">use </span>esplora_client::TxStatus;
 
 <span class="kw">use </span><span class="kw">crate</span>::anchor_from_status;
-<span class="kw">use </span><span class="kw">crate</span>::FullScanUpdate;
-<span class="kw">use </span><span class="kw">crate</span>::SyncUpdate;
 
 <span class="doccomment">/// [`esplora_client::Error`]
 </span><span class="kw">pub type </span>Error = Box&lt;esplora_client::Error&gt;;
@@ -850,11 +842,10 @@
     /// [`LocalChain::tip`]: bdk_chain::local_chain::LocalChain::tip
     </span><span class="kw">fn </span>full_scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        local_tip: CheckPoint,
-        keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, ScriptBuf)&gt;&gt;,
+        request: FullScanRequest&lt;K&gt;,
         stop_gap: usize,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanUpdate&lt;K&gt;, Error&gt;;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanResult&lt;K&gt;, Error&gt;;
 
     <span class="doccomment">/// Sync a set of scripts with the blockchain (via an Esplora client) for the data
     /// specified and return a [`TxGraph`].
@@ -870,59 +861,54 @@
     ///
     /// [`LocalChain::tip`]: bdk_chain::local_chain::LocalChain::tip
     /// [`full_scan`]: EsploraExt::full_scan
-    </span><span class="kw">fn </span>sync(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        local_tip: CheckPoint,
-        misc_spks: <span class="kw">impl </span>IntoIterator&lt;Item = ScriptBuf&gt;,
-        txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
-        outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
-        parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;SyncUpdate, Error&gt;;
+    </span><span class="kw">fn </span>sync(<span class="kw-2">&amp;</span><span class="self">self</span>, request: SyncRequest, parallel_requests: usize) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResult, Error&gt;;
 }
 
 <span class="kw">impl </span>EsploraExt <span class="kw">for </span>esplora_client::BlockingClient {
     <span class="kw">fn </span>full_scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        local_tip: CheckPoint,
-        keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = (u32, ScriptBuf)&gt;&gt;,
+        request: FullScanRequest&lt;K&gt;,
         stop_gap: usize,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanUpdate&lt;K&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanResult&lt;K&gt;, Error&gt; {
         <span class="kw">let </span>latest_blocks = fetch_latest_blocks(<span class="self">self</span>)<span class="question-mark">?</span>;
-        <span class="kw">let </span>(tx_graph, last_active_indices) = full_scan_for_index_and_graph_blocking(
+        <span class="kw">let </span>(graph_update, last_active_indices) = full_scan_for_index_and_graph_blocking(
             <span class="self">self</span>,
-            keychain_spks,
+            request.spks_by_keychain,
             stop_gap,
             parallel_requests,
         )<span class="question-mark">?</span>;
-        <span class="kw">let </span>local_chain = chain_update(<span class="self">self</span>, <span class="kw-2">&amp;</span>latest_blocks, <span class="kw-2">&amp;</span>local_tip, tx_graph.all_anchors())<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(FullScanUpdate {
-            local_chain,
-            tx_graph,
+        <span class="kw">let </span>chain_update = chain_update(
+            <span class="self">self</span>,
+            <span class="kw-2">&amp;</span>latest_blocks,
+            <span class="kw-2">&amp;</span>request.chain_tip,
+            graph_update.all_anchors(),
+        )<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(FullScanResult {
+            chain_update,
+            graph_update,
             last_active_indices,
         })
     }
 
-    <span class="kw">fn </span>sync(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        local_tip: CheckPoint,
-        misc_spks: <span class="kw">impl </span>IntoIterator&lt;Item = ScriptBuf&gt;,
-        txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
-        outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
-        parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;SyncUpdate, Error&gt; {
+    <span class="kw">fn </span>sync(<span class="kw-2">&amp;</span><span class="self">self</span>, request: SyncRequest, parallel_requests: usize) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResult, Error&gt; {
         <span class="kw">let </span>latest_blocks = fetch_latest_blocks(<span class="self">self</span>)<span class="question-mark">?</span>;
-        <span class="kw">let </span>tx_graph = sync_for_index_and_graph_blocking(
+        <span class="kw">let </span>graph_update = sync_for_index_and_graph_blocking(
             <span class="self">self</span>,
-            misc_spks,
-            txids,
-            outpoints,
+            request.spks,
+            request.txids,
+            request.outpoints,
             parallel_requests,
         )<span class="question-mark">?</span>;
-        <span class="kw">let </span>local_chain = chain_update(<span class="self">self</span>, <span class="kw-2">&amp;</span>latest_blocks, <span class="kw-2">&amp;</span>local_tip, tx_graph.all_anchors())<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(SyncUpdate {
-            local_chain,
-            tx_graph,
+        <span class="kw">let </span>chain_update = chain_update(
+            <span class="self">self</span>,
+            <span class="kw-2">&amp;</span>latest_blocks,
+            <span class="kw-2">&amp;</span>request.chain_tip,
+            graph_update.all_anchors(),
+        )<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(SyncResult {
+            chain_update,
+            graph_update,
         })
     }
 }
