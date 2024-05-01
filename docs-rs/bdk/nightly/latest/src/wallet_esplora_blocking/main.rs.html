@@ -83,31 +83,15 @@
 <a href="#83" id="83">83</a>
 <a href="#84" id="84">84</a>
 <a href="#85" id="85">85</a>
-<a href="#86" id="86">86</a>
-<a href="#87" id="87">87</a>
-<a href="#88" id="88">88</a>
-<a href="#89" id="89">89</a>
-<a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
-<a href="#92" id="92">92</a>
-<a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
-<a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
 </pre><pre class="rust"><code><span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">&quot;bdk_wallet_esplora_example&quot;</span>;
 <span class="kw">const </span>SEND_AMOUNT: u64 = <span class="number">1000</span>;
 <span class="kw">const </span>STOP_GAP: usize = <span class="number">5</span>;
 <span class="kw">const </span>PARALLEL_REQUESTS: usize = <span class="number">1</span>;
 
-<span class="kw">use </span>std::{io::Write, str::FromStr};
+<span class="kw">use </span>std::{collections::BTreeSet, io::Write, str::FromStr};
 
 <span class="kw">use </span>bdk::{
     bitcoin::{Address, Network},
-    wallet::Update,
     KeychainKind, SignOptions, Wallet,
 };
 <span class="kw">use </span>bdk_esplora::{esplora_client, EsploraExt};
@@ -136,36 +120,22 @@
     <span class="kw">let </span>client =
         esplora_client::Builder::new(<span class="string">&quot;https://blockstream.info/testnet/api&quot;</span>).build_blocking();
 
-    <span class="kw">let </span>keychain_spks = wallet
-        .all_unbounded_spk_iters()
-        .into_iter()
-        .map(|(k, k_spks)| {
-            <span class="kw">let </span><span class="kw-2">mut </span>once = <span class="prelude-val">Some</span>(());
-            <span class="kw">let </span><span class="kw-2">mut </span>stdout = std::io::stdout();
-            <span class="kw">let </span>k_spks = k_spks
-                .inspect(<span class="kw">move </span>|(spk_i, <span class="kw">_</span>)| <span class="kw">match </span>once.take() {
-                    <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="macro">print!</span>(<span class="string">&quot;\nScanning keychain [{:?}]&quot;</span>, k),
-                    <span class="prelude-val">None </span>=&gt; <span class="macro">print!</span>(<span class="string">&quot; {:&lt;3}&quot;</span>, spk_i),
-                })
-                .inspect(<span class="kw">move </span>|<span class="kw">_</span>| stdout.flush().expect(<span class="string">&quot;must flush&quot;</span>));
-            (k, k_spks)
-        })
-        .collect();
+    <span class="kw">let </span>request = wallet.start_full_scan().inspect_spks_for_all_keychains({
+        <span class="kw">let </span><span class="kw-2">mut </span>once = BTreeSet::&lt;KeychainKind&gt;::new();
+        <span class="kw">move </span>|keychain, spk_i, <span class="kw">_</span>| {
+            <span class="kw">match </span>once.insert(keychain) {
+                <span class="bool-val">true </span>=&gt; <span class="macro">print!</span>(<span class="string">&quot;\nScanning keychain [{:?}]&quot;</span>, keychain),
+                <span class="bool-val">false </span>=&gt; <span class="macro">print!</span>(<span class="string">&quot; {:&lt;3}&quot;</span>, spk_i),
+            };
+            std::io::stdout().flush().expect(<span class="string">&quot;must flush&quot;</span>)
+        }
+    });
 
-    <span class="kw">let </span><span class="kw-2">mut </span>update = client.full_scan(
-        wallet.latest_checkpoint(),
-        keychain_spks,
-        STOP_GAP,
-        PARALLEL_REQUESTS,
-    )<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>update = client.full_scan(request, STOP_GAP, PARALLEL_REQUESTS)<span class="question-mark">?</span>;
     <span class="kw">let </span>now = std::time::UNIX_EPOCH.elapsed().unwrap().as_secs();
-    <span class="kw">let _ </span>= update.tx_graph.update_last_seen_unconfirmed(now);
+    <span class="kw">let _ </span>= update.graph_update.update_last_seen_unconfirmed(now);
 
-    wallet.apply_update(Update {
-        last_active_indices: update.last_active_indices,
-        graph: update.tx_graph,
-        chain: <span class="prelude-val">Some</span>(update.local_chain),
-    })<span class="question-mark">?</span>;
+    wallet.apply_update(update)<span class="question-mark">?</span>;
     wallet.commit()<span class="question-mark">?</span>;
     <span class="macro">println!</span>();
 

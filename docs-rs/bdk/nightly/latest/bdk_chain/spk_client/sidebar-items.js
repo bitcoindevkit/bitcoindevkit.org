@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["FullScanRequest","Data required to perform a spk-based blockchain client full scan."],["FullScanResult","Data returned from a spk-based blockchain client full scan."],["SyncRequest","Data required to perform a spk-based blockchain client sync."],["SyncResult","Data returned from a spk-based blockchain client sync."]]};
