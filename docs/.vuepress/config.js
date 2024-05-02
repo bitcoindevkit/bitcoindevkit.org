@@ -45,6 +45,23 @@ const docsSidebar = [
   }
 ]
 
+const builtWithBdkSidebar = [
+  {
+    title: 'Built With BDK',
+    collapsable: false,
+    children: [
+      ["/adoption/all.md", "All"],
+      ["/adoption/mobile.md", "Mobile"],
+      ["/adoption/desktop.md", "Desktop"],
+      ["/adoption/hardware.md", "Hardware"],
+      ["/adoption/web.md", "Web"],
+      ["/adoption/custodial.md", "Custodial"],
+      ["/adoption/exchange.md", "Exchange"],
+      ["/adoption/infrastructure.md", "Infrastructure"],
+    ]
+  }
+]
+
 const tutorialSidebar = [
   {
     title: 'Tutorials',
@@ -103,8 +120,8 @@ module.exports = {
         link: '/getting-started/'
       },
       {
-        text: 'Case Studies',
-        link: '/case-studies'
+        text: 'Adoption',
+        link: '/adoption/all.md'
       },
       {
         text: 'Foundation',
@@ -116,6 +133,7 @@ module.exports = {
       },
     ],
     sidebar: {
+      '/adoption/': builtWithBdkSidebar,
       '/_blog/': blogSidebar,
       '/blog/': blogSidebar,
       '/tutorials/': tutorialSidebar,
