@@ -45,42 +45,15 @@ const docsSidebar = [
   }
 ]
 
-const builtWithBdkSidebar = [
+const foundationSidebar = [
   {
-    title: 'Built With BDK',
+    title: 'Foundation',
     collapsable: false,
     children: [
-      ["/adoption/all.md", "All"],
-      ["/adoption/mobile.md", "Mobile"],
-      ["/adoption/desktop.md", "Desktop"],
-      ["/adoption/hardware.md", "Hardware"],
-      ["/adoption/web.md", "Web"],
-      ["/adoption/custodial.md", "Custodial"],
-      ["/adoption/exchange.md", "Exchange"],
-      ["/adoption/infrastructure.md", "Infrastructure"],
+      ['/foundation/about.md', 'About Us'],
+      ['/foundation/supporters.md', 'Supporters'],
+      ['/foundation/grantees.md', 'Grantees']
     ]
-  }
-]
-
-const tutorialSidebar = [
-  {
-    title: 'Tutorials',
-    collapsable: false,
-    children: [
-      '/tutorials/hello-world',
-      '/tutorials/Bitcoin_Core_RPC_Demo',
-      '/tutorials/compact_filters_demo',
-      '/tutorials/descriptors_in_the_wild',
-      '/tutorials/hidden-power-of-bitcoin',
-      '/tutorials/descriptor_based_paper_wallet',
-      '/tutorials/spending_policy_demo',
-      '/tutorials/exploring_bdk_rn',
-      '/tutorials/using_bdk_with_hardware_wallets',
-      '/tutorials/exploring_bdk_flutter',
-      '/tutorials/bdk_cli_basics',
-      '/tutorials/bdk-cli_basics_multisig_2of3',
-      '/tutorials/bdk_with_tor',
-    ],
   }
 ]
 
@@ -125,7 +98,7 @@ module.exports = {
       },
       {
         text: 'Foundation',
-        link: '/foundation'
+        link: '/foundation/'
       },
       {
         text: 'Blog',
@@ -136,7 +109,7 @@ module.exports = {
       '/adoption/': builtWithBdkSidebar,
       '/_blog/': blogSidebar,
       '/blog/': blogSidebar,
-      '/tutorials/': tutorialSidebar,
+      '/foundation/': foundationSidebar,
       '/': docsSidebar,
     },
     footer: {
@@ -196,7 +169,7 @@ module.exports = {
             },
             {
               text: 'BDK Foundation',
-              link: '/foundation'
+              link: '/foundation/'
             }
           ]
         }
