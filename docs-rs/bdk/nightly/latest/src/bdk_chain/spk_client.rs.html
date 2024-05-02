@@ -382,6 +382,9 @@
 <a href="#382" id="382">382</a>
 <a href="#383" id="383">383</a>
 <a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Helper types for spk-based blockchain clients.
 
 </span><span class="kw">use </span>core::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
@@ -639,7 +642,10 @@
         spks: <span class="kw">impl </span>IntoIterator&lt;IntoIter = <span class="kw">impl </span>Iterator&lt;Item = (u32, ScriptBuf)&gt; + Send + <span class="lifetime">&#39;static</span>&gt;,
     ) -&gt; <span class="self">Self </span>{
         <span class="kw">match </span><span class="self">self</span>.spks_by_keychain.remove(<span class="kw-2">&amp;</span>keychain) {
-            <span class="prelude-val">Some</span>(keychain_spks) =&gt; <span class="self">self
+            <span class="comment">// clippy here suggests to remove `into_iter` from `spks.into_iter()`, but doing so
+            // results in a compilation error
+            </span><span class="attr">#[allow(clippy::useless_conversion)]
+            </span><span class="prelude-val">Some</span>(keychain_spks) =&gt; <span class="self">self
                 </span>.spks_by_keychain
                 .insert(keychain, Box::new(keychain_spks.chain(spks.into_iter()))),
             <span class="prelude-val">None </span>=&gt; <span class="self">self

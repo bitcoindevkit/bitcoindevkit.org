@@ -1116,7 +1116,7 @@
 
     <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
         <span class="kw">let </span>current = <span class="self">self</span>.current.clone()<span class="question-mark">?</span>;
-        <span class="self">self</span>.current = current.prev.clone();
+        <span class="self">self</span>.current.clone_from(<span class="kw-2">&amp;</span>current.prev);
         <span class="prelude-val">Some</span>(CheckPoint(current))
     }
 }
@@ -1210,7 +1210,7 @@
     /// The [`BTreeMap`] enforces the height order. However, the caller must ensure the blocks are
     /// all of the same chain.
     </span><span class="kw">pub fn </span>from_blocks(blocks: BTreeMap&lt;u32, BlockHash&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, MissingGenesisError&gt; {
-        <span class="kw">if </span>blocks.get(<span class="kw-2">&amp;</span><span class="number">0</span>).is_none() {
+        <span class="kw">if </span>!blocks.contains_key(<span class="kw-2">&amp;</span><span class="number">0</span>) {
             <span class="kw">return </span><span class="prelude-val">Err</span>(MissingGenesisError);
         }
 
