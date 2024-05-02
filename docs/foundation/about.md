@@ -7,7 +7,7 @@ lastUpdated: false
 ---
 
 # Bitcoin Dev Kit Foundation
-The Bitcoin Dev Kit Foundation (EIN 93-2023051) is established as a US non-profit corporation to promote the development of, public access to and adoption of the free and open source Bitcoin Dev Kit (BDK) library software. The Foundation is organized and operated exclusively for charitable, educational, and scientific purposes within the meaning of 501c(3) of the Internal Revenue Code.
+The Bitcoin Dev Kit Foundation (EIN 93-2023051) is established as a US non-profit corporation to promote the development of, public access to and adoption of the free and open source Bitcoin Dev Kit (BDK) library software.
 
 The Foundation aims to achieve this mission by funding the developers who contribute to and maintain the Bitcoin Dev Kit software libraries, documentation, and related infrastructure. We independently raise funds on behalf of the development team, and recruit for, fund, and operate the grant program.
 
