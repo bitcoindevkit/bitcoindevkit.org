@@ -1077,6 +1077,11 @@
 <a href="#1076" id="1076">1076</a>
 <a href="#1077" id="1077">1077</a>
 <a href="#1078" id="1078">1078</a>
+<a href="#1079" id="1079">1079</a>
+<a href="#1080" id="1080">1080</a>
+<a href="#1081" id="1081">1081</a>
+<a href="#1082" id="1082">1082</a>
+<a href="#1083" id="1083">1083</a>
 </pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1108,7 +1113,7 @@
 //!
 //! tx_builder
 //!     // Create a transaction with one output to `to_address` of 50_000 satoshi
-//!     .add_recipient(to_address.script_pubkey(), 50_000)
+//!     .add_recipient(to_address.script_pubkey(), Amount::from_sat(50_000))
 //!     // With a custom fee rate of 5.0 satoshi/vbyte
 //!     .fee_rate(FeeRate::from_sat_per_vb(5).expect(&quot;valid feerate&quot;))
 //!     // Only spend non-change outputs
@@ -1126,7 +1131,7 @@
 
 <span class="kw">use </span>bitcoin::psbt::{<span class="self">self</span>, Psbt};
 <span class="kw">use </span>bitcoin::script::PushBytes;
-<span class="kw">use </span>bitcoin::{absolute, FeeRate, OutPoint, ScriptBuf, Sequence, Transaction, Txid};
+<span class="kw">use </span>bitcoin::{absolute, Amount, FeeRate, OutPoint, ScriptBuf, Sequence, Transaction, Txid};
 
 <span class="kw">use </span><span class="kw">super</span>::coin_selection::{CoinSelectionAlgorithm, DefaultCoinSelectionAlgorithm};
 <span class="kw">use super</span>::{CreateTxError, Wallet};
@@ -1173,8 +1178,8 @@
 ///     let mut builder = wallet.build_tx();
 ///     builder
 ///         .ordering(TxOrdering::Untouched)
-///         .add_recipient(addr1.script_pubkey(), 50_000)
-///         .add_recipient(addr2.script_pubkey(), 50_000);
+///         .add_recipient(addr1.script_pubkey(), Amount::from_sat(50_000))
+///         .add_recipient(addr2.script_pubkey(), Amount::from_sat(50_000));
 ///     builder.finish()?
 /// };
 ///
@@ -1183,7 +1188,7 @@
 ///     let mut builder = wallet.build_tx();
 ///     builder.ordering(TxOrdering::Untouched);
 ///     for addr in &amp;[addr1, addr2] {
-///         builder.add_recipient(addr.script_pubkey(), 50_000);
+///         builder.add_recipient(addr.script_pubkey(), Amount::from_sat(50_000));
 ///     }
 ///     builder.finish()?
 /// };
@@ -1353,7 +1358,7 @@
     ///
     /// let builder = wallet
     ///     .build_tx()
-    ///     .add_recipient(to_address.script_pubkey(), 50_000)
+    ///     .add_recipient(to_address.script_pubkey(), Amount::from_sat(50_000))
     ///     .policy_path(path, KeychainKind::External);
     ///
     /// # Ok::&lt;(), anyhow::Error&gt;(())
@@ -1792,21 +1797,26 @@
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, Cs: CoinSelectionAlgorithm&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, Cs, CreateTx&gt; {
     <span class="doccomment">/// Replace the recipients already added with a new list
-    </span><span class="kw">pub fn </span>set_recipients(<span class="kw-2">&amp;mut </span><span class="self">self</span>, recipients: Vec&lt;(ScriptBuf, u64)&gt;) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
-        <span class="self">self</span>.params.recipients = recipients;
+    </span><span class="kw">pub fn </span>set_recipients(<span class="kw-2">&amp;mut </span><span class="self">self</span>, recipients: Vec&lt;(ScriptBuf, Amount)&gt;) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
+        <span class="self">self</span>.params.recipients = recipients
+            .into_iter()
+            .map(|(script, amount)| (script, amount.to_sat()))
+            .collect();
         <span class="self">self
     </span>}
 
     <span class="doccomment">/// Add a recipient to the internal list
-    </span><span class="kw">pub fn </span>add_recipient(<span class="kw-2">&amp;mut </span><span class="self">self</span>, script_pubkey: ScriptBuf, amount: u64) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
-        <span class="self">self</span>.params.recipients.push((script_pubkey, amount));
+    </span><span class="kw">pub fn </span>add_recipient(<span class="kw-2">&amp;mut </span><span class="self">self</span>, script_pubkey: ScriptBuf, amount: Amount) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
+        <span class="self">self</span>.params
+            .recipients
+            .push((script_pubkey, amount.to_sat()));
         <span class="self">self
     </span>}
 
     <span class="doccomment">/// Add data as an output, using OP_RETURN
     </span><span class="kw">pub fn </span>add_data&lt;T: AsRef&lt;PushBytes&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, data: <span class="kw-2">&amp;</span>T) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="kw">let </span>script = ScriptBuf::new_op_return(data);
-        <span class="self">self</span>.add_recipient(script, <span class="number">0u64</span>);
+        <span class="self">self</span>.add_recipient(script, Amount::ZERO);
         <span class="self">self
     </span>}
 
