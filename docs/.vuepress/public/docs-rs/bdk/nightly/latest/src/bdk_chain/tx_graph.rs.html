@@ -1671,7 +1671,7 @@
 <span class="kw">use </span>alloc::collections::vec_deque::VecDeque;
 <span class="kw">use </span>alloc::sync::Arc;
 <span class="kw">use </span>alloc::vec::Vec;
-<span class="kw">use </span>bitcoin::{OutPoint, Script, Transaction, TxOut, Txid};
+<span class="kw">use </span>bitcoin::{Amount, OutPoint, Script, Transaction, TxOut, Txid};
 <span class="kw">use </span>core::fmt::{<span class="self">self</span>, Formatter};
 <span class="kw">use </span>core::{
     convert::Infallible,
@@ -2731,10 +2731,10 @@
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = (OI, OutPoint)&gt;,
         <span class="kw-2">mut </span>trust_predicate: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>OI, <span class="kw-2">&amp;</span>Script) -&gt; bool,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Balance, C::Error&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>immature = <span class="number">0</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>trusted_pending = <span class="number">0</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>untrusted_pending = <span class="number">0</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>confirmed = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>immature = Amount::ZERO;
+        <span class="kw">let </span><span class="kw-2">mut </span>trusted_pending = Amount::ZERO;
+        <span class="kw">let </span><span class="kw-2">mut </span>untrusted_pending = Amount::ZERO;
+        <span class="kw">let </span><span class="kw-2">mut </span>confirmed = Amount::ZERO;
 
         <span class="kw">for </span>res <span class="kw">in </span><span class="self">self</span>.try_filter_chain_unspents(chain, chain_tip, outpoints) {
             <span class="kw">let </span>(spk_i, txout) = res<span class="question-mark">?</span>;
@@ -2742,16 +2742,16 @@
             <span class="kw">match </span><span class="kw-2">&amp;</span>txout.chain_position {
                 ChainPosition::Confirmed(<span class="kw">_</span>) =&gt; {
                     <span class="kw">if </span>txout.is_confirmed_and_spendable(chain_tip.height) {
-                        confirmed += txout.txout.value.to_sat();
+                        confirmed += txout.txout.value;
                     } <span class="kw">else if </span>!txout.is_mature(chain_tip.height) {
-                        immature += txout.txout.value.to_sat();
+                        immature += txout.txout.value;
                     }
                 }
                 ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; {
                     <span class="kw">if </span>trust_predicate(<span class="kw-2">&amp;</span>spk_i, <span class="kw-2">&amp;</span>txout.txout.script_pubkey) {
-                        trusted_pending += txout.txout.value.to_sat();
+                        trusted_pending += txout.txout.value;
                     } <span class="kw">else </span>{
-                        untrusted_pending += txout.txout.value.to_sat();
+                        untrusted_pending += txout.txout.value;
                     }
                 }
             }

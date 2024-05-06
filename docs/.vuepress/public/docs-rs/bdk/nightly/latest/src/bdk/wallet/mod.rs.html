@@ -2593,14 +2593,14 @@
     IndexedTxGraph,
 };
 <span class="kw">use </span>bdk_persist::{Persist, PersistBackend};
-<span class="kw">use </span>bitcoin::constants::genesis_block;
 <span class="kw">use </span>bitcoin::secp256k1::{All, Secp256k1};
 <span class="kw">use </span>bitcoin::sighash::{EcdsaSighashType, TapSighashType};
 <span class="kw">use </span>bitcoin::{
     absolute, psbt, Address, Block, FeeRate, Network, OutPoint, Script, ScriptBuf, Sequence,
     Transaction, TxOut, Txid, Witness,
 };
-<span class="kw">use </span>bitcoin::{consensus::encode::serialize, transaction, Amount, BlockHash, Psbt};
+<span class="kw">use </span>bitcoin::{consensus::encode::serialize, transaction, BlockHash, Psbt};
+<span class="kw">use </span>bitcoin::{constants::genesis_block, Amount};
 <span class="kw">use </span>core::fmt;
 <span class="kw">use </span>core::ops::Deref;
 <span class="kw">use </span>descriptor::error::Error <span class="kw">as </span>DescriptorError;
@@ -3511,10 +3511,10 @@
     /// [`insert_txout`]: Self::insert_txout
     </span><span class="kw">pub fn </span>calculate_fee_rate(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="prelude-ty">Result</span>&lt;FeeRate, CalculateFeeError&gt; {
         <span class="self">self</span>.calculate_fee(tx)
-            .map(|fee| bitcoin::Amount::from_sat(fee) / tx.weight())
+            .map(|fee| Amount::from_sat(fee) / tx.weight())
     }
 
-    <span class="doccomment">/// Compute the `tx`&#39;s sent and received amounts (in satoshis).
+    <span class="doccomment">/// Compute the `tx`&#39;s sent and received [`Amount`]s.
     ///
     /// This method returns a tuple `(sent, received)`. Sent is the sum of the txin amounts
     /// that spend from previous txouts tracked by this wallet. Received is the summation
@@ -3539,7 +3539,7 @@
     /// let tx = &amp;psbt.clone().extract_tx().expect(&quot;tx&quot;);
     /// let (sent, received) = wallet.sent_and_received(tx);
     /// ```
-    </span><span class="kw">pub fn </span>sent_and_received(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; (u64, u64) {
+    </span><span class="kw">pub fn </span>sent_and_received(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; (Amount, Amount) {
         <span class="self">self</span>.indexed_graph.index.sent_and_received(tx, ..)
     }
 
@@ -3758,7 +3758,7 @@
     /// let psbt = {
     ///    let mut builder =  wallet.build_tx();
     ///    builder
-    ///        .add_recipient(to_address.script_pubkey(), 50_000);
+    ///        .add_recipient(to_address.script_pubkey(), Amount::from_sat(50_000));
     ///    builder.finish()?
     /// };
     ///
@@ -4140,7 +4140,7 @@
     /// let mut psbt = {
     ///     let mut builder = wallet.build_tx();
     ///     builder
-    ///         .add_recipient(to_address.script_pubkey(), 50_000)
+    ///         .add_recipient(to_address.script_pubkey(), Amount::from_sat(50_000))
     ///         .enable_rbf();
     ///     builder.finish()?
     /// };
@@ -4313,7 +4313,7 @@
     /// # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap().assume_checked();
     /// let mut psbt = {
     ///     let mut builder = wallet.build_tx();
-    ///     builder.add_recipient(to_address.script_pubkey(), 50_000);
+    ///     builder.add_recipient(to_address.script_pubkey(), Amount::from_sat(50_000));
     ///     builder.finish()?
     /// };
     /// let finalized = wallet.sign(&amp;mut psbt, SignOptions::default())?;
