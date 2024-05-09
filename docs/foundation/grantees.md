@@ -56,7 +56,7 @@ He also created the app [Monday](https://github.com/reez/Monday), a Lightning wa
     <img src="/img/twitter-icon.svg" style="width: 24px; margin: 0 12px 0 0">
   </a>
   <a href="https://github.com/reez" target="_blank">
-    <img src="/img/github-icon.svg" style="width: 24px">
+    <img src="/img/github-icon.svg" style="width: 24px; margin: 0 12px 0 0">
   </a>
   <a href="https://njump.me/npub1reezn2ctrrg736uqj7mva9lsuwv0kr5asj4vvkwxnrwlhvxf98tsq99ty4" target="_blank">
     <img src="/img/nostr-icon.svg" style="width: 24px; margin: 0 12px 0 0">
