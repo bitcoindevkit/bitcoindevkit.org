@@ -47,9 +47,9 @@ Thunderbiscuit is an Android engineer who's has been working on the project for 
 
 ## Matthew Ramsden
 
-An experienced iOS engineer who has picked up Rust along the way to expand his contributions to the bitcoin ecosystem. His primary focus is maintaining the bdk-ffi Rust bindings, contributing features, and ensuring the library's robustness, along with leading the development of the [BDKSwiftExampleWallet](https://github.com/bitcoindevkit/BDKSwiftExampleWallet) which is an example iOS wallet built on BDK.
+Matthew is an experienced iOS engineer who has picked up Rust along the way to expand his contributions to the bitcoin ecosystem. His primary focus is maintaining the bdk-ffi Rust bindings, contributing features, and ensuring the library's robustness, along with leading the development of the [BDKSwiftExampleWallet](https://github.com/bitcoindevkit/BDKSwiftExampleWallet) which is an example iOS wallet built on BDK.
 
-He also created the app [Monday](https://github.com/reez/Monday), a Lightning wallet for iOS leveraging LDK Node (which uses BDK for on-chain transactions), and [BitcoinUI](https://github.com/reez/BitcoinUI), a native iOS implementation of the Bitcoin UI Kit from the Bitcoin Design Community. He is also the creator of an app called [Block Screen](https://apps.apple.com/us/app/block-screen/id1533333210) for iPhone and Watch, and co-organizes NashBitDevs.
+He also created the Lightning iOS app [Monday](https://github.com/reez/Monday), the native iOS implementation of Bitcoin UI Kit [BitcoinUI](https://github.com/reez/BitcoinUI), the iOS app [Block Screen](https://apps.apple.com/us/app/block-screen/id1533333210), and co-organizes NashBitDevs.
 
 <div>
   <a href="https://twitter.com/matthewramsden" target="_blank">
