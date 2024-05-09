@@ -89,3 +89,16 @@ Wei Chen has been contributing to BDK since late 2023 and was formerly a full st
   </a>
 </div>
 <br>
+
+## Manuel Gatti
+
+Manuel Gatti is a Product/Project Manager who has worked for about 3 and a half years as a functional analyst/project manager in the IT consultancy sector and for the last year as a Product Owner in a non-bitcoin-related software company. He is involved in some educational projects related to bitcoin in Italy and hosts an italian podcast about libertarian philosophy with episodes dedicated to bitcoin as a tool for freedom.
+
+He has been contributing to BDK since April 2023 mostly on the project management side (holding calls, helping with triage and prioritization, updating stakeholders). Since April 2024, he has started conducting user interviews in order to get feedback on BDK usage and possible pain points with the aim to help the team with the definition and prioritization of the development activities. In May 2024 he started collaborating as a product/project manager with Wizard Sardine (users of BDK) and in particular to the development and go-to-market strategy of Liana Wallet.
+
+<div>
+  <a href="https://github.com/nondiremanuel" target="_blank">
+    <img src="/img/github-icon.svg" style="width: 24px">
+  </a>
+</div>
+<br>

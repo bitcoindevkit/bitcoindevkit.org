@@ -45,6 +45,23 @@ const docsSidebar = [
   }
 ]
 
+const builtWithBdkSidebar = [
+  {
+    title: 'Built With BDK',
+    collapsable: false,
+    children: [
+      ["/adoption/all.md", "All"],
+      ["/adoption/mobile.md", "Mobile"],
+      ["/adoption/desktop.md", "Desktop"],
+      ["/adoption/hardware.md", "Hardware"],
+      ["/adoption/web.md", "Web"],
+      ["/adoption/custodial.md", "Custodial"],
+      ["/adoption/exchange.md", "Exchange"],
+      ["/adoption/infrastructure.md", "Infrastructure"],
+    ]
+  }
+]
+
 const foundationSidebar = [
   {
     title: 'Foundation',
