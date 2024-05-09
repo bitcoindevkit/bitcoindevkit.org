@@ -725,6 +725,18 @@
 <a href="#725" id="725">725</a>
 <a href="#726" id="726">726</a>
 <a href="#727" id="727">727</a>
+<a href="#728" id="728">728</a>
+<a href="#729" id="729">729</a>
+<a href="#730" id="730">730</a>
+<a href="#731" id="731">731</a>
+<a href="#732" id="732">732</a>
+<a href="#733" id="733">733</a>
+<a href="#734" id="734">734</a>
+<a href="#735" id="735">735</a>
+<a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
 </pre><pre class="rust"><code><span class="kw">pub use </span>anyhow;
 <span class="kw">use </span>anyhow::Context;
 <span class="kw">use </span>bdk_coin_select::{coin_select_bnb, CoinSelector, CoinSelectorOpt, WeightedValue};
@@ -976,14 +988,20 @@
         script_pubkey: address.script_pubkey(),
     }];
 
-    <span class="kw">let </span>internal_keychain = <span class="kw">if </span>graph.index.keychains().get(<span class="kw-2">&amp;</span>Keychain::Internal).is_some() {
+    <span class="kw">let </span>internal_keychain = <span class="kw">if </span>graph
+        .index
+        .keychains()
+        .any(|(k, <span class="kw">_</span>)| <span class="kw-2">*</span>k == Keychain::Internal)
+    {
         Keychain::Internal
     } <span class="kw">else </span>{
         Keychain::External
     };
 
-    <span class="kw">let </span>((change_index, change_script), change_changeset) =
-        graph.index.next_unused_spk(<span class="kw-2">&amp;</span>internal_keychain);
+    <span class="kw">let </span>((change_index, change_script), change_changeset) = graph
+        .index
+        .next_unused_spk(<span class="kw-2">&amp;</span>internal_keychain)
+        .expect(<span class="string">&quot;Must exist&quot;</span>);
     changeset.append(change_changeset);
 
     <span class="comment">// Clone to drop the immutable reference.
@@ -993,9 +1011,10 @@
         <span class="kw-2">&amp;</span>graph
             .index
             .keychains()
-            .get(<span class="kw-2">&amp;</span>internal_keychain)
+            .find(|(k, <span class="kw">_</span>)| <span class="kw-2">*</span>k == <span class="kw-2">&amp;</span>internal_keychain)
             .expect(<span class="string">&quot;must exist&quot;</span>)
-            .at_derivation_index(change_index)
+            .<span class="number">1
+            </span>.at_derivation_index(change_index)
             .expect(<span class="string">&quot;change_index can&#39;t be hardened&quot;</span>),
         <span class="kw-2">&amp;</span>assets,
     )
@@ -1011,9 +1030,10 @@
         min_drain_value: graph
             .index
             .keychains()
-            .get(<span class="kw-2">&amp;</span>internal_keychain)
+            .find(|(k, <span class="kw">_</span>)| <span class="kw-2">*</span>k == <span class="kw-2">&amp;</span>internal_keychain)
             .expect(<span class="string">&quot;must exist&quot;</span>)
-            .dust_value(),
+            .<span class="number">1
+            </span>.dust_value(),
         ..CoinSelectorOpt::fund_outputs(
             <span class="kw-2">&amp;</span>outputs,
             <span class="kw-2">&amp;</span>change_output,
@@ -1143,7 +1163,7 @@
     assets: <span class="kw-2">&amp;</span>bdk_tmp_plan::Assets&lt;K&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;PlannedUtxo&lt;K, A&gt;&gt;, O::Error&gt; {
     <span class="kw">let </span>chain_tip = chain.get_chain_tip()<span class="question-mark">?</span>;
-    <span class="kw">let </span>outpoints = graph.index.outpoints().iter().cloned();
+    <span class="kw">let </span>outpoints = graph.index.outpoints();
     graph
         .graph()
         .try_filter_chain_unspents(chain, chain_tip, outpoints)
@@ -1155,9 +1175,10 @@
             <span class="kw">let </span>desc = graph
                 .index
                 .keychains()
-                .get(<span class="kw-2">&amp;</span>k)
+                .find(|(keychain, <span class="kw">_</span>)| <span class="kw-2">*</span>keychain == <span class="kw-2">&amp;</span>k)
                 .expect(<span class="string">&quot;keychain must exist&quot;</span>)
-                .at_derivation_index(i)
+                .<span class="number">1
+                </span>.at_derivation_index(i)
                 .expect(<span class="string">&quot;i can&#39;t be hardened&quot;</span>);
             <span class="kw">let </span>plan = bdk_tmp_plan::plan_satisfaction(<span class="kw-2">&amp;</span>desc, assets)<span class="question-mark">?</span>;
             <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((plan, full_txo)))
@@ -1192,7 +1213,8 @@
                         <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;only these two variants exist in match arm&quot;</span>),
                     };
 
-                    <span class="kw">let </span>((spk_i, spk), index_changeset) = spk_chooser(index, <span class="kw-2">&amp;</span>Keychain::External);
+                    <span class="kw">let </span>((spk_i, spk), index_changeset) =
+                        spk_chooser(index, <span class="kw-2">&amp;</span>Keychain::External).expect(<span class="string">&quot;Must exist&quot;</span>);
                     <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
                     db.stage_and_commit(C::from((
                         local_chain::ChangeSet::default(),
@@ -1244,7 +1266,7 @@
             <span class="kw">let </span>balance = graph.graph().try_balance(
                 chain,
                 chain.get_chain_tip()<span class="question-mark">?</span>,
-                graph.index.outpoints().iter().cloned(),
+                graph.index.outpoints(),
                 |(k, <span class="kw">_</span>), <span class="kw">_</span>| k == <span class="kw-2">&amp;</span>Keychain::Internal,
             )<span class="question-mark">?</span>;
 
@@ -1274,7 +1296,7 @@
             <span class="kw">let </span>graph = <span class="kw-2">&amp;*</span>graph.lock().unwrap();
             <span class="kw">let </span>chain = <span class="kw-2">&amp;*</span>chain.lock().unwrap();
             <span class="kw">let </span>chain_tip = chain.get_chain_tip()<span class="question-mark">?</span>;
-            <span class="kw">let </span>outpoints = graph.index.outpoints().iter().cloned();
+            <span class="kw">let </span>outpoints = graph.index.outpoints();
 
             <span class="kw">match </span>txout_cmd {
                 TxOutCmd::List {
@@ -1422,9 +1444,11 @@
 
     <span class="kw">let </span><span class="kw-2">mut </span>index = KeychainTxOutIndex::&lt;Keychain&gt;::default();
 
-    <span class="kw">let </span>(descriptor, <span class="kw-2">mut </span>keymap) =
+    <span class="comment">// TODO: descriptors are already stored in the db, so we shouldn&#39;t re-insert
+    // them in the index here. However, the keymap is not stored in the database.
+    </span><span class="kw">let </span>(descriptor, <span class="kw-2">mut </span>keymap) =
         Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>args.descriptor)<span class="question-mark">?</span>;
-    index.add_keychain(Keychain::External, descriptor);
+    <span class="kw">let _ </span>= index.insert_descriptor(Keychain::External, descriptor);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>((internal_descriptor, internal_keymap)) = args
         .change_descriptor
@@ -1433,7 +1457,7 @@
         .transpose()<span class="question-mark">?
     </span>{
         keymap.extend(internal_keymap);
-        index.add_keychain(Keychain::Internal, internal_descriptor);
+        <span class="kw">let _ </span>= index.insert_descriptor(Keychain::Internal, internal_descriptor);
     }
 
     <span class="kw">let </span><span class="kw-2">mut </span>db_backend = <span class="kw">match </span>Store::&lt;C&gt;::open_or_create_new(db_magic, <span class="kw-2">&amp;</span>args.db_path) {

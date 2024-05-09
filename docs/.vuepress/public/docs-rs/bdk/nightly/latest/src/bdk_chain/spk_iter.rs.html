@@ -265,14 +265,6 @@
 <a href="#265" id="265">265</a>
 <a href="#266" id="266">266</a>
 <a href="#267" id="267">267</a>
-<a href="#268" id="268">268</a>
-<a href="#269" id="269">269</a>
-<a href="#270" id="270">270</a>
-<a href="#271" id="271">271</a>
-<a href="#272" id="272">272</a>
-<a href="#273" id="273">273</a>
-<a href="#274" id="274">274</a>
-<a href="#275" id="275">275</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     bitcoin::{secp256k1::Secp256k1, ScriptBuf},
     miniscript::{Descriptor, DescriptorPublicKey},
@@ -433,8 +425,8 @@
         <span class="kw">let </span>(external_descriptor,<span class="kw">_</span>) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(<span class="kw-2">&amp;</span>secp, <span class="string">&quot;tr([73c5da0a/86&#39;/0&#39;/0&#39;]xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/0/*)&quot;</span>).unwrap();
         <span class="kw">let </span>(internal_descriptor,<span class="kw">_</span>) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(<span class="kw-2">&amp;</span>secp, <span class="string">&quot;tr([73c5da0a/86&#39;/0&#39;/0&#39;]xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/1/*)&quot;</span>).unwrap();
 
-        txout_index.add_keychain(TestKeychain::External, external_descriptor.clone());
-        txout_index.add_keychain(TestKeychain::Internal, internal_descriptor.clone());
+        <span class="kw">let _ </span>= txout_index.insert_descriptor(TestKeychain::External, external_descriptor.clone());
+        <span class="kw">let _ </span>= txout_index.insert_descriptor(TestKeychain::Internal, internal_descriptor.clone());
 
         (txout_index, external_descriptor, internal_descriptor)
     }
@@ -533,20 +525,12 @@
             <span class="prelude-val">None
         </span>);
     }
+}
 
-    <span class="comment">// The following dummy traits were created to test if SpkIterator is working properly.
-    </span><span class="attr">#[allow(unused)]
-    </span><span class="kw">trait </span>TestSendStatic: Send + <span class="lifetime">&#39;static </span>{
-        <span class="kw">fn </span>test(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
-            <span class="number">20
-        </span>}
-    }
-
-    <span class="kw">impl </span>TestSendStatic <span class="kw">for </span>SpkIterator&lt;Descriptor&lt;DescriptorPublicKey&gt;&gt; {
-        <span class="kw">fn </span>test(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
-            <span class="number">20
-        </span>}
-    }
+<span class="attr">#[test]
+</span><span class="kw">fn </span>spk_iterator_is_send_and_static() {
+    <span class="kw">fn </span>is_send_and_static&lt;A: Send + <span class="lifetime">&#39;static</span>&gt;() {}
+    is_send_and_static::&lt;SpkIterator&lt;Descriptor&lt;DescriptorPublicKey&gt;&gt;&gt;()
 }
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
