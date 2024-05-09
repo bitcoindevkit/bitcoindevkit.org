@@ -10,7 +10,7 @@ lastUpdated: false
 
 ## Evan Lin
 
-Evan Lin (林志宇) is a Rust/Golang developer who has been contributing to BDK since 2022. Before working on Bitcoin-related projects, his professional career started in 2017 where he led various umbrella projects for an altcoin. After discovering the importance of Bitcoin, he started contributing to various projects (including BDK, Fedimint and Utreexo) and was eventually taken under the wing of and mentored by Lloyd Fournier.
+Evan Lin (林志宇) is a Rust/Golang developer who has been contributing to BDK since 2022. Before working on bitcoin-related projects, his professional career started in 2017 where he led various umbrella projects for an altcoin. After discovering the importance of bitcoin, he started contributing to various projects (including BDK, Fedimint and Utreexo) and was eventually taken under the wing of and mentored by Lloyd Fournier.
 
 <div>
   <a href="https://twitter.com/evanlinjin" target="_blank">
@@ -47,7 +47,7 @@ Thunderbiscuit is an Android engineer who's has been working on the project for 
 
 ## Matthew Ramsden
 
-An experienced iOS engineer who has picked up Rust along the way to expand his contributions to the Bitcoin ecosystem. His primary focus is maintaining the bdk-ffi Rust bindings, contributing features, and ensuring the library's robustness, along with leading the development of the [BDKSwiftExampleWallet](https://github.com/bitcoindevkit/BDKSwiftExampleWallet) which is an example iOS wallet built on BDK.
+An experienced iOS engineer who has picked up Rust along the way to expand his contributions to the bitcoin ecosystem. His primary focus is maintaining the bdk-ffi Rust bindings, contributing features, and ensuring the library's robustness, along with leading the development of the [BDKSwiftExampleWallet](https://github.com/bitcoindevkit/BDKSwiftExampleWallet) which is an example iOS wallet built on BDK.
 
 He also created the app [Monday](https://github.com/reez/Monday), a Lightning wallet for iOS leveraging LDK Node (which uses BDK for on-chain transactions), and [BitcoinUI](https://github.com/reez/BitcoinUI), a native iOS implementation of the Bitcoin UI Kit from the Bitcoin Design Community. He is also the creator of an app called [Block Screen](https://apps.apple.com/us/app/block-screen/id1533333210) for iPhone and Watch, and co-organizes NashBitDevs.
 
@@ -66,7 +66,7 @@ He also created the app [Monday](https://github.com/reez/Monday), a Lightning wa
 
 ## ValuedMammal
 
-ValuedMammal is a Rust developer and node operator whose work includes research in the areas of mempool and p2p. He's interested in bitcoin payment solutions, problems around fee estimation, and innovations in bitcoin Script. In 2021 he managed Tangerine node on the lightning network and was active in the PLEBNET community. He started contributing to BDK out of a belief that modern wallets should be built with modern tools and sought out a team that makes no compromises when it comes to quality and correctness and who share a mission to master the fundamentals while providing convenient abstractions to developers. His unorthodox path into software development came as a byproduct of his own Bitcoin journey and continues to grow more fulfilling each day. As a result, his natural environment is in a terminal managing a server or database, and of course writing code. ValuedMammal studied Biological Science at university, and outside of bitcoin he's a writer and educator who likes music, travel, and foreign languages.
+ValuedMammal is a Rust developer and node operator whose work includes research in the areas of mempool and p2p. He's interested in bitcoin payment solutions, problems around fee estimation, and innovations in bitcoin Script. In 2021 he managed Tangerine node on the lightning network and was active in the PLEBNET community. He started contributing to BDK out of a belief that modern wallets should be built with modern tools and sought out a team that makes no compromises when it comes to quality and correctness and who share a mission to master the fundamentals while providing convenient abstractions to developers. His unorthodox path into software development came as a byproduct of his own bitcoin journey and continues to grow more fulfilling each day. As a result, his natural environment is in a terminal managing a server or database, and of course writing code. ValuedMammal studied Biological Science at university, and outside of bitcoin he's a writer and educator who likes music, travel, and foreign languages.
 
 <div>
   <a href="https://twitter.com/valuedmammal" target="_blank">
@@ -79,3 +79,13 @@ ValuedMammal is a Rust developer and node operator whose work includes research 
 <br>
 
 # Current Grantees (Project Grants)
+
+## Wei Chen
+Wei Chen has been contributing to BDK since late 2023 and was formerly a full stack Java developer based in Washington D.C. with ten years of experience. He was introduced to BDK as a result of Evan Lin, whom he met when taking Mandarin lessons in Taipei. The focus of his contributions will be towards assisting with the restructuring of the electrum crate, reengineering of the TxGraph data components to simplify the tracking of lineal conflicts, as well as focusing on performance optimization and the continued debugging of BDK, which includes the maintenance of the TestEnv crate. Outside of code contributions to the project, Wei Chen will be also assisting Evan Lin with various bitcoin events or workshops to improve understanding towards BDK.
+
+<div>
+  <a href="https://github.com/LagginTimes" target="_blank">
+    <img src="/img/github-icon.svg" style="width: 24px">
+  </a>
+</div>
+<br>
