@@ -182,7 +182,7 @@ module.exports = {
             },
             {
               text: 'Supporters',
-              link: '/supporters/'
+              link: '/foundation/supporters/'
             },
             {
               text: 'BDK Foundation',
