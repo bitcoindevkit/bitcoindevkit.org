@@ -93,20 +93,6 @@
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
 <a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
-<a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
-<a href="#103" id="103">103</a>
-<a href="#104" id="104">104</a>
-<a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-<a href="#107" id="107">107</a>
-<a href="#108" id="108">108</a>
-<a href="#109" id="109">109</a>
 </pre><pre class="rust"><code><span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">&quot;bdk_wallet_electrum_example&quot;</span>;
 <span class="kw">const </span>SEND_AMOUNT: Amount = Amount::from_sat(<span class="number">5000</span>);
 <span class="kw">const </span>STOP_GAP: usize = <span class="number">50</span>;
@@ -116,12 +102,12 @@
 <span class="kw">use </span>std::str::FromStr;
 
 <span class="kw">use </span>bdk::bitcoin::{Address, Amount};
-<span class="kw">use </span>bdk::wallet::Update;
+<span class="kw">use </span>bdk::chain::collections::HashSet;
 <span class="kw">use </span>bdk::{bitcoin::Network, Wallet};
 <span class="kw">use </span>bdk::{KeychainKind, SignOptions};
 <span class="kw">use </span>bdk_electrum::{
     electrum_client::{<span class="self">self</span>, ElectrumApi},
-    ElectrumExt, ElectrumUpdate,
+    ElectrumExt,
 };
 <span class="kw">use </span>bdk_file_store::Store;
 
@@ -147,44 +133,30 @@
     <span class="macro">print!</span>(<span class="string">&quot;Syncing...&quot;</span>);
     <span class="kw">let </span>client = electrum_client::Client::new(<span class="string">&quot;ssl://electrum.blockstream.info:60002&quot;</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>prev_tip = wallet.latest_checkpoint();
-    <span class="kw">let </span>keychain_spks = wallet
-        .all_unbounded_spk_iters()
-        .into_iter()
-        .map(|(k, k_spks)| {
-            <span class="kw">let </span><span class="kw-2">mut </span>once = <span class="prelude-val">Some</span>(());
-            <span class="kw">let </span><span class="kw-2">mut </span>stdout = std::io::stdout();
-            <span class="kw">let </span>k_spks = k_spks
-                .inspect(<span class="kw">move </span>|(spk_i, <span class="kw">_</span>)| <span class="kw">match </span>once.take() {
-                    <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="macro">print!</span>(<span class="string">&quot;\nScanning keychain [{:?}]&quot;</span>, k),
-                    <span class="prelude-val">None </span>=&gt; <span class="macro">print!</span>(<span class="string">&quot; {:&lt;3}&quot;</span>, spk_i),
-                })
-                .inspect(<span class="kw">move </span>|<span class="kw">_</span>| stdout.flush().expect(<span class="string">&quot;must flush&quot;</span>));
-            (k, k_spks)
+    <span class="kw">let </span>request = wallet
+        .start_full_scan()
+        .inspect_spks_for_all_keychains({
+            <span class="kw">let </span><span class="kw-2">mut </span>once = HashSet::&lt;KeychainKind&gt;::new();
+            <span class="kw">move </span>|k, spk_i, <span class="kw">_</span>| {
+                <span class="kw">if </span>once.insert(k) {
+                    <span class="macro">print!</span>(<span class="string">&quot;\nScanning keychain [{:?}]&quot;</span>, k)
+                } <span class="kw">else </span>{
+                    <span class="macro">print!</span>(<span class="string">&quot; {:&lt;3}&quot;</span>, spk_i)
+                }
+            }
         })
-        .collect();
+        .inspect_spks_for_all_keychains(|<span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span>| std::io::stdout().flush().expect(<span class="string">&quot;must flush&quot;</span>));
 
-    <span class="kw">let </span>(
-        ElectrumUpdate {
-            chain_update,
-            relevant_txids,
-        },
-        keychain_update,
-    ) = client.full_scan(prev_tip, keychain_spks, STOP_GAP, BATCH_SIZE)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>update = client
+        .full_scan(request, STOP_GAP, BATCH_SIZE, <span class="bool-val">false</span>)<span class="question-mark">?
+        </span>.with_confirmation_time_height_anchor(<span class="kw-2">&amp;</span>client)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>now = std::time::UNIX_EPOCH.elapsed().unwrap().as_secs();
+    <span class="kw">let _ </span>= update.graph_update.update_last_seen_unconfirmed(now);
 
     <span class="macro">println!</span>();
 
-    <span class="kw">let </span>missing = relevant_txids.missing_full_txs(wallet.as_ref());
-    <span class="kw">let </span><span class="kw-2">mut </span>graph_update = relevant_txids.into_confirmation_time_tx_graph(<span class="kw-2">&amp;</span>client, missing)<span class="question-mark">?</span>;
-    <span class="kw">let </span>now = std::time::UNIX_EPOCH.elapsed().unwrap().as_secs();
-    <span class="kw">let _ </span>= graph_update.update_last_seen_unconfirmed(now);
-
-    <span class="kw">let </span>wallet_update = Update {
-        last_active_indices: keychain_update,
-        graph: graph_update,
-        chain: <span class="prelude-val">Some</span>(chain_update),
-    };
-    wallet.apply_update(wallet_update)<span class="question-mark">?</span>;
+    wallet.apply_update(update)<span class="question-mark">?</span>;
     wallet.commit()<span class="question-mark">?</span>;
 
     <span class="kw">let </span>balance = wallet.get_balance();

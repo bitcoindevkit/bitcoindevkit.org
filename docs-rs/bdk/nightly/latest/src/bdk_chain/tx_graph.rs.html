@@ -2092,12 +2092,12 @@
     <span class="doccomment">/// Inserts the given transaction into [`TxGraph`].
     ///
     /// The [`ChangeSet`] returned will be empty if `tx` already exists.
-    </span><span class="kw">pub fn </span>insert_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: Transaction) -&gt; ChangeSet&lt;A&gt; {
+    </span><span class="kw">pub fn </span>insert_tx&lt;T: Into&lt;Arc&lt;Transaction&gt;&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: T) -&gt; ChangeSet&lt;A&gt; {
+        <span class="kw">let </span>tx = tx.into();
         <span class="kw">let </span><span class="kw-2">mut </span>update = <span class="self">Self</span>::default();
-        update.txs.insert(
-            tx.txid(),
-            (TxNodeInternal::Whole(tx.into()), BTreeSet::new(), <span class="number">0</span>),
-        );
+        update
+            .txs
+            .insert(tx.txid(), (TxNodeInternal::Whole(tx), BTreeSet::new(), <span class="number">0</span>));
         <span class="self">self</span>.apply_update(update)
     }
 

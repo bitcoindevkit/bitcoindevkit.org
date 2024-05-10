@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["ElectrumUpdate","Combination of chain and transactions updates from electrum"],["RelevantTxids","Represents updates fetched from an Electrum server, but excludes full transactions."]],"trait":[["ElectrumExt","Trait to extend [`Client`] functionality."]]};
+window.SIDEBAR_ITEMS = {"struct":[["ElectrumFullScanResult","The result of [`ElectrumExt::full_scan`]."],["ElectrumSyncResult","The result of [`ElectrumExt::sync`]."]],"trait":[["ElectrumExt","Trait to extend [`electrum_client::Client`] functionality."]]};
