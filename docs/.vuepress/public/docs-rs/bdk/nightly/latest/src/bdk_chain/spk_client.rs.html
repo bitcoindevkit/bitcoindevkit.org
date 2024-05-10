@@ -385,14 +385,80 @@
 <a href="#385" id="385">385</a>
 <a href="#386" id="386">386</a>
 <a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Helper types for spk-based blockchain clients.
 
-</span><span class="kw">use </span>core::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
+</span><span class="kw">use crate</span>::{
+    collections::{BTreeMap, HashMap},
+    local_chain::CheckPoint,
+    ConfirmationTimeHeightAnchor, TxGraph,
+};
+<span class="kw">use </span>alloc::{boxed::Box, sync::Arc, vec::Vec};
+<span class="kw">use </span>bitcoin::{OutPoint, Script, ScriptBuf, Transaction, Txid};
+<span class="kw">use </span>core::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
 
-<span class="kw">use </span>alloc::{boxed::Box, collections::BTreeMap, vec::Vec};
-<span class="kw">use </span>bitcoin::{OutPoint, Script, ScriptBuf, Txid};
-
-<span class="kw">use crate</span>::{local_chain::CheckPoint, ConfirmationTimeHeightAnchor, TxGraph};
+<span class="doccomment">/// A cache of [`Arc`]-wrapped full transactions, identified by their [`Txid`]s.
+///
+/// This is used by the chain-source to avoid re-fetching full transactions.
+</span><span class="kw">pub type </span>TxCache = HashMap&lt;Txid, Arc&lt;Transaction&gt;&gt;;
 
 <span class="doccomment">/// Data required to perform a spk-based blockchain client sync.
 ///
@@ -404,6 +470,8 @@
     ///
     /// [`LocalChain::tip`]: crate::local_chain::LocalChain::tip
     </span><span class="kw">pub </span>chain_tip: CheckPoint,
+    <span class="doccomment">/// Cache of full transactions, so the chain-source can avoid re-fetching.
+    </span><span class="kw">pub </span>tx_cache: TxCache,
     <span class="doccomment">/// Transactions that spend from or to these indexed script pubkeys.
     </span><span class="kw">pub </span>spks: Box&lt;<span class="kw">dyn </span>ExactSizeIterator&lt;Item = ScriptBuf&gt; + Send&gt;,
     <span class="doccomment">/// Transactions with these txids.
@@ -417,10 +485,34 @@
     </span><span class="kw">pub fn </span>from_chain_tip(cp: CheckPoint) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             chain_tip: cp,
+            tx_cache: TxCache::new(),
             spks: Box::new(core::iter::empty()),
             txids: Box::new(core::iter::empty()),
             outpoints: Box::new(core::iter::empty()),
         }
+    }
+
+    <span class="doccomment">/// Add to the [`TxCache`] held by the request.
+    ///
+    /// This consumes the [`SyncRequest`] and returns the updated one.
+    </span><span class="attr">#[must_use]
+    </span><span class="kw">pub fn </span>cache_txs&lt;T&gt;(<span class="kw-2">mut </span><span class="self">self</span>, full_txs: <span class="kw">impl </span>IntoIterator&lt;Item = (Txid, T)&gt;) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>T: Into&lt;Arc&lt;Transaction&gt;&gt;,
+    {
+        <span class="self">self</span>.tx_cache = full_txs
+            .into_iter()
+            .map(|(txid, tx)| (txid, tx.into()))
+            .collect();
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// Add all transactions from [`TxGraph`] into the [`TxCache`].
+    ///
+    /// This consumes the [`SyncRequest`] and returns the updated one.
+    </span><span class="attr">#[must_use]
+    </span><span class="kw">pub fn </span>cache_graph_txs&lt;A&gt;(<span class="self">self</span>, graph: <span class="kw-2">&amp;</span>TxGraph&lt;A&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.cache_txs(graph.full_txs().map(|tx_node| (tx_node.txid, tx_node.tx)))
     }
 
     <span class="doccomment">/// Set the [`Script`]s that will be synced against.
@@ -581,6 +673,8 @@
     ///
     /// [`LocalChain::tip`]: crate::local_chain::LocalChain::tip
     </span><span class="kw">pub </span>chain_tip: CheckPoint,
+    <span class="doccomment">/// Cache of full transactions, so the chain-source can avoid re-fetching.
+    </span><span class="kw">pub </span>tx_cache: TxCache,
     <span class="doccomment">/// Iterators of script pubkeys indexed by the keychain index.
     </span><span class="kw">pub </span>spks_by_keychain: BTreeMap&lt;K, Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = (u32, ScriptBuf)&gt; + Send&gt;&gt;,
 }
@@ -591,8 +685,32 @@
     </span><span class="kw">pub fn </span>from_chain_tip(chain_tip: CheckPoint) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             chain_tip,
+            tx_cache: TxCache::new(),
             spks_by_keychain: BTreeMap::new(),
         }
+    }
+
+    <span class="doccomment">/// Add to the [`TxCache`] held by the request.
+    ///
+    /// This consumes the [`SyncRequest`] and returns the updated one.
+    </span><span class="attr">#[must_use]
+    </span><span class="kw">pub fn </span>cache_txs&lt;T&gt;(<span class="kw-2">mut </span><span class="self">self</span>, full_txs: <span class="kw">impl </span>IntoIterator&lt;Item = (Txid, T)&gt;) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>T: Into&lt;Arc&lt;Transaction&gt;&gt;,
+    {
+        <span class="self">self</span>.tx_cache = full_txs
+            .into_iter()
+            .map(|(txid, tx)| (txid, tx.into()))
+            .collect();
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// Add all transactions from [`TxGraph`] into the [`TxCache`].
+    ///
+    /// This consumes the [`SyncRequest`] and returns the updated one.
+    </span><span class="attr">#[must_use]
+    </span><span class="kw">pub fn </span>cache_graph_txs&lt;A&gt;(<span class="self">self</span>, graph: <span class="kw-2">&amp;</span>TxGraph&lt;A&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.cache_txs(graph.full_txs().map(|tx_node| (tx_node.txid, tx_node.tx)))
     }
 
     <span class="doccomment">/// Construct a new [`FullScanRequest`] from a given `chain_tip` and `index`.
@@ -703,9 +821,9 @@
 <span class="doccomment">/// Data returned from a spk-based blockchain client full scan.
 ///
 /// See also [`FullScanRequest`].
-</span><span class="kw">pub struct </span>FullScanResult&lt;K&gt; {
+</span><span class="kw">pub struct </span>FullScanResult&lt;K, A = ConfirmationTimeHeightAnchor&gt; {
     <span class="doccomment">/// The update to apply to the receiving [`LocalChain`](crate::local_chain::LocalChain).
-    </span><span class="kw">pub </span>graph_update: TxGraph&lt;ConfirmationTimeHeightAnchor&gt;,
+    </span><span class="kw">pub </span>graph_update: TxGraph&lt;A&gt;,
     <span class="doccomment">/// The update to apply to the receiving [`TxGraph`].
     </span><span class="kw">pub </span>chain_update: CheckPoint,
     <span class="doccomment">/// Last active indices for the corresponding keychains (`K`).
