@@ -1109,10 +1109,10 @@
     <span class="kw">for </span>tx <span class="kw">in </span>full_txs {
         <span class="kw">for </span>vin <span class="kw">in </span><span class="kw-2">&amp;</span>tx.input {
             <span class="kw">let </span>outpoint = vin.previous_output;
+            <span class="kw">let </span>vout = outpoint.vout;
             <span class="kw">let </span>prev_tx = fetch_tx(client, tx_cache, outpoint.txid)<span class="question-mark">?</span>;
-            <span class="kw">for </span>txout <span class="kw">in </span>prev_tx.output.clone() {
-                <span class="kw">let _ </span>= graph_update.insert_txout(outpoint, txout);
-            }
+            <span class="kw">let </span>txout = prev_tx.output[vout <span class="kw">as </span>usize].clone();
+            <span class="kw">let _ </span>= graph_update.insert_txout(outpoint, txout);
         }
     }
     <span class="prelude-val">Ok</span>(())
