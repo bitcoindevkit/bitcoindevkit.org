@@ -97,8 +97,14 @@ Manuel Gatti is a Product/Project Manager who has worked for about 3 and a half 
 He has been contributing to BDK since April 2023 mostly on the project management side (holding calls, helping with triage and prioritization, updating stakeholders). Since April 2024, he has started conducting user interviews in order to get feedback on BDK usage and possible pain points with the aim to help the team with the definition and prioritization of the development activities. In May 2024 he started collaborating as a product/project manager with Wizard Sardine (users of BDK) and in particular to the development and go-to-market strategy of Liana Wallet.
 
 <div>
+  <a href="https://twitter.com/nondiremanuel" target="_blank">
+    <img src="/img/twitter-icon.svg" style="width: 24px; margin: 0 12px 0 0">
+  </a>
   <a href="https://github.com/nondiremanuel" target="_blank">
-    <img src="/img/github-icon.svg" style="width: 24px">
+    <img src="/img/github-icon.svg" style="width: 24px; margin: 0 12px 0 0">
+  </a>
+  <a href="https://njump.me/npub10znwkv69vus58rrqydwfzy3tuljhqn5plec84y0v2pa5n85xfwnqaft2sl" target="_blank">
+    <img src="/img/nostr-icon.svg" style="width: 24px; margin: 0 12px 0 0">
   </a>
 </div>
 <br>
