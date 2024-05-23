@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["FullyNodedExport","Structure that contains the export of a wallet"]],"type":[["WalletExport","Alias for [`FullyNodedExport`]"]]};
+window.SIDEBAR_ITEMS = {"struct":["FullyNodedExport"],"type":["WalletExport"]};

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/chain/src/local_chain.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>local_chain.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../bdk_chain/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/chain/src/local_chain.rs`."><title>local_chain.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0-nightly (78a775127 2024-05-11)" data-channel="nightly" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -849,7 +849,7 @@
 <a href="#849" id="849">849</a>
 <a href="#850" id="850">850</a>
 <a href="#851" id="851">851</a>
-</pre><pre class="rust"><code><span class="doccomment">//! The [`LocalChain`] is a local implementation of [`ChainOracle`].
+</pre></div><pre class="rust"><code><span class="doccomment">//! The [`LocalChain`] is a local implementation of [`ChainOracle`].
 
 </span><span class="kw">use </span>core::convert::Infallible;
 <span class="kw">use </span>core::ops::RangeBounds;
@@ -924,7 +924,7 @@
 
     <span class="doccomment">/// Construct a checkpoint from the given `header` and block `height`.
     ///
-    /// If `header` is of the genesis block, the checkpoint won&#39;t have a [`prev`] node. Otherwise,
+    /// If `header` is of the genesis block, the checkpoint won't have a [`prev`] node. Otherwise,
     /// we return a checkpoint linked with the previous block.
     ///
     /// [`prev`]: CheckPoint::prev
@@ -944,7 +944,7 @@
 
         CheckPoint::new(prev_block_id)
             .push(this_block_id)
-            .expect(<span class="string">&quot;must construct checkpoint&quot;</span>)
+            .expect(<span class="string">"must construct checkpoint"</span>)
     }
 
     <span class="doccomment">/// Puts another checkpoint onto the linked list representing the blockchain.
@@ -1031,14 +1031,14 @@
 
     <span class="doccomment">/// Inserts `block_id` at its height within the chain.
     ///
-    /// The effect of `insert` depends on whether a height already exists. If it doesn&#39;t the
+    /// The effect of `insert` depends on whether a height already exists. If it doesn't the
     /// `block_id` we inserted and all pre-existing blocks higher than it will be re-inserted after
     /// it. If the height already existed and has a conflicting block hash then it will be purged
     /// along with all block followin it. The returned chain will have a tip of the `block_id`
     /// passed in. Of course, if the `block_id` was already present then this just returns `self`.
     </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>insert(<span class="self">self</span>, block_id: BlockId) -&gt; <span class="self">Self </span>{
-        <span class="macro">assert_ne!</span>(block_id.height, <span class="number">0</span>, <span class="string">&quot;cannot insert the genesis block&quot;</span>);
+        <span class="macro">assert_ne!</span>(block_id.height, <span class="number">0</span>, <span class="string">"cannot insert the genesis block"</span>);
 
         <span class="kw">let </span><span class="kw-2">mut </span>cp = <span class="self">self</span>.clone();
         <span class="kw">let </span><span class="kw-2">mut </span>tail = <span class="macro">vec!</span>[];
@@ -1050,7 +1050,7 @@
                 <span class="comment">// if we have a conflict we just return the inserted block because the tail is by
                 // implication invalid.
                 </span>tail = <span class="macro">vec!</span>[];
-                <span class="kw">break </span>cp.prev().expect(<span class="string">&quot;can&#39;t be called on genesis block&quot;</span>);
+                <span class="kw">break </span>cp.prev().expect(<span class="string">"can't be called on genesis block"</span>);
             }
 
             <span class="kw">if </span>cp.height() &lt; block_id.height {
@@ -1058,11 +1058,11 @@
             }
 
             tail.push(cp.block_id());
-            cp = cp.prev().expect(<span class="string">&quot;will break before genesis block&quot;</span>);
+            cp = cp.prev().expect(<span class="string">"will break before genesis block"</span>);
         };
 
         base.extend(core::iter::once(block_id).chain(tail.into_iter().rev()))
-            .expect(<span class="string">&quot;tail is in order&quot;</span>)
+            .expect(<span class="string">"tail is in order"</span>)
     }
 
     <span class="doccomment">/// Apply `changeset` to the checkpoint.
@@ -1096,7 +1096,7 @@
             <span class="kw">let </span>new_tip = <span class="kw">match </span>base {
                 <span class="prelude-val">Some</span>(base) =&gt; base
                     .extend(extension.into_iter().map(BlockId::from))
-                    .expect(<span class="string">&quot;extension is strictly greater than base&quot;</span>),
+                    .expect(<span class="string">"extension is strictly greater than base"</span>),
                 <span class="prelude-val">None </span>=&gt; LocalChain::from_blocks(extension)<span class="question-mark">?</span>.tip(),
             };
             <span class="self">self </span>= new_tip;
@@ -1166,7 +1166,7 @@
 <span class="kw">impl </span>LocalChain {
     <span class="doccomment">/// Get the genesis hash.
     </span><span class="kw">pub fn </span>genesis_hash(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; BlockHash {
-        <span class="self">self</span>.tip.get(<span class="number">0</span>).expect(<span class="string">&quot;genesis must exist&quot;</span>).hash()
+        <span class="self">self</span>.tip.get(<span class="number">0</span>).expect(<span class="string">"genesis must exist"</span>).hash()
     }
 
     <span class="doccomment">/// Construct [`LocalChain`] from genesis `hash`.
@@ -1198,7 +1198,7 @@
 
     <span class="doccomment">/// Construct a [`LocalChain`] from a given `checkpoint` tip.
     </span><span class="kw">pub fn </span>from_tip(tip: CheckPoint) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, MissingGenesisError&gt; {
-        <span class="kw">let </span>genesis_cp = tip.iter().last().expect(<span class="string">&quot;must have at least one element&quot;</span>);
+        <span class="kw">let </span>genesis_cp = tip.iter().last().expect(<span class="string">"must have at least one element"</span>);
         <span class="kw">if </span>genesis_cp.height() != <span class="number">0 </span>{
             <span class="kw">return </span><span class="prelude-val">Err</span>(MissingGenesisError);
         }
@@ -1220,7 +1220,7 @@
                 <span class="prelude-val">Some</span>(curr) =&gt; {
                     tip = <span class="prelude-val">Some</span>(
                         curr.push(BlockId::from(block))
-                            .expect(<span class="string">&quot;BTreeMap is ordered&quot;</span>),
+                            .expect(<span class="string">"BTreeMap is ordered"</span>),
                     )
                 }
                 <span class="prelude-val">None </span>=&gt; tip = <span class="prelude-val">Some</span>(CheckPoint::new(BlockId::from(block))),
@@ -1228,7 +1228,7 @@
         }
 
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            tip: tip.expect(<span class="string">&quot;already checked to have genesis&quot;</span>),
+            tip: tip.expect(<span class="string">"already checked to have genesis"</span>),
         })
     }
 
@@ -1241,7 +1241,7 @@
     ///
     /// The method returns [`ChangeSet`] on success. This represents the changes applied to `self`.
     ///
-    /// There must be no ambiguity about which of the existing chain&#39;s blocks are still valid and
+    /// There must be no ambiguity about which of the existing chain's blocks are still valid and
     /// which are now invalid. That is, the new chain must implicitly connect to a definite block in
     /// the existing chain and invalidate the block after it (if it exists) by including a block at
     /// the same height but with a different hash to explicitly exclude it as a connection point.
@@ -1261,12 +1261,12 @@
     <span class="doccomment">/// Update the chain with a given [`Header`] at `height` which you claim is connected to a existing block in the chain.
     ///
     /// This is useful when you have a block header that you want to record as part of the chain but
-    /// don&#39;t necessarily know that the `prev_blockhash` is in the chain.
+    /// don't necessarily know that the `prev_blockhash` is in the chain.
     ///
-    /// This will usually insert two new [`BlockId`]s into the chain: the header&#39;s block and the
-    /// header&#39;s `prev_blockhash` block. `connected_to` must already be in the chain but is allowed
+    /// This will usually insert two new [`BlockId`]s into the chain: the header's block and the
+    /// header's `prev_blockhash` block. `connected_to` must already be in the chain but is allowed
     /// to be `prev_blockhash` (in which case only one new block id will be inserted).
-    /// To be successful, `connected_to` must be chosen carefully so that `LocalChain`&#39;s [update
+    /// To be successful, `connected_to` must be chosen carefully so that `LocalChain`'s [update
     /// rules][`apply_update`] are satisfied.
     ///
     /// # Errors
@@ -1274,7 +1274,7 @@
     /// [`ApplyHeaderError::InconsistentBlocks`] occurs if the `connected_to` block and the
     /// [`Header`] is inconsistent. For example, if the `connected_to` block is the same height as
     /// `header` or `prev_blockhash`, but has a different block hash. Or if the `connected_to`
-    /// height is greater than the header&#39;s `height`.
+    /// height is greater than the header's `height`.
     ///
     /// [`ApplyHeaderError::CannotConnect`] occurs if the internal call to [`apply_update`] fails.
     ///
@@ -1307,7 +1307,7 @@
         };
 
         <span class="kw">let </span>update = CheckPoint::from_block_ids([conn, prev, <span class="prelude-val">Some</span>(this)].into_iter().flatten())
-            .expect(<span class="string">&quot;block ids must be in order&quot;</span>);
+            .expect(<span class="string">"block ids must be in order"</span>);
 
         <span class="self">self</span>.apply_update(update)
             .map_err(ApplyHeaderError::CannotConnect)
@@ -1338,7 +1338,7 @@
         <span class="self">self</span>.apply_header_connected_to(header, height, connected_to)
             .map_err(|err| <span class="kw">match </span>err {
                 ApplyHeaderError::InconsistentBlocks =&gt; {
-                    <span class="macro">unreachable!</span>(<span class="string">&quot;connected_to is derived from the block so is always consistent&quot;</span>)
+                    <span class="macro">unreachable!</span>(<span class="string">"connected_to is derived from the block so is always consistent"</span>)
                 }
                 ApplyHeaderError::CannotConnect(err) =&gt; err,
             })
@@ -1408,7 +1408,7 @@
             <span class="comment">// The checkpoint below the earliest checkpoint to remove will be the new tip.
             </span><span class="prelude-val">Some</span>(<span class="prelude-val">Some</span>(new_tip)) =&gt; new_tip,
             <span class="comment">// If there is no checkpoint below the earliest checkpoint to remove, it means the
-            // &quot;earliest checkpoint to remove&quot; is the genesis block. We disallow removing the
+            // "earliest checkpoint to remove" is the genesis block. We disallow removing the
             // genesis block.
             </span><span class="prelude-val">Some</span>(<span class="prelude-val">None</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(MissingGenesisError),
             <span class="comment">// If there is nothing to remove, we return an empty changeset.
@@ -1486,46 +1486,46 @@
 </span><span class="kw">pub struct </span>MissingGenesisError;
 
 <span class="kw">impl </span>core::fmt::Display <span class="kw">for </span>MissingGenesisError {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; core::fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; core::fmt::Result {
         <span class="macro">write!</span>(
             f,
-            <span class="string">&quot;cannot construct `LocalChain` without a genesis checkpoint&quot;
+            <span class="string">"cannot construct `LocalChain` without a genesis checkpoint"
         </span>)
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>MissingGenesisError {}
 
 <span class="doccomment">/// Represents a failure when trying to insert/remove a checkpoint to/from [`LocalChain`].
 </span><span class="attr">#[derive(Clone, Debug, PartialEq)]
 </span><span class="kw">pub struct </span>AlterCheckPointError {
-    <span class="doccomment">/// The checkpoint&#39;s height.
+    <span class="doccomment">/// The checkpoint's height.
     </span><span class="kw">pub </span>height: u32,
-    <span class="doccomment">/// The original checkpoint&#39;s block hash which cannot be replaced/removed.
+    <span class="doccomment">/// The original checkpoint's block hash which cannot be replaced/removed.
     </span><span class="kw">pub </span>original_hash: BlockHash,
     <span class="doccomment">/// The attempted update to the `original_block` hash.
     </span><span class="kw">pub </span>update_hash: <span class="prelude-ty">Option</span>&lt;BlockHash&gt;,
 }
 
 <span class="kw">impl </span>core::fmt::Display <span class="kw">for </span>AlterCheckPointError {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; core::fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; core::fmt::Result {
         <span class="kw">match </span><span class="self">self</span>.update_hash {
             <span class="prelude-val">Some</span>(update_hash) =&gt; <span class="macro">write!</span>(
                 f,
-                <span class="string">&quot;failed to insert block at height {}: original={} update={}&quot;</span>,
+                <span class="string">"failed to insert block at height {}: original={} update={}"</span>,
                 <span class="self">self</span>.height, <span class="self">self</span>.original_hash, update_hash
             ),
             <span class="prelude-val">None </span>=&gt; <span class="macro">write!</span>(
                 f,
-                <span class="string">&quot;failed to remove block at height {}: original={}&quot;</span>,
+                <span class="string">"failed to remove block at height {}: original={}"</span>,
                 <span class="self">self</span>.height, <span class="self">self</span>.original_hash
             ),
         }
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>AlterCheckPointError {}
 
 <span class="doccomment">/// Occurs when an update does not have a common checkpoint with the original chain.
@@ -1536,16 +1536,16 @@
 }
 
 <span class="kw">impl </span>core::fmt::Display <span class="kw">for </span>CannotConnectError {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; core::fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; core::fmt::Result {
         <span class="macro">write!</span>(
             f,
-            <span class="string">&quot;introduced chain cannot connect with the original chain, try include height {}&quot;</span>,
+            <span class="string">"introduced chain cannot connect with the original chain, try include height {}"</span>,
             <span class="self">self</span>.try_include_height,
         )
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>CannotConnectError {}
 
 <span class="doccomment">/// The error type for [`LocalChain::apply_header_connected_to`].
@@ -1558,18 +1558,18 @@
 }
 
 <span class="kw">impl </span>core::fmt::Display <span class="kw">for </span>ApplyHeaderError {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; core::fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; core::fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
             ApplyHeaderError::InconsistentBlocks =&gt; <span class="macro">write!</span>(
                 f,
-                <span class="string">&quot;the `connected_to` block conflicts with either the current or previous block&quot;
+                <span class="string">"the `connected_to` block conflicts with either the current or previous block"
             </span>),
             ApplyHeaderError::CannotConnect(err) =&gt; core::fmt::Display::fmt(err, f),
         }
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>ApplyHeaderError {}
 
 <span class="doccomment">/// Applies `update_tip` onto `original_tip`.
@@ -1594,7 +1594,7 @@
     <span class="comment">// If we can, we want to return the update tip as the new tip because this allows checkpoints
     // in multiple locations to keep the same `Arc` pointers when they are being updated from each
     // other using this function. We can do this as long as long as the update contains every
-    // block&#39;s height of the original chain.
+    // block's height of the original chain.
     </span><span class="kw">let </span><span class="kw-2">mut </span>is_update_height_superset_of_original = <span class="bool-val">true</span>;
 
     <span class="comment">// To find the difference between the new chain and the original we iterate over both of them
@@ -1610,12 +1610,12 @@
         }
 
         <span class="kw">match </span>(curr_orig.as_ref(), curr_update.as_ref()) {
-            <span class="comment">// Update block that doesn&#39;t exist in the original chain
+            <span class="comment">// Update block that doesn't exist in the original chain
             </span>(o, <span class="prelude-val">Some</span>(u)) <span class="kw">if </span><span class="prelude-val">Some</span>(u.height()) &gt; o.map(|o| o.height()) =&gt; {
                 changeset.insert(u.height(), <span class="prelude-val">Some</span>(u.hash()));
                 prev_update = curr_update.take();
             }
-            <span class="comment">// Original block that isn&#39;t in the update
+            <span class="comment">// Original block that isn't in the update
             </span>(<span class="prelude-val">Some</span>(o), u) <span class="kw">if </span><span class="prelude-val">Some</span>(o.height()) &gt; u.map(|u| u.height()) =&gt; {
                 <span class="comment">// this block might be gone if an earlier block gets invalidated
                 </span>potentially_invalidated_heights.push(o.height());
@@ -1624,8 +1624,8 @@
 
                 is_update_height_superset_of_original = <span class="bool-val">false</span>;
 
-                <span class="comment">// OPTIMIZATION: we have run out of update blocks so we don&#39;t need to continue
-                // iterating because there&#39;s no possibility of adding anything to changeset.
+                <span class="comment">// OPTIMIZATION: we have run out of update blocks so we don't need to continue
+                // iterating because there's no possibility of adding anything to changeset.
                 </span><span class="kw">if </span>u.is_none() {
                     <span class="kw">break</span>;
                 }
@@ -1677,12 +1677,12 @@
                 <span class="kw">break</span>;
             }
             <span class="kw">_ </span>=&gt; {
-                <span class="macro">unreachable!</span>(<span class="string">&quot;compiler cannot tell that everything has been covered&quot;</span>)
+                <span class="macro">unreachable!</span>(<span class="string">"compiler cannot tell that everything has been covered"</span>)
             }
         }
     }
 
-    <span class="comment">// When we don&#39;t have a point of agreement you can imagine it is implicitly the
+    <span class="comment">// When we don't have a point of agreement you can imagine it is implicitly the
     // genesis block so we need to do the final connectivity check which in this case
     // just means making sure the entire original chain was invalidated.
     </span><span class="kw">if </span>!prev_orig_was_invalidated &amp;&amp; !point_of_agreement_found {
@@ -1700,5 +1700,4 @@
         })<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>((new_tip, changeset))
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

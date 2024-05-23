@@ -1,5 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/wallet/src/wallet/coin_selection.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>coin_selection.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../bdk_wallet/index.html">
-                        <img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/wallet/src/wallet/coin_selection.rs`."><title>coin_selection.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bdk_wallet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0-nightly (78a775127 2024-05-11)" data-channel="nightly" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1601,7 +1600,7 @@
 <a href="#1600" id="1600">1600</a>
 <a href="#1601" id="1601">1601</a>
 <a href="#1602" id="1602">1602</a>
-</pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
+</pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
 // Copyright (c) 2020-2021 Bitcoin Dev Kit Developers
@@ -1689,7 +1688,7 @@
 //! # let mut wallet = doctest_wallet!();
 //! // create wallet, sync, ...
 //!
-//! let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;)
+//! let to_address = Address::from_str("2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt")
 //!     .unwrap()
 //!     .require_network(Network::Testnet)
 //!     .unwrap();
@@ -1727,7 +1726,7 @@
 <span class="doccomment">/// Errors that can be thrown by the [`coin_selection`](crate::wallet::coin_selection) module
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub enum </span>Error {
-    <span class="doccomment">/// Wallet&#39;s UTXO set is not enough to cover recipient&#39;s requested plus fee
+    <span class="doccomment">/// Wallet's UTXO set is not enough to cover recipient's requested plus fee
     </span>InsufficientFunds {
         <span class="doccomment">/// Sats needed for some transaction
         </span>needed: u64,
@@ -1743,28 +1742,28 @@
 }
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>Error {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::InsufficientFunds { needed, available } =&gt; <span class="macro">write!</span>(
                 f,
-                <span class="string">&quot;Insufficient funds: {} sat available of {} sat needed&quot;</span>,
+                <span class="string">"Insufficient funds: {} sat available of {} sat needed"</span>,
                 available, needed
             ),
             <span class="self">Self</span>::BnBTotalTriesExceeded =&gt; {
-                <span class="macro">write!</span>(f, <span class="string">&quot;Branch and bound coin selection: total tries exceeded&quot;</span>)
+                <span class="macro">write!</span>(f, <span class="string">"Branch and bound coin selection: total tries exceeded"</span>)
             }
-            <span class="self">Self</span>::BnBNoExactMatch =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Branch and bound coin selection: not exact match&quot;</span>),
+            <span class="self">Self</span>::BnBNoExactMatch =&gt; <span class="macro">write!</span>(f, <span class="string">"Branch and bound coin selection: not exact match"</span>),
         }
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>Error {}
 
 <span class="attr">#[derive(Debug)]
 </span><span class="doccomment">/// Remaining amount after performing coin selection
 </span><span class="kw">pub enum </span>Excess {
-    <span class="doccomment">/// It&#39;s not possible to create spendable output from excess using the current drain output
+    <span class="doccomment">/// It's not possible to create spendable output from excess using the current drain output
     </span>NoChange {
         <span class="doccomment">/// Threshold to consider amount as dust for this particular change script_pubkey
         </span>dust_threshold: u64,
@@ -1773,7 +1772,7 @@
         <span class="doccomment">/// The calculated fee for the drain TxOut with the selected script_pubkey
         </span>change_fee: u64,
     },
-    <span class="doccomment">/// It&#39;s possible to create spendable output from excess using the current drain output
+    <span class="doccomment">/// It's possible to create spendable output from excess using the current drain output
     </span>Change {
         <span class="doccomment">/// Effective amount available to create change after deducting the change output fee
         </span>amount: u64,
@@ -1816,11 +1815,11 @@
 /// This trait can be implemented to make the [`Wallet`](super::Wallet) use a customized coin
 /// selection algorithm when it creates transactions.
 ///
-/// For an example see [this module](crate::wallet::coin_selection)&#39;s documentation.
+/// For an example see [this module](crate::wallet::coin_selection)'s documentation.
 </span><span class="kw">pub trait </span>CoinSelectionAlgorithm: core::fmt::Debug {
     <span class="doccomment">/// Perform the coin selection
     ///
-    /// - `database`: a reference to the wallet&#39;s database that can be used to lookup additional
+    /// - `database`: a reference to the wallet's database that can be used to lookup additional
     ///               details for a specific UTXO
     /// - `required_utxos`: the utxos that must be spent regardless of `target_amount` with their
     ///                     weight cost
@@ -1857,7 +1856,7 @@
         target_amount: u64,
         drain_script: <span class="kw-2">&amp;</span>Script,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;CoinSelectionResult, Error&gt; {
-        <span class="comment">// We put the &quot;required UTXOs&quot; first and make sure the optional UTXOs are sorted,
+        <span class="comment">// We put the "required UTXOs" first and make sure the optional UTXOs are sorted,
         // initially smallest to largest, before being reversed with `.rev()`.
         </span><span class="kw">let </span>utxos = {
             optional_utxos.sort_unstable_by_key(|wu| wu.utxo.txout().value);
@@ -1887,9 +1886,9 @@
         target_amount: u64,
         drain_script: <span class="kw-2">&amp;</span>Script,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;CoinSelectionResult, Error&gt; {
-        <span class="comment">// We put the &quot;required UTXOs&quot; first and make sure the optional UTXOs are sorted from
+        <span class="comment">// We put the "required UTXOs" first and make sure the optional UTXOs are sorted from
         // oldest to newest according to blocktime
-        // For utxo that doesn&#39;t exist in DB, they will have lowest priority to be selected
+        // For utxo that doesn't exist in DB, they will have lowest priority to be selected
         </span><span class="kw">let </span>utxos = {
             optional_utxos.sort_unstable_by_key(|wu| <span class="kw">match </span><span class="kw-2">&amp;</span>wu.utxo {
                 Utxo::Local(local) =&gt; <span class="prelude-val">Some</span>(local.confirmation_time),
@@ -1915,7 +1914,7 @@
     <span class="comment">// drain_output_len = size(len(script_pubkey)) + len(script_pubkey) + size(output_value)
     </span><span class="kw">let </span>drain_output_len = serialize(drain_script).len() + <span class="number">8usize</span>;
     <span class="kw">let </span>change_fee =
-        (fee_rate * Weight::from_vb(drain_output_len <span class="kw">as </span>u64).expect(<span class="string">&quot;overflow occurred&quot;</span>)).to_sat();
+        (fee_rate * Weight::from_vb(drain_output_len <span class="kw">as </span>u64).expect(<span class="string">"overflow occurred"</span>)).to_sat();
     <span class="kw">let </span>drain_val = remaining_amount.saturating_sub(change_fee);
 
     <span class="kw">if </span>drain_val.is_dust(drain_script) {
@@ -2008,7 +2007,7 @@
 
 <span class="doccomment">/// Branch and bound coin selection
 ///
-/// Code adapted from Bitcoin Core&#39;s implementation and from Mark Erhardt Master&#39;s Thesis: &lt;http://murch.one/wp-content/uploads/2016/11/erhardt2016coinselection.pdf&gt;
+/// Code adapted from Bitcoin Core's implementation and from Mark Erhardt Master's Thesis: &lt;http://murch.one/wp-content/uploads/2016/11/erhardt2016coinselection.pdf&gt;
 </span><span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>BranchAndBoundCoinSelection {
     size_of_change: u64,
@@ -2064,7 +2063,7 @@
             .fold(<span class="number">0</span>, |acc, x| acc + x.effective_value);
 
         <span class="kw">let </span>cost_of_change =
-            (Weight::from_vb(<span class="self">self</span>.size_of_change).expect(<span class="string">&quot;overflow occurred&quot;</span>) * fee_rate).to_sat();
+            (Weight::from_vb(<span class="self">self</span>.size_of_change).expect(<span class="string">"overflow occurred"</span>) * fee_rate).to_sat();
 
         <span class="comment">// `curr_value` and `curr_available_value` are both the sum of *effective_values* of
         // the UTXOs. For the optional UTXOs (curr_available_value) we filter out UTXOs with
@@ -2075,7 +2074,7 @@
         // be negative as well.
         //
         // If the sum of curr_value and curr_available_value is negative or lower than our target,
-        // we can immediately exit with an error, as it&#39;s guaranteed we will never find a solution
+        // we can immediately exit with an error, as it's guaranteed we will never find a solution
         // if we actually run the BnB.
         </span><span class="kw">let </span>total_value: <span class="prelude-ty">Result</span>&lt;u64, <span class="kw">_</span>&gt; = (curr_available_value + curr_value).try_into();
         <span class="kw">match </span>total_value {
@@ -2103,11 +2102,11 @@
 
         <span class="kw">let </span>target_amount = target_amount
             .try_into()
-            .expect(<span class="string">&quot;Bitcoin amount to fit into i64&quot;</span>);
+            .expect(<span class="string">"Bitcoin amount to fit into i64"</span>);
 
         <span class="kw">if </span>curr_value &gt; target_amount {
-            <span class="comment">// remaining_amount can&#39;t be negative as that would mean the
-            // selection wasn&#39;t successful
+            <span class="comment">// remaining_amount can't be negative as that would mean the
+            // selection wasn't successful
             // target_amount = amount_needed + (fee_amount - vin_fees)
             </span><span class="kw">let </span>remaining_amount = (curr_value - target_amount) <span class="kw">as </span>u64;
 
@@ -2161,7 +2160,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;CoinSelectionResult, Error&gt; {
         <span class="comment">// current_selection[i] will contain true if we are using optional_utxos[i],
         // false otherwise. Note that current_selection.len() could be less than
-        // optional_utxos.len(), it just means that we still haven&#39;t decided if we should keep
+        // optional_utxos.len(), it just means that we still haven't decided if we should keep
         // certain optional_utxos or not.
         </span><span class="kw">let </span><span class="kw-2">mut </span>current_selection: Vec&lt;bool&gt; = Vec::with_capacity(optional_utxos.len());
 
@@ -2185,11 +2184,11 @@
             {
                 backtrack = <span class="bool-val">true</span>;
             } <span class="kw">else if </span>curr_value &gt;= target_amount {
-                <span class="comment">// Selected value is within range, there&#39;s no point in going forward. Start
+                <span class="comment">// Selected value is within range, there's no point in going forward. Start
                 // backtracking
                 </span>backtrack = <span class="bool-val">true</span>;
 
-                <span class="comment">// If we found a solution better than the previous one, or if there wasn&#39;t previous
+                <span class="comment">// If we found a solution better than the previous one, or if there wasn't previous
                 // solution, update the best solution
                 </span><span class="kw">if </span>best_selection_value.is_none() || curr_value &lt; best_selection_value.unwrap() {
                     best_selection.clone_from(<span class="kw-2">&amp;</span>current_selection);
@@ -2212,7 +2211,7 @@
 
                 <span class="kw">if </span>current_selection.last_mut().is_none() {
                     <span class="comment">// We have walked back to the first utxo and no branch is untraversed. All solutions searched
-                    // If best selection is empty, then there&#39;s no exact match
+                    // If best selection is empty, then there's no exact match
                     </span><span class="kw">if </span>best_selection.is_empty() {
                         <span class="kw">return </span><span class="prelude-val">Err</span>(Error::BnBNoExactMatch);
                     }
@@ -2253,8 +2252,8 @@
 
         <span class="kw">let </span>selected_amount = best_selection_value.unwrap();
 
-        <span class="comment">// remaining_amount can&#39;t be negative as that would mean the
-        // selection wasn&#39;t successful
+        <span class="comment">// remaining_amount can't be negative as that would mean the
+        // selection wasn't successful
         // target_amount = amount_needed + (fee_amount - vin_fees)
         </span><span class="kw">let </span>remaining_amount = (selected_amount - target_amount) <span class="kw">as </span>u64;
 
@@ -2291,8 +2290,8 @@
             },
         );
 
-        <span class="comment">// remaining_amount can&#39;t be negative as that would mean the
-        // selection wasn&#39;t successful
+        <span class="comment">// remaining_amount can't be negative as that would mean the
+        // selection wasn't successful
         // target_amount = amount_needed + (fee_amount - vin_fees)
         </span><span class="kw">let </span>remaining_amount = (selected_utxos.<span class="number">0 </span>- target_amount) <span class="kw">as </span>u64;
 
@@ -2365,7 +2364,7 @@
     <span class="kw">fn </span>utxo(value: u64, index: u32, confirmation_time: ConfirmationTime) -&gt; WeightedUtxo {
         <span class="macro">assert!</span>(index &lt; <span class="number">10</span>);
         <span class="kw">let </span>outpoint = OutPoint::from_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
-            <span class="string">&quot;000000000000000000000000000000000000000000000000000000000000000{}:0&quot;</span>,
+            <span class="string">"000000000000000000000000000000000000000000000000000000000000000{}:0"</span>,
             index
         ))
         .unwrap();
@@ -2433,7 +2432,7 @@
                 satisfaction_weight: P2WPKH_SATISFACTION_SIZE,
                 utxo: Utxo::Local(LocalOutput {
                     outpoint: OutPoint::from_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                        <span class="string">&quot;ebd9813ecebc57ff8f30797de7c205e3c7498ca950ea4341ee51a685ff2fa30a:{}&quot;</span>,
+                        <span class="string">"ebd9813ecebc57ff8f30797de7c205e3c7498ca950ea4341ee51a685ff2fa30a:{}"</span>,
                         i
                     ))
                     .unwrap(),
@@ -2464,7 +2463,7 @@
                 satisfaction_weight: P2WPKH_SATISFACTION_SIZE,
                 utxo: Utxo::Local(LocalOutput {
                     outpoint: OutPoint::from_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                        <span class="string">&quot;ebd9813ecebc57ff8f30797de7c205e3c7498ca950ea4341ee51a685ff2fa30a:{}&quot;</span>,
+                        <span class="string">"ebd9813ecebc57ff8f30797de7c205e3c7498ca950ea4341ee51a685ff2fa30a:{}"</span>,
                         i
                     ))
                     .unwrap(),
@@ -2554,7 +2553,7 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">&quot;InsufficientFunds&quot;</span>)]
+    #[should_panic(expected = <span class="string">"InsufficientFunds"</span>)]
     </span><span class="kw">fn </span>test_largest_first_coin_selection_insufficient_funds() {
         <span class="kw">let </span>utxos = get_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
@@ -2572,7 +2571,7 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">&quot;InsufficientFunds&quot;</span>)]
+    #[should_panic(expected = <span class="string">"InsufficientFunds"</span>)]
     </span><span class="kw">fn </span>test_largest_first_coin_selection_insufficient_funds_high_fees() {
         <span class="kw">let </span>utxos = get_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
@@ -2653,7 +2652,7 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">&quot;InsufficientFunds&quot;</span>)]
+    #[should_panic(expected = <span class="string">"InsufficientFunds"</span>)]
     </span><span class="kw">fn </span>test_oldest_first_coin_selection_insufficient_funds() {
         <span class="kw">let </span>utxos = get_oldest_first_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
@@ -2671,7 +2670,7 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">&quot;InsufficientFunds&quot;</span>)]
+    #[should_panic(expected = <span class="string">"InsufficientFunds"</span>)]
     </span><span class="kw">fn </span>test_oldest_first_coin_selection_insufficient_funds_high_fees() {
         <span class="kw">let </span>utxos = get_oldest_first_test_utxos();
 
@@ -2695,7 +2694,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_bnb_coin_selection_success() {
-        <span class="comment">// In this case bnb won&#39;t find a suitable match and single random draw will
+        <span class="comment">// In this case bnb won't find a suitable match and single random draw will
         // select three outputs
         </span><span class="kw">let </span>utxos = generate_same_value_utxos(<span class="number">100_000</span>, <span class="number">20</span>);
 
@@ -2798,7 +2797,7 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">&quot;InsufficientFunds&quot;</span>)]
+    #[should_panic(expected = <span class="string">"InsufficientFunds"</span>)]
     </span><span class="kw">fn </span>test_bnb_coin_selection_insufficient_funds() {
         <span class="kw">let </span>utxos = get_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
@@ -2816,7 +2815,7 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">&quot;InsufficientFunds&quot;</span>)]
+    #[should_panic(expected = <span class="string">"InsufficientFunds"</span>)]
     </span><span class="kw">fn </span>test_bnb_coin_selection_insufficient_funds_high_fees() {
         <span class="kw">let </span>utxos = get_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
@@ -2837,7 +2836,7 @@
     </span><span class="kw">fn </span>test_bnb_coin_selection_check_fee_rate() {
         <span class="kw">let </span>utxos = get_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
-        <span class="kw">let </span>target_amount = <span class="number">99932</span>; <span class="comment">// first utxo&#39;s effective value
+        <span class="kw">let </span>target_amount = <span class="number">99932</span>; <span class="comment">// first utxo's effective value
         </span><span class="kw">let </span>feerate = FeeRate::BROADCAST_MIN;
 
         <span class="kw">let </span>result = BranchAndBoundCoinSelection::new(<span class="number">0</span>)
@@ -2876,7 +2875,7 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">&quot;BnBNoExactMatch&quot;</span>)]
+    #[should_panic(expected = <span class="string">"BnBNoExactMatch"</span>)]
     </span><span class="kw">fn </span>test_bnb_function_no_exact_match() {
         <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb_unchecked(<span class="number">10</span>);
         <span class="kw">let </span>utxos: Vec&lt;OutputGroup&gt; = get_test_utxos()
@@ -2906,7 +2905,7 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">&quot;BnBTotalTriesExceeded&quot;</span>)]
+    #[should_panic(expected = <span class="string">"BnBTotalTriesExceeded"</span>)]
     </span><span class="kw">fn </span>test_bnb_function_tries_exceeded() {
         <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb_unchecked(<span class="number">10</span>);
         <span class="kw">let </span>utxos: Vec&lt;OutputGroup&gt; = generate_same_value_utxos(<span class="number">100_000</span>, <span class="number">100_000</span>)
@@ -2936,7 +2935,7 @@
             .unwrap();
     }
 
-    <span class="comment">// The match won&#39;t be exact but still in the range
+    <span class="comment">// The match won't be exact but still in the range
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>test_bnb_function_almost_exact_match_with_fees() {
         <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>);
@@ -3143,65 +3142,64 @@
             v
         }
 
-        <span class="kw">struct </span>TestCase&lt;<span class="lifetime">&#39;a</span>&gt; {
-            name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
-            required: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, u64)],
-            optional: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, u64)],
-            exp_required: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, u64)],
-            exp_optional: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, u64)],
+        <span class="kw">struct </span>TestCase&lt;<span class="lifetime">'a</span>&gt; {
+            name: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+            required: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str, u64)],
+            optional: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str, u64)],
+            exp_required: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str, u64)],
+            exp_optional: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str, u64)],
         }
 
         <span class="kw">let </span>test_cases = [
             TestCase {
-                name: <span class="string">&quot;no_duplicates&quot;</span>,
-                required: <span class="kw-2">&amp;</span>[(<span class="string">&quot;A&quot;</span>, <span class="number">1000</span>), (<span class="string">&quot;B&quot;</span>, <span class="number">2100</span>)],
-                optional: <span class="kw-2">&amp;</span>[(<span class="string">&quot;C&quot;</span>, <span class="number">1000</span>)],
-                exp_required: <span class="kw-2">&amp;</span>[(<span class="string">&quot;A&quot;</span>, <span class="number">1000</span>), (<span class="string">&quot;B&quot;</span>, <span class="number">2100</span>)],
-                exp_optional: <span class="kw-2">&amp;</span>[(<span class="string">&quot;C&quot;</span>, <span class="number">1000</span>)],
+                name: <span class="string">"no_duplicates"</span>,
+                required: <span class="kw-2">&amp;</span>[(<span class="string">"A"</span>, <span class="number">1000</span>), (<span class="string">"B"</span>, <span class="number">2100</span>)],
+                optional: <span class="kw-2">&amp;</span>[(<span class="string">"C"</span>, <span class="number">1000</span>)],
+                exp_required: <span class="kw-2">&amp;</span>[(<span class="string">"A"</span>, <span class="number">1000</span>), (<span class="string">"B"</span>, <span class="number">2100</span>)],
+                exp_optional: <span class="kw-2">&amp;</span>[(<span class="string">"C"</span>, <span class="number">1000</span>)],
             },
             TestCase {
-                name: <span class="string">&quot;duplicate_required_utxos&quot;</span>,
-                required: <span class="kw-2">&amp;</span>[(<span class="string">&quot;A&quot;</span>, <span class="number">3000</span>), (<span class="string">&quot;B&quot;</span>, <span class="number">1200</span>), (<span class="string">&quot;C&quot;</span>, <span class="number">1234</span>), (<span class="string">&quot;A&quot;</span>, <span class="number">3000</span>)],
-                optional: <span class="kw-2">&amp;</span>[(<span class="string">&quot;D&quot;</span>, <span class="number">2100</span>)],
-                exp_required: <span class="kw-2">&amp;</span>[(<span class="string">&quot;A&quot;</span>, <span class="number">3000</span>), (<span class="string">&quot;B&quot;</span>, <span class="number">1200</span>), (<span class="string">&quot;C&quot;</span>, <span class="number">1234</span>)],
-                exp_optional: <span class="kw-2">&amp;</span>[(<span class="string">&quot;D&quot;</span>, <span class="number">2100</span>)],
+                name: <span class="string">"duplicate_required_utxos"</span>,
+                required: <span class="kw-2">&amp;</span>[(<span class="string">"A"</span>, <span class="number">3000</span>), (<span class="string">"B"</span>, <span class="number">1200</span>), (<span class="string">"C"</span>, <span class="number">1234</span>), (<span class="string">"A"</span>, <span class="number">3000</span>)],
+                optional: <span class="kw-2">&amp;</span>[(<span class="string">"D"</span>, <span class="number">2100</span>)],
+                exp_required: <span class="kw-2">&amp;</span>[(<span class="string">"A"</span>, <span class="number">3000</span>), (<span class="string">"B"</span>, <span class="number">1200</span>), (<span class="string">"C"</span>, <span class="number">1234</span>)],
+                exp_optional: <span class="kw-2">&amp;</span>[(<span class="string">"D"</span>, <span class="number">2100</span>)],
             },
             TestCase {
-                name: <span class="string">&quot;duplicate_optional_utxos&quot;</span>,
-                required: <span class="kw-2">&amp;</span>[(<span class="string">&quot;A&quot;</span>, <span class="number">3000</span>), (<span class="string">&quot;B&quot;</span>, <span class="number">1200</span>)],
-                optional: <span class="kw-2">&amp;</span>[(<span class="string">&quot;C&quot;</span>, <span class="number">5000</span>), (<span class="string">&quot;D&quot;</span>, <span class="number">1300</span>), (<span class="string">&quot;C&quot;</span>, <span class="number">5000</span>)],
-                exp_required: <span class="kw-2">&amp;</span>[(<span class="string">&quot;A&quot;</span>, <span class="number">3000</span>), (<span class="string">&quot;B&quot;</span>, <span class="number">1200</span>)],
-                exp_optional: <span class="kw-2">&amp;</span>[(<span class="string">&quot;C&quot;</span>, <span class="number">5000</span>), (<span class="string">&quot;D&quot;</span>, <span class="number">1300</span>)],
+                name: <span class="string">"duplicate_optional_utxos"</span>,
+                required: <span class="kw-2">&amp;</span>[(<span class="string">"A"</span>, <span class="number">3000</span>), (<span class="string">"B"</span>, <span class="number">1200</span>)],
+                optional: <span class="kw-2">&amp;</span>[(<span class="string">"C"</span>, <span class="number">5000</span>), (<span class="string">"D"</span>, <span class="number">1300</span>), (<span class="string">"C"</span>, <span class="number">5000</span>)],
+                exp_required: <span class="kw-2">&amp;</span>[(<span class="string">"A"</span>, <span class="number">3000</span>), (<span class="string">"B"</span>, <span class="number">1200</span>)],
+                exp_optional: <span class="kw-2">&amp;</span>[(<span class="string">"C"</span>, <span class="number">5000</span>), (<span class="string">"D"</span>, <span class="number">1300</span>)],
             },
             TestCase {
-                name: <span class="string">&quot;duplicate_across_required_and_optional_utxos&quot;</span>,
-                required: <span class="kw-2">&amp;</span>[(<span class="string">&quot;A&quot;</span>, <span class="number">3000</span>), (<span class="string">&quot;B&quot;</span>, <span class="number">1200</span>), (<span class="string">&quot;C&quot;</span>, <span class="number">2100</span>)],
-                optional: <span class="kw-2">&amp;</span>[(<span class="string">&quot;A&quot;</span>, <span class="number">3000</span>), (<span class="string">&quot;D&quot;</span>, <span class="number">1200</span>), (<span class="string">&quot;E&quot;</span>, <span class="number">5000</span>)],
-                exp_required: <span class="kw-2">&amp;</span>[(<span class="string">&quot;A&quot;</span>, <span class="number">3000</span>), (<span class="string">&quot;B&quot;</span>, <span class="number">1200</span>), (<span class="string">&quot;C&quot;</span>, <span class="number">2100</span>)],
-                exp_optional: <span class="kw-2">&amp;</span>[(<span class="string">&quot;D&quot;</span>, <span class="number">1200</span>), (<span class="string">&quot;E&quot;</span>, <span class="number">5000</span>)],
+                name: <span class="string">"duplicate_across_required_and_optional_utxos"</span>,
+                required: <span class="kw-2">&amp;</span>[(<span class="string">"A"</span>, <span class="number">3000</span>), (<span class="string">"B"</span>, <span class="number">1200</span>), (<span class="string">"C"</span>, <span class="number">2100</span>)],
+                optional: <span class="kw-2">&amp;</span>[(<span class="string">"A"</span>, <span class="number">3000</span>), (<span class="string">"D"</span>, <span class="number">1200</span>), (<span class="string">"E"</span>, <span class="number">5000</span>)],
+                exp_required: <span class="kw-2">&amp;</span>[(<span class="string">"A"</span>, <span class="number">3000</span>), (<span class="string">"B"</span>, <span class="number">1200</span>), (<span class="string">"C"</span>, <span class="number">2100</span>)],
+                exp_optional: <span class="kw-2">&amp;</span>[(<span class="string">"D"</span>, <span class="number">1200</span>), (<span class="string">"E"</span>, <span class="number">5000</span>)],
             },
         ];
 
         <span class="kw">for </span>(i, t) <span class="kw">in </span>test_cases.into_iter().enumerate() {
-            <span class="macro">println!</span>(<span class="string">&quot;Case {}: {}&quot;</span>, i, t.name);
+            <span class="macro">println!</span>(<span class="string">"Case {}: {}"</span>, i, t.name);
             <span class="kw">let </span>(required, optional) =
                 filter_duplicates(to_utxo_vec(t.required), to_utxo_vec(t.optional));
             <span class="macro">assert_eq!</span>(
                 required,
                 to_utxo_vec(t.exp_required),
-                <span class="string">&quot;[{}:{}] unexpected `required` result&quot;</span>,
+                <span class="string">"[{}:{}] unexpected `required` result"</span>,
                 i,
                 t.name
             );
             <span class="macro">assert_eq!</span>(
                 optional,
                 to_utxo_vec(t.exp_optional),
-                <span class="string">&quot;[{}:{}] unexpected `optional` result&quot;</span>,
+                <span class="string">"[{}:{}] unexpected `optional` result"</span>,
                 i,
                 t.name
             );
         }
     }
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bdk_wallet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

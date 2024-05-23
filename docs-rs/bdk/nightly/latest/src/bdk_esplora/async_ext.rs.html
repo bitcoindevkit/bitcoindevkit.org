@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/esplora/src/async_ext.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>async_ext.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../bdk_esplora/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/esplora/src/async_ext.rs`."><title>async_ext.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_esplora" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0-nightly (78a775127 2024-05-11)" data-channel="nightly" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -588,7 +588,7 @@
 <a href="#588" id="588">588</a>
 <a href="#589" id="589">589</a>
 <a href="#590" id="590">590</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeSet;
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeSet;
 
 <span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>bdk_chain::spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult};
@@ -612,8 +612,8 @@
 /// Refer to [crate-level documentation] for more.
 ///
 /// [crate-level documentation]: crate
-</span><span class="attr">#[cfg_attr(target_arch = <span class="string">&quot;wasm32&quot;</span>, async_trait(<span class="question-mark">?</span>Send))]
-#[cfg_attr(not(target_arch = <span class="string">&quot;wasm32&quot;</span>), async_trait)]
+</span><span class="attr">#[cfg_attr(target_arch = <span class="string">"wasm32"</span>, async_trait(<span class="question-mark">?</span>Send))]
+#[cfg_attr(not(target_arch = <span class="string">"wasm32"</span>), async_trait)]
 </span><span class="kw">pub trait </span>EsploraAsyncExt {
     <span class="doccomment">/// Scan keychain scripts for transactions against Esplora, returning an update that can be
     /// applied to the receiving structures.
@@ -627,7 +627,7 @@
     ///
     /// ## Note
     ///
-    /// `stop_gap` is defined as &quot;the maximum number of consecutive unused addresses&quot;.
+    /// `stop_gap` is defined as "the maximum number of consecutive unused addresses".
     /// For example, with a `stop_gap` of  3, `full_scan` will keep scanning
     /// until it encounters 3 consecutive script pubkeys with no associated transactions.
     ///
@@ -661,8 +661,8 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResult, Error&gt;;
 }
 
-<span class="attr">#[cfg_attr(target_arch = <span class="string">&quot;wasm32&quot;</span>, async_trait(<span class="question-mark">?</span>Send))]
-#[cfg_attr(not(target_arch = <span class="string">&quot;wasm32&quot;</span>), async_trait)]
+<span class="attr">#[cfg_attr(target_arch = <span class="string">"wasm32"</span>, async_trait(<span class="question-mark">?</span>Send))]
+#[cfg_attr(not(target_arch = <span class="string">"wasm32"</span>), async_trait)]
 </span><span class="kw">impl </span>EsploraAsyncExt <span class="kw">for </span>esplora_client::AsyncClient {
     <span class="kw">async fn </span>full_scan&lt;K: Ord + Clone + Send&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -724,7 +724,7 @@
 ///
 /// We want to do this before fetching transactions and anchors as we cannot fetch latest blocks AND
 /// transactions atomically, and the checkpoint tip is used to determine last-scanned block (for
-/// block-based chain-sources). Therefore it&#39;s better to be conservative when setting the tip (use
+/// block-based chain-sources). Therefore it's better to be conservative when setting the tip (use
 /// an earlier tip rather than a later tip) otherwise the caller may accidentally skip blocks when
 /// alternating between chain-sources.
 </span><span class="kw">async fn </span>fetch_latest_blocks(
@@ -755,7 +755,7 @@
     </span><span class="kw">let </span><span class="kw-2">&amp;</span>tip_height = latest_blocks
         .keys()
         .last()
-        .expect(<span class="string">&quot;must have atleast one entry&quot;</span>);
+        .expect(<span class="string">"must have atleast one entry"</span>);
     <span class="kw">if </span>height &gt; tip_height {
         <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
     }
@@ -785,7 +785,7 @@
             <span class="kw">break</span>;
         } <span class="kw">else </span>{
             <span class="comment">// it is not strictly necessary to include all the conflicted heights (we do need the
-            // first one) but it seems prudent to make sure the updated chain&#39;s heights are a
+            // first one) but it seems prudent to make sure the updated chain's heights are a
             // superset of the existing chain after update.
             </span>conflicts.push(BlockId {
                 height: local_cp.height(),
@@ -794,11 +794,11 @@
         }
     }
 
-    <span class="kw">let </span><span class="kw-2">mut </span>tip = point_of_agreement.expect(<span class="string">&quot;remote esplora should have same genesis block&quot;</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>tip = point_of_agreement.expect(<span class="string">"remote esplora should have same genesis block"</span>);
 
     tip = tip
         .extend(conflicts.into_iter().rev())
-        .expect(<span class="string">&quot;evicted are in order&quot;</span>);
+        .expect(<span class="string">"evicted are in order"</span>);
 
     <span class="kw">for </span>anchor <span class="kw">in </span>anchors {
         <span class="kw">let </span>height = anchor.<span class="number">0</span>.anchor_block().height;
@@ -898,7 +898,7 @@
                 }
             }
 
-            <span class="kw">let </span>last_index = last_index.expect(<span class="string">&quot;Must be set since handles wasn&#39;t empty.&quot;</span>);
+            <span class="kw">let </span>last_index = last_index.expect(<span class="string">"Must be set since handles wasn't empty."</span>);
             <span class="kw">let </span>gap_limit_reached = <span class="kw">if let </span><span class="prelude-val">Some</span>(i) = last_active_index {
                 last_index &gt;= i.saturating_add(stop_gap <span class="kw">as </span>u32)
             } <span class="kw">else </span>{
@@ -1006,7 +1006,7 @@
 
     <span class="kw">use </span><span class="kw">crate</span>::async_ext::{chain_update, fetch_latest_blocks};
 
-    <span class="macro">macro_rules! </span>h {
+    <span class="macro">macro_rules!</span> h {
         (<span class="macro-nonterminal">$index</span>:literal) =&gt; {{
             bdk_chain::bitcoin::hashes::Hash::hash(<span class="macro-nonterminal">$index</span>.as_bytes())
         }};
@@ -1015,48 +1015,48 @@
     <span class="doccomment">/// Ensure that update does not remove heights (from original), and all anchor heights are included.
     </span><span class="attr">#[tokio::test]
     </span><span class="kw">pub async fn </span>test_finalize_chain_update() -&gt; anyhow::Result&lt;()&gt; {
-        <span class="kw">struct </span>TestCase&lt;<span class="lifetime">&#39;a</span>&gt; {
-            name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+        <span class="kw">struct </span>TestCase&lt;<span class="lifetime">'a</span>&gt; {
+            name: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
             <span class="doccomment">/// Initial blockchain height to start the env with.
             </span>initial_env_height: u32,
             <span class="doccomment">/// Initial checkpoint heights to start with.
-            </span>initial_cps: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u32],
+            </span>initial_cps: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[u32],
             <span class="doccomment">/// The final blockchain height of the env.
             </span>final_env_height: u32,
             <span class="doccomment">/// The anchors to test with: `(height, txid)`. Only the height is provided as we can fetch
             /// the blockhash from the env.
-            </span>anchors: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[(u32, Txid)],
+            </span>anchors: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[(u32, Txid)],
         }
 
         <span class="kw">let </span>test_cases = [
             TestCase {
-                name: <span class="string">&quot;chain_extends&quot;</span>,
+                name: <span class="string">"chain_extends"</span>,
                 initial_env_height: <span class="number">60</span>,
                 initial_cps: <span class="kw-2">&amp;</span>[<span class="number">59</span>, <span class="number">60</span>],
                 final_env_height: <span class="number">90</span>,
                 anchors: <span class="kw-2">&amp;</span>[],
             },
             TestCase {
-                name: <span class="string">&quot;introduce_older_heights&quot;</span>,
+                name: <span class="string">"introduce_older_heights"</span>,
                 initial_env_height: <span class="number">50</span>,
                 initial_cps: <span class="kw-2">&amp;</span>[<span class="number">10</span>, <span class="number">15</span>],
                 final_env_height: <span class="number">50</span>,
-                anchors: <span class="kw-2">&amp;</span>[(<span class="number">11</span>, <span class="macro">h!</span>(<span class="string">&quot;A&quot;</span>)), (<span class="number">14</span>, <span class="macro">h!</span>(<span class="string">&quot;B&quot;</span>))],
+                anchors: <span class="kw-2">&amp;</span>[(<span class="number">11</span>, <span class="macro">h!</span>(<span class="string">"A"</span>)), (<span class="number">14</span>, <span class="macro">h!</span>(<span class="string">"B"</span>))],
             },
             TestCase {
-                name: <span class="string">&quot;introduce_older_heights_after_chain_extends&quot;</span>,
+                name: <span class="string">"introduce_older_heights_after_chain_extends"</span>,
                 initial_env_height: <span class="number">50</span>,
                 initial_cps: <span class="kw-2">&amp;</span>[<span class="number">10</span>, <span class="number">15</span>],
                 final_env_height: <span class="number">100</span>,
-                anchors: <span class="kw-2">&amp;</span>[(<span class="number">11</span>, <span class="macro">h!</span>(<span class="string">&quot;A&quot;</span>)), (<span class="number">14</span>, <span class="macro">h!</span>(<span class="string">&quot;B&quot;</span>))],
+                anchors: <span class="kw-2">&amp;</span>[(<span class="number">11</span>, <span class="macro">h!</span>(<span class="string">"A"</span>)), (<span class="number">14</span>, <span class="macro">h!</span>(<span class="string">"B"</span>))],
             },
         ];
 
         <span class="kw">for </span>(i, t) <span class="kw">in </span>test_cases.into_iter().enumerate() {
-            <span class="macro">println!</span>(<span class="string">&quot;[{}] running test case: {}&quot;</span>, i, t.name);
+            <span class="macro">println!</span>(<span class="string">"[{}] running test case: {}"</span>, i, t.name);
 
             <span class="kw">let </span>env = TestEnv::new()<span class="question-mark">?</span>;
-            <span class="kw">let </span>base_url = <span class="macro">format!</span>(<span class="string">&quot;http://{}&quot;</span>, <span class="kw-2">&amp;</span>env.electrsd.esplora_url.clone().unwrap());
+            <span class="kw">let </span>base_url = <span class="macro">format!</span>(<span class="string">"http://{}"</span>, <span class="kw-2">&amp;</span>env.electrsd.esplora_url.clone().unwrap());
             <span class="kw">let </span>client = Builder::new(base_url.as_str()).build_async()<span class="question-mark">?</span>;
 
             <span class="comment">// set env to `initial_env_height`
@@ -1097,7 +1097,7 @@
                 chain.apply_update(update)<span class="question-mark">?</span>;
                 chain
             };
-            <span class="macro">println!</span>(<span class="string">&quot;local chain height: {}&quot;</span>, local_chain.tip().height());
+            <span class="macro">println!</span>(<span class="string">"local chain height: {}"</span>, local_chain.tip().height());
 
             <span class="comment">// extend env chain
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(to_mine) = t
@@ -1138,7 +1138,7 @@
             </span><span class="kw">let </span><span class="kw-2">mut </span>updated_local_chain = local_chain.clone();
             updated_local_chain.apply_update(update)<span class="question-mark">?</span>;
             <span class="macro">println!</span>(
-                <span class="string">&quot;updated local chain height: {}&quot;</span>,
+                <span class="string">"updated local chain height: {}"</span>,
                 updated_local_chain.tip().height()
             );
 
@@ -1154,7 +1154,7 @@
                         .collect::&lt;BTreeSet&lt;<span class="kw">_</span>&gt;&gt;();
                     updated_heights.is_superset(<span class="kw-2">&amp;</span>initial_heights)
                 },
-                <span class="string">&quot;heights from the initial chain must all be in the updated chain&quot;</span>,
+                <span class="string">"heights from the initial chain must all be in the updated chain"</span>,
             );
 
             <span class="macro">assert!</span>(
@@ -1171,12 +1171,11 @@
                         .collect::&lt;BTreeSet&lt;<span class="kw">_</span>&gt;&gt;();
                     anchor_heights.is_superset(<span class="kw-2">&amp;</span>exp_anchor_heights)
                 },
-                <span class="string">&quot;anchor heights must all be in updated chain&quot;</span>,
+                <span class="string">"anchor heights must all be in updated chain"</span>,
             );
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_esplora" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

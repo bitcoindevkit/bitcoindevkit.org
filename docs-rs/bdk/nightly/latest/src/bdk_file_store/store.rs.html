@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/file_store/src/store.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>store.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../bdk_file_store/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/file_store/src/store.rs`."><title>store.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_file_store" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0-nightly (78a775127 2024-05-11)" data-channel="nightly" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -462,7 +462,7 @@
 <a href="#462" id="462">462</a>
 <a href="#463" id="463">463</a>
 <a href="#464" id="464">464</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{bincode_options, EntryIter, FileError, IterError};
+</pre></div><pre class="rust"><code><span class="kw">use crate</span>::{bincode_options, EntryIter, FileError, IterError};
 <span class="kw">use </span>anyhow::anyhow;
 <span class="kw">use </span>bdk_chain::Append;
 <span class="kw">use </span>bdk_persist::PersistBackend;
@@ -496,12 +496,12 @@
 {
     <span class="kw">fn </span>write_changes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>C) -&gt; anyhow::Result&lt;()&gt; {
         <span class="self">self</span>.append_changeset(changeset)
-            .map_err(|e| <span class="macro">anyhow!</span>(e).context(<span class="string">&quot;failed to write changes to persistence backend&quot;</span>))
+            .map_err(|e| <span class="macro">anyhow!</span>(e).context(<span class="string">"failed to write changes to persistence backend"</span>))
     }
 
     <span class="kw">fn </span>load_from_persistence(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;<span class="prelude-ty">Option</span>&lt;C&gt;&gt; {
         <span class="self">self</span>.aggregate_changesets()
-            .map_err(|e| <span class="macro">anyhow!</span>(e.iter_error).context(<span class="string">&quot;error loading from persistence backend&quot;</span>))
+            .map_err(|e| <span class="macro">anyhow!</span>(e.iter_error).context(<span class="string">"error loading from persistence backend"</span>))
     }
 }
 
@@ -528,7 +528,7 @@
             // nightly-only `File::create_new` method
             </span><span class="kw">return </span><span class="prelude-val">Err</span>(FileError::Io(io::Error::new(
                 io::ErrorKind::Other,
-                <span class="string">&quot;file already exists&quot;</span>,
+                <span class="string">"file already exists"</span>,
             )));
         }
         <span class="kw">let </span><span class="kw-2">mut </span>f = OpenOptions::new()
@@ -654,7 +654,7 @@
             .serialize_into(<span class="kw-2">&amp;mut </span><span class="self">self</span>.db_file, changeset)
             .map_err(|e| <span class="kw">match </span><span class="kw-2">*</span>e {
                 bincode::ErrorKind::Io(error) =&gt; error,
-                unexpected_err =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected bincode error: {}&quot;</span>, unexpected_err),
+                unexpected_err =&gt; <span class="macro">panic!</span>(<span class="string">"unexpected bincode error: {}"</span>, unexpected_err),
             })<span class="question-mark">?</span>;
 
         <span class="comment">// truncate file after this changeset addition
@@ -678,7 +678,7 @@
 }
 
 <span class="kw">impl</span>&lt;C&gt; std::fmt::Display <span class="kw">for </span>AggregateChangesetsError&lt;C&gt; {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; std::fmt::Result {
         std::fmt::Display::fmt(<span class="kw-2">&amp;</span><span class="self">self</span>.iter_error, f)
     }
 }
@@ -707,35 +707,35 @@
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>construct_store() {
         <span class="kw">let </span>temp_dir = tempfile::tempdir().unwrap();
-        <span class="kw">let </span>file_path = temp_dir.path().join(<span class="string">&quot;db_file&quot;</span>);
+        <span class="kw">let </span>file_path = temp_dir.path().join(<span class="string">"db_file"</span>);
         <span class="kw">let _ </span>= Store::&lt;TestChangeSet&gt;::open(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, <span class="kw-2">&amp;</span>file_path)
-            .expect_err(<span class="string">&quot;must not open as file does not exist yet&quot;</span>);
+            .expect_err(<span class="string">"must not open as file does not exist yet"</span>);
         <span class="kw">let _ </span>= Store::&lt;TestChangeSet&gt;::create_new(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, <span class="kw-2">&amp;</span>file_path)
-            .expect(<span class="string">&quot;must create file&quot;</span>);
+            .expect(<span class="string">"must create file"</span>);
         <span class="comment">// cannot create new as file already exists
         </span><span class="kw">let _ </span>= Store::&lt;TestChangeSet&gt;::create_new(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, <span class="kw-2">&amp;</span>file_path)
-            .expect_err(<span class="string">&quot;must fail as file already exists now&quot;</span>);
+            .expect_err(<span class="string">"must fail as file already exists now"</span>);
         <span class="kw">let _ </span>= Store::&lt;TestChangeSet&gt;::open(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, <span class="kw-2">&amp;</span>file_path)
-            .expect(<span class="string">&quot;must open as file exists now&quot;</span>);
+            .expect(<span class="string">"must open as file exists now"</span>);
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>open_or_create_new() {
         <span class="kw">let </span>temp_dir = tempfile::tempdir().unwrap();
-        <span class="kw">let </span>file_path = temp_dir.path().join(<span class="string">&quot;db_file&quot;</span>);
-        <span class="kw">let </span>changeset = BTreeSet::from([<span class="string">&quot;hello&quot;</span>.to_string(), <span class="string">&quot;world&quot;</span>.to_string()]);
+        <span class="kw">let </span>file_path = temp_dir.path().join(<span class="string">"db_file"</span>);
+        <span class="kw">let </span>changeset = BTreeSet::from([<span class="string">"hello"</span>.to_string(), <span class="string">"world"</span>.to_string()]);
 
         {
             <span class="kw">let </span><span class="kw-2">mut </span>db = Store::&lt;TestChangeSet&gt;::open_or_create_new(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, <span class="kw-2">&amp;</span>file_path)
-                .expect(<span class="string">&quot;must create&quot;</span>);
+                .expect(<span class="string">"must create"</span>);
             <span class="macro">assert!</span>(file_path.exists());
-            db.append_changeset(<span class="kw-2">&amp;</span>changeset).expect(<span class="string">&quot;must succeed&quot;</span>);
+            db.append_changeset(<span class="kw-2">&amp;</span>changeset).expect(<span class="string">"must succeed"</span>);
         }
 
         {
             <span class="kw">let </span><span class="kw-2">mut </span>db = Store::&lt;TestChangeSet&gt;::open_or_create_new(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, <span class="kw-2">&amp;</span>file_path)
-                .expect(<span class="string">&quot;must recover&quot;</span>);
-            <span class="kw">let </span>recovered_changeset = db.aggregate_changesets().expect(<span class="string">&quot;must succeed&quot;</span>);
+                .expect(<span class="string">"must recover"</span>);
+            <span class="kw">let </span>recovered_changeset = db.aggregate_changesets().expect(<span class="string">"must succeed"</span>);
             <span class="macro">assert_eq!</span>(recovered_changeset, <span class="prelude-val">Some</span>(changeset));
         }
     }
@@ -744,27 +744,27 @@
     </span><span class="kw">fn </span>new_fails_if_file_is_too_short() {
         <span class="kw">let </span><span class="kw-2">mut </span>file = NamedTempFile::new().unwrap();
         file.write_all(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES[..TEST_MAGIC_BYTES_LEN - <span class="number">1</span>])
-            .expect(<span class="string">&quot;should write&quot;</span>);
+            .expect(<span class="string">"should write"</span>);
 
         <span class="kw">match </span>Store::&lt;TestChangeSet&gt;::open(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, file.path()) {
             <span class="prelude-val">Err</span>(FileError::Io(e)) =&gt; <span class="macro">assert_eq!</span>(e.kind(), std::io::ErrorKind::UnexpectedEof),
-            unexpected =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected result: {:?}&quot;</span>, unexpected),
+            unexpected =&gt; <span class="macro">panic!</span>(<span class="string">"unexpected result: {:?}"</span>, unexpected),
         };
     }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>new_fails_if_magic_bytes_are_invalid() {
-        <span class="kw">let </span>invalid_magic_bytes = <span class="string">&quot;ldkfs0000000&quot;</span>;
+        <span class="kw">let </span>invalid_magic_bytes = <span class="string">"ldkfs0000000"</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>file = NamedTempFile::new().unwrap();
         file.write_all(invalid_magic_bytes.as_bytes())
-            .expect(<span class="string">&quot;should write&quot;</span>);
+            .expect(<span class="string">"should write"</span>);
 
         <span class="kw">match </span>Store::&lt;TestChangeSet&gt;::open(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, file.path()) {
             <span class="prelude-val">Err</span>(FileError::InvalidMagicBytes { got, .. }) =&gt; {
                 <span class="macro">assert_eq!</span>(got, invalid_magic_bytes.as_bytes())
             }
-            unexpected =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected result: {:?}&quot;</span>, unexpected),
+            unexpected =&gt; <span class="macro">panic!</span>(<span class="string">"unexpected result: {:?}"</span>, unexpected),
         };
     }
 
@@ -774,19 +774,19 @@
         </span><span class="kw">let </span><span class="kw-2">mut </span>data = [<span class="number">255_u8</span>; <span class="number">2000</span>];
         data[..TEST_MAGIC_BYTES_LEN].copy_from_slice(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES);
 
-        <span class="kw">let </span>changeset = TestChangeSet::from([<span class="string">&quot;one&quot;</span>.into(), <span class="string">&quot;two&quot;</span>.into(), <span class="string">&quot;three!&quot;</span>.into()]);
+        <span class="kw">let </span>changeset = TestChangeSet::from([<span class="string">"one"</span>.into(), <span class="string">"two"</span>.into(), <span class="string">"three!"</span>.into()]);
 
         <span class="kw">let </span><span class="kw-2">mut </span>file = NamedTempFile::new().unwrap();
-        file.write_all(<span class="kw-2">&amp;</span>data).expect(<span class="string">&quot;should write&quot;</span>);
+        file.write_all(<span class="kw-2">&amp;</span>data).expect(<span class="string">"should write"</span>);
 
         <span class="kw">let </span><span class="kw-2">mut </span>store =
-            Store::&lt;TestChangeSet&gt;::open(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, file.path()).expect(<span class="string">&quot;should open&quot;</span>);
+            Store::&lt;TestChangeSet&gt;::open(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, file.path()).expect(<span class="string">"should open"</span>);
         <span class="kw">match </span>store.iter_changesets().next() {
             <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(IterError::Bincode(<span class="kw">_</span>))) =&gt; {}
-            unexpected_res =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unexpected result: {:?}&quot;</span>, unexpected_res),
+            unexpected_res =&gt; <span class="macro">panic!</span>(<span class="string">"unexpected result: {:?}"</span>, unexpected_res),
         }
 
-        store.append_changeset(<span class="kw-2">&amp;</span>changeset).expect(<span class="string">&quot;should append&quot;</span>);
+        store.append_changeset(<span class="kw-2">&amp;</span>changeset).expect(<span class="string">"should append"</span>);
 
         drop(store);
 
@@ -795,7 +795,7 @@
             file.reopen()
                 .unwrap()
                 .read_to_end(<span class="kw-2">&amp;mut </span>buf)
-                .expect(<span class="string">&quot;should read&quot;</span>);
+                .expect(<span class="string">"should read"</span>);
             buf
         };
 
@@ -804,7 +804,7 @@
             DefaultOptions::new()
                 .with_varint_encoding()
                 .serialize_into(<span class="kw-2">&amp;mut </span>buf, <span class="kw-2">&amp;</span>changeset)
-                .expect(<span class="string">&quot;should encode&quot;</span>);
+                .expect(<span class="string">"should encode"</span>);
             buf
         };
 
@@ -816,16 +816,16 @@
         <span class="kw">let </span>temp_dir = tempfile::tempdir().unwrap();
 
         <span class="kw">let </span>changesets = [
-            TestChangeSet::from([<span class="string">&quot;1&quot;</span>.into()]),
-            TestChangeSet::from([<span class="string">&quot;2&quot;</span>.into(), <span class="string">&quot;3&quot;</span>.into()]),
-            TestChangeSet::from([<span class="string">&quot;4&quot;</span>.into(), <span class="string">&quot;5&quot;</span>.into(), <span class="string">&quot;6&quot;</span>.into()]),
+            TestChangeSet::from([<span class="string">"1"</span>.into()]),
+            TestChangeSet::from([<span class="string">"2"</span>.into(), <span class="string">"3"</span>.into()]),
+            TestChangeSet::from([<span class="string">"4"</span>.into(), <span class="string">"5"</span>.into(), <span class="string">"6"</span>.into()]),
         ];
-        <span class="kw">let </span>last_changeset = TestChangeSet::from([<span class="string">&quot;7&quot;</span>.into(), <span class="string">&quot;8&quot;</span>.into(), <span class="string">&quot;9&quot;</span>.into()]);
+        <span class="kw">let </span>last_changeset = TestChangeSet::from([<span class="string">"7"</span>.into(), <span class="string">"8"</span>.into(), <span class="string">"9"</span>.into()]);
         <span class="kw">let </span>last_changeset_bytes = bincode_options().serialize(<span class="kw-2">&amp;</span>last_changeset).unwrap();
 
         <span class="kw">for </span>short_write_len <span class="kw">in </span><span class="number">1</span>..last_changeset_bytes.len() - <span class="number">1 </span>{
-            <span class="kw">let </span>file_path = temp_dir.path().join(<span class="macro">format!</span>(<span class="string">&quot;{}.dat&quot;</span>, short_write_len));
-            <span class="macro">println!</span>(<span class="string">&quot;Test file: {:?}&quot;</span>, file_path);
+            <span class="kw">let </span>file_path = temp_dir.path().join(<span class="macro">format!</span>(<span class="string">"{}.dat"</span>, short_write_len));
+            <span class="macro">println!</span>(<span class="string">"Test file: {:?}"</span>, file_path);
 
             <span class="comment">// simulate creating a file, writing data where the last write is incomplete
             </span>{
@@ -846,14 +846,14 @@
                 <span class="kw">let </span><span class="kw-2">mut </span>db = Store::&lt;TestChangeSet&gt;::open(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, <span class="kw-2">&amp;</span>file_path).unwrap();
                 <span class="kw">let </span>err = db
                     .aggregate_changesets()
-                    .expect_err(<span class="string">&quot;should return error as last read is short&quot;</span>);
+                    .expect_err(<span class="string">"should return error as last read is short"</span>);
                 <span class="macro">assert_eq!</span>(
                     err.changeset,
                     changesets.iter().cloned().reduce(|<span class="kw-2">mut </span>acc, cs| {
                         Append::append(<span class="kw-2">&amp;mut </span>acc, cs);
                         acc
                     }),
-                    <span class="string">&quot;should recover all changesets that are written in full&quot;</span>,
+                    <span class="string">"should recover all changesets that are written in full"</span>,
                 );
                 db.db_file.write_all(<span class="kw-2">&amp;</span>last_changeset_bytes).unwrap();
             }
@@ -863,7 +863,7 @@
                 <span class="kw">let </span><span class="kw-2">mut </span>db = Store::&lt;TestChangeSet&gt;::open(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, <span class="kw-2">&amp;</span>file_path).unwrap();
                 <span class="kw">let </span>aggregated_changesets = db
                     .aggregate_changesets()
-                    .expect(<span class="string">&quot;aggregating all changesets should succeed&quot;</span>);
+                    .expect(<span class="string">"aggregating all changesets should succeed"</span>);
                 <span class="macro">assert_eq!</span>(
                     aggregated_changesets,
                     changesets
@@ -874,7 +874,7 @@
                             Append::append(<span class="kw-2">&amp;mut </span>acc, cs);
                             acc
                         }),
-                    <span class="string">&quot;should recover all changesets&quot;</span>,
+                    <span class="string">"should recover all changesets"</span>,
                 );
             }
         }
@@ -885,13 +885,13 @@
         <span class="kw">let </span>temp_dir = tempfile::tempdir().unwrap();
 
         <span class="kw">let </span>changesets = (<span class="number">0</span>..<span class="number">20</span>)
-            .map(|n| TestChangeSet::from([<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, n)]))
+            .map(|n| TestChangeSet::from([<span class="macro">format!</span>(<span class="string">"{}"</span>, n)]))
             .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-        <span class="kw">let </span>last_changeset = TestChangeSet::from([<span class="string">&quot;last&quot;</span>.into()]);
+        <span class="kw">let </span>last_changeset = TestChangeSet::from([<span class="string">"last"</span>.into()]);
 
         <span class="kw">for </span>read_count <span class="kw">in </span><span class="number">0</span>..changesets.len() {
-            <span class="kw">let </span>file_path = temp_dir.path().join(<span class="macro">format!</span>(<span class="string">&quot;{}.dat&quot;</span>, read_count));
-            <span class="macro">println!</span>(<span class="string">&quot;Test file: {:?}&quot;</span>, file_path);
+            <span class="kw">let </span>file_path = temp_dir.path().join(<span class="macro">format!</span>(<span class="string">"{}.dat"</span>, read_count));
+            <span class="macro">println!</span>(<span class="string">"Test file: {:?}"</span>, file_path);
 
             <span class="comment">// First, we create the file with all the changesets!
             </span><span class="kw">let </span><span class="kw-2">mut </span>db = Store::&lt;TestChangeSet&gt;::create_new(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, <span class="kw-2">&amp;</span>file_path).unwrap();
@@ -905,14 +905,14 @@
             <span class="kw">let </span><span class="kw-2">mut </span>exp_aggregation = db
                 .iter_changesets()
                 .take(read_count)
-                .map(|r| r.expect(<span class="string">&quot;must read valid changeset&quot;</span>))
+                .map(|r| r.expect(<span class="string">"must read valid changeset"</span>))
                 .fold(TestChangeSet::default(), |<span class="kw-2">mut </span>acc, v| {
                     Append::append(<span class="kw-2">&amp;mut </span>acc, v);
                     acc
                 });
             <span class="comment">// We write after a short read.
             </span>db.write_changes(<span class="kw-2">&amp;</span>last_changeset)
-                .expect(<span class="string">&quot;last write must succeed&quot;</span>);
+                .expect(<span class="string">"last write must succeed"</span>);
             Append::append(<span class="kw-2">&amp;mut </span>exp_aggregation, last_changeset.clone());
             drop(db);
 
@@ -920,11 +920,10 @@
             </span><span class="kw">let </span>aggregation = Store::&lt;TestChangeSet&gt;::open(<span class="kw-2">&amp;</span>TEST_MAGIC_BYTES, <span class="kw-2">&amp;</span>file_path)
                 .unwrap()
                 .aggregate_changesets()
-                .expect(<span class="string">&quot;must aggregate changesets&quot;</span>)
+                .expect(<span class="string">"must aggregate changesets"</span>)
                 .unwrap_or_default();
             <span class="macro">assert_eq!</span>(aggregation, exp_aggregation);
         }
     }
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_file_store" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

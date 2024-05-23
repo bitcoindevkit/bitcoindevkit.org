@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/chain/src/indexed_tx_graph.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>indexed_tx_graph.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../bdk_chain/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/chain/src/indexed_tx_graph.rs`."><title>indexed_tx_graph.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0-nightly (78a775127 2024-05-11)" data-channel="nightly" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -352,7 +352,7 @@
 <a href="#352" id="352">352</a>
 <a href="#353" id="353">353</a>
 <a href="#354" id="354">354</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Contains the [`IndexedTxGraph`] and associated types. Refer to the
+</pre></div><pre class="rust"><code><span class="doccomment">//! Contains the [`IndexedTxGraph`] and associated types. Refer to the
 //! [`IndexedTxGraph`] documentation for more.
 </span><span class="kw">use </span>alloc::vec::Vec;
 <span class="kw">use </span>bitcoin::{Block, OutPoint, Transaction, TxOut, Txid};
@@ -477,13 +477,13 @@
     ///
     /// Relevancy is determined by the [`Indexer::is_tx_relevant`] implementation of `I`. Irrelevant
     /// transactions in `txs` will be ignored. `txs` do not need to be in topological order.
-    </span><span class="kw">pub fn </span>batch_insert_relevant&lt;<span class="lifetime">&#39;t</span>&gt;(
+    </span><span class="kw">pub fn </span>batch_insert_relevant&lt;<span class="lifetime">'t</span>&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        txs: <span class="kw">impl </span>IntoIterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">&#39;t </span>Transaction, <span class="kw">impl </span>IntoIterator&lt;Item = A&gt;)&gt;,
+        txs: <span class="kw">impl </span>IntoIterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">'t </span>Transaction, <span class="kw">impl </span>IntoIterator&lt;Item = A&gt;)&gt;,
     ) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
         <span class="comment">// The algorithm below allows for non-topologically ordered transactions by using two loops.
         // This is achieved by:
-        // 1. insert all txs into the index. If they are irrelevant then that&#39;s fine it will just
+        // 1. insert all txs into the index. If they are irrelevant then that's fine it will just
         //    not store anything about them.
         // 2. decide whether to insert them into the graph depending on whether `is_tx_relevant`
         //    returns true or not. (in a second loop).
@@ -516,13 +516,13 @@
     /// Items of `txs` are tuples containing the transaction and a *last seen* timestamp. The
     /// *last seen* communicates when the transaction is last seen in the mempool which is used for
     /// conflict-resolution in [`TxGraph`] (refer to [`TxGraph::insert_seen_at`] for details).
-    </span><span class="kw">pub fn </span>batch_insert_relevant_unconfirmed&lt;<span class="lifetime">&#39;t</span>&gt;(
+    </span><span class="kw">pub fn </span>batch_insert_relevant_unconfirmed&lt;<span class="lifetime">'t</span>&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        unconfirmed_txs: <span class="kw">impl </span>IntoIterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">&#39;t </span>Transaction, u64)&gt;,
+        unconfirmed_txs: <span class="kw">impl </span>IntoIterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">'t </span>Transaction, u64)&gt;,
     ) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
         <span class="comment">// The algorithm below allows for non-topologically ordered transactions by using two loops.
         // This is achieved by:
-        // 1. insert all txs into the index. If they are irrelevant then that&#39;s fine it will just
+        // 1. insert all txs into the index. If they are irrelevant then that's fine it will just
         //    not store anything about them.
         // 2. decide whether to insert them into the graph depending on whether `is_tx_relevant`
         //    returns true or not. (in a second loop).
@@ -570,7 +570,7 @@
     <span class="doccomment">/// Batch insert all transactions of the given `block` of `height`, filtering out those that are
     /// irrelevant.
     ///
-    /// Each inserted transaction&#39;s anchor will be constructed from
+    /// Each inserted transaction's anchor will be constructed from
     /// [`AnchorFromBlockPosition::from_block_position`].
     ///
     /// Relevancy is determined by the internal [`Indexer::is_tx_relevant`] implementation of `I`.
@@ -601,7 +601,7 @@
 
     <span class="doccomment">/// Batch insert all transactions of the given `block` of `height`.
     ///
-    /// Each inserted transaction&#39;s anchor will be constructed from
+    /// Each inserted transaction's anchor will be constructed from
     /// [`AnchorFromBlockPosition::from_block_position`].
     ///
     /// To only insert relevant transactions, use [`apply_block_relevant`] instead.
@@ -626,13 +626,13 @@
 <span class="doccomment">/// Represents changes to an [`IndexedTxGraph`].
 </span><span class="attr">#[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
-    feature = <span class="string">&quot;serde&quot;</span>,
+    feature = <span class="string">"serde"</span>,
     derive(serde::Deserialize, serde::Serialize),
     serde(
-        <span class="kw">crate </span>= <span class="string">&quot;serde_crate&quot;</span>,
+        <span class="kw">crate </span>= <span class="string">"serde_crate"</span>,
         bound(
-            deserialize = <span class="string">&quot;A: Ord + serde::Deserialize&lt;&#39;de&gt;, IA: serde::Deserialize&lt;&#39;de&gt;&quot;</span>,
-            serialize = <span class="string">&quot;A: Ord + serde::Serialize, IA: serde::Serialize&quot;
+            deserialize = <span class="string">"A: Ord + serde::Deserialize&lt;'de&gt;, IA: serde::Deserialize&lt;'de&gt;"</span>,
+            serialize = <span class="string">"A: Ord + serde::Serialize, IA: serde::Serialize"
         </span>)
     )
 )]
@@ -673,7 +673,7 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;miniscript&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"miniscript"</span>)]
 </span><span class="kw">impl</span>&lt;A, K&gt; From&lt;<span class="kw">crate</span>::keychain::ChangeSet&lt;K&gt;&gt; <span class="kw">for </span>ChangeSet&lt;A, <span class="kw">crate</span>::keychain::ChangeSet&lt;K&gt;&gt; {
     <span class="kw">fn </span>from(indexer: <span class="kw">crate</span>::keychain::ChangeSet&lt;K&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
@@ -686,9 +686,9 @@
 <span class="doccomment">/// Utilities for indexing transaction data.
 ///
 /// Types which implement this trait can be used to construct an [`IndexedTxGraph`].
-/// This trait&#39;s methods should rarely be called directly.
+/// This trait's methods should rarely be called directly.
 </span><span class="kw">pub trait </span>Indexer {
-    <span class="doccomment">/// The resultant &quot;changeset&quot; when new transaction data is indexed.
+    <span class="doccomment">/// The resultant "changeset" when new transaction data is indexed.
     </span><span class="kw">type </span>ChangeSet;
 
     <span class="doccomment">/// Scan and index the given `outpoint` and `txout`.
@@ -706,5 +706,4 @@
     <span class="doccomment">/// Determines whether the transaction should be included in the index.
     </span><span class="kw">fn </span>is_tx_relevant(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; bool;
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

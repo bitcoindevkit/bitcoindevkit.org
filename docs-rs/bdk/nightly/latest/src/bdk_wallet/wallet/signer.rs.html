@@ -1,5 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/wallet/src/wallet/signer.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>signer.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../bdk_wallet/index.html">
-                        <img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/wallet/src/wallet/signer.rs`."><title>signer.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bdk_wallet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0-nightly (78a775127 2024-05-11)" data-channel="nightly" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1192,7 +1191,7 @@
 <a href="#1191" id="1191">1191</a>
 <a href="#1192" id="1192">1192</a>
 <a href="#1193" id="1193">1193</a>
-</pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
+</pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
 // Copyright (c) 2020-2021 Bitcoin Dev Kit Developers
@@ -1261,7 +1260,7 @@
 //!
 //! let custom_signer = CustomSigner::connect();
 //!
-//! let descriptor = &quot;wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)&quot;;
+//! let descriptor = "wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)";
 //! let mut wallet = Wallet::new_no_persist(descriptor, None, Network::Testnet)?;
 //! wallet.add_signer(
 //!     KeychainKind::External,
@@ -1344,7 +1343,7 @@
     </span>MissingWitnessScript,
     <span class="doccomment">/// The fingerprint and derivation path are missing from the psbt input
     </span>MissingHdKeypath,
-    <span class="doccomment">/// The psbt contains a non-`SIGHASH_ALL` sighash in one of its input and the user hasn&#39;t
+    <span class="doccomment">/// The psbt contains a non-`SIGHASH_ALL` sighash in one of its input and the user hasn't
     /// explicitly allowed them
     ///
     /// To enable signing transactions with non-standard sighashes set
@@ -1369,27 +1368,27 @@
 }
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>SignerError {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
-            <span class="self">Self</span>::MissingKey =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Missing private key&quot;</span>),
-            <span class="self">Self</span>::InvalidKey =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;The private key in use has the right fingerprint but derives differently than expected&quot;</span>),
-            <span class="self">Self</span>::UserCanceled =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;The user canceled the operation&quot;</span>),
-            <span class="self">Self</span>::InputIndexOutOfRange =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Input index out of range&quot;</span>),
-            <span class="self">Self</span>::MissingNonWitnessUtxo =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Missing non-witness UTXO&quot;</span>),
-            <span class="self">Self</span>::InvalidNonWitnessUtxo =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Invalid non-witness UTXO&quot;</span>),
-            <span class="self">Self</span>::MissingWitnessUtxo =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Missing witness UTXO&quot;</span>),
-            <span class="self">Self</span>::MissingWitnessScript =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Missing witness script&quot;</span>),
-            <span class="self">Self</span>::MissingHdKeypath =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Missing fingerprint and derivation path&quot;</span>),
-            <span class="self">Self</span>::NonStandardSighash =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;The psbt contains a non standard sighash&quot;</span>),
-            <span class="self">Self</span>::InvalidSighash =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Invalid SIGHASH for the signing context in use&quot;</span>),
-            <span class="self">Self</span>::SighashError(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Error while computing the hash to sign: {}&quot;</span>, err),
-            <span class="self">Self</span>::MiniscriptPsbt(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Miniscript PSBT error: {}&quot;</span>, err),
-            <span class="self">Self</span>::External(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, err),
+            <span class="self">Self</span>::MissingKey =&gt; <span class="macro">write!</span>(f, <span class="string">"Missing private key"</span>),
+            <span class="self">Self</span>::InvalidKey =&gt; <span class="macro">write!</span>(f, <span class="string">"The private key in use has the right fingerprint but derives differently than expected"</span>),
+            <span class="self">Self</span>::UserCanceled =&gt; <span class="macro">write!</span>(f, <span class="string">"The user canceled the operation"</span>),
+            <span class="self">Self</span>::InputIndexOutOfRange =&gt; <span class="macro">write!</span>(f, <span class="string">"Input index out of range"</span>),
+            <span class="self">Self</span>::MissingNonWitnessUtxo =&gt; <span class="macro">write!</span>(f, <span class="string">"Missing non-witness UTXO"</span>),
+            <span class="self">Self</span>::InvalidNonWitnessUtxo =&gt; <span class="macro">write!</span>(f, <span class="string">"Invalid non-witness UTXO"</span>),
+            <span class="self">Self</span>::MissingWitnessUtxo =&gt; <span class="macro">write!</span>(f, <span class="string">"Missing witness UTXO"</span>),
+            <span class="self">Self</span>::MissingWitnessScript =&gt; <span class="macro">write!</span>(f, <span class="string">"Missing witness script"</span>),
+            <span class="self">Self</span>::MissingHdKeypath =&gt; <span class="macro">write!</span>(f, <span class="string">"Missing fingerprint and derivation path"</span>),
+            <span class="self">Self</span>::NonStandardSighash =&gt; <span class="macro">write!</span>(f, <span class="string">"The psbt contains a non standard sighash"</span>),
+            <span class="self">Self</span>::InvalidSighash =&gt; <span class="macro">write!</span>(f, <span class="string">"Invalid SIGHASH for the signing context in use"</span>),
+            <span class="self">Self</span>::SighashError(err) =&gt; <span class="macro">write!</span>(f, <span class="string">"Error while computing the hash to sign: {}"</span>, err),
+            <span class="self">Self</span>::MiniscriptPsbt(err) =&gt; <span class="macro">write!</span>(f, <span class="string">"Miniscript PSBT error: {}"</span>, err),
+            <span class="self">Self</span>::External(err) =&gt; <span class="macro">write!</span>(f, <span class="string">"{}"</span>, err),
         }
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>SignerError {}
 
 <span class="doccomment">/// Signing context
@@ -1434,7 +1433,7 @@
 </span><span class="kw">pub trait </span>SignerCommon: fmt::Debug + Send + Sync {
     <span class="doccomment">/// Return the [`SignerId`] for this signer
     ///
-    /// The [`SignerId`] can be used to lookup a signer in the [`Wallet`](crate::Wallet)&#39;s signers map or to
+    /// The [`SignerId`] can be used to lookup a signer in the [`Wallet`](crate::Wallet)'s signers map or to
     /// compare two signers.
     </span><span class="kw">fn </span>id(<span class="kw-2">&amp;</span><span class="self">self</span>, secp: <span class="kw-2">&amp;</span>SecpCtx) -&gt; SignerId;
 
@@ -1466,7 +1465,7 @@
 
 <span class="doccomment">/// PSBT signer
 ///
-/// This trait can be implemented when the signer can&#39;t sign inputs individually, but signs the whole transaction
+/// This trait can be implemented when the signer can't sign inputs individually, but signs the whole transaction
 /// at once.
 </span><span class="kw">pub trait </span>TransactionSigner: SignerCommon {
     <span class="doccomment">/// Sign all the inputs of the psbt
@@ -1675,7 +1674,7 @@
                 <span class="kw">let </span>leaf_hashes = leaf_hashes
                     .iter()
                     .filter(|lh| {
-                        <span class="comment">// Removing the leaves we shouldn&#39;t sign for
+                        <span class="comment">// Removing the leaves we shouldn't sign for
                         </span><span class="kw">let </span>should_sign = <span class="kw">match </span><span class="kw-2">&amp;</span>sign_options.tap_leaves_options {
                             TapLeavesOptions::All =&gt; <span class="bool-val">true</span>,
                             TapLeavesOptions::Include(v) =&gt; v.contains(lh),
@@ -1754,7 +1753,7 @@
         secp.sign_ecdsa(msg, secret_key)
     };
     secp.verify_ecdsa(msg, <span class="kw-2">&amp;</span>sig, <span class="kw-2">&amp;</span>pubkey.inner)
-        .expect(<span class="string">&quot;invalid or corrupted ecdsa signature&quot;</span>);
+        .expect(<span class="string">"invalid or corrupted ecdsa signature"</span>);
 
     <span class="kw">let </span>final_signature = ecdsa::Signature { sig, hash_ty };
     psbt_input.partial_sigs.insert(pubkey, final_signature);
@@ -1781,7 +1780,7 @@
     <span class="kw">let </span>msg = <span class="kw-2">&amp;</span>Message::from(hash);
     <span class="kw">let </span>sig = secp.sign_schnorr(msg, <span class="kw-2">&amp;</span>keypair);
     secp.verify_schnorr(<span class="kw-2">&amp;</span>sig, msg, <span class="kw-2">&amp;</span>XOnlyPublicKey::from_keypair(<span class="kw-2">&amp;</span>keypair).<span class="number">0</span>)
-        .expect(<span class="string">&quot;invalid or corrupted schnorr signature&quot;</span>);
+        .expect(<span class="string">"invalid or corrupted schnorr signature"</span>);
 
     <span class="kw">let </span>final_signature = taproot::Signature { sig, hash_ty };
 
@@ -1942,10 +1941,10 @@
 /// Adjust the behavior of our software signers and the way a transaction is finalized
 </span><span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>SignOptions {
-    <span class="doccomment">/// Whether the signer should trust the `witness_utxo`, if the `non_witness_utxo` hasn&#39;t been
+    <span class="doccomment">/// Whether the signer should trust the `witness_utxo`, if the `non_witness_utxo` hasn't been
     /// provided
     ///
-    /// Defaults to `false` to mitigate the &quot;SegWit bug&quot; which should trick the wallet into
+    /// Defaults to `false` to mitigate the "SegWit bug" which should trick the wallet into
     /// paying a fee larger than expected.
     ///
     /// Some wallets, especially if relatively old, might not provide the `non_witness_utxo` for
@@ -1959,8 +1958,8 @@
     <span class="doccomment">/// Whether the wallet should assume a specific height has been reached when trying to finalize
     /// a transaction
     ///
-    /// The wallet will only &quot;use&quot; a timelock to satisfy the spending policy of an input if the
-    /// timelock height has already been reached. This option allows overriding the &quot;current height&quot; to let the
+    /// The wallet will only "use" a timelock to satisfy the spending policy of an input if the
+    /// timelock height has already been reached. This option allows overriding the "current height" to let the
     /// wallet use timelocks in the future to spend a coin.
     </span><span class="kw">pub </span>assume_height: <span class="prelude-ty">Option</span>&lt;u32&gt;,
 
@@ -1991,13 +1990,13 @@
     </span><span class="kw">pub </span>try_finalize: bool,
 
     <span class="doccomment">/// Specifies which Taproot script-spend leaves we should sign for. This option is
-    /// ignored if we&#39;re signing a non-taproot PSBT.
+    /// ignored if we're signing a non-taproot PSBT.
     ///
     /// Defaults to All, i.e., the wallet will sign all the leaves it has a key for.
     </span><span class="kw">pub </span>tap_leaves_options: TapLeavesOptions,
 
     <span class="doccomment">/// Whether we should try to sign a taproot transaction with the taproot internal key
-    /// or not. This option is ignored if we&#39;re signing a non-taproot PSBT.
+    /// or not. This option is ignored if we're signing a non-taproot PSBT.
     ///
     /// Defaults to `true`, i.e., we always try to sign with the taproot internal key.
     </span><span class="kw">pub </span>sign_with_tap_internal_key: bool,
@@ -2014,12 +2013,12 @@
     <span class="doccomment">/// The signer will sign all the leaves it has a key for.
     </span><span class="attr">#[default]
     </span>All,
-    <span class="doccomment">/// The signer won&#39;t sign leaves other than the ones specified. Note that it could still ignore
-    /// some of the specified leaves, if it doesn&#39;t have the right key to sign them.
+    <span class="doccomment">/// The signer won't sign leaves other than the ones specified. Note that it could still ignore
+    /// some of the specified leaves, if it doesn't have the right key to sign them.
     </span>Include(Vec&lt;taproot::TapLeafHash&gt;),
-    <span class="doccomment">/// The signer won&#39;t sign the specified leaves.
+    <span class="doccomment">/// The signer won't sign the specified leaves.
     </span>Exclude(Vec&lt;taproot::TapLeafHash&gt;),
-    <span class="doccomment">/// The signer won&#39;t sign any leaf.
+    <span class="doccomment">/// The signer won't sign any leaf.
     </span><span class="prelude-val">None</span>,
 }
 
@@ -2130,13 +2129,13 @@
                 <span class="kw">return </span><span class="prelude-val">Err</span>(SignerError::InvalidNonWitnessUtxo);
             }
 
-            <span class="comment">// The output should be present, if it&#39;s missing the `non_witness_utxo` is invalid
+            <span class="comment">// The output should be present, if it's missing the `non_witness_utxo` is invalid
             </span>prev_tx
                 .output
                 .get(tx_input.previous_output.vout <span class="kw">as </span>usize)
                 .ok_or(SignerError::InvalidNonWitnessUtxo)<span class="question-mark">?
         </span>} <span class="kw">else if let </span><span class="prelude-val">Some</span>(witness_utxo) = <span class="kw-2">&amp;</span>psbt_input.witness_utxo {
-            <span class="comment">// Fallback to the witness_utxo. If we aren&#39;t allowed to use it, signing should fail
+            <span class="comment">// Fallback to the witness_utxo. If we aren't allowed to use it, signing should fail
             // before we get to this point
             </span>witness_utxo
         } <span class="kw">else </span>{
@@ -2340,7 +2339,7 @@
         </span>signers.add_external(id3.clone(), SignerOrdering(<span class="number">2</span>), signer4.clone());
         <span class="macro">assert_matches!</span>(signers.find(id3), <span class="prelude-val">Some</span>(signer) <span class="kw">if </span>is_equal(signer, <span class="kw-2">&amp;</span>signer4));
 
-        <span class="comment">// Can&#39;t find anything with ID that doesn&#39;t exist
+        <span class="comment">// Can't find anything with ID that doesn't exist
         </span><span class="macro">assert_matches!</span>(signers.find(id_nonexistent), <span class="prelude-val">None</span>);
     }
 
@@ -2366,10 +2365,10 @@
         }
     }
 
-    <span class="kw">const </span>TPRV0_STR:<span class="kw-2">&amp;</span>str = <span class="string">&quot;tprv8ZgxMBicQKsPdZXrcHNLf5JAJWFAoJ2TrstMRdSKtEggz6PddbuSkvHKM9oKJyFgZV1B7rw8oChspxyYbtmEXYyg1AjfWbL3ho3XHDpHRZf&quot;</span>;
-    <span class="kw">const </span>TPRV1_STR:<span class="kw-2">&amp;</span>str = <span class="string">&quot;tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N&quot;</span>;
+    <span class="kw">const </span>TPRV0_STR:<span class="kw-2">&amp;</span>str = <span class="string">"tprv8ZgxMBicQKsPdZXrcHNLf5JAJWFAoJ2TrstMRdSKtEggz6PddbuSkvHKM9oKJyFgZV1B7rw8oChspxyYbtmEXYyg1AjfWbL3ho3XHDpHRZf"</span>;
+    <span class="kw">const </span>TPRV1_STR:<span class="kw-2">&amp;</span>str = <span class="string">"tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N"</span>;
 
-    <span class="kw">const </span>PATH: <span class="kw-2">&amp;</span>str = <span class="string">&quot;m/44&#39;/1&#39;/0&#39;/0&quot;</span>;
+    <span class="kw">const </span>PATH: <span class="kw-2">&amp;</span>str = <span class="string">"m/44'/1'/0'/0"</span>;
 
     <span class="kw">fn </span>setup_keys&lt;Ctx: ScriptContext&gt;(
         tprv: <span class="kw-2">&amp;</span>str,
@@ -2385,5 +2384,4 @@
         (prvkey, pubkey, fingerprint)
     }
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bdk_wallet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

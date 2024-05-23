@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["FileError","Error that occurs due to problems encountered with the file."],["IterError","Error type for [`EntryIter`]."]],"struct":[["AggregateChangesetsError","Error type for [`Store::aggregate_changesets`]."],["EntryIter","Iterator over entries in a file store."],["Store","Persists an append-only list of changesets (`C`) to a single file."]]};
+window.SIDEBAR_ITEMS = {"enum":["FileError","IterError"],"struct":["AggregateChangesetsError","EntryIter","Store"]};

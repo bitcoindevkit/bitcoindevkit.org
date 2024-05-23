@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":[["BATCH_SIZE",""],["DB_MAGIC",""],["SEND_AMOUNT",""],["STOP_GAP",""]],"fn":[["main",""]]};
+window.SIDEBAR_ITEMS = {"constant":["BATCH_SIZE","DB_MAGIC","SEND_AMOUNT","STOP_GAP"],"fn":["main"]};

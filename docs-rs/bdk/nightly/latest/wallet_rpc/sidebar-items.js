@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":[["DB_MAGIC",""]],"enum":[["Emission",""]],"fn":[["main",""]],"struct":[["Args","Bitcoind RPC example using `bdk_wallet::Wallet`."]]};
+window.SIDEBAR_ITEMS = {"constant":["DB_MAGIC"],"enum":["Emission"],"fn":["main"],"struct":["Args"]};
