@@ -339,6 +339,19 @@
 <a href="#339" id="339">339</a>
 <a href="#340" id="340">340</a>
 <a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -530,6 +543,7 @@
                 WshInner::SortedMulti(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
                 WshInner::Ms(ms) =&gt; check_ms(<span class="kw-2">&amp;</span>ms.node),
             },
+            Descriptor::Tr(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
             <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="string">"The descriptor is not compatible with Bitcoin Core"</span>),
         }
     }
@@ -649,6 +663,18 @@
         <span class="kw">let </span>wallet = get_test_wallet(descriptor, <span class="prelude-val">Some</span>(change_descriptor), Network::Testnet);
         <span class="kw">let </span>export = FullyNodedExport::export_wallet(<span class="kw-2">&amp;</span>wallet, <span class="string">"Test Label"</span>, <span class="bool-val">true</span>).unwrap();
 
+        <span class="macro">assert_eq!</span>(export.descriptor(), descriptor);
+        <span class="macro">assert_eq!</span>(export.change_descriptor(), <span class="prelude-val">Some</span>(change_descriptor.into()));
+        <span class="macro">assert_eq!</span>(export.blockheight, <span class="number">5000</span>);
+        <span class="macro">assert_eq!</span>(export.label, <span class="string">"Test Label"</span>);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_export_tr() {
+        <span class="kw">let </span>descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/0/*)"</span>;
+        <span class="kw">let </span>change_descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/1/*)"</span>;
+        <span class="kw">let </span>wallet = get_test_wallet(descriptor, <span class="prelude-val">Some</span>(change_descriptor), Network::Testnet);
+        <span class="kw">let </span>export = FullyNodedExport::export_wallet(<span class="kw-2">&amp;</span>wallet, <span class="string">"Test Label"</span>, <span class="bool-val">true</span>).unwrap();
         <span class="macro">assert_eq!</span>(export.descriptor(), descriptor);
         <span class="macro">assert_eq!</span>(export.change_descriptor(), <span class="prelude-val">Some</span>(change_descriptor.into()));
         <span class="macro">assert_eq!</span>(export.blockheight, <span class="number">5000</span>);
