@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/chain/src/keychain/txout_index.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>txout_index.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../bdk_chain/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/chain/src/keychain/txout_index.rs`."><title>txout_index.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0-nightly (78a775127 2024-05-11)" data-channel="nightly" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -969,7 +969,7 @@
 <a href="#969" id="969">969</a>
 <a href="#970" id="970">970</a>
 <a href="#971" id="971">971</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{
+</pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     collections::<span class="kw-2">*</span>,
     indexed_tx_graph::Indexer,
     miniscript::{Descriptor, DescriptorPublicKey},
@@ -994,13 +994,13 @@
 /// [`apply_changeset`]: crate::keychain::KeychainTxOutIndex::apply_changeset
 </span><span class="attr">#[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
-    feature = <span class="string">&quot;serde&quot;</span>,
+    feature = <span class="string">"serde"</span>,
     derive(serde::Deserialize, serde::Serialize),
     serde(
-        <span class="kw">crate </span>= <span class="string">&quot;serde_crate&quot;</span>,
+        <span class="kw">crate </span>= <span class="string">"serde_crate"</span>,
         bound(
-            deserialize = <span class="string">&quot;K: Ord + serde::Deserialize&lt;&#39;de&gt;&quot;</span>,
-            serialize = <span class="string">&quot;K: Ord + serde::Serialize&quot;
+            deserialize = <span class="string">"K: Ord + serde::Deserialize&lt;'de&gt;"</span>,
+            serialize = <span class="string">"K: Ord + serde::Serialize"
         </span>)
     )
 )]
@@ -1019,7 +1019,7 @@
     /// If the keychain already exist with a different descriptor, we overwrite the old descriptor.
     ///
     /// For each `last_revealed` in the given [`ChangeSet`]:
-    /// If the keychain already exists, increase the index when the other&#39;s index &gt; self&#39;s index.
+    /// If the keychain already exists, increase the index when the other's index &gt; self's index.
     </span><span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
         <span class="comment">// We use `extend` instead of `BTreeMap::append` due to performance issues with `append`.
         // Refer to https://github.com/rust-lang/rust/issues/34666#issuecomment-675658420
@@ -1121,9 +1121,9 @@
 /// let mut txout_index = KeychainTxOutIndex::&lt;MyKeychain&gt;::default();
 ///
 /// # let secp = bdk_chain::bitcoin::secp256k1::Secp256k1::signing_only();
-/// # let (external_descriptor,_) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(&amp;secp, &quot;tr([73c5da0a/86&#39;/0&#39;/0&#39;]xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/0/*)&quot;).unwrap();
-/// # let (internal_descriptor,_) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(&amp;secp, &quot;tr([73c5da0a/86&#39;/0&#39;/0&#39;]xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/1/*)&quot;).unwrap();
-/// # let (descriptor_42, _) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(&amp;secp, &quot;tr([73c5da0a/86&#39;/0&#39;/0&#39;]xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/2/*)&quot;).unwrap();
+/// # let (external_descriptor,_) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(&amp;secp, "tr([73c5da0a/86'/0'/0']xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/0/*)").unwrap();
+/// # let (internal_descriptor,_) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(&amp;secp, "tr([73c5da0a/86'/0'/0']xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/1/*)").unwrap();
+/// # let (descriptor_42, _) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(&amp;secp, "tr([73c5da0a/86'/0'/0']xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/2/*)").unwrap();
 /// let _ = txout_index.insert_descriptor(MyKeychain::External, external_descriptor);
 /// let _ = txout_index.insert_descriptor(MyKeychain::Internal, internal_descriptor);
 /// let _ = txout_index.insert_descriptor(MyKeychain::MyAppUser { user_id: 42 }, descriptor_42);
@@ -1187,8 +1187,8 @@
     // keychain with it.
     </span>descriptor_ids_to_keychain_set: HashMap&lt;DescriptorId, BTreeSet&lt;K&gt;&gt;,
     <span class="comment">// descriptor_id -&gt; descriptor map
-    // This is a &quot;monotone&quot; map, meaning that its size keeps growing, i.e., we never delete
-    // descriptors from it. This is useful for revealing spks for descriptors that don&#39;t have
+    // This is a "monotone" map, meaning that its size keeps growing, i.e., we never delete
+    // descriptors from it. This is useful for revealing spks for descriptors that don't have
     // keychains associated.
     </span>descriptor_ids_to_descriptors: BTreeMap&lt;DescriptorId, Descriptor&lt;DescriptorPublicKey&gt;&gt;,
     <span class="comment">// last revealed indexes
@@ -1209,10 +1209,10 @@
     <span class="kw">fn </span>index_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="self">Self</span>::ChangeSet {
         <span class="kw">match </span><span class="self">self</span>.inner.scan_txout(outpoint, txout).cloned() {
             <span class="prelude-val">Some</span>((descriptor_id, index)) =&gt; {
-                <span class="comment">// We want to reveal spks for descriptors that aren&#39;t tracked by any keychain, and
+                <span class="comment">// We want to reveal spks for descriptors that aren't tracked by any keychain, and
                 // so we call reveal with descriptor_id
                 </span><span class="kw">let </span>(<span class="kw">_</span>, changeset) = <span class="self">self</span>.reveal_to_target_with_id(descriptor_id, index)
-                    .expect(<span class="string">&quot;descriptors are added in a monotone manner, there cannot be a descriptor id with no corresponding descriptor&quot;</span>);
+                    .expect(<span class="string">"descriptors are added in a monotone manner, there cannot be a descriptor id with no corresponding descriptor"</span>);
                 changeset
             }
             <span class="prelude-val">None </span>=&gt; <span class="kw">super</span>::ChangeSet::default(),
@@ -1286,7 +1286,7 @@
     }
 
     <span class="doccomment">/// Get the set of indexed outpoints, corresponding to tracked keychains.
-    </span><span class="kw">pub fn </span>outpoints(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = ((K, u32), OutPoint)&gt; + <span class="lifetime">&#39;_ </span>{
+    </span><span class="kw">pub fn </span>outpoints(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = ((K, u32), OutPoint)&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.inner
             .outpoints()
             .iter()
@@ -1297,7 +1297,7 @@
     }
 
     <span class="doccomment">/// Iterate over known txouts that spend to tracked script pubkeys.
-    </span><span class="kw">pub fn </span>txouts(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (K, u32, OutPoint, <span class="kw-2">&amp;</span>TxOut)&gt; + <span class="lifetime">&#39;_ </span>{
+    </span><span class="kw">pub fn </span>txouts(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (K, u32, OutPoint, <span class="kw-2">&amp;</span>TxOut)&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.inner.txouts().filter_map(|((desc_id, i), op, txo)| {
             <span class="kw">let </span>keychain = <span class="self">self</span>.keychain_of_desc_id(desc_id)<span class="question-mark">?</span>;
             <span class="prelude-val">Some</span>((keychain.clone(), <span class="kw-2">*</span>i, op, txo))
@@ -1320,7 +1320,7 @@
     <span class="doccomment">/// Return the [`TxOut`] of `outpoint` if it has been indexed, and if it corresponds to a
     /// tracked keychain.
     ///
-    /// The associated keychain and keychain index of the txout&#39;s spk is also returned.
+    /// The associated keychain and keychain index of the txout's spk is also returned.
     ///
     /// This calls [`SpkTxOutIndex::txout`] internally.
     </span><span class="kw">pub fn </span>txout(<span class="kw-2">&amp;</span><span class="self">self</span>, outpoint: OutPoint) -&gt; <span class="prelude-ty">Option</span>&lt;(K, u32, <span class="kw-2">&amp;</span>TxOut)&gt; {
@@ -1329,7 +1329,7 @@
         <span class="prelude-val">Some</span>((keychain.clone(), <span class="kw-2">*</span>index, txo))
     }
 
-    <span class="doccomment">/// Return the script that exists under the given `keychain`&#39;s `index`.
+    <span class="doccomment">/// Return the script that exists under the given `keychain`'s `index`.
     ///
     /// This calls [`SpkTxOutIndex::spk_at_index`] internally.
     </span><span class="kw">pub fn </span>spk_at_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: K, index: u32) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Script&gt; {
@@ -1346,9 +1346,9 @@
         <span class="prelude-val">Some</span>((keychain.clone(), <span class="kw-2">*</span>last_index))
     }
 
-    <span class="doccomment">/// Returns whether the spk under the `keychain`&#39;s `index` has been used.
+    <span class="doccomment">/// Returns whether the spk under the `keychain`'s `index` has been used.
     ///
-    /// Here, &quot;unused&quot; means that after the script pubkey was stored in the index, the index has
+    /// Here, "unused" means that after the script pubkey was stored in the index, the index has
     /// never scanned a transaction output with it.
     ///
     /// This calls [`SpkTxOutIndex::is_used`] internally.
@@ -1360,7 +1360,7 @@
         }
     }
 
-    <span class="doccomment">/// Marks the script pubkey at `index` as used even though the tracker hasn&#39;t seen an output
+    <span class="doccomment">/// Marks the script pubkey at `index` as used even though the tracker hasn't seen an output
     /// with it.
     ///
     /// This only has an effect when the `index` had been added to `self` already and was unused.
@@ -1369,7 +1369,7 @@
     /// marked as used. Returns false either when there is no descriptor under the given
     /// keychain, or when the spk is already marked as used.
     ///
-    /// This is useful when you want to reserve a script pubkey for something but don&#39;t want to add
+    /// This is useful when you want to reserve a script pubkey for something but don't want to add
     /// the transaction output using it to the index yet. Other callers will consider `index` on
     /// `keychain` used until you call [`unmark_used`].
     ///
@@ -1431,7 +1431,7 @@
     <span class="doccomment">/// Return the map of the keychain to descriptors.
     </span><span class="kw">pub fn </span>keychains(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (<span class="kw-2">&amp;</span>K, <span class="kw-2">&amp;</span>Descriptor&lt;DescriptorPublicKey&gt;)&gt; + ExactSizeIterator + <span class="lifetime">&#39;_
+    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (<span class="kw-2">&amp;</span>K, <span class="kw-2">&amp;</span>Descriptor&lt;DescriptorPublicKey&gt;)&gt; + ExactSizeIterator + <span class="lifetime">'_
     </span>{
         <span class="self">self</span>.keychains_to_descriptors
             .iter()
@@ -1470,7 +1470,7 @@
             </span><span class="kw">let </span>_is_keychain_removed = <span class="self">self
                 </span>.descriptor_ids_to_keychain_set
                 .get_mut(<span class="kw-2">&amp;</span>old_desc_id)
-                .expect(<span class="string">&quot;we must have already inserted this descriptor&quot;</span>)
+                .expect(<span class="string">"we must have already inserted this descriptor"</span>)
                 .remove(<span class="kw-2">&amp;</span>keychain);
             <span class="macro">debug_assert!</span>(_is_keychain_removed);
         }
@@ -1489,7 +1489,7 @@
         changeset
     }
 
-    <span class="doccomment">/// Gets the descriptor associated with the keychain. Returns `None` if the keychain doesn&#39;t
+    <span class="doccomment">/// Gets the descriptor associated with the keychain. Returns `None` if the keychain doesn't
     /// have a descriptor associated with it.
     </span><span class="kw">pub fn </span>get_descriptor(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Descriptor&lt;DescriptorPublicKey&gt;&gt; {
         <span class="self">self</span>.keychains_to_descriptors.get(keychain).map(|(<span class="kw">_</span>, d)| d)
@@ -1530,7 +1530,7 @@
                 next_store_index..next_reveal_index + lookahead,
             ) {
                 <span class="kw">let </span>_inserted = <span class="self">self</span>.inner.insert_spk((descriptor_id, new_index), new_spk);
-                <span class="macro">debug_assert!</span>(_inserted, <span class="string">&quot;replenish lookahead: must not have existing spk: keychain={:?}, lookahead={}, next_store_index={}, next_reveal_index={}&quot;</span>, keychain, lookahead, next_store_index, next_reveal_index);
+                <span class="macro">debug_assert!</span>(_inserted, <span class="string">"replenish lookahead: must not have existing spk: keychain={:?}, lookahead={}, next_store_index={}, next_reveal_index={}"</span>, keychain, lookahead, next_store_index, next_reveal_index);
             }
         }
     }
@@ -1539,14 +1539,14 @@
         <span class="self">self</span>.inner()
             .all_spks()
             <span class="comment">// This range is keeping only the spks with descriptor_id equal to
-            // `descriptor_id`. We don&#39;t use filter here as range is more optimized.
+            // `descriptor_id`. We don't use filter here as range is more optimized.
             </span>.range((descriptor_id, u32::MIN)..(descriptor_id, u32::MAX))
             .last()
             .map_or(<span class="number">0</span>, |((<span class="kw">_</span>, index), <span class="kw">_</span>)| <span class="kw-2">*</span>index + <span class="number">1</span>)
     }
 
     <span class="doccomment">/// Get an unbounded spk iterator over a given `keychain`. Returns `None` if the provided
-    /// keychain doesn&#39;t exist
+    /// keychain doesn't exist
     </span><span class="kw">pub fn </span>unbounded_spk_iter(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain: <span class="kw-2">&amp;</span>K,
@@ -1585,7 +1585,7 @@
                     .map(|((descriptor_id, i), spk)| {
                         (
                             <span class="self">self</span>.keychain_of_desc_id(descriptor_id)
-                                .expect(<span class="string">&quot;must have keychain&quot;</span>),
+                                .expect(<span class="string">"must have keychain"</span>),
                             <span class="kw-2">*</span>i,
                             spk.as_script(),
                         )
@@ -1594,10 +1594,10 @@
     }
 
     <span class="doccomment">/// Iterate over revealed spks of the given `keychain`.
-    </span><span class="kw">pub fn </span>revealed_keychain_spks&lt;<span class="lifetime">&#39;a</span>&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>,
-        keychain: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>K,
-    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (u32, <span class="kw-2">&amp;</span>Script)&gt; + <span class="lifetime">&#39;a </span>{
+    </span><span class="kw">pub fn </span>revealed_keychain_spks&lt;<span class="lifetime">'a</span>&gt;(
+        <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="self">self</span>,
+        keychain: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>K,
+    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (u32, <span class="kw-2">&amp;</span>Script)&gt; + <span class="lifetime">'a </span>{
         <span class="self">self</span>.revealed_spks(keychain..=keychain)
             .map(|(<span class="kw">_</span>, i, spk)| (i, spk))
     }
@@ -1611,7 +1611,7 @@
     }
 
     <span class="doccomment">/// Iterate over revealed, but unused, spks of the given `keychain`.
-    /// Returns an empty iterator if the provided keychain doesn&#39;t exist.
+    /// Returns an empty iterator if the provided keychain doesn't exist.
     </span><span class="kw">pub fn </span>unused_keychain_spks(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain: <span class="kw-2">&amp;</span>K,
@@ -1620,7 +1620,7 @@
             </span>.keychains_to_descriptors
             .get(keychain)
             .map(|(desc_id, <span class="kw">_</span>)| <span class="kw-2">*</span>desc_id)
-            <span class="comment">// We use a dummy desc id if we can&#39;t find the real one in our map. In this way,
+            <span class="comment">// We use a dummy desc id if we can't find the real one in our map. In this way,
             // if this method was to be called with a non-existent keychain, we would return an
             // empty iterator
             </span>.unwrap_or_else(|| DescriptorId::from_byte_array([<span class="number">0</span>; <span class="number">32</span>]));
@@ -1636,12 +1636,12 @@
     /// The second field in the returned tuple represents whether the next derivation index is new.
     /// There are two scenarios where the next derivation index is reused (not new):
     ///
-    /// 1. The keychain&#39;s descriptor has no wildcard, and a script has already been revealed.
+    /// 1. The keychain's descriptor has no wildcard, and a script has already been revealed.
     /// 2. The number of revealed scripts has already reached 2^31 (refer to BIP-32).
     ///
     /// Not checking the second field of the tuple may result in address reuse.
     ///
-    /// Returns None if the provided `keychain` doesn&#39;t exist.
+    /// Returns None if the provided `keychain` doesn't exist.
     </span><span class="kw">pub fn </span>next_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;(u32, bool)&gt; {
         <span class="kw">let </span>(descriptor_id, descriptor) = <span class="self">self</span>.keychains_to_descriptors.get(keychain)<span class="question-mark">?</span>;
         <span class="kw">let </span>last_index = <span class="self">self</span>.last_revealed.get(descriptor_id).cloned();
@@ -1656,7 +1656,7 @@
             </span><span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="kw">if </span>!has_wildcard =&gt; (<span class="number">0</span>, <span class="bool-val">false</span>),
             <span class="comment">// derivation index must be &lt; 2^31 (BIP-32).
             </span><span class="prelude-val">Some</span>(index) <span class="kw">if </span>index &gt; BIP32_MAX_INDEX =&gt; {
-                <span class="macro">unreachable!</span>(<span class="string">&quot;index is out of bounds&quot;</span>)
+                <span class="macro">unreachable!</span>(<span class="string">"index is out of bounds"</span>)
             }
             <span class="prelude-val">Some</span>(index) <span class="kw">if </span>index == BIP32_MAX_INDEX =&gt; (index, <span class="bool-val">false</span>),
             <span class="comment">// get the next derivation index.
@@ -1677,8 +1677,8 @@
             .collect()
     }
 
-    <span class="doccomment">/// Get the last derivation index revealed for `keychain`. Returns None if the keychain doesn&#39;t
-    /// exist, or if the keychain doesn&#39;t have any revealed scripts.
+    <span class="doccomment">/// Get the last derivation index revealed for `keychain`. Returns None if the keychain doesn't
+    /// exist, or if the keychain doesn't have any revealed scripts.
     </span><span class="kw">pub fn </span>last_revealed_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
         <span class="kw">let </span>descriptor_id = <span class="self">self</span>.keychains_to_descriptors.get(keychain)<span class="question-mark">?</span>.<span class="number">0</span>;
         <span class="self">self</span>.last_revealed.get(<span class="kw-2">&amp;</span>descriptor_id).cloned()
@@ -1708,11 +1708,11 @@
     }
 
     <span class="doccomment">/// Convenience method to call `reveal_to_target` with a descriptor_id instead of a keychain.
-    /// This is useful for revealing spks of descriptors for which we don&#39;t have a keychain
+    /// This is useful for revealing spks of descriptors for which we don't have a keychain
     /// tracked.
     /// Refer to the `reveal_to_target` documentation for more.
     ///
-    /// Returns None if the provided `descriptor_id` doesn&#39;t correspond to a tracked descriptor.
+    /// Returns None if the provided `descriptor_id` doesn't correspond to a tracked descriptor.
     </span><span class="kw">fn </span>reveal_to_target_with_id(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         descriptor_id: DescriptorId,
@@ -1749,10 +1749,10 @@
         </span><span class="kw">let </span>range = next_reveal_index + <span class="self">self</span>.lookahead..=target_index + <span class="self">self</span>.lookahead;
         <span class="kw">for </span>(new_index, new_spk) <span class="kw">in </span>SpkIterator::new_with_range(descriptor.clone(), range) {
             <span class="kw">let </span>_inserted = <span class="self">self</span>.inner.insert_spk((descriptor_id, new_index), new_spk);
-            <span class="macro">debug_assert!</span>(_inserted, <span class="string">&quot;must not have existing spk&quot;</span>);
+            <span class="macro">debug_assert!</span>(_inserted, <span class="string">"must not have existing spk"</span>);
             <span class="macro">debug_assert!</span>(
                 has_wildcard || new_index == <span class="number">0</span>,
-                <span class="string">&quot;non-wildcard descriptors must not iterate past index 0&quot;
+                <span class="string">"non-wildcard descriptors must not iterate past index 0"
             </span>);
         }
 
@@ -1767,7 +1767,7 @@
         ))
     }
 
-    <span class="doccomment">/// Reveals script pubkeys of the `keychain`&#39;s descriptor **up to and including** the
+    <span class="doccomment">/// Reveals script pubkeys of the `keychain`'s descriptor **up to and including** the
     /// `target_index`.
     ///
     /// If the `target_index` cannot be reached (due to the descriptor having no wildcard and/or
@@ -1778,7 +1778,7 @@
     /// [`super::ChangeSet`], which reports updates to the latest revealed index. If no new script
     /// pubkeys are revealed, then both of these will be empty.
     ///
-    /// Returns None if the provided `keychain` doesn&#39;t exist.
+    /// Returns None if the provided `keychain` doesn't exist.
     </span><span class="kw">pub fn </span>reveal_to_target(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         keychain: <span class="kw-2">&amp;</span>K,
@@ -1795,7 +1795,7 @@
     ///
     /// Returns the derivation index of the revealed script pubkey, the revealed script pubkey and a
     /// [`super::ChangeSet`] which represents changes in the last revealed index (if any).
-    /// Returns None if the provided keychain doesn&#39;t exist.
+    /// Returns None if the provided keychain doesn't exist.
     ///
     /// When a new script cannot be revealed, we return the last revealed script and an empty
     /// [`super::ChangeSet`]. There are two scenarios when a new script pubkey cannot be derived:
@@ -1808,15 +1808,15 @@
         keychain: <span class="kw-2">&amp;</span>K,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;((u32, <span class="kw-2">&amp;</span>Script), <span class="kw">super</span>::ChangeSet&lt;K&gt;)&gt; {
         <span class="kw">let </span>descriptor_id = <span class="self">self</span>.keychains_to_descriptors.get(keychain)<span class="question-mark">?</span>.<span class="number">0</span>;
-        <span class="kw">let </span>(next_index, <span class="kw">_</span>) = <span class="self">self</span>.next_index(keychain).expect(<span class="string">&quot;We know keychain exists&quot;</span>);
+        <span class="kw">let </span>(next_index, <span class="kw">_</span>) = <span class="self">self</span>.next_index(keychain).expect(<span class="string">"We know keychain exists"</span>);
         <span class="kw">let </span>changeset = <span class="self">self
             </span>.reveal_to_target(keychain, next_index)
-            .expect(<span class="string">&quot;We know keychain exists&quot;</span>)
+            .expect(<span class="string">"We know keychain exists"</span>)
             .<span class="number">1</span>;
         <span class="kw">let </span>script = <span class="self">self
             </span>.inner
             .spk_at_index(<span class="kw-2">&amp;</span>(descriptor_id, next_index))
-            .expect(<span class="string">&quot;script must already be stored&quot;</span>);
+            .expect(<span class="string">"script must already be stored"</span>);
         <span class="prelude-val">Some</span>(((next_index, script), changeset))
     }
 
@@ -1829,7 +1829,7 @@
     /// has used all scripts up to the derivation bounds, then the last derived script pubkey will be
     /// returned.
     ///
-    /// Returns None if the provided keychain doesn&#39;t exist.
+    /// Returns None if the provided keychain doesn't exist.
     </span><span class="kw">pub fn </span>next_unused_spk(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         keychain: <span class="kw-2">&amp;</span>K,
@@ -1842,7 +1842,7 @@
             <span class="prelude-val">Some</span>((
                 <span class="self">self</span>.unused_keychain_spks(keychain)
                     .next()
-                    .expect(<span class="string">&quot;we already know next exists&quot;</span>),
+                    .expect(<span class="string">"we already know next exists"</span>),
                 <span class="kw">super</span>::ChangeSet::default(),
             ))
         }
@@ -1850,26 +1850,26 @@
 
     <span class="doccomment">/// Iterate over all [`OutPoint`]s that have `TxOut`s with script pubkeys derived from
     /// `keychain`.
-    </span><span class="kw">pub fn </span>keychain_outpoints&lt;<span class="lifetime">&#39;a</span>&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>,
-        keychain: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>K,
-    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (u32, OutPoint)&gt; + <span class="lifetime">&#39;a </span>{
+    </span><span class="kw">pub fn </span>keychain_outpoints&lt;<span class="lifetime">'a</span>&gt;(
+        <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="self">self</span>,
+        keychain: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>K,
+    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (u32, OutPoint)&gt; + <span class="lifetime">'a </span>{
         <span class="self">self</span>.keychain_outpoints_in_range(keychain..=keychain)
             .map(<span class="kw">move </span>|(<span class="kw">_</span>, i, op)| (i, op))
     }
 
     <span class="doccomment">/// Iterate over [`OutPoint`]s that have script pubkeys derived from keychains in `range`.
-    </span><span class="kw">pub fn </span>keychain_outpoints_in_range&lt;<span class="lifetime">&#39;a</span>&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>,
-        range: <span class="kw">impl </span>RangeBounds&lt;K&gt; + <span class="lifetime">&#39;a</span>,
-    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>K, u32, OutPoint)&gt; + <span class="lifetime">&#39;a </span>{
+    </span><span class="kw">pub fn </span>keychain_outpoints_in_range&lt;<span class="lifetime">'a</span>&gt;(
+        <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="self">self</span>,
+        range: <span class="kw">impl </span>RangeBounds&lt;K&gt; + <span class="lifetime">'a</span>,
+    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">'a </span>K, u32, OutPoint)&gt; + <span class="lifetime">'a </span>{
         <span class="kw">let </span>bounds = <span class="self">self</span>.map_to_inner_bounds(range);
         <span class="self">self</span>.inner
             .outputs_in_range(bounds)
             .map(<span class="kw">move </span>|((desc_id, i), op)| {
                 <span class="kw">let </span>keychain = <span class="self">self
                     </span>.keychain_of_desc_id(desc_id)
-                    .expect(<span class="string">&quot;keychain must exist&quot;</span>);
+                    .expect(<span class="string">"keychain must exist"</span>);
                 (keychain, <span class="kw-2">*</span>i, op)
             })
     }
@@ -1899,13 +1899,13 @@
     }
 
     <span class="doccomment">/// Returns the highest derivation index of the `keychain` where [`KeychainTxOutIndex`] has
-    /// found a [`TxOut`] with it&#39;s script pubkey.
+    /// found a [`TxOut`] with it's script pubkey.
     </span><span class="kw">pub fn </span>last_used_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
         <span class="self">self</span>.keychain_outpoints(keychain).last().map(|(i, <span class="kw">_</span>)| i)
     }
 
     <span class="doccomment">/// Returns the highest derivation index of each keychain that [`KeychainTxOutIndex`] has found
-    /// a [`TxOut`] with it&#39;s script pubkey.
+    /// a [`TxOut`] with it's script pubkey.
     </span><span class="kw">pub fn </span>last_used_indices(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; BTreeMap&lt;K, u32&gt; {
         <span class="self">self</span>.keychains_to_descriptors
             .iter()
@@ -1940,5 +1940,4 @@
         <span class="kw">let _ </span>= <span class="self">self</span>.reveal_to_target_multi(<span class="kw-2">&amp;</span>last_revealed);
     }
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

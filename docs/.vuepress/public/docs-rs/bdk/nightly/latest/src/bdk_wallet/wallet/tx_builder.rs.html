@@ -1,5 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/wallet/src/wallet/tx_builder.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>tx_builder.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../bdk_wallet/index.html">
-                        <img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/wallet/src/wallet/tx_builder.rs`."><title>tx_builder.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bdk_wallet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0-nightly (78a775127 2024-05-11)" data-channel="nightly" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1082,7 +1081,7 @@
 <a href="#1081" id="1081">1081</a>
 <a href="#1082" id="1082">1082</a>
 <a href="#1083" id="1083">1083</a>
-</pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
+</pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
 // Copyright (c) 2020-2021 Bitcoin Dev Kit Developers
@@ -1106,7 +1105,7 @@
 //! # use bdk_wallet::wallet::tx_builder::CreateTx;
 //! # use bdk_persist::PersistBackend;
 //! # use anyhow::Error;
-//! # let to_address = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap().assume_checked();
+//! # let to_address = Address::from_str("2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt").unwrap().assume_checked();
 //! # let mut wallet = doctest_wallet!();
 //! // create a TxBuilder from a wallet
 //! let mut tx_builder = wallet.build_tx();
@@ -1115,7 +1114,7 @@
 //!     // Create a transaction with one output to `to_address` of 50_000 satoshi
 //!     .add_recipient(to_address.script_pubkey(), Amount::from_sat(50_000))
 //!     // With a custom fee rate of 5.0 satoshi/vbyte
-//!     .fee_rate(FeeRate::from_sat_per_vb(5).expect(&quot;valid feerate&quot;))
+//!     .fee_rate(FeeRate::from_sat_per_vb(5).expect("valid feerate"))
 //!     // Only spend non-change outputs
 //!     .do_not_spend_change()
 //!     // Turn on RBF signaling
@@ -1171,7 +1170,7 @@
 /// # use bdk_persist::PersistBackend;
 /// # use anyhow::Error;
 /// # let mut wallet = doctest_wallet!();
-/// # let addr1 = Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;).unwrap().assume_checked();
+/// # let addr1 = Address::from_str("2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt").unwrap().assume_checked();
 /// # let addr2 = addr1.clone();
 /// // chaining
 /// let psbt1 = {
@@ -1200,15 +1199,15 @@
 /// At the moment [`coin_selection`] is an exception to the rule as it consumes `self`.
 /// This means it is usually best to call [`coin_selection`] on the return value of `build_tx` before assigning it.
 ///
-/// For further examples see [this module](super::tx_builder)&#39;s documentation;
+/// For further examples see [this module](super::tx_builder)'s documentation;
 ///
 /// [`build_tx`]: Wallet::build_tx
 /// [`build_fee_bump`]: Wallet::build_fee_bump
 /// [`finish`]: Self::finish
 /// [`coin_selection`]: Self::coin_selection
 </span><span class="attr">#[derive(Debug)]
-</span><span class="kw">pub struct </span>TxBuilder&lt;<span class="lifetime">&#39;a</span>, Cs, Ctx&gt; {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) wallet: Rc&lt;RefCell&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Wallet&gt;&gt;,
+</span><span class="kw">pub struct </span>TxBuilder&lt;<span class="lifetime">'a</span>, Cs, Ctx&gt; {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) wallet: Rc&lt;RefCell&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>Wallet&gt;&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) params: TxParams,
     <span class="kw">pub</span>(<span class="kw">crate</span>) coin_selection: Cs,
     <span class="kw">pub</span>(<span class="kw">crate</span>) phantom: PhantomData&lt;Ctx&gt;,
@@ -1259,7 +1258,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, Cs: Clone, Ctx&gt; Clone <span class="kw">for </span>TxBuilder&lt;<span class="lifetime">&#39;a</span>, Cs, Ctx&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, Cs: Clone, Ctx&gt; Clone <span class="kw">for </span>TxBuilder&lt;<span class="lifetime">'a</span>, Cs, Ctx&gt; {
     <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
         TxBuilder {
             wallet: <span class="self">self</span>.wallet.clone(),
@@ -1271,15 +1270,15 @@
 }
 
 <span class="comment">// methods supported by both contexts, for any CoinSelectionAlgorithm
-</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, Cs, Ctx&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, Cs, Ctx&gt; {
+</span><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, Cs, Ctx&gt; TxBuilder&lt;<span class="lifetime">'a</span>, Cs, Ctx&gt; {
     <span class="doccomment">/// Set a custom fee rate.
     ///
     /// This method sets the mining fee paid by the transaction as a rate on its size.
     /// This means that the total fee paid is equal to `fee_rate` times the size
-    /// of the transaction. Default is 1 sat/vB in accordance with Bitcoin Core&#39;s default
+    /// of the transaction. Default is 1 sat/vB in accordance with Bitcoin Core's default
     /// relay policy.
     ///
-    /// Note that this is really a minimum feerate -- it&#39;s possible to
+    /// Note that this is really a minimum feerate -- it's possible to
     /// overshoot it slightly since adding a change output to drain the remaining
     /// excess might not be viable.
     </span><span class="kw">pub fn </span>fee_rate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, fee_rate: FeeRate) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
@@ -1293,7 +1292,7 @@
     /// the FeePolicy enum will be set by whichever method was called last,
     /// as the FeeRate and FeeAmount are mutually exclusive.
     ///
-    /// Note that this is really a minimum absolute fee -- it&#39;s possible to
+    /// Note that this is really a minimum absolute fee -- it's possible to
     /// overshoot it slightly since adding a change output to drain the remaining
     /// excess might not be viable.
     </span><span class="kw">pub fn </span>fee_absolute(<span class="kw-2">&amp;mut </span><span class="self">self</span>, fee_amount: u64) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
@@ -1320,7 +1319,7 @@
     /// 2. `and(pk(B),older(6))`
     /// 3. `and(pk(C),after(630000))`
     ///
-    /// When those conditions are combined in pairs, it&#39;s clear that the transaction needs to be created
+    /// When those conditions are combined in pairs, it's clear that the transaction needs to be created
     /// differently depending on how the user intends to satisfy the policy afterwards:
     ///
     /// * If fragments `1` and `2` are used, the transaction will need to use a specific
@@ -1332,12 +1331,12 @@
     /// When the spending policy is represented as a tree (see
     /// [`Wallet::policies`](super::Wallet::policies)), every node
     /// is assigned a unique identifier that can be used in the policy path to specify which of
-    /// the node&#39;s children the user intends to satisfy: for instance, assuming the `thresh()`
+    /// the node's children the user intends to satisfy: for instance, assuming the `thresh()`
     /// root node of this example has an id of `aabbccdd`, the policy path map would look like:
     ///
-    /// `{ &quot;aabbccdd&quot; =&gt; [0, 1] }`
+    /// `{ "aabbccdd" =&gt; [0, 1] }`
     ///
-    /// where the key is the node&#39;s id, and the value is a list of the children that should be
+    /// where the key is the node's id, and the value is a list of the children that should be
     /// used, in no particular order.
     ///
     /// If a particularly complex descriptor has multiple ambiguous thresholds in its structure,
@@ -1349,12 +1348,12 @@
     /// # use bitcoin::*;
     /// # use bdk_wallet::*;
     /// # let to_address =
-    /// Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;)
+    /// Address::from_str("2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt")
     ///     .unwrap()
     ///     .assume_checked();
     /// # let mut wallet = doctest_wallet!();
     /// let mut path = BTreeMap::new();
-    /// path.insert(&quot;aabbccdd&quot;.to_string(), vec![0, 1]);
+    /// path.insert("aabbccdd".to_string(), vec![0, 1]);
     ///
     /// let builder = wallet
     ///     .build_tx()
@@ -1381,8 +1380,8 @@
     ///
     /// If an error occurs while adding any of the UTXOs then none of them are added and the error is returned.
     ///
-    /// These have priority over the &quot;unspendable&quot; utxos, meaning that if a utxo is present both in
-    /// the &quot;utxos&quot; and the &quot;unspendable&quot; list, it will be spent.
+    /// These have priority over the "unspendable" utxos, meaning that if a utxo is present both in
+    /// the "utxos" and the "unspendable" list, it will be spent.
     </span><span class="kw">pub fn </span>add_utxos(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoints: <span class="kw-2">&amp;</span>[OutPoint]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>, AddUtxoError&gt; {
         {
             <span class="kw">let </span>wallet = <span class="self">self</span>.wallet.borrow();
@@ -1410,8 +1409,8 @@
 
     <span class="doccomment">/// Add a utxo to the internal list of utxos that **must** be spent
     ///
-    /// These have priority over the &quot;unspendable&quot; utxos, meaning that if a utxo is present both in
-    /// the &quot;utxos&quot; and the &quot;unspendable&quot; list, it will be spent.
+    /// These have priority over the "unspendable" utxos, meaning that if a utxo is present both in
+    /// the "utxos" and the "unspendable" list, it will be spent.
     </span><span class="kw">pub fn </span>add_utxo(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>, AddUtxoError&gt; {
         <span class="self">self</span>.add_utxos(<span class="kw-2">&amp;</span>[outpoint])
     }
@@ -1428,7 +1427,7 @@
     /// developers should consider. First, how do you know the value of the input is correct? If a
     /// `non_witness_utxo` is provided in the `psbt_input` then this method implicitly verifies the
     /// value by checking it against the transaction. If only a `witness_utxo` is provided then this
-    /// method doesn&#39;t verify the value but just takes it as a given -- it is up to you to check
+    /// method doesn't verify the value but just takes it as a given -- it is up to you to check
     /// that whoever sent you the `input_psbt` was not lying!
     ///
     /// Secondly, you must somehow provide `satisfaction_weight` of the input. Depending on your
@@ -1528,7 +1527,7 @@
 
     <span class="doccomment">/// Replace the internal list of unspendable utxos with a new list
     ///
-    /// It&#39;s important to note that the &quot;must-be-spent&quot; utxos added with [`TxBuilder::add_utxo`]
+    /// It's important to note that the "must-be-spent" utxos added with [`TxBuilder::add_utxo`]
     /// have priority over these. See the docs of the two linked methods for more details.
     </span><span class="kw">pub fn </span>unspendable(<span class="kw-2">&amp;mut </span><span class="self">self</span>, unspendable: Vec&lt;OutPoint&gt;) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.unspendable = unspendable.into_iter().collect();
@@ -1537,7 +1536,7 @@
 
     <span class="doccomment">/// Add a utxo to the internal list of unspendable utxos
     ///
-    /// It&#39;s important to note that the &quot;must-be-spent&quot; utxos added with [`TxBuilder::add_utxo`]
+    /// It's important to note that the "must-be-spent" utxos added with [`TxBuilder::add_utxo`]
     /// have priority over this. See the docs of the two linked methods for more details.
     </span><span class="kw">pub fn </span>add_unspendable(<span class="kw-2">&amp;mut </span><span class="self">self</span>, unspendable: OutPoint) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.unspendable.insert(unspendable);
@@ -1560,7 +1559,7 @@
 
     <span class="doccomment">/// Use a specific nLockTime while creating the transaction
     ///
-    /// This can cause conflicts if the wallet&#39;s descriptors contain an &quot;after&quot; (OP_CLTV) operator.
+    /// This can cause conflicts if the wallet's descriptors contain an "after" (OP_CLTV) operator.
     </span><span class="kw">pub fn </span>nlocktime(<span class="kw-2">&amp;mut </span><span class="self">self</span>, locktime: absolute::LockTime) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.locktime = <span class="prelude-val">Some</span>(locktime);
         <span class="self">self
@@ -1568,8 +1567,8 @@
 
     <span class="doccomment">/// Build a transaction with a specific version
     ///
-    /// The `version` should always be greater than `0` and greater than `1` if the wallet&#39;s
-    /// descriptors contain an &quot;older&quot; (OP_CSV) operator.
+    /// The `version` should always be greater than `0` and greater than `1` if the wallet's
+    /// descriptors contain an "older" (OP_CSV) operator.
     </span><span class="kw">pub fn </span>version(<span class="kw-2">&amp;mut </span><span class="self">self</span>, version: i32) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.version = <span class="prelude-val">Some</span>(Version(version));
         <span class="self">self
@@ -1577,7 +1576,7 @@
 
     <span class="doccomment">/// Do not spend change outputs
     ///
-    /// This effectively adds all the change outputs to the &quot;unspendable&quot; list. See
+    /// This effectively adds all the change outputs to the "unspendable" list. See
     /// [`TxBuilder::unspendable`].
     </span><span class="kw">pub fn </span>do_not_spend_change(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.change_policy = ChangeSpendPolicy::ChangeForbidden;
@@ -1586,7 +1585,7 @@
 
     <span class="doccomment">/// Only spend change outputs
     ///
-    /// This effectively adds all the non-change outputs to the &quot;unspendable&quot; list. See
+    /// This effectively adds all the non-change outputs to the "unspendable" list. See
     /// [`TxBuilder::unspendable`].
     </span><span class="kw">pub fn </span>only_spend_change(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.change_policy = ChangeSpendPolicy::OnlyChange;
@@ -1643,7 +1642,7 @@
     </span><span class="kw">pub fn </span>coin_selection&lt;P: CoinSelectionAlgorithm&gt;(
         <span class="self">self</span>,
         coin_selection: P,
-    ) -&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, P, Ctx&gt; {
+    ) -&gt; TxBuilder&lt;<span class="lifetime">'a</span>, P, Ctx&gt; {
         TxBuilder {
             wallet: <span class="self">self</span>.wallet,
             params: <span class="self">self</span>.params,
@@ -1662,7 +1661,7 @@
 
     <span class="doccomment">/// Enable signaling RBF with a specific nSequence value
     ///
-    /// This can cause conflicts if the wallet&#39;s descriptors contain an &quot;older&quot; (OP_CSV) operator
+    /// This can cause conflicts if the wallet's descriptors contain an "older" (OP_CSV) operator
     /// and the given `nsequence` is lower than the CSV value.
     ///
     /// If the `nsequence` is higher than `0xFFFFFFFD` an error will be thrown, since it would not
@@ -1682,10 +1681,10 @@
     ///    If you want to create a transaction that spends immature coinbase inputs, manually
     ///    add them using [`TxBuilder::add_utxos`].
     ///
-    /// In both cases, if you don&#39;t provide a current height, we use the last sync height.
+    /// In both cases, if you don't provide a current height, we use the last sync height.
     </span><span class="kw">pub fn </span>current_height(<span class="kw-2">&amp;mut </span><span class="self">self</span>, height: u32) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.current_height =
-            <span class="prelude-val">Some</span>(absolute::LockTime::from_height(height).expect(<span class="string">&quot;Invalid height&quot;</span>));
+            <span class="prelude-val">Some</span>(absolute::LockTime::from_height(height).expect(<span class="string">"Invalid height"</span>));
         <span class="self">self
     </span>}
 
@@ -1698,7 +1697,7 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, Cs: CoinSelectionAlgorithm, Ctx&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, Cs, Ctx&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, Cs: CoinSelectionAlgorithm, Ctx&gt; TxBuilder&lt;<span class="lifetime">'a</span>, Cs, Ctx&gt; {
     <span class="doccomment">/// Finish building the transaction.
     ///
     /// Returns a new [`Psbt`] per [`BIP174`].
@@ -1719,18 +1718,18 @@
 }
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>AddUtxoError {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::UnknownUtxo(outpoint) =&gt; <span class="macro">write!</span>(
                 f,
-                <span class="string">&quot;UTXO not found in the internal database for txid: {} with vout: {}&quot;</span>,
+                <span class="string">"UTXO not found in the internal database for txid: {} with vout: {}"</span>,
                 outpoint.txid, outpoint.vout
             ),
         }
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>AddUtxoError {}
 
 <span class="attr">#[derive(Debug)]
@@ -1743,34 +1742,34 @@
         <span class="doccomment">/// Foreign UTXO outpoint
         </span>foreign_utxo: OutPoint,
     },
-    <span class="doccomment">/// Requested outpoint doesn&#39;t exist in the tx (vout greater than available outputs)
+    <span class="doccomment">/// Requested outpoint doesn't exist in the tx (vout greater than available outputs)
     </span>InvalidOutpoint(OutPoint),
     <span class="doccomment">/// Foreign utxo missing witness_utxo or non_witness_utxo
     </span>MissingUtxo,
 }
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>AddForeignUtxoError {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::InvalidTxid {
                 input_txid,
                 foreign_utxo,
             } =&gt; <span class="macro">write!</span>(
                 f,
-                <span class="string">&quot;Foreign UTXO outpoint txid: {} does not match PSBT input txid: {}&quot;</span>,
+                <span class="string">"Foreign UTXO outpoint txid: {} does not match PSBT input txid: {}"</span>,
                 foreign_utxo.txid, input_txid,
             ),
             <span class="self">Self</span>::InvalidOutpoint(outpoint) =&gt; <span class="macro">write!</span>(
                 f,
-                <span class="string">&quot;Requested outpoint doesn&#39;t exist for txid: {} with vout: {}&quot;</span>,
+                <span class="string">"Requested outpoint doesn't exist for txid: {} with vout: {}"</span>,
                 outpoint.txid, outpoint.vout,
             ),
-            <span class="self">Self</span>::MissingUtxo =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Foreign utxo missing witness_utxo or non_witness_utxo&quot;</span>),
+            <span class="self">Self</span>::MissingUtxo =&gt; <span class="macro">write!</span>(f, <span class="string">"Foreign utxo missing witness_utxo or non_witness_utxo"</span>),
         }
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>AddForeignUtxoError {}
 
 <span class="attr">#[derive(Debug)]
@@ -1781,21 +1780,21 @@
 }
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>AllowShrinkingError {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::MissingScriptPubKey(script_buf) =&gt; <span class="macro">write!</span>(
                 f,
-                <span class="string">&quot;Script/PubKey was not in the original transaction: {}&quot;</span>,
+                <span class="string">"Script/PubKey was not in the original transaction: {}"</span>,
                 script_buf,
             ),
         }
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>AllowShrinkingError {}
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, Cs: CoinSelectionAlgorithm&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, Cs, CreateTx&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, Cs: CoinSelectionAlgorithm&gt; TxBuilder&lt;<span class="lifetime">'a</span>, Cs, CreateTx&gt; {
     <span class="doccomment">/// Replace the recipients already added with a new list
     </span><span class="kw">pub fn </span>set_recipients(<span class="kw-2">&amp;mut </span><span class="self">self</span>, recipients: Vec&lt;(ScriptBuf, Amount)&gt;) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.params.recipients = recipients
@@ -1850,7 +1849,7 @@
     /// # use bdk_persist::PersistBackend;
     /// # use anyhow::Error;
     /// # let to_address =
-    /// Address::from_str(&quot;2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt&quot;)
+    /// Address::from_str("2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt")
     ///     .unwrap()
     ///     .assume_checked();
     /// # let mut wallet = doctest_wallet!();
@@ -1861,7 +1860,7 @@
     ///     .drain_wallet()
     ///     // Send the excess (which is all the coins minus the fee) to this address.
     ///     .drain_to(to_address.script_pubkey())
-    ///     .fee_rate(FeeRate::from_sat_per_vb(5).expect(&quot;valid feerate&quot;))
+    ///     .fee_rate(FeeRate::from_sat_per_vb(5).expect("valid feerate"))
     ///     .enable_rbf();
     /// let psbt = tx_builder.finish()?;
     /// # Ok::&lt;(), anyhow::Error&gt;(())
@@ -1878,7 +1877,7 @@
 }
 
 <span class="comment">// methods supported only by bump_fee
-</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TxBuilder&lt;<span class="lifetime">&#39;a</span>, DefaultCoinSelectionAlgorithm, BumpFee&gt; {
+</span><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; TxBuilder&lt;<span class="lifetime">'a</span>, DefaultCoinSelectionAlgorithm, BumpFee&gt; {
     <span class="doccomment">/// Explicitly tells the wallet that it is allowed to reduce the amount of the output matching this
     /// `script_pubkey` in order to bump the transaction fee. Without specifying this the wallet
     /// will attempt to find a change output to shrink instead.
@@ -1887,7 +1886,7 @@
     /// preserved then it is currently not guaranteed to be in the same position as it was
     /// originally.
     ///
-    /// Returns an `Err` if `script_pubkey` can&#39;t be found among the recipients of the
+    /// Returns an `Err` if `script_pubkey` can't be found among the recipients of the
     /// transaction we are bumping.
     </span><span class="kw">pub fn </span>allow_shrinking(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
@@ -1909,7 +1908,7 @@
     }
 }
 
-<span class="doccomment">/// Ordering of the transaction&#39;s inputs and outputs
+<span class="doccomment">/// Ordering of the transaction's inputs and outputs
 </span><span class="attr">#[derive(Default, Debug, Ord, PartialOrd, Eq, PartialEq, Hash, Clone, Copy)]
 </span><span class="kw">pub enum </span>TxOrdering {
     <span class="doccomment">/// Randomized (default)
@@ -1997,13 +1996,13 @@
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>test {
-    <span class="kw">const </span>ORDERING_TEST_TX: <span class="kw-2">&amp;</span>str = <span class="string">&quot;0200000003c26f3eb7932f7acddc5ddd26602b77e7516079b03090a16e2c2f54\
+    <span class="kw">const </span>ORDERING_TEST_TX: <span class="kw-2">&amp;</span>str = <span class="string">"0200000003c26f3eb7932f7acddc5ddd26602b77e7516079b03090a16e2c2f54\
                                     85d1fd600f0100000000ffffffffc26f3eb7932f7acddc5ddd26602b77e75160\
                                     79b03090a16e2c2f5485d1fd600f0000000000ffffffff571fb3e02278217852\
                                     dd5d299947e2b7354a639adc32ec1fa7b82cfb5dec530e0500000000ffffffff\
                                     03e80300000000000002aaeee80300000000000001aa200300000000000001ff\
-                                    00000000&quot;</span>;
-    <span class="macro">macro_rules! </span>ordering_test_tx {
+                                    00000000"</span>;
+    <span class="macro">macro_rules!</span> ordering_test_tx {
         () =&gt; {
             deserialize::&lt;bitcoin::Transaction&gt;(<span class="kw-2">&amp;</span>Vec::&lt;u8&gt;::from_hex(ORDERING_TEST_TX).unwrap())
                 .unwrap()
@@ -2042,7 +2041,7 @@
                 TxOrdering::Shuffle.sort_tx(<span class="kw-2">&amp;mut </span>tx);
                 original_tx.input != tx.input
             })
-            .expect(<span class="string">&quot;it should have moved the inputs at least once&quot;</span>);
+            .expect(<span class="string">"it should have moved the inputs at least once"</span>);
 
         <span class="kw">let </span><span class="kw-2">mut </span>tx = original_tx.clone();
         (<span class="number">0</span>..<span class="number">40</span>)
@@ -2050,7 +2049,7 @@
                 TxOrdering::Shuffle.sort_tx(<span class="kw-2">&amp;mut </span>tx);
                 original_tx.output != tx.output
             })
-            .expect(<span class="string">&quot;it should have moved the outputs at least once&quot;</span>);
+            .expect(<span class="string">"it should have moved the outputs at least once"</span>);
     }
 
     <span class="attr">#[test]
@@ -2065,21 +2064,21 @@
         <span class="macro">assert_eq!</span>(
             tx.input[<span class="number">0</span>].previous_output,
             bitcoin::OutPoint::from_str(
-                <span class="string">&quot;0e53ec5dfb2cb8a71fec32dc9a634a35b7e24799295ddd5278217822e0b31f57:5&quot;
+                <span class="string">"0e53ec5dfb2cb8a71fec32dc9a634a35b7e24799295ddd5278217822e0b31f57:5"
             </span>)
             .unwrap()
         );
         <span class="macro">assert_eq!</span>(
             tx.input[<span class="number">1</span>].previous_output,
             bitcoin::OutPoint::from_str(
-                <span class="string">&quot;0f60fdd185542f2c6ea19030b0796051e7772b6026dd5ddccd7a2f93b73e6fc2:0&quot;
+                <span class="string">"0f60fdd185542f2c6ea19030b0796051e7772b6026dd5ddccd7a2f93b73e6fc2:0"
             </span>)
             .unwrap()
         );
         <span class="macro">assert_eq!</span>(
             tx.input[<span class="number">2</span>].previous_output,
             bitcoin::OutPoint::from_str(
-                <span class="string">&quot;0f60fdd185542f2c6ea19030b0796051e7772b6026dd5ddccd7a2f93b73e6fc2:1&quot;
+                <span class="string">"0f60fdd185542f2c6ea19030b0796051e7772b6026dd5ddccd7a2f93b73e6fc2:1"
             </span>)
             .unwrap()
         );
@@ -2165,5 +2164,4 @@
         <span class="macro">assert_eq!</span>(version.<span class="number">0</span>, <span class="number">1</span>);
     }
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bdk_wallet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

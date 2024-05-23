@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `nursery/coin_select/src/coin_selector.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>coin_selector.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../bdk_coin_select/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `nursery/coin_select/src/coin_selector.rs`."><title>coin_selector.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_coin_select" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0-nightly (78a775127 2024-05-11)" data-channel="nightly" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -615,7 +615,7 @@
 <a href="#615" id="615">615</a>
 <a href="#616" id="616">616</a>
 <a href="#617" id="617">617</a>
-</pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
+</pre></div><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// A [`WeightedValue`] represents an input candidate for [`CoinSelector`]. This can either be a
 /// single UTXO, or a group of UTXOs that should be spent together.
@@ -650,8 +650,8 @@
 
     <span class="doccomment">/// Effective value of this input candidate: `actual_value - input_weight * feerate (sats/wu)`.
     </span><span class="kw">pub fn </span>effective_value(<span class="kw-2">&amp;</span><span class="self">self</span>, effective_feerate: f32) -&gt; i64 {
-        <span class="comment">// We prefer undershooting the candidate&#39;s effective value (so we over-estimate the fee of a
-        // candidate). If we overshoot the candidate&#39;s effective value, it may be possible to find a
+        <span class="comment">// We prefer undershooting the candidate's effective value (so we over-estimate the fee of a
+        // candidate). If we overshoot the candidate's effective value, it may be possible to find a
         // solution which does not meet the target feerate.
         </span><span class="self">self</span>.value <span class="kw">as </span>i64 - (<span class="self">self</span>.weight <span class="kw">as </span>f32 * effective_feerate).ceil() <span class="kw">as </span>i64
     }
@@ -751,18 +751,18 @@
 
 <span class="doccomment">/// [`CoinSelector`] selects and deselects from a set of candidates.
 </span><span class="attr">#[derive(Debug, Clone)]
-</span><span class="kw">pub struct </span>CoinSelector&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">pub </span>opts: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>CoinSelectorOpt,
-    <span class="kw">pub </span>candidates: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Vec&lt;WeightedValue&gt;,
+</span><span class="kw">pub struct </span>CoinSelector&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">pub </span>opts: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>CoinSelectorOpt,
+    <span class="kw">pub </span>candidates: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Vec&lt;WeightedValue&gt;,
     selected: BTreeSet&lt;usize&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; CoinSelector&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; CoinSelector&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">pub fn </span>candidate(<span class="kw-2">&amp;</span><span class="self">self</span>, index: usize) -&gt; <span class="kw-2">&amp;</span>WeightedValue {
         <span class="kw-2">&amp;</span><span class="self">self</span>.candidates[index]
     }
 
-    <span class="kw">pub fn </span>new(candidates: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Vec&lt;WeightedValue&gt;, opts: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>CoinSelectorOpt) -&gt; <span class="self">Self </span>{
+    <span class="kw">pub fn </span>new(candidates: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Vec&lt;WeightedValue&gt;, opts: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>CoinSelectorOpt) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             candidates,
             selected: Default::default(),
@@ -860,24 +860,24 @@
         <span class="self">self</span>.selected.len()
     }
 
-    <span class="kw">pub fn </span>selected(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (usize, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>WeightedValue)&gt; + <span class="lifetime">&#39;_ </span>{
+    <span class="kw">pub fn </span>selected(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (usize, <span class="kw-2">&amp;</span><span class="lifetime">'a </span>WeightedValue)&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.selected
             .iter()
             .map(<span class="kw">move </span>|<span class="kw-2">&amp;</span>index| (index, <span class="kw-2">&amp;</span><span class="self">self</span>.candidates[index]))
     }
 
-    <span class="kw">pub fn </span>unselected(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (usize, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>WeightedValue)&gt; + <span class="lifetime">&#39;_ </span>{
+    <span class="kw">pub fn </span>unselected(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (usize, <span class="kw-2">&amp;</span><span class="lifetime">'a </span>WeightedValue)&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.candidates
             .iter()
             .enumerate()
             .filter(<span class="kw">move </span>|(index, <span class="kw">_</span>)| !<span class="self">self</span>.selected.contains(index))
     }
 
-    <span class="kw">pub fn </span>selected_indexes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = usize&gt; + <span class="lifetime">&#39;_ </span>{
+    <span class="kw">pub fn </span>selected_indexes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = usize&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.selected.iter().cloned()
     }
 
-    <span class="kw">pub fn </span>unselected_indexes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = usize&gt; + <span class="lifetime">&#39;_ </span>{
+    <span class="kw">pub fn </span>unselected_indexes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = usize&gt; + <span class="lifetime">'_ </span>{
         (<span class="number">0</span>..<span class="self">self</span>.candidates.len()).filter(<span class="kw">move </span>|index| !<span class="self">self</span>.selected.contains(index))
     }
 
@@ -923,7 +923,7 @@
             <span class="kw">let </span>selected = <span class="self">self</span>.selected_absolute_value();
 
             <span class="comment">// find the largest unsatisfied constraint (if any), and return the error of that constraint
-            // &quot;selected&quot; should always be greater than or equal to these selected values
+            // "selected" should always be greater than or equal to these selected values
             </span>[
                 (
                     SelectionConstraint::TargetValue,
@@ -988,7 +988,7 @@
             );
 
             <span class="comment">// no drain, send the excess to the recipient
-            // if `excess == 0`, this result will be the same as the previous, so don&#39;t consider it
+            // if `excess == 0`, this result will be the same as the previous, so don't consider it
             // if `max_extra_target == 0`, there is no leeway for this strategy
             </span><span class="kw">if </span>excess_without_drain &gt; <span class="number">0 </span>&amp;&amp; <span class="self">self</span>.opts.max_extra_target &gt; <span class="number">0 </span>{
                 <span class="kw">let </span>extra_recipient_value =
@@ -1025,7 +1025,7 @@
 
         <span class="macro">debug_assert!</span>(
             !excess_strategies.is_empty(),
-            <span class="string">&quot;should have at least one excess strategy.&quot;
+            <span class="string">"should have at least one excess strategy."
         </span>);
 
         <span class="prelude-val">Ok</span>(Selection {
@@ -1044,7 +1044,7 @@
 }
 
 <span class="kw">impl </span>core::fmt::Display <span class="kw">for </span>SelectionError {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; core::fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; core::fmt::Result {
         <span class="kw">let </span>SelectionError {
             selected,
             missing,
@@ -1052,13 +1052,13 @@
         } = <span class="self">self</span>;
         <span class="macro">write!</span>(
             f,
-            <span class="string">&quot;insufficient coins selected; selected={}, missing={}, unsatisfied_constraint={:?}&quot;</span>,
+            <span class="string">"insufficient coins selected; selected={}, missing={}, unsatisfied_constraint={:?}"</span>,
             selected, missing, constraint
         )
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>SelectionError {}
 
 <span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1074,12 +1074,12 @@
 }
 
 <span class="kw">impl </span>core::fmt::Display <span class="kw">for </span>SelectionConstraint {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; core::fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; core::fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
-            SelectionConstraint::TargetValue =&gt; <span class="macro">core::write!</span>(f, <span class="string">&quot;target_value&quot;</span>),
-            SelectionConstraint::TargetFee =&gt; <span class="macro">core::write!</span>(f, <span class="string">&quot;target_fee&quot;</span>),
-            SelectionConstraint::MinAbsoluteFee =&gt; <span class="macro">core::write!</span>(f, <span class="string">&quot;min_absolute_fee&quot;</span>),
-            SelectionConstraint::MinDrainValue =&gt; <span class="macro">core::write!</span>(f, <span class="string">&quot;min_drain_value&quot;</span>),
+            SelectionConstraint::TargetValue =&gt; <span class="macro">core::write!</span>(f, <span class="string">"target_value"</span>),
+            SelectionConstraint::TargetFee =&gt; <span class="macro">core::write!</span>(f, <span class="string">"target_fee"</span>),
+            SelectionConstraint::MinAbsoluteFee =&gt; <span class="macro">core::write!</span>(f, <span class="string">"min_absolute_fee"</span>),
+            SelectionConstraint::MinDrainValue =&gt; <span class="macro">core::write!</span>(f, <span class="string">"min_drain_value"</span>),
         }
     }
 }
@@ -1108,10 +1108,10 @@
 }
 
 <span class="kw">impl </span>Selection {
-    <span class="kw">pub fn </span>apply_selection&lt;<span class="lifetime">&#39;a</span>, T&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>,
-        candidates: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[T],
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>T&gt; + <span class="lifetime">&#39;a </span>{
+    <span class="kw">pub fn </span>apply_selection&lt;<span class="lifetime">'a</span>, T&gt;(
+        <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="self">self</span>,
+        candidates: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[T],
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">'a </span>T&gt; + <span class="lifetime">'a </span>{
         <span class="self">self</span>.selected.iter().map(<span class="kw">move </span>|i| <span class="kw-2">&amp;</span>candidates[<span class="kw-2">*</span>i])
     }
 
@@ -1120,16 +1120,16 @@
         <span class="self">self</span>.excess_strategies
             .iter()
             .min_by_key(|<span class="kw-2">&amp;</span>(<span class="kw">_</span>, a)| a.waste)
-            .expect(<span class="string">&quot;selection has no excess strategy&quot;</span>)
+            .expect(<span class="string">"selection has no excess strategy"</span>)
     }
 }
 
 <span class="kw">impl </span>core::fmt::Display <span class="kw">for </span>ExcessStrategyKind {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; core::fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; core::fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
-            ExcessStrategyKind::ToFee =&gt; <span class="macro">core::write!</span>(f, <span class="string">&quot;to_fee&quot;</span>),
-            ExcessStrategyKind::ToRecipient =&gt; <span class="macro">core::write!</span>(f, <span class="string">&quot;to_recipient&quot;</span>),
-            ExcessStrategyKind::ToDrain =&gt; <span class="macro">core::write!</span>(f, <span class="string">&quot;to_drain&quot;</span>),
+            ExcessStrategyKind::ToFee =&gt; <span class="macro">core::write!</span>(f, <span class="string">"to_fee"</span>),
+            ExcessStrategyKind::ToRecipient =&gt; <span class="macro">core::write!</span>(f, <span class="string">"to_recipient"</span>),
+            ExcessStrategyKind::ToDrain =&gt; <span class="macro">core::write!</span>(f, <span class="string">"to_drain"</span>),
         }
     }
 }
@@ -1147,7 +1147,7 @@
 
     <span class="kw">use super</span>::{CoinSelector, CoinSelectorOpt, WeightedValue};
 
-    <span class="doccomment">/// Ensure `target_value` is respected. Can&#39;t have any disrespect.
+    <span class="doccomment">/// Ensure `target_value` is respected. Can't have any disrespect.
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>target_value_respected() {
         <span class="kw">let </span>target_value = <span class="number">1000_u64</span>;
@@ -1179,12 +1179,12 @@
 
             <span class="kw">let </span>res = selector.finish();
             <span class="kw">if </span>v.value &lt; opts.target_value.unwrap_or(<span class="number">0</span>) {
-                <span class="kw">let </span>err = res.expect_err(<span class="string">&quot;should have failed&quot;</span>);
+                <span class="kw">let </span>err = res.expect_err(<span class="string">"should have failed"</span>);
                 <span class="macro">assert_eq!</span>(err.selected, v.value);
                 <span class="macro">assert_eq!</span>(err.missing, target_value - v.value);
                 <span class="macro">assert_eq!</span>(err.constraint, SelectionConstraint::MinAbsoluteFee);
             } <span class="kw">else </span>{
-                <span class="kw">let </span>sel = res.expect(<span class="string">&quot;should have succeeded&quot;</span>);
+                <span class="kw">let </span>sel = res.expect(<span class="string">"should have succeeded"</span>);
                 <span class="macro">assert_eq!</span>(sel.excess, v.value - opts.target_value.unwrap_or(<span class="number">0</span>));
             }
         }
@@ -1215,7 +1215,7 @@
 
         <span class="kw">let </span>selection = CoinSelector::new(<span class="kw-2">&amp;</span>candidates, <span class="kw-2">&amp;</span>opts)
             .select_until_finished()
-            .expect(<span class="string">&quot;should succeed&quot;</span>);
+            .expect(<span class="string">"should succeed"</span>);
 
         <span class="macro">assert!</span>(selection.selected.len() &gt; <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(selection.excess_strategies.len(), <span class="number">1</span>);
@@ -1232,5 +1232,4 @@
     /// * actual drain value should be equal to or higher than `min_drain_value` (or else no drain).
     </span><span class="kw">fn </span>_todo() {}
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_coin_select" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

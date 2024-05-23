@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":[["EsploraAsyncExt","Trait to extend the functionality of [`esplora_client::AsyncClient`]."],["EsploraExt","Trait to extend the functionality of [`esplora_client::BlockingClient`]."]],"type":[["Error","[`esplora_client::Error`]"]]};
+window.SIDEBAR_ITEMS = {"trait":["EsploraAsyncExt","EsploraExt"],"type":["Error"]};

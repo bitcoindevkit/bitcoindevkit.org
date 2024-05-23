@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["TestEnv","Struct for running a regtest environment with a single `bitcoind` node with an `electrs` instance connected to it."]]};
+window.SIDEBAR_ITEMS = {"struct":["TestEnv"]};

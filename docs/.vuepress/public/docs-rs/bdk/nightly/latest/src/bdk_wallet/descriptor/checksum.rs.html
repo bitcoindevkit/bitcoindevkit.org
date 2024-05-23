@@ -1,5 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/wallet/src/descriptor/checksum.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>checksum.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../bdk_wallet/index.html">
-                        <img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/wallet/src/descriptor/checksum.rs`."><title>checksum.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bdk_wallet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0-nightly (78a775127 2024-05-11)" data-channel="nightly" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -146,7 +145,7 @@
 <a href="#145" id="145">145</a>
 <a href="#146" id="146">146</a>
 <a href="#147" id="147">147</a>
-</pre><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
+</pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
 // Copyright (c) 2020-2021 Bitcoin Dev Kit Developers
@@ -165,8 +164,8 @@
 </span><span class="kw">use </span><span class="kw">crate</span>::descriptor::DescriptorError;
 <span class="kw">use </span>alloc::string::String;
 
-<span class="kw">const </span>INPUT_CHARSET: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;0123456789()[],&#39;/*abcdefgh@:$%{}IJKLMNOPQRSTUVWXYZ&amp;+-.;&lt;=&gt;?!^_|~ijklmnopqrstuvwxyzABCDEFGH`#\&quot;\\ &quot;</span>;
-<span class="kw">const </span>CHECKSUM_CHARSET: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;qpzry9x8gf2tvdw0s3jn54khce6mua7l&quot;</span>;
+<span class="kw">const </span>INPUT_CHARSET: <span class="kw-2">&amp;</span>[u8] = <span class="string">b"0123456789()[],'/*abcdefgh@:$%{}IJKLMNOPQRSTUVWXYZ&amp;+-.;&lt;=&gt;?!^_|~ijklmnopqrstuvwxyzABCDEFGH`#\"\\ "</span>;
+<span class="kw">const </span>CHECKSUM_CHARSET: <span class="kw-2">&amp;</span>[u8] = <span class="string">b"qpzry9x8gf2tvdw0s3jn54khce6mua7l"</span>;
 
 <span class="kw">fn </span>poly_mod(<span class="kw-2">mut </span>c: u64, val: u64) -&gt; u64 {
     <span class="kw">let </span>c0 = c &gt;&gt; <span class="number">35</span>;
@@ -197,7 +196,7 @@
     <span class="kw">let </span><span class="kw-2">mut </span>clscount = <span class="number">0</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>original_checksum = <span class="prelude-val">None</span>;
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(split) = desc.split_once(<span class="string">&#39;#&#39;</span>) {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(split) = desc.split_once(<span class="string">'#'</span>) {
         desc = split.<span class="number">0</span>;
         original_checksum = <span class="prelude-val">Some</span>(split.<span class="number">1</span>);
     }
@@ -252,30 +251,30 @@
     <span class="comment">// test calc_checksum() function; it should return the same value as Bitcoin Core
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>test_calc_checksum() {
-        <span class="kw">let </span>desc = <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)&quot;</span>;
-        <span class="macro">assert_eq!</span>(calc_checksum(desc).unwrap(), <span class="string">&quot;tqz0nc62&quot;</span>);
+        <span class="kw">let </span>desc = <span class="string">"wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)"</span>;
+        <span class="macro">assert_eq!</span>(calc_checksum(desc).unwrap(), <span class="string">"tqz0nc62"</span>);
 
-        <span class="kw">let </span>desc = <span class="string">&quot;pkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/44&#39;/1&#39;/0&#39;/0/*)&quot;</span>;
-        <span class="macro">assert_eq!</span>(calc_checksum(desc).unwrap(), <span class="string">&quot;lasegmfs&quot;</span>);
+        <span class="kw">let </span>desc = <span class="string">"pkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/44'/1'/0'/0/*)"</span>;
+        <span class="macro">assert_eq!</span>(calc_checksum(desc).unwrap(), <span class="string">"lasegmfs"</span>);
     }
 
     <span class="comment">// test calc_checksum() function; it should return the same value as Bitcoin Core even if the
     // descriptor string includes a checksum hash
     </span><span class="attr">#[test]
     </span><span class="kw">fn </span>test_calc_checksum_with_checksum_hash() {
-        <span class="kw">let </span>desc = <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)#tqz0nc62&quot;</span>;
-        <span class="macro">assert_eq!</span>(calc_checksum(desc).unwrap(), <span class="string">&quot;tqz0nc62&quot;</span>);
+        <span class="kw">let </span>desc = <span class="string">"wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)#tqz0nc62"</span>;
+        <span class="macro">assert_eq!</span>(calc_checksum(desc).unwrap(), <span class="string">"tqz0nc62"</span>);
 
-        <span class="kw">let </span>desc = <span class="string">&quot;pkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/44&#39;/1&#39;/0&#39;/0/*)#lasegmfs&quot;</span>;
-        <span class="macro">assert_eq!</span>(calc_checksum(desc).unwrap(), <span class="string">&quot;lasegmfs&quot;</span>);
+        <span class="kw">let </span>desc = <span class="string">"pkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/44'/1'/0'/0/*)#lasegmfs"</span>;
+        <span class="macro">assert_eq!</span>(calc_checksum(desc).unwrap(), <span class="string">"lasegmfs"</span>);
 
-        <span class="kw">let </span>desc = <span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)#tqz0nc26&quot;</span>;
+        <span class="kw">let </span>desc = <span class="string">"wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcLNfjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)#tqz0nc26"</span>;
         <span class="macro">assert_matches!</span>(
             calc_checksum(desc),
             <span class="prelude-val">Err</span>(DescriptorError::InvalidDescriptorChecksum)
         );
 
-        <span class="kw">let </span>desc = <span class="string">&quot;pkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/44&#39;/1&#39;/0&#39;/0/*)#lasegmsf&quot;</span>;
+        <span class="kw">let </span>desc = <span class="string">"pkh(tpubD6NzVbkrYhZ4XHndKkuB8FifXm8r5FQHwrN6oZuWCz13qb93rtgKvD4PQsqC4HP4yhV3tA2fqr2RbY5mNXfM7RxXUoeABoDtsFUq2zJq6YK/44'/1'/0'/0/*)#lasegmsf"</span>;
         <span class="macro">assert_matches!</span>(
             calc_checksum(desc),
             <span class="prelude-val">Err</span>(DescriptorError::InvalidDescriptorChecksum)
@@ -285,7 +284,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_calc_checksum_invalid_character() {
         <span class="kw">let </span>sparkle_heart = <span class="kw">unsafe </span>{ core::str::from_utf8_unchecked(<span class="kw-2">&amp;</span>[<span class="number">240</span>, <span class="number">159</span>, <span class="number">146</span>, <span class="number">150</span>]) };
-        <span class="kw">let </span>invalid_desc = <span class="macro">format!</span>(<span class="string">&quot;wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcL{}fjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)&quot;</span>, sparkle_heart);
+        <span class="kw">let </span>invalid_desc = <span class="macro">format!</span>(<span class="string">"wpkh(tprv8ZgxMBicQKsPdpkqS7Eair4YxjcuuvDPNYmKX3sCniCf16tHEVrjjiSXEkFRnUH77yXc6ZcwHHcL{}fjdi5qUvw3VDfgYiH5mNsj5izuiu2N/1/2/*)"</span>, sparkle_heart);
 
         <span class="macro">assert_matches!</span>(
             calc_checksum(<span class="kw-2">&amp;</span>invalid_desc),
@@ -293,5 +292,4 @@
         );
     }
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bdk_wallet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

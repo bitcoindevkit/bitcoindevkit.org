@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/chain/src/keychain.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>keychain.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-64f7dca12162a801.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../bdk_chain/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/chain/src/keychain.rs`."><title>keychain.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0-nightly (78a775127 2024-05-11)" data-channel="nightly" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -71,30 +71,30 @@
 <a href="#71" id="71">71</a>
 <a href="#72" id="72">72</a>
 <a href="#73" id="73">73</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Module for keychain related structures.
+</pre></div><pre class="rust"><code><span class="doccomment">//! Module for keychain related structures.
 //!
 //! A keychain here is a set of application-defined indexes for a miniscript descriptor where we can
-//! derive script pubkeys at a particular derivation index. The application&#39;s index is simply
+//! derive script pubkeys at a particular derivation index. The application's index is simply
 //! anything that implements `Ord`.
 //!
 //! [`KeychainTxOutIndex`] indexes script pubkeys of keychains and scans in relevant outpoints (that
 //! has a `txout` containing an indexed script pubkey). Internally, this uses [`SpkTxOutIndex`], but
-//! also maintains &quot;revealed&quot; and &quot;lookahead&quot; index counts per keychain.
+//! also maintains "revealed" and "lookahead" index counts per keychain.
 //!
 //! [`SpkTxOutIndex`]: crate::SpkTxOutIndex
 
-</span><span class="attr">#[cfg(feature = <span class="string">&quot;miniscript&quot;</span>)]
+</span><span class="attr">#[cfg(feature = <span class="string">"miniscript"</span>)]
 </span><span class="kw">mod </span>txout_index;
 <span class="kw">use </span>bitcoin::Amount;
-<span class="attr">#[cfg(feature = <span class="string">&quot;miniscript&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"miniscript"</span>)]
 </span><span class="kw">pub use </span>txout_index::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Balance, differentiated into various categories.
 </span><span class="attr">#[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[cfg_attr(
-    feature = <span class="string">&quot;serde&quot;</span>,
+    feature = <span class="string">"serde"</span>,
     derive(serde::Deserialize, serde::Serialize),
-    serde(<span class="kw">crate </span>= <span class="string">&quot;serde_crate&quot;</span>,)
+    serde(<span class="kw">crate </span>= <span class="string">"serde_crate"</span>,)
 )]
 </span><span class="kw">pub struct </span>Balance {
     <span class="doccomment">/// All coinbase outputs not yet matured
@@ -110,7 +110,7 @@
 <span class="kw">impl </span>Balance {
     <span class="doccomment">/// Get sum of trusted_pending and confirmed coins.
     ///
-    /// This is the balance you can spend right now that shouldn&#39;t get cancelled via another party
+    /// This is the balance you can spend right now that shouldn't get cancelled via another party
     /// double spending it.
     </span><span class="kw">pub fn </span>trusted_spendable(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Amount {
         <span class="self">self</span>.confirmed + <span class="self">self</span>.trusted_pending
@@ -123,10 +123,10 @@
 }
 
 <span class="kw">impl </span>core::fmt::Display <span class="kw">for </span>Balance {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; core::fmt::Result {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; core::fmt::Result {
         <span class="macro">write!</span>(
             f,
-            <span class="string">&quot;{{ immature: {}, trusted_pending: {}, untrusted_pending: {}, confirmed: {} }}&quot;</span>,
+            <span class="string">"{{ immature: {}, trusted_pending: {}, untrusted_pending: {}, confirmed: {} }}"</span>,
             <span class="self">self</span>.immature, <span class="self">self</span>.trusted_pending, <span class="self">self</span>.untrusted_pending, <span class="self">self</span>.confirmed
         )
     }
@@ -144,5 +144,4 @@
         }
     }
 }
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_chain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0f529f0f4 2022-12-13)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</code></pre></div></section></main></body></html>
