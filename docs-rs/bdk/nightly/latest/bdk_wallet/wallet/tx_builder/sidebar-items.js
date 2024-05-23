@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["AddForeignUtxoError","AddUtxoError","AllowShrinkingError","ChangeSpendPolicy","TxOrdering"],"struct":["BumpFee","CreateTx","TxBuilder"],"trait":["TxBuilderContext"]};
+window.SIDEBAR_ITEMS = {"enum":["AddForeignUtxoError","AddUtxoError","ChangeSpendPolicy","TxOrdering"],"struct":["TxBuilder"]};
