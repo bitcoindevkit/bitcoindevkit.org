@@ -2640,8 +2640,6 @@
 <a href="#2640" id="2640">2640</a>
 <a href="#2641" id="2641">2641</a>
 <a href="#2642" id="2642">2642</a>
-<a href="#2643" id="2643">2643</a>
-<a href="#2644" id="2644">2644</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2703,7 +2701,7 @@
 
 <span class="kw">use </span>coin_selection::DefaultCoinSelectionAlgorithm;
 <span class="kw">use </span>signer::{SignOptions, SignerOrdering, SignersContainer, TransactionSigner};
-<span class="kw">use </span>tx_builder::{BumpFee, CreateTx, FeePolicy, TxBuilder, TxParams};
+<span class="kw">use </span>tx_builder::{FeePolicy, TxBuilder, TxParams};
 <span class="kw">use </span>utils::{check_nsequence_rbf, After, Older, SecpCtx};
 
 <span class="kw">use </span><span class="kw">crate</span>::descriptor::policy::BuildSatisfaction;
@@ -3937,12 +3935,11 @@
     /// ```
     ///
     /// [`TxBuilder`]: crate::TxBuilder
-    </span><span class="kw">pub fn </span>build_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; TxBuilder&lt;<span class="lifetime">'_</span>, DefaultCoinSelectionAlgorithm, CreateTx&gt; {
+    </span><span class="kw">pub fn </span>build_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; TxBuilder&lt;<span class="lifetime">'_</span>, DefaultCoinSelectionAlgorithm&gt; {
         TxBuilder {
             wallet: alloc::rc::Rc::new(core::cell::RefCell::new(<span class="self">self</span>)),
             params: TxParams::default(),
             coin_selection: DefaultCoinSelectionAlgorithm::default(),
-            phantom: core::marker::PhantomData,
         }
     }
 
@@ -4328,7 +4325,7 @@
     </span><span class="kw">pub fn </span>build_fee_bump(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         txid: Txid,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxBuilder&lt;<span class="lifetime">'_</span>, DefaultCoinSelectionAlgorithm, BumpFee&gt;, BuildFeeBumpError&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;TxBuilder&lt;<span class="lifetime">'_</span>, DefaultCoinSelectionAlgorithm&gt;, BuildFeeBumpError&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.indexed_graph.graph();
         <span class="kw">let </span>txout_index = <span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index;
         <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().block_id();
@@ -4452,7 +4449,6 @@
             wallet: alloc::rc::Rc::new(core::cell::RefCell::new(<span class="self">self</span>)),
             params,
             coin_selection: DefaultCoinSelectionAlgorithm::default(),
-            phantom: core::marker::PhantomData,
         })
     }
 
