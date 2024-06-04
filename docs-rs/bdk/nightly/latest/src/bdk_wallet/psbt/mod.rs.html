@@ -68,11 +68,6 @@
 <a href="#68" id="68">68</a>
 <a href="#69" id="69">69</a>
 <a href="#70" id="70">70</a>
-<a href="#71" id="71">71</a>
-<a href="#72" id="72">72</a>
-<a href="#73" id="73">73</a>
-<a href="#74" id="74">74</a>
-<a href="#75" id="75">75</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -101,7 +96,7 @@
 
     <span class="doccomment">/// The total transaction fee amount, sum of input amounts minus sum of output amounts, in sats.
     /// If the PSBT is missing a TxOut for an input returns None.
-    </span><span class="kw">fn </span>fee_amount(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;u64&gt;;
+    </span><span class="kw">fn </span>fee_amount(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Amount&gt;;
 
     <span class="doccomment">/// The transaction's fee rate. This value will only be accurate if calculated AFTER the
     /// `Psbt` is finalized and all witness/signature data is added to the
@@ -124,18 +119,13 @@
         }
     }
 
-    <span class="kw">fn </span>fee_amount(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;u64&gt; {
+    <span class="kw">fn </span>fee_amount(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Amount&gt; {
         <span class="kw">let </span>tx = <span class="kw-2">&amp;</span><span class="self">self</span>.unsigned_tx;
         <span class="kw">let </span>utxos: <span class="prelude-ty">Option</span>&lt;Vec&lt;TxOut&gt;&gt; = (<span class="number">0</span>..tx.input.len()).map(|i| <span class="self">self</span>.get_utxo_for(i)).collect();
 
         utxos.map(|inputs| {
-            <span class="kw">let </span>input_amount: u64 = inputs.iter().map(|i| i.value.to_sat()).sum();
-            <span class="kw">let </span>output_amount: u64 = <span class="self">self
-                </span>.unsigned_tx
-                .output
-                .iter()
-                .map(|o| o.value.to_sat())
-                .sum();
+            <span class="kw">let </span>input_amount: Amount = inputs.iter().map(|i| i.value).sum();
+            <span class="kw">let </span>output_amount: Amount = <span class="self">self</span>.unsigned_tx.output.iter().map(|o| o.value).sum();
             input_amount
                 .checked_sub(output_amount)
                 .expect(<span class="string">"input amount must be greater than output amount"</span>)
@@ -145,7 +135,7 @@
     <span class="kw">fn </span>fee_rate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;FeeRate&gt; {
         <span class="kw">let </span>fee_amount = <span class="self">self</span>.fee_amount();
         <span class="kw">let </span>weight = <span class="self">self</span>.clone().extract_tx().ok()<span class="question-mark">?</span>.weight();
-        fee_amount.map(|fee| Amount::from_sat(fee) / weight)
+        fee_amount.map(|fee| fee / weight)
     }
 }
 </code></pre></div></section></main></body></html>
