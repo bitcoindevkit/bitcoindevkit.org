@@ -1571,9 +1571,6 @@
 <a href="#1571" id="1571">1571</a>
 <a href="#1572" id="1572">1572</a>
 <a href="#1573" id="1573">1573</a>
-<a href="#1574" id="1574">1574</a>
-<a href="#1575" id="1575">1575</a>
-<a href="#1576" id="1576">1576</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
 //! [`TxGraph`] contains transactions and indexes them so you can easily traverse the graph of
@@ -1671,7 +1668,7 @@
 <span class="kw">use </span>alloc::collections::vec_deque::VecDeque;
 <span class="kw">use </span>alloc::sync::Arc;
 <span class="kw">use </span>alloc::vec::Vec;
-<span class="kw">use </span>bitcoin::{Amount, OutPoint, Script, Transaction, TxOut, Txid};
+<span class="kw">use </span>bitcoin::{Amount, OutPoint, Script, SignedAmount, Transaction, TxOut, Txid};
 <span class="kw">use </span>core::fmt::{<span class="self">self</span>, Formatter};
 <span class="kw">use </span>core::{
     convert::Infallible,
@@ -1758,7 +1755,7 @@
     <span class="doccomment">/// Missing `TxOut` for one or more of the inputs of the tx
     </span>MissingTxOut(Vec&lt;OutPoint&gt;),
     <span class="doccomment">/// When the transaction is invalid according to the graph it has a negative fee
-    </span>NegativeFee(i64),
+    </span>NegativeFee(SignedAmount),
 }
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>CalculateFeeError {
@@ -1772,7 +1769,7 @@
             CalculateFeeError::NegativeFee(fee) =&gt; <span class="macro">write!</span>(
                 f,
                 <span class="string">"transaction is invalid according to the graph and has negative fee: {}"</span>,
-                fee
+                fee.display_dynamic()
             ),
         }
     }
@@ -1883,7 +1880,7 @@
         })
     }
 
-    <span class="doccomment">/// Calculates the fee of a given transaction. Returns 0 if `tx` is a coinbase transaction.
+    <span class="doccomment">/// Calculates the fee of a given transaction. Returns [`Amount::ZERO`] if `tx` is a coinbase transaction.
     /// Returns `OK(_)` if we have all the [`TxOut`]s being spent by `tx` in the graph (either as
     /// the full transactions or individual txouts).
     ///
@@ -1894,20 +1891,20 @@
     /// Note `tx` does not have to be in the graph for this to work.
     ///
     /// [`insert_txout`]: Self::insert_txout
-    </span><span class="kw">pub fn </span>calculate_fee(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="prelude-ty">Result</span>&lt;u64, CalculateFeeError&gt; {
+    </span><span class="kw">pub fn </span>calculate_fee(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="prelude-ty">Result</span>&lt;Amount, CalculateFeeError&gt; {
         <span class="kw">if </span>tx.is_coinbase() {
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="number">0</span>);
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(Amount::ZERO);
         }
 
         <span class="kw">let </span>(inputs_sum, missing_outputs) = tx.input.iter().fold(
-            (<span class="number">0_i64</span>, Vec::new()),
+            (SignedAmount::ZERO, Vec::new()),
             |(<span class="kw-2">mut </span>sum, <span class="kw-2">mut </span>missing_outpoints), txin| <span class="kw">match </span><span class="self">self</span>.get_txout(txin.previous_output) {
                 <span class="prelude-val">None </span>=&gt; {
                     missing_outpoints.push(txin.previous_output);
                     (sum, missing_outpoints)
                 }
                 <span class="prelude-val">Some</span>(txout) =&gt; {
-                    sum += txout.value.to_sat() <span class="kw">as </span>i64;
+                    sum += txout.value.to_signed().expect(<span class="string">"valid `SignedAmount`"</span>);
                     (sum, missing_outpoints)
                 }
             },
@@ -1919,15 +1916,12 @@
         <span class="kw">let </span>outputs_sum = tx
             .output
             .iter()
-            .map(|txout| txout.value.to_sat() <span class="kw">as </span>i64)
-            .sum::&lt;i64&gt;();
+            .map(|txout| txout.value.to_signed().expect(<span class="string">"valid `SignedAmount`"</span>))
+            .sum::&lt;SignedAmount&gt;();
 
         <span class="kw">let </span>fee = inputs_sum - outputs_sum;
-        <span class="kw">if </span>fee &lt; <span class="number">0 </span>{
-            <span class="prelude-val">Err</span>(CalculateFeeError::NegativeFee(fee))
-        } <span class="kw">else </span>{
-            <span class="prelude-val">Ok</span>(fee <span class="kw">as </span>u64)
-        }
+        fee.to_unsigned()
+            .map_err(|<span class="kw">_</span>| CalculateFeeError::NegativeFee(fee))
     }
 
     <span class="doccomment">/// The transactions spending from this output.

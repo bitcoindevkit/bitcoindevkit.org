@@ -2638,8 +2638,6 @@
 <a href="#2638" id="2638">2638</a>
 <a href="#2639" id="2639">2639</a>
 <a href="#2640" id="2640">2640</a>
-<a href="#2641" id="2641">2641</a>
-<a href="#2642" id="2642">2642</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -3619,7 +3617,7 @@
         <span class="self">self</span>.persist.stage(ChangeSet::from(additions));
     }
 
-    <span class="doccomment">/// Calculates the fee of a given transaction. Returns 0 if `tx` is a coinbase transaction.
+    <span class="doccomment">/// Calculates the fee of a given transaction. Returns [`Amount::ZERO`] if `tx` is a coinbase transaction.
     ///
     /// To calculate the fee for a [`Transaction`] with inputs not owned by this wallet you must
     /// manually insert the TxOut(s) into the tx graph using the [`insert_txout`] function.
@@ -3646,7 +3644,7 @@
     /// let fee = wallet.calculate_fee(tx).expect("fee");
     /// ```
     /// [`insert_txout`]: Self::insert_txout
-    </span><span class="kw">pub fn </span>calculate_fee(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="prelude-ty">Result</span>&lt;u64, CalculateFeeError&gt; {
+    </span><span class="kw">pub fn </span>calculate_fee(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="prelude-ty">Result</span>&lt;Amount, CalculateFeeError&gt; {
         <span class="self">self</span>.indexed_graph.graph().calculate_fee(tx)
     }
 
@@ -3678,8 +3676,7 @@
     /// ```
     /// [`insert_txout`]: Self::insert_txout
     </span><span class="kw">pub fn </span>calculate_fee_rate(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="prelude-ty">Result</span>&lt;FeeRate, CalculateFeeError&gt; {
-        <span class="self">self</span>.calculate_fee(tx)
-            .map(|fee| Amount::from_sat(fee) / tx.weight())
+        <span class="self">self</span>.calculate_fee(tx).map(|fee| fee / tx.weight())
     }
 
     <span class="doccomment">/// Compute the `tx`'s sent and received [`Amount`]s.
@@ -4107,7 +4104,7 @@
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(previous_fee) = params.bumping_fee {
                     <span class="kw">if </span>fee &lt; previous_fee.absolute {
                         <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::FeeTooLow {
-                            required: previous_fee.absolute,
+                            required: Amount::from_sat(previous_fee.absolute),
                         });
                     }
                 }
@@ -4140,9 +4137,8 @@
             <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::NoUtxosSelected);
         }
 
-        <span class="comment">// we keep it as a float while we accumulate it, and only round it at the end
-        </span><span class="kw">let </span><span class="kw-2">mut </span>outgoing: u64 = <span class="number">0</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>received: u64 = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>outgoing = Amount::ZERO;
+        <span class="kw">let </span><span class="kw-2">mut </span>received = Amount::ZERO;
 
         <span class="kw">let </span>recipients = params.recipients.iter().map(|(r, v)| (r, <span class="kw-2">*</span>v));
 
@@ -4155,7 +4151,7 @@
             }
 
             <span class="kw">if </span><span class="self">self</span>.is_mine(script_pubkey) {
-                received += value;
+                received += Amount::from_sat(value);
             }
 
             <span class="kw">let </span>new_out = TxOut {
@@ -4165,7 +4161,7 @@
 
             tx.output.push(new_out);
 
-            outgoing += value;
+            outgoing += Amount::from_sat(value);
         }
 
         fee_amount += (fee_rate * tx.weight()).to_sat();
@@ -4207,7 +4203,7 @@
             required_utxos,
             optional_utxos,
             fee_rate,
-            outgoing + fee_amount,
+            outgoing.to_sat() + fee_amount,
             <span class="kw-2">&amp;</span>drain_script,
         )<span class="question-mark">?</span>;
         fee_amount += coin_selection.fee_amount;
@@ -4255,7 +4251,7 @@
             } =&gt; fee_amount += remaining_amount,
             Change { amount, fee } =&gt; {
                 <span class="kw">if </span><span class="self">self</span>.is_mine(<span class="kw-2">&amp;</span>drain_script) {
-                    received += amount;
+                    received += Amount::from_sat(<span class="kw-2">*</span>amount);
                 }
                 fee_amount += fee;
 
@@ -4439,7 +4435,7 @@
                 .collect(),
             utxos: original_utxos,
             bumping_fee: <span class="prelude-val">Some</span>(tx_builder::PreviousFee {
-                absolute: fee,
+                absolute: fee.to_sat(),
                 rate: fee_rate,
             }),
             ..Default::default()

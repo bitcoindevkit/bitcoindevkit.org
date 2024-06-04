@@ -307,7 +307,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::wallet::coin_selection;
 <span class="kw">use crate</span>::{descriptor, KeychainKind};
 <span class="kw">use </span>alloc::string::String;
-<span class="kw">use </span>bitcoin::{absolute, psbt, OutPoint, Sequence, Txid};
+<span class="kw">use </span>bitcoin::{absolute, psbt, Amount, OutPoint, Sequence, Txid};
 <span class="kw">use </span>core::fmt;
 
 <span class="doccomment">/// Errors returned by miniscript when updating inconsistent PSBTs
@@ -369,8 +369,8 @@
     },
     <span class="doccomment">/// When bumping a tx the absolute fee requested is lower than replaced tx absolute fee
     </span>FeeTooLow {
-        <span class="doccomment">/// Required fee absolute value (satoshi)
-        </span>required: u64,
+        <span class="doccomment">/// Required fee absolute value [`Amount`]
+        </span>required: Amount,
     },
     <span class="doccomment">/// When bumping a tx the fee rate requested is lower than required
     </span>FeeRateTooLow {
@@ -451,7 +451,7 @@
                 )
             }
             CreateTxError::FeeTooLow { required } =&gt; {
-                <span class="macro">write!</span>(f, <span class="string">"Fee to low: required {} sat"</span>, required)
+                <span class="macro">write!</span>(f, <span class="string">"Fee to low: required {}"</span>, required.display_dynamic())
             }
             CreateTxError::FeeRateTooLow { required } =&gt; {
                 <span class="macro">write!</span>(
