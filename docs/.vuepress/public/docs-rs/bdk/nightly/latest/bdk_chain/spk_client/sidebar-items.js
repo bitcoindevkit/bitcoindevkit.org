@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["FullScanRequest","FullScanResult","SyncRequest","SyncResult"],"type":["TxCache"]};
+window.SIDEBAR_ITEMS = {"struct":["FullScanRequest","FullScanResult","SyncRequest","SyncResult"]};

@@ -94,6 +94,10 @@
 <a href="#94" id="94">94</a>
 <a href="#95" id="95">95</a>
 <a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
 </pre></div><pre class="rust"><code><span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">"bdk_wallet_electrum_example"</span>;
 <span class="kw">const </span>SEND_AMOUNT: Amount = Amount::from_sat(<span class="number">5000</span>);
 <span class="kw">const </span>STOP_GAP: usize = <span class="number">50</span>;
@@ -102,10 +106,8 @@
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::str::FromStr;
 
-<span class="kw">use </span>bdk_electrum::{
-    electrum_client::{<span class="self">self</span>, ElectrumApi},
-    ElectrumExt,
-};
+<span class="kw">use </span>bdk_electrum::electrum_client;
+<span class="kw">use </span>bdk_electrum::BdkElectrumClient;
 <span class="kw">use </span>bdk_file_store::Store;
 <span class="kw">use </span>bdk_wallet::bitcoin::{Address, Amount};
 <span class="kw">use </span>bdk_wallet::chain::collections::HashSet;
@@ -133,7 +135,13 @@
     <span class="macro">println!</span>(<span class="string">"Wallet balance before syncing: {} sats"</span>, balance.total());
 
     <span class="macro">print!</span>(<span class="string">"Syncing..."</span>);
-    <span class="kw">let </span>client = electrum_client::Client::new(<span class="string">"ssl://electrum.blockstream.info:60002"</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>client = BdkElectrumClient::new(electrum_client::Client::new(
+        <span class="string">"ssl://electrum.blockstream.info:60002"</span>,
+    )<span class="question-mark">?</span>);
+
+    <span class="comment">// Populate the electrum client's transaction cache so it doesn't redownload transaction we
+    // already have.
+    </span>client.populate_tx_cache(<span class="kw-2">&amp;</span>wallet);
 
     <span class="kw">let </span>request = wallet
         .start_full_scan()

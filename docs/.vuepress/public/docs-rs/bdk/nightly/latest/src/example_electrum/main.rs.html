@@ -350,6 +350,7 @@
 <a href="#350" id="350">350</a>
 <a href="#351" id="351">351</a>
 <a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{
     io::{<span class="self">self</span>, Write},
     sync::Mutex,
@@ -366,7 +367,7 @@
 };
 <span class="kw">use </span>bdk_electrum::{
     electrum_client::{<span class="self">self</span>, Client, ElectrumApi},
-    ElectrumExt,
+    BdkElectrumClient,
 };
 <span class="kw">use </span>example_cli::{
     anyhow::{<span class="self">self</span>, Context},
@@ -498,7 +499,10 @@
         }
     };
 
-    <span class="kw">let </span>client = electrum_cmd.electrum_args().client(args.network)<span class="question-mark">?</span>;
+    <span class="kw">let </span>client = BdkElectrumClient::new(electrum_cmd.electrum_args().client(args.network)<span class="question-mark">?</span>);
+
+    <span class="comment">// Tell the electrum client about the txs we've already got locally so it doesn't re-download them
+    </span>client.populate_tx_cache(<span class="kw-2">&amp;*</span>graph.lock().unwrap());
 
     <span class="kw">let </span>(chain_update, <span class="kw-2">mut </span>graph_update, keychain_update) = <span class="kw">match </span>electrum_cmd.clone() {
         ElectrumCommands::Scan {
@@ -511,7 +515,6 @@
                 <span class="kw">let </span>chain = <span class="kw-2">&amp;*</span>chain.lock().unwrap();
 
                 FullScanRequest::from_chain_tip(chain.tip())
-                    .cache_graph_txs(graph.graph())
                     .set_spks_for_keychain(
                         Keychain::External,
                         graph
@@ -572,8 +575,7 @@
             }
 
             <span class="kw">let </span>chain_tip = chain.tip();
-            <span class="kw">let </span><span class="kw-2">mut </span>request =
-                SyncRequest::from_chain_tip(chain_tip.clone()).cache_graph_txs(graph.graph());
+            <span class="kw">let </span><span class="kw-2">mut </span>request = SyncRequest::from_chain_tip(chain_tip.clone());
 
             <span class="kw">if </span>all_spks {
                 <span class="kw">let </span>all_spks = graph
