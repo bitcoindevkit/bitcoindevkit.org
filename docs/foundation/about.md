@@ -27,4 +27,4 @@ Our operations team handles the day-to-day operations of the Foundation and repo
 - Daniela Brozzoni, Vice-President
 - Joe Wood, Treasurer
 - thunderbiscuit, Secretary
-- Evan Lin, At-large
+- Evan Lin, Grants Program Lead
