@@ -2595,6 +2595,8 @@
 <a href="#2595" id="2595">2595</a>
 <a href="#2596" id="2596">2596</a>
 <a href="#2597" id="2597">2597</a>
+<a href="#2598" id="2598">2598</a>
+<a href="#2599" id="2599">2599</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2669,6 +2671,8 @@
 <span class="kw">use </span><span class="kw">crate</span>::types::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">crate</span>::wallet::coin_selection::Excess::{Change, NoChange};
 <span class="kw">use </span><span class="kw">crate</span>::wallet::error::{BuildFeeBumpError, CreateTxError, MiniscriptPsbtError};
+
+<span class="kw">use </span><span class="self">self</span>::coin_selection::Error;
 
 <span class="kw">const </span>COINBASE_MATURITY: u32 = <span class="number">100</span>;
 
@@ -4159,10 +4163,10 @@
                     change_fee,
                 } = excess
                 {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::InsufficientFunds {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::CoinSelection(Error::InsufficientFunds {
                         needed: <span class="kw-2">*</span>dust_threshold,
                         available: remaining_amount.saturating_sub(<span class="kw-2">*</span>change_fee),
-                    });
+                    }));
                 }
             } <span class="kw">else </span>{
                 <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::NoRecipients);
