@@ -2595,47 +2595,6 @@
 <a href="#2595" id="2595">2595</a>
 <a href="#2596" id="2596">2596</a>
 <a href="#2597" id="2597">2597</a>
-<a href="#2598" id="2598">2598</a>
-<a href="#2599" id="2599">2599</a>
-<a href="#2600" id="2600">2600</a>
-<a href="#2601" id="2601">2601</a>
-<a href="#2602" id="2602">2602</a>
-<a href="#2603" id="2603">2603</a>
-<a href="#2604" id="2604">2604</a>
-<a href="#2605" id="2605">2605</a>
-<a href="#2606" id="2606">2606</a>
-<a href="#2607" id="2607">2607</a>
-<a href="#2608" id="2608">2608</a>
-<a href="#2609" id="2609">2609</a>
-<a href="#2610" id="2610">2610</a>
-<a href="#2611" id="2611">2611</a>
-<a href="#2612" id="2612">2612</a>
-<a href="#2613" id="2613">2613</a>
-<a href="#2614" id="2614">2614</a>
-<a href="#2615" id="2615">2615</a>
-<a href="#2616" id="2616">2616</a>
-<a href="#2617" id="2617">2617</a>
-<a href="#2618" id="2618">2618</a>
-<a href="#2619" id="2619">2619</a>
-<a href="#2620" id="2620">2620</a>
-<a href="#2621" id="2621">2621</a>
-<a href="#2622" id="2622">2622</a>
-<a href="#2623" id="2623">2623</a>
-<a href="#2624" id="2624">2624</a>
-<a href="#2625" id="2625">2625</a>
-<a href="#2626" id="2626">2626</a>
-<a href="#2627" id="2627">2627</a>
-<a href="#2628" id="2628">2628</a>
-<a href="#2629" id="2629">2629</a>
-<a href="#2630" id="2630">2630</a>
-<a href="#2631" id="2631">2631</a>
-<a href="#2632" id="2632">2632</a>
-<a href="#2633" id="2633">2633</a>
-<a href="#2634" id="2634">2634</a>
-<a href="#2635" id="2635">2635</a>
-<a href="#2636" id="2636">2636</a>
-<a href="#2637" id="2637">2637</a>
-<a href="#2638" id="2638">2638</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2804,7 +2763,7 @@
     <span class="doccomment">/// Creates a wallet that does not persist data.
     </span><span class="kw">pub fn </span>new_no_persist&lt;E: IntoWalletDescriptor&gt;(
         descriptor: E,
-        change_descriptor: <span class="prelude-ty">Option</span>&lt;E&gt;,
+        change_descriptor: E,
         network: Network,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, DescriptorError&gt; {
         <span class="self">Self</span>::new(descriptor, change_descriptor, (), network).map_err(|e| <span class="kw">match </span>e {
@@ -2817,7 +2776,7 @@
     <span class="doccomment">/// Creates a wallet that does not persist data, with a custom genesis hash.
     </span><span class="kw">pub fn </span>new_no_persist_with_genesis_hash&lt;E: IntoWalletDescriptor&gt;(
         descriptor: E,
-        change_descriptor: <span class="prelude-ty">Option</span>&lt;E&gt;,
+        change_descriptor: E,
         network: Network,
         genesis_hash: BlockHash,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="kw">crate</span>::descriptor::DescriptorError&gt; {
@@ -2880,7 +2839,7 @@
     <span class="doccomment">/// Data loaded from persistence is missing genesis hash.
     </span>MissingGenesis,
     <span class="doccomment">/// Data loaded from persistence is missing descriptor.
-    </span>MissingDescriptor,
+    </span>MissingDescriptor(KeychainKind),
 }
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>LoadError {
@@ -2893,7 +2852,9 @@
             }
             LoadError::MissingNetwork =&gt; <span class="macro">write!</span>(f, <span class="string">"loaded data is missing network type"</span>),
             LoadError::MissingGenesis =&gt; <span class="macro">write!</span>(f, <span class="string">"loaded data is missing genesis hash"</span>),
-            LoadError::MissingDescriptor =&gt; <span class="macro">write!</span>(f, <span class="string">"loaded data is missing descriptor"</span>),
+            LoadError::MissingDescriptor(k) =&gt; {
+                <span class="macro">write!</span>(f, <span class="string">"loaded data is missing descriptor for keychain {k:?}"</span>)
+            }
         }
     }
 }
@@ -3036,7 +2997,7 @@
     <span class="doccomment">/// Initialize an empty [`Wallet`].
     </span><span class="kw">pub fn </span>new&lt;E: IntoWalletDescriptor&gt;(
         descriptor: E,
-        change_descriptor: <span class="prelude-ty">Option</span>&lt;E&gt;,
+        change_descriptor: E,
         db: <span class="kw">impl </span>PersistBackend&lt;ChangeSet&gt; + Send + Sync + <span class="lifetime">'static</span>,
         network: Network,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, NewError&gt; {
@@ -3050,7 +3011,7 @@
     /// for syncing from alternative networks.
     </span><span class="kw">pub fn </span>new_with_genesis_hash&lt;E: IntoWalletDescriptor&gt;(
         descriptor: E,
-        change_descriptor: <span class="prelude-ty">Option</span>&lt;E&gt;,
+        change_descriptor: E,
         <span class="kw-2">mut </span>db: <span class="kw">impl </span>PersistBackend&lt;ChangeSet&gt; + Send + Sync + <span class="lifetime">'static</span>,
         network: Network,
         genesis_hash: BlockHash,
@@ -3155,14 +3116,15 @@
             .indexer
             .keychains_added
             .get(<span class="kw-2">&amp;</span>KeychainKind::External)
-            .ok_or(LoadError::MissingDescriptor)<span class="question-mark">?
+            .ok_or(LoadError::MissingDescriptor(KeychainKind::External))<span class="question-mark">?
             </span>.clone();
         <span class="kw">let </span>change_descriptor = changeset
             .indexed_tx_graph
             .indexer
             .keychains_added
             .get(<span class="kw-2">&amp;</span>KeychainKind::Internal)
-            .cloned();
+            .ok_or(LoadError::MissingDescriptor(KeychainKind::Internal))<span class="question-mark">?
+            </span>.clone();
 
         <span class="kw">let </span>(signers, change_signers) =
             create_signers(<span class="kw-2">&amp;mut </span>index, <span class="kw-2">&amp;</span>secp, descriptor, change_descriptor, network)
@@ -3189,7 +3151,7 @@
     /// This method will fail if the loaded [`Wallet`] has different parameters to those provided.
     </span><span class="kw">pub fn </span>new_or_load&lt;E: IntoWalletDescriptor&gt;(
         descriptor: E,
-        change_descriptor: <span class="prelude-ty">Option</span>&lt;E&gt;,
+        change_descriptor: E,
         db: <span class="kw">impl </span>PersistBackend&lt;ChangeSet&gt; + Send + Sync + <span class="lifetime">'static</span>,
         network: Network,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, NewOrLoadError&gt; {
@@ -3211,7 +3173,7 @@
     /// useful for syncing from alternative networks.
     </span><span class="kw">pub fn </span>new_or_load_with_genesis_hash&lt;E: IntoWalletDescriptor&gt;(
         descriptor: E,
-        change_descriptor: <span class="prelude-ty">Option</span>&lt;E&gt;,
+        change_descriptor: E,
         <span class="kw-2">mut </span>db: <span class="kw">impl </span>PersistBackend&lt;ChangeSet&gt; + Send + Sync + <span class="lifetime">'static</span>,
         network: Network,
         genesis_hash: BlockHash,
@@ -3233,10 +3195,12 @@
                         expected: genesis_hash,
                         got: <span class="prelude-val">None</span>,
                     },
-                    LoadError::MissingDescriptor =&gt; NewOrLoadError::LoadedDescriptorDoesNotMatch {
-                        got: <span class="prelude-val">None</span>,
-                        keychain: KeychainKind::External,
-                    },
+                    LoadError::MissingDescriptor(keychain) =&gt; {
+                        NewOrLoadError::LoadedDescriptorDoesNotMatch {
+                            got: <span class="prelude-val">None</span>,
+                            keychain,
+                        }
+                    }
                 })<span class="question-mark">?</span>;
                 <span class="kw">if </span>wallet.network != network {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(NewOrLoadError::LoadedNetworkDoesNotMatch {
@@ -3254,10 +3218,10 @@
                 <span class="kw">let </span>(expected_descriptor, expected_descriptor_keymap) = descriptor
                     .into_wallet_descriptor(<span class="kw-2">&amp;</span>wallet.secp, network)
                     .map_err(NewOrLoadError::Descriptor)<span class="question-mark">?</span>;
-                <span class="kw">let </span>wallet_descriptor = wallet.public_descriptor(KeychainKind::External).cloned();
-                <span class="kw">if </span>wallet_descriptor != <span class="prelude-val">Some</span>(expected_descriptor.clone()) {
+                <span class="kw">let </span>wallet_descriptor = wallet.public_descriptor(KeychainKind::External);
+                <span class="kw">if </span>wallet_descriptor != <span class="kw-2">&amp;</span>expected_descriptor {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(NewOrLoadError::LoadedDescriptorDoesNotMatch {
-                        got: wallet_descriptor,
+                        got: <span class="prelude-val">Some</span>(wallet_descriptor.clone()),
                         keychain: KeychainKind::External,
                     });
                 }
@@ -3277,44 +3241,31 @@
                     });
                 }
 
-                <span class="kw">let </span>expected_change_descriptor = <span class="kw">if let </span><span class="prelude-val">Some</span>(c) = change_descriptor {
-                    <span class="prelude-val">Some</span>(
-                        c.into_wallet_descriptor(<span class="kw-2">&amp;</span>wallet.secp, network)
-                            .map_err(NewOrLoadError::Descriptor)<span class="question-mark">?</span>,
-                    )
-                } <span class="kw">else </span>{
-                    <span class="prelude-val">None
-                </span>};
-                <span class="kw">let </span>wallet_change_descriptor =
-                    wallet.public_descriptor(KeychainKind::Internal).cloned();
-
-                <span class="kw">match </span>(expected_change_descriptor, wallet_change_descriptor) {
-                    (<span class="prelude-val">Some</span>((expected_descriptor, expected_keymap)), <span class="prelude-val">Some</span>(wallet_descriptor))
-                        <span class="kw">if </span>wallet_descriptor == expected_descriptor =&gt;
-                    {
-                        <span class="comment">// if expected change descriptor has private keys add them as new signers
-                        </span><span class="kw">if </span>!expected_keymap.is_empty() {
-                            <span class="kw">let </span>signer_container = SignersContainer::build(
-                                expected_keymap,
-                                <span class="kw-2">&amp;</span>expected_descriptor,
-                                <span class="kw-2">&amp;</span>wallet.secp,
-                            );
-                            signer_container.signers().into_iter().for_each(|signer| {
-                                wallet.add_signer(
-                                    KeychainKind::Internal,
-                                    SignerOrdering::default(),
-                                    signer.clone(),
-                                )
-                            });
-                        }
-                    }
-                    (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; (),
-                    (<span class="kw">_</span>, wallet_descriptor) =&gt; {
-                        <span class="kw">return </span><span class="prelude-val">Err</span>(NewOrLoadError::LoadedDescriptorDoesNotMatch {
-                            got: wallet_descriptor,
-                            keychain: KeychainKind::Internal,
-                        });
-                    }
+                <span class="kw">let </span>(expected_change_descriptor, expected_change_descriptor_keymap) =
+                    change_descriptor
+                        .into_wallet_descriptor(<span class="kw-2">&amp;</span>wallet.secp, network)
+                        .map_err(NewOrLoadError::Descriptor)<span class="question-mark">?</span>;
+                <span class="kw">let </span>wallet_change_descriptor = wallet.public_descriptor(KeychainKind::Internal);
+                <span class="kw">if </span>wallet_change_descriptor != <span class="kw-2">&amp;</span>expected_change_descriptor {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(NewOrLoadError::LoadedDescriptorDoesNotMatch {
+                        got: <span class="prelude-val">Some</span>(wallet_change_descriptor.clone()),
+                        keychain: KeychainKind::Internal,
+                    });
+                }
+                <span class="comment">// if expected change descriptor has private keys add them as new signers
+                </span><span class="kw">if </span>!expected_change_descriptor_keymap.is_empty() {
+                    <span class="kw">let </span>signer_container = SignersContainer::build(
+                        expected_change_descriptor_keymap,
+                        <span class="kw-2">&amp;</span>expected_change_descriptor,
+                        <span class="kw-2">&amp;</span>wallet.secp,
+                    );
+                    signer_container.signers().into_iter().for_each(|signer| {
+                        wallet.add_signer(
+                            KeychainKind::Internal,
+                            SignerOrdering::default(),
+                            signer.clone(),
+                        )
+                    });
                 }
 
                 <span class="prelude-val">Ok</span>(wallet)
@@ -3355,12 +3306,11 @@
     /// This panics when the caller requests for an address of derivation index greater than the
     /// [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) max index.
     </span><span class="kw">pub fn </span>peek_address(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: KeychainKind, <span class="kw-2">mut </span>index: u32) -&gt; AddressInfo {
-        <span class="kw">let </span>keychain = <span class="self">self</span>.map_keychain(keychain);
         <span class="kw">let </span><span class="kw-2">mut </span>spk_iter = <span class="self">self
             </span>.indexed_graph
             .index
             .unbounded_spk_iter(<span class="kw-2">&amp;</span>keychain)
-            .expect(<span class="string">"Must exist (we called map_keychain)"</span>);
+            .expect(<span class="string">"keychain must exist"</span>);
         <span class="kw">if </span>!spk_iter.descriptor().has_wildcard() {
             index = <span class="number">0</span>;
         }
@@ -3386,12 +3336,11 @@
     ///
     /// If writing to persistent storage fails.
     </span><span class="kw">pub fn </span>reveal_next_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: KeychainKind) -&gt; anyhow::Result&lt;AddressInfo&gt; {
-        <span class="kw">let </span>keychain = <span class="self">self</span>.map_keychain(keychain);
         <span class="kw">let </span>((index, spk), index_changeset) = <span class="self">self
             </span>.indexed_graph
             .index
             .reveal_next_spk(<span class="kw-2">&amp;</span>keychain)
-            .expect(<span class="string">"Must exist (we called map_keychain)"</span>);
+            .expect(<span class="string">"keychain must exist"</span>);
 
         <span class="self">self</span>.persist
             .stage_and_commit(indexed_tx_graph::ChangeSet::from(index_changeset).into())<span class="question-mark">?</span>;
@@ -3418,12 +3367,11 @@
         keychain: KeychainKind,
         index: u32,
     ) -&gt; anyhow::Result&lt;<span class="kw">impl </span>Iterator&lt;Item = AddressInfo&gt; + <span class="lifetime">'_</span>&gt; {
-        <span class="kw">let </span>keychain = <span class="self">self</span>.map_keychain(keychain);
         <span class="kw">let </span>(spk_iter, index_changeset) = <span class="self">self
             </span>.indexed_graph
             .index
             .reveal_to_target(<span class="kw-2">&amp;</span>keychain, index)
-            .expect(<span class="string">"must exist (we called map_keychain)"</span>);
+            .expect(<span class="string">"keychain must exist"</span>);
 
         <span class="self">self</span>.persist
             .stage_and_commit(indexed_tx_graph::ChangeSet::from(index_changeset).into())<span class="question-mark">?</span>;
@@ -3445,12 +3393,11 @@
     ///
     /// If writing to persistent storage fails.
     </span><span class="kw">pub fn </span>next_unused_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: KeychainKind) -&gt; anyhow::Result&lt;AddressInfo&gt; {
-        <span class="kw">let </span>keychain = <span class="self">self</span>.map_keychain(keychain);
         <span class="kw">let </span>((index, spk), index_changeset) = <span class="self">self
             </span>.indexed_graph
             .index
             .next_unused_spk(<span class="kw-2">&amp;</span>keychain)
-            .expect(<span class="string">"must exist (we called map_keychain)"</span>);
+            .expect(<span class="string">"keychain must exist"</span>);
 
         <span class="self">self</span>.persist
             .stage_and_commit(indexed_tx_graph::ChangeSet::from(index_changeset).into())<span class="question-mark">?</span>;
@@ -3490,7 +3437,6 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain: KeychainKind,
     ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = AddressInfo&gt; + <span class="lifetime">'_ </span>{
-        <span class="kw">let </span>keychain = <span class="self">self</span>.map_keychain(keychain);
         <span class="self">self</span>.indexed_graph
             .index
             .unused_keychain_spks(<span class="kw-2">&amp;</span>keychain)
@@ -3572,11 +3518,10 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain: KeychainKind,
     ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (u32, ScriptBuf)&gt; + Clone {
-        <span class="kw">let </span>keychain = <span class="self">self</span>.map_keychain(keychain);
         <span class="self">self</span>.indexed_graph
             .index
             .unbounded_spk_iter(<span class="kw-2">&amp;</span>keychain)
-            .expect(<span class="string">"Must exist (we called map_keychain)"</span>)
+            .expect(<span class="string">"keychain must exist"</span>)
     }
 
     <span class="doccomment">/// Returns the utxo owned by this wallet corresponding to `outpoint` if it exists in the
@@ -3886,7 +3831,9 @@
     /// ```
     /// # use bdk_wallet::{Wallet, KeychainKind};
     /// # use bdk_wallet::bitcoin::Network;
-    /// let wallet = Wallet::new_no_persist("wpkh(tprv8ZgxMBicQKsPe73PBRSmNbTfbcsZnwWhz5eVmhHpi31HW29Z7mc9B4cWGRQzopNUzZUT391DeDJxL2PefNunWyLgqCKRMDkU1s2s8bAfoSk/84'/0'/0'/0/*)", None, Network::Testnet)?;
+    /// let descriptor = "wpkh(tprv8ZgxMBicQKsPe73PBRSmNbTfbcsZnwWhz5eVmhHpi31HW29Z7mc9B4cWGRQzopNUzZUT391DeDJxL2PefNunWyLgqCKRMDkU1s2s8bAfoSk/84'/1'/0'/0/*)";
+    /// let change_descriptor = "wpkh(tprv8ZgxMBicQKsPe73PBRSmNbTfbcsZnwWhz5eVmhHpi31HW29Z7mc9B4cWGRQzopNUzZUT391DeDJxL2PefNunWyLgqCKRMDkU1s2s8bAfoSk/84'/1'/0'/1/*)";
+    /// let wallet = Wallet::new_no_persist(descriptor, change_descriptor, Network::Testnet)?;
     /// for secret_key in wallet.get_signers(KeychainKind::External).signers().iter().filter_map(|s| s.descriptor_secret_key()) {
     ///     // secret_key: tprv8ZgxMBicQKsPe73PBRSmNbTfbcsZnwWhz5eVmhHpi31HW29Z7mc9B4cWGRQzopNUzZUT391DeDJxL2PefNunWyLgqCKRMDkU1s2s8bAfoSk/84'/0'/0'/0/*
     ///     println!("secret_key: {}", secret_key);
@@ -3945,20 +3892,14 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Psbt, CreateTxError&gt; {
         <span class="kw">let </span>keychains: BTreeMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt; = <span class="self">self</span>.indexed_graph.index.keychains().collect();
         <span class="kw">let </span>external_descriptor = keychains.get(<span class="kw-2">&amp;</span>KeychainKind::External).expect(<span class="string">"must exist"</span>);
-        <span class="kw">let </span>internal_descriptor = keychains.get(<span class="kw-2">&amp;</span>KeychainKind::Internal);
+        <span class="kw">let </span>internal_descriptor = keychains.get(<span class="kw-2">&amp;</span>KeychainKind::Internal).expect(<span class="string">"must exist"</span>);
 
         <span class="kw">let </span>external_policy = external_descriptor
             .extract_policy(<span class="kw-2">&amp;</span><span class="self">self</span>.signers, BuildSatisfaction::None, <span class="kw-2">&amp;</span><span class="self">self</span>.secp)<span class="question-mark">?
             </span>.unwrap();
         <span class="kw">let </span>internal_policy = internal_descriptor
-            .as_ref()
-            .map(|desc| {
-                <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, CreateTxError&gt;(
-                    desc.extract_policy(<span class="kw-2">&amp;</span><span class="self">self</span>.change_signers, BuildSatisfaction::None, <span class="kw-2">&amp;</span><span class="self">self</span>.secp)<span class="question-mark">?
-                        </span>.unwrap(),
-                )
-            })
-            .transpose()<span class="question-mark">?</span>;
+            .extract_policy(<span class="kw-2">&amp;</span><span class="self">self</span>.change_signers, BuildSatisfaction::None, <span class="kw-2">&amp;</span><span class="self">self</span>.secp)<span class="question-mark">?
+            </span>.unwrap();
 
         <span class="comment">// The policy allows spending external outputs, but it requires a policy path that hasn't been
         // provided
@@ -3970,17 +3911,15 @@
                 KeychainKind::External,
             ));
         };
-        <span class="comment">// Same for the internal_policy path, if present
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(internal_policy) = <span class="kw-2">&amp;</span>internal_policy {
-            <span class="kw">if </span>params.change_policy != tx_builder::ChangeSpendPolicy::ChangeForbidden
-                &amp;&amp; internal_policy.requires_path()
-                &amp;&amp; params.internal_policy_path.is_none()
-            {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::SpendingPolicyRequired(
-                    KeychainKind::Internal,
-                ));
-            };
-        }
+        <span class="comment">// Same for the internal_policy path
+        </span><span class="kw">if </span>params.change_policy != tx_builder::ChangeSpendPolicy::ChangeForbidden
+            &amp;&amp; internal_policy.requires_path()
+            &amp;&amp; params.internal_policy_path.is_none()
+        {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::SpendingPolicyRequired(
+                KeychainKind::Internal,
+            ));
+        };
 
         <span class="kw">let </span>external_requirements = external_policy.get_condition(
             params
@@ -3988,21 +3927,14 @@
                 .as_ref()
                 .unwrap_or(<span class="kw-2">&amp;</span>BTreeMap::new()),
         )<span class="question-mark">?</span>;
-        <span class="kw">let </span>internal_requirements = internal_policy
-            .map(|policy| {
-                <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, CreateTxError&gt;(
-                    policy.get_condition(
-                        params
-                            .internal_policy_path
-                            .as_ref()
-                            .unwrap_or(<span class="kw-2">&amp;</span>BTreeMap::new()),
-                    )<span class="question-mark">?</span>,
-                )
-            })
-            .transpose()<span class="question-mark">?</span>;
+        <span class="kw">let </span>internal_requirements = internal_policy.get_condition(
+            params
+                .internal_policy_path
+                .as_ref()
+                .unwrap_or(<span class="kw-2">&amp;</span>BTreeMap::new()),
+        )<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>requirements =
-            external_requirements.merge(<span class="kw-2">&amp;</span>internal_requirements.unwrap_or_default())<span class="question-mark">?</span>;
+        <span class="kw">let </span>requirements = external_requirements.merge(<span class="kw-2">&amp;</span>internal_requirements)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>version = <span class="kw">match </span>params.version {
             <span class="prelude-val">Some</span>(tx_builder::Version(<span class="number">0</span>)) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::Version0),
@@ -4164,12 +4096,6 @@
 
         fee_amount += (fee_rate * tx.weight()).to_sat();
 
-        <span class="kw">if </span>params.change_policy != tx_builder::ChangeSpendPolicy::ChangeAllowed
-            &amp;&amp; internal_descriptor.is_none()
-        {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::ChangePolicyDescriptor);
-        }
-
         <span class="kw">let </span>(required_utxos, optional_utxos) =
             <span class="self">self</span>.preselect_utxos(<span class="kw-2">&amp;</span>params, <span class="prelude-val">Some</span>(current_height.to_consensus_u32()));
 
@@ -4177,12 +4103,12 @@
         </span><span class="kw">let </span>drain_script = <span class="kw">match </span>params.drain_to {
             <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>drain_recipient) =&gt; drain_recipient.clone(),
             <span class="prelude-val">None </span>=&gt; {
-                <span class="kw">let </span>change_keychain = <span class="self">self</span>.map_keychain(KeychainKind::Internal);
+                <span class="kw">let </span>change_keychain = KeychainKind::Internal;
                 <span class="kw">let </span>((index, spk), index_changeset) = <span class="self">self
                     </span>.indexed_graph
                     .index
                     .next_unused_spk(<span class="kw-2">&amp;</span>change_keychain)
-                    .expect(<span class="string">"Keychain exists (we called map_keychain)"</span>);
+                    .expect(<span class="string">"keychain must exist"</span>);
                 <span class="kw">let </span>spk = spk.into();
                 <span class="self">self</span>.indexed_graph.index.mark_used(change_keychain, index);
                 <span class="self">self</span>.persist
@@ -4411,9 +4337,11 @@
         <span class="kw">if </span>tx.output.len() &gt; <span class="number">1 </span>{
             <span class="kw">let </span><span class="kw-2">mut </span>change_index = <span class="prelude-val">None</span>;
             <span class="kw">for </span>(index, txout) <span class="kw">in </span>tx.output.iter().enumerate() {
-                <span class="kw">let </span>change_type = <span class="self">self</span>.map_keychain(KeychainKind::Internal);
+                <span class="kw">let </span>change_keychain = KeychainKind::Internal;
                 <span class="kw">match </span>txout_index.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
-                    <span class="prelude-val">Some</span>((keychain, <span class="kw">_</span>)) <span class="kw">if </span>keychain == change_type =&gt; change_index = <span class="prelude-val">Some</span>(index),
+                    <span class="prelude-val">Some</span>((keychain, <span class="kw">_</span>)) <span class="kw">if </span>keychain == change_keychain =&gt; {
+                        change_index = <span class="prelude-val">Some</span>(index)
+                    }
                     <span class="kw">_ </span>=&gt; {}
                 }
             }
@@ -4530,22 +4458,24 @@
             KeychainKind::Internal =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.change_signers,
         };
 
-        <span class="kw">match </span><span class="self">self</span>.public_descriptor(keychain) {
-            <span class="prelude-val">Some</span>(desc) =&gt; <span class="prelude-val">Ok</span>(desc.extract_policy(signers, BuildSatisfaction::None, <span class="kw-2">&amp;</span><span class="self">self</span>.secp)<span class="question-mark">?</span>),
-            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
-        }
+        <span class="self">self</span>.public_descriptor(keychain).extract_policy(
+            signers,
+            BuildSatisfaction::None,
+            <span class="kw-2">&amp;</span><span class="self">self</span>.secp,
+        )
     }
 
     <span class="doccomment">/// Return the "public" version of the wallet's descriptor, meaning a new descriptor that has
     /// the same structure but with every secret key removed
     ///
     /// This can be used to build a watch-only version of a wallet
-    </span><span class="kw">pub fn </span>public_descriptor(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: KeychainKind) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>ExtendedDescriptor&gt; {
+    </span><span class="kw">pub fn </span>public_descriptor(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: KeychainKind) -&gt; <span class="kw-2">&amp;</span>ExtendedDescriptor {
         <span class="self">self</span>.indexed_graph
             .index
             .keychains()
             .find(|(k, <span class="kw">_</span>)| <span class="kw-2">*</span>k == <span class="kw-2">&amp;</span>keychain)
             .map(|(<span class="kw">_</span>, d)| d)
+            .expect(<span class="string">"keychain must exist"</span>)
     }
 
     <span class="doccomment">/// Finalize a PSBT, i.e., for each input determine if sufficient data is available to pass
@@ -4652,8 +4582,7 @@
 
     <span class="doccomment">/// Returns the descriptor used to create addresses for a particular `keychain`.
     </span><span class="kw">pub fn </span>get_descriptor_for_keychain(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: KeychainKind) -&gt; <span class="kw-2">&amp;</span>ExtendedDescriptor {
-        <span class="self">self</span>.public_descriptor(<span class="self">self</span>.map_keychain(keychain))
-            .expect(<span class="string">"we mapped it to external if it doesn't exist"</span>)
+        <span class="self">self</span>.public_descriptor(keychain)
     }
 
     <span class="doccomment">/// The derivation index of this wallet. It will return `None` if it has not derived any addresses.
@@ -4664,11 +4593,10 @@
 
     <span class="doccomment">/// The index of the next address that you would get if you were to ask the wallet for a new address
     </span><span class="kw">pub fn </span>next_derivation_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: KeychainKind) -&gt; u32 {
-        <span class="kw">let </span>keychain = <span class="self">self</span>.map_keychain(keychain);
         <span class="self">self</span>.indexed_graph
             .index
             .next_index(<span class="kw-2">&amp;</span>keychain)
-            .expect(<span class="string">"Keychain must exist (we called map_keychain)"</span>)
+            .expect(<span class="string">"keychain must exist"</span>)
             .<span class="number">0
     </span>}
 
@@ -4684,16 +4612,6 @@
                 // by a tx in the tracker. It only removes the superficial marking.
                 </span>txout_index.unmark_used(keychain, index);
             }
-        }
-    }
-
-    <span class="kw">fn </span>map_keychain(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: KeychainKind) -&gt; KeychainKind {
-        <span class="kw">if </span>keychain == KeychainKind::Internal
-            &amp;&amp; <span class="self">self</span>.public_descriptor(KeychainKind::Internal).is_none()
-        {
-            KeychainKind::External
-        } <span class="kw">else </span>{
-            keychain
         }
     }
 
@@ -5207,22 +5125,22 @@
     index: <span class="kw-2">&amp;mut </span>KeychainTxOutIndex&lt;KeychainKind&gt;,
     secp: <span class="kw-2">&amp;</span>Secp256k1&lt;All&gt;,
     descriptor: E,
-    change_descriptor: <span class="prelude-ty">Option</span>&lt;E&gt;,
+    change_descriptor: E,
     network: Network,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(Arc&lt;SignersContainer&gt;, Arc&lt;SignersContainer&gt;), <span class="kw">crate</span>::descriptor::error::Error&gt; {
-    <span class="kw">let </span>(descriptor, keymap) = into_wallet_descriptor_checked(descriptor, secp, network)<span class="question-mark">?</span>;
+) -&gt; <span class="prelude-ty">Result</span>&lt;(Arc&lt;SignersContainer&gt;, Arc&lt;SignersContainer&gt;), DescriptorError&gt; {
+    <span class="kw">let </span>descriptor = into_wallet_descriptor_checked(descriptor, secp, network)<span class="question-mark">?</span>;
+    <span class="kw">let </span>change_descriptor = into_wallet_descriptor_checked(change_descriptor, secp, network)<span class="question-mark">?</span>;
+    <span class="kw">if </span>descriptor.<span class="number">0 </span>== change_descriptor.<span class="number">0 </span>{
+        <span class="kw">return </span><span class="prelude-val">Err</span>(DescriptorError::ExternalAndInternalAreTheSame);
+    }
+
+    <span class="kw">let </span>(descriptor, keymap) = descriptor;
     <span class="kw">let </span>signers = Arc::new(SignersContainer::build(keymap, <span class="kw-2">&amp;</span>descriptor, secp));
     <span class="kw">let _ </span>= index.insert_descriptor(KeychainKind::External, descriptor);
 
-    <span class="kw">let </span>change_signers = <span class="kw">match </span>change_descriptor {
-        <span class="prelude-val">Some</span>(descriptor) =&gt; {
-            <span class="kw">let </span>(descriptor, keymap) = into_wallet_descriptor_checked(descriptor, secp, network)<span class="question-mark">?</span>;
-            <span class="kw">let </span>signers = Arc::new(SignersContainer::build(keymap, <span class="kw-2">&amp;</span>descriptor, secp));
-            <span class="kw">let _ </span>= index.insert_descriptor(KeychainKind::Internal, descriptor);
-            signers
-        }
-        <span class="prelude-val">None </span>=&gt; Arc::new(SignersContainer::new()),
-    };
+    <span class="kw">let </span>(descriptor, keymap) = change_descriptor;
+    <span class="kw">let </span>change_signers = Arc::new(SignersContainer::build(keymap, <span class="kw-2">&amp;</span>descriptor, secp));
+    <span class="kw">let _ </span>= index.insert_descriptor(KeychainKind::Internal, descriptor);
 
     <span class="prelude-val">Ok</span>((signers, change_signers))
 }
@@ -5251,7 +5169,7 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::new_no_persist(
             descriptor,
-            <span class="prelude-val">Some</span>(change_descriptor),
+            change_descriptor,
             Network::Regtest,
         )
         .unwrap();

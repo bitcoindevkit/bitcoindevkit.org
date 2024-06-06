@@ -347,11 +347,6 @@
 <a href="#347" id="347">347</a>
 <a href="#348" id="348">348</a>
 <a href="#349" id="349">349</a>
-<a href="#350" id="350">350</a>
-<a href="#351" id="351">351</a>
-<a href="#352" id="352">352</a>
-<a href="#353" id="353">353</a>
-<a href="#354" id="354">354</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -385,7 +380,7 @@
 //! let import = FullyNodedExport::from_str(import)?;
 //! let wallet = Wallet::new_no_persist(
 //!     &amp;import.descriptor(),
-//!     import.change_descriptor().as_ref(),
+//!     &amp;import.change_descriptor().expect("change descriptor"),
 //!     Network::Testnet,
 //! )?;
 //! # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())
@@ -398,7 +393,7 @@
 //! # use bdk_wallet::*;
 //! let wallet = Wallet::new_no_persist(
 //!     "wpkh([c258d2e4/84h/1h/0h]tpubDD3ynpHgJQW8VvWRzQ5WFDCrs4jqVFGHB3vLC3r49XHJSqP8bHKdK4AriuUKLccK68zfzowx7YhmDN8SiSkgCDENUFx9qVw65YyqM78vyVe/0/*)",
-//!     Some("wpkh([c258d2e4/84h/1h/0h]tpubDD3ynpHgJQW8VvWRzQ5WFDCrs4jqVFGHB3vLC3r49XHJSqP8bHKdK4AriuUKLccK68zfzowx7YhmDN8SiSkgCDENUFx9qVw65YyqM78vyVe/1/*)"),
+//!     "wpkh([c258d2e4/84h/1h/0h]tpubDD3ynpHgJQW8VvWRzQ5WFDCrs4jqVFGHB3vLC3r49XHJSqP8bHKdK4AriuUKLccK68zfzowx7YhmDN8SiSkgCDENUFx9qVw65YyqM78vyVe/1/*)",
 //!     Network::Testnet,
 //! )?;
 //! let export = FullyNodedExport::export_wallet(&amp;wallet, "exported wallet", true).unwrap();
@@ -496,19 +491,17 @@
             blockheight,
         };
 
-        <span class="kw">let </span>change_descriptor = <span class="kw">match </span>wallet.public_descriptor(KeychainKind::Internal).is_some() {
-            <span class="bool-val">false </span>=&gt; <span class="prelude-val">None</span>,
-            <span class="bool-val">true </span>=&gt; {
-                <span class="kw">let </span>descriptor = wallet
-                    .get_descriptor_for_keychain(KeychainKind::Internal)
-                    .to_string_with_secret(
-                        <span class="kw-2">&amp;</span>wallet
-                            .get_signers(KeychainKind::Internal)
-                            .as_key_map(wallet.secp_ctx()),
-                    );
-                <span class="prelude-val">Some</span>(remove_checksum(descriptor))
-            }
+        <span class="kw">let </span>change_descriptor = {
+            <span class="kw">let </span>descriptor = wallet
+                .get_descriptor_for_keychain(KeychainKind::Internal)
+                .to_string_with_secret(
+                    <span class="kw-2">&amp;</span>wallet
+                        .get_signers(KeychainKind::Internal)
+                        .as_key_map(wallet.secp_ctx()),
+                );
+            <span class="prelude-val">Some</span>(remove_checksum(descriptor))
         };
+
         <span class="kw">if </span>export.change_descriptor() != change_descriptor {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">"Incompatible change descriptor"</span>);
         }
@@ -577,11 +570,7 @@
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::wallet::Wallet;
 
-    <span class="kw">fn </span>get_test_wallet(
-        descriptor: <span class="kw-2">&amp;</span>str,
-        change_descriptor: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
-        network: Network,
-    ) -&gt; Wallet {
+    <span class="kw">fn </span>get_test_wallet(descriptor: <span class="kw-2">&amp;</span>str, change_descriptor: <span class="kw-2">&amp;</span>str, network: Network) -&gt; Wallet {
         <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::new_no_persist(descriptor, change_descriptor, network).unwrap();
         <span class="kw">let </span>transaction = Transaction {
             input: <span class="macro">vec!</span>[],
@@ -612,7 +601,7 @@
         <span class="kw">let </span>descriptor = <span class="string">"wpkh(xprv9s21ZrQH143K4CTb63EaMxja1YiTnSEWKMbn23uoEnAzxjdUJRQkazCAtzxGm4LSoTSVTptoV9RbchnKPW9HxKtZumdyxyikZFDLhogJ5Uj/44'/0'/0'/0/*)"</span>;
         <span class="kw">let </span>change_descriptor = <span class="string">"wpkh(xprv9s21ZrQH143K4CTb63EaMxja1YiTnSEWKMbn23uoEnAzxjdUJRQkazCAtzxGm4LSoTSVTptoV9RbchnKPW9HxKtZumdyxyikZFDLhogJ5Uj/44'/0'/0'/1/*)"</span>;
 
-        <span class="kw">let </span>wallet = get_test_wallet(descriptor, <span class="prelude-val">Some</span>(change_descriptor), Network::Bitcoin);
+        <span class="kw">let </span>wallet = get_test_wallet(descriptor, change_descriptor, Network::Bitcoin);
         <span class="kw">let </span>export = FullyNodedExport::export_wallet(<span class="kw-2">&amp;</span>wallet, <span class="string">"Test Label"</span>, <span class="bool-val">true</span>).unwrap();
 
         <span class="macro">assert_eq!</span>(export.descriptor(), descriptor);
@@ -624,13 +613,14 @@
     <span class="attr">#[test]
     #[should_panic(expected = <span class="string">"Incompatible change descriptor"</span>)]
     </span><span class="kw">fn </span>test_export_no_change() {
-        <span class="comment">// This wallet explicitly doesn't have a change descriptor. It should be impossible to
+        <span class="comment">// The wallet's change descriptor has no wildcard. It should be impossible to
         // export, because exporting this kind of external descriptor normally implies the
-        // existence of an internal descriptor
+        // existence of a compatible internal descriptor
 
         </span><span class="kw">let </span>descriptor = <span class="string">"wpkh(xprv9s21ZrQH143K4CTb63EaMxja1YiTnSEWKMbn23uoEnAzxjdUJRQkazCAtzxGm4LSoTSVTptoV9RbchnKPW9HxKtZumdyxyikZFDLhogJ5Uj/44'/0'/0'/0/*)"</span>;
+        <span class="kw">let </span>change_descriptor = <span class="string">"wpkh(xprv9s21ZrQH143K4CTb63EaMxja1YiTnSEWKMbn23uoEnAzxjdUJRQkazCAtzxGm4LSoTSVTptoV9RbchnKPW9HxKtZumdyxyikZFDLhogJ5Uj/44'/0'/0'/1/0)"</span>;
 
-        <span class="kw">let </span>wallet = get_test_wallet(descriptor, <span class="prelude-val">None</span>, Network::Bitcoin);
+        <span class="kw">let </span>wallet = get_test_wallet(descriptor, change_descriptor, Network::Bitcoin);
         FullyNodedExport::export_wallet(<span class="kw-2">&amp;</span>wallet, <span class="string">"Test Label"</span>, <span class="bool-val">true</span>).unwrap();
     }
 
@@ -643,7 +633,7 @@
         </span><span class="kw">let </span>descriptor = <span class="string">"wpkh(xprv9s21ZrQH143K4CTb63EaMxja1YiTnSEWKMbn23uoEnAzxjdUJRQkazCAtzxGm4LSoTSVTptoV9RbchnKPW9HxKtZumdyxyikZFDLhogJ5Uj/44'/0'/0'/0/*)"</span>;
         <span class="kw">let </span>change_descriptor = <span class="string">"wpkh(xprv9s21ZrQH143K4CTb63EaMxja1YiTnSEWKMbn23uoEnAzxjdUJRQkazCAtzxGm4LSoTSVTptoV9RbchnKPW9HxKtZumdyxyikZFDLhogJ5Uj/50'/0'/1/*)"</span>;
 
-        <span class="kw">let </span>wallet = get_test_wallet(descriptor, <span class="prelude-val">Some</span>(change_descriptor), Network::Bitcoin);
+        <span class="kw">let </span>wallet = get_test_wallet(descriptor, change_descriptor, Network::Bitcoin);
         FullyNodedExport::export_wallet(<span class="kw-2">&amp;</span>wallet, <span class="string">"Test Label"</span>, <span class="bool-val">true</span>).unwrap();
     }
 
@@ -660,7 +650,7 @@
                                        [c98b1535/48'/0'/0'/2']tpubDCDi5W4sP6zSnzJeowy8rQDVhBdRARaPhK1axABi8V1661wEPeanpEXj4ZLAUEoikVtoWcyK26TKKJSecSfeKxwHCcRrge9k1ybuiL71z4a/1/*\
                                  ))"</span>;
 
-        <span class="kw">let </span>wallet = get_test_wallet(descriptor, <span class="prelude-val">Some</span>(change_descriptor), Network::Testnet);
+        <span class="kw">let </span>wallet = get_test_wallet(descriptor, change_descriptor, Network::Testnet);
         <span class="kw">let </span>export = FullyNodedExport::export_wallet(<span class="kw-2">&amp;</span>wallet, <span class="string">"Test Label"</span>, <span class="bool-val">true</span>).unwrap();
 
         <span class="macro">assert_eq!</span>(export.descriptor(), descriptor);
@@ -673,7 +663,7 @@
     </span><span class="kw">fn </span>test_export_tr() {
         <span class="kw">let </span>descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/0/*)"</span>;
         <span class="kw">let </span>change_descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/1/*)"</span>;
-        <span class="kw">let </span>wallet = get_test_wallet(descriptor, <span class="prelude-val">Some</span>(change_descriptor), Network::Testnet);
+        <span class="kw">let </span>wallet = get_test_wallet(descriptor, change_descriptor, Network::Testnet);
         <span class="kw">let </span>export = FullyNodedExport::export_wallet(<span class="kw-2">&amp;</span>wallet, <span class="string">"Test Label"</span>, <span class="bool-val">true</span>).unwrap();
         <span class="macro">assert_eq!</span>(export.descriptor(), descriptor);
         <span class="macro">assert_eq!</span>(export.change_descriptor(), <span class="prelude-val">Some</span>(change_descriptor.into()));
@@ -686,7 +676,7 @@
         <span class="kw">let </span>descriptor = <span class="string">"wpkh(xprv9s21ZrQH143K4CTb63EaMxja1YiTnSEWKMbn23uoEnAzxjdUJRQkazCAtzxGm4LSoTSVTptoV9RbchnKPW9HxKtZumdyxyikZFDLhogJ5Uj/44'/0'/0'/0/*)"</span>;
         <span class="kw">let </span>change_descriptor = <span class="string">"wpkh(xprv9s21ZrQH143K4CTb63EaMxja1YiTnSEWKMbn23uoEnAzxjdUJRQkazCAtzxGm4LSoTSVTptoV9RbchnKPW9HxKtZumdyxyikZFDLhogJ5Uj/44'/0'/0'/1/*)"</span>;
 
-        <span class="kw">let </span>wallet = get_test_wallet(descriptor, <span class="prelude-val">Some</span>(change_descriptor), Network::Bitcoin);
+        <span class="kw">let </span>wallet = get_test_wallet(descriptor, change_descriptor, Network::Bitcoin);
         <span class="kw">let </span>export = FullyNodedExport::export_wallet(<span class="kw-2">&amp;</span>wallet, <span class="string">"Test Label"</span>, <span class="bool-val">true</span>).unwrap();
 
         <span class="macro">assert_eq!</span>(export.to_string(), <span class="string">"{\"descriptor\":\"wpkh(xprv9s21ZrQH143K4CTb63EaMxja1YiTnSEWKMbn23uoEnAzxjdUJRQkazCAtzxGm4LSoTSVTptoV9RbchnKPW9HxKtZumdyxyikZFDLhogJ5Uj/44\'/0\'/0\'/0/*)\",\"blockheight\":5000,\"label\":\"Test Label\"}"</span>);
