@@ -1571,6 +1571,7 @@
 <a href="#1571" id="1571">1571</a>
 <a href="#1572" id="1572">1572</a>
 <a href="#1573" id="1573">1573</a>
+<a href="#1574" id="1574">1574</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
 //! [`TxGraph`] contains transactions and indexes them so you can easily traverse the graph of
@@ -2018,7 +2019,7 @@
         <span class="kw-2">&amp;</span><span class="lifetime">'g </span><span class="self">self</span>,
         tx: <span class="kw-2">&amp;</span><span class="lifetime">'g </span>Transaction,
     ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (usize, Txid)&gt; + <span class="lifetime">'_ </span>{
-        <span class="kw">let </span>txid = tx.txid();
+        <span class="kw">let </span>txid = tx.compute_txid();
         tx.input
             .iter()
             .enumerate()
@@ -2089,9 +2090,10 @@
     </span><span class="kw">pub fn </span>insert_tx&lt;T: Into&lt;Arc&lt;Transaction&gt;&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: T) -&gt; ChangeSet&lt;A&gt; {
         <span class="kw">let </span>tx = tx.into();
         <span class="kw">let </span><span class="kw-2">mut </span>update = <span class="self">Self</span>::default();
-        update
-            .txs
-            .insert(tx.txid(), (TxNodeInternal::Whole(tx), BTreeSet::new(), <span class="number">0</span>));
+        update.txs.insert(
+            tx.compute_txid(),
+            (TxNodeInternal::Whole(tx), BTreeSet::new(), <span class="number">0</span>),
+        );
         <span class="self">self</span>.apply_update(update)
     }
 
@@ -2106,7 +2108,7 @@
     ) -&gt; ChangeSet&lt;A&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::&lt;A&gt;::default();
         <span class="kw">for </span>(tx, seen_at) <span class="kw">in </span>txs {
-            changeset.append(<span class="self">self</span>.insert_seen_at(tx.txid(), seen_at));
+            changeset.append(<span class="self">self</span>.insert_seen_at(tx.compute_txid(), seen_at));
             changeset.append(<span class="self">self</span>.insert_tx(tx));
         }
         changeset
@@ -2215,7 +2217,7 @@
     </span><span class="kw">pub fn </span>apply_changeset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: ChangeSet&lt;A&gt;) {
         <span class="kw">for </span>wrapped_tx <span class="kw">in </span>changeset.txs {
             <span class="kw">let </span>tx = wrapped_tx.as_ref();
-            <span class="kw">let </span>txid = tx.txid();
+            <span class="kw">let </span>txid = tx.compute_txid();
 
             tx.input
                 .iter()
@@ -2233,7 +2235,7 @@
                 }
                 <span class="prelude-val">Some</span>((TxNodeInternal::Whole(tx), <span class="kw">_</span>, <span class="kw">_</span>)) =&gt; {
                     <span class="macro">debug_assert_eq!</span>(
-                        tx.as_ref().txid(),
+                        tx.as_ref().compute_txid(),
                         txid,
                         <span class="string">"tx should produce txid that is same as key"
                     </span>);
@@ -2398,7 +2400,7 @@
         // resulting array will also include `tx`
         </span><span class="kw">let </span>unconfirmed_ancestor_txs =
             TxAncestors::new_include_root(<span class="self">self</span>, tx.clone(), |<span class="kw">_</span>, ancestor_tx: Arc&lt;Transaction&gt;| {
-                <span class="kw">let </span>tx_node = <span class="self">self</span>.get_tx_node(ancestor_tx.as_ref().txid())<span class="question-mark">?</span>;
+                <span class="kw">let </span>tx_node = <span class="self">self</span>.get_tx_node(ancestor_tx.as_ref().compute_txid())<span class="question-mark">?</span>;
                 <span class="comment">// We're filtering the ancestors to keep only the unconfirmed ones (= no anchors in
                 // the best chain)
                 </span><span class="kw">for </span>block <span class="kw">in </span>tx_node.anchors {
@@ -2416,7 +2418,7 @@
         // and our unconf descendants' last seen.
         </span><span class="kw">let </span>unconfirmed_descendants_txs = TxDescendants::new_include_root(
             <span class="self">self</span>,
-            tx.as_ref().txid(),
+            tx.as_ref().compute_txid(),
             |<span class="kw">_</span>, descendant_txid: Txid| {
                 <span class="kw">let </span>tx_node = <span class="self">self</span>.get_tx_node(descendant_txid)<span class="question-mark">?</span>;
                 <span class="comment">// We're filtering the ancestors to keep only the unconfirmed ones (= no anchors in
@@ -2457,7 +2459,7 @@
                     <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
                 }
                 <span class="kw">if </span>conflicting_tx.last_seen_unconfirmed == <span class="kw-2">*</span>last_seen
-                    &amp;&amp; conflicting_tx.as_ref().txid() &gt; tx.as_ref().txid()
+                    &amp;&amp; conflicting_tx.as_ref().compute_txid() &gt; tx.as_ref().compute_txid()
                 {
                     <span class="comment">// Conflicting tx has priority if txid of conflicting tx &gt; txid of original tx
                     </span><span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
@@ -2828,7 +2830,7 @@
                 tx.output
                     .iter()
                     .enumerate()
-                    .map(<span class="kw">move </span>|(vout, txout)| (OutPoint::new(tx.txid(), vout <span class="kw">as _</span>), txout))
+                    .map(<span class="kw">move </span>|(vout, txout)| (OutPoint::new(tx.compute_txid(), vout <span class="kw">as _</span>), txout))
             })
             .chain(<span class="self">self</span>.txouts.iter().map(|(op, txout)| (<span class="kw-2">*</span>op, txout)))
     }

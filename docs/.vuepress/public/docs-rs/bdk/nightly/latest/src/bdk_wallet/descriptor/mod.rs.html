@@ -1129,7 +1129,7 @@
                 </span><span class="kw">let </span>pk = <span class="kw">match </span>pk {
                     DescriptorPublicKey::XPub(<span class="kw-2">ref </span>xpub) =&gt; {
                         <span class="kw">let </span><span class="kw-2">mut </span>xpub = xpub.clone();
-                        xpub.xkey.network = <span class="self">self</span>.network;
+                        xpub.xkey.network = <span class="self">self</span>.network.into();
 
                         DescriptorPublicKey::XPub(xpub)
                     }
@@ -1164,11 +1164,11 @@
             .map(|(<span class="kw-2">mut </span>k, <span class="kw-2">mut </span>v)| {
                 <span class="kw">match </span>(<span class="kw-2">&amp;mut </span>k, <span class="kw-2">&amp;mut </span>v) {
                     (DescriptorPublicKey::XPub(xpub), DescriptorSecretKey::XPrv(xprv)) =&gt; {
-                        xpub.xkey.network = network;
-                        xprv.xkey.network = network;
+                        xpub.xkey.network = network.into();
+                        xprv.xkey.network = network.into();
                     }
                     (<span class="kw">_</span>, DescriptorSecretKey::Single(key)) =&gt; {
-                        key.key.network = network;
+                        key.key.network = network.into();
                     }
                     <span class="kw">_ </span>=&gt; {}
                 }
@@ -1506,8 +1506,8 @@
     <span class="kw">use </span>assert_matches::assert_matches;
     <span class="kw">use </span>bitcoin::hex::FromHex;
     <span class="kw">use </span>bitcoin::secp256k1::Secp256k1;
-    <span class="kw">use </span>bitcoin::ScriptBuf;
     <span class="kw">use </span>bitcoin::{bip32, Psbt};
+    <span class="kw">use </span>bitcoin::{NetworkKind, ScriptBuf};
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::psbt::PsbtUtils;
@@ -1643,7 +1643,7 @@
             .unwrap();
 
         <span class="kw">let </span><span class="kw-2">mut </span>xprv_testnet = xprv;
-        xprv_testnet.network = Network::Testnet;
+        xprv_testnet.network = NetworkKind::Test;
 
         <span class="kw">let </span>xpub_testnet = bip32::Xpub::from_priv(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>xprv_testnet);
         <span class="kw">let </span>desc_pubkey = DescriptorPublicKey::XPub(DescriptorXKey {

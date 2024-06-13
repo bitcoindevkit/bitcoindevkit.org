@@ -2597,6 +2597,7 @@
 <a href="#2597" id="2597">2597</a>
 <a href="#2598" id="2598">2598</a>
 <a href="#2599" id="2599">2599</a>
+<a href="#2600" id="2600">2600</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -3776,7 +3777,7 @@
         };
 
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
-        <span class="kw">let </span>txid = tx.txid();
+        <span class="kw">let </span>txid = tx.compute_txid();
         changeset.append(<span class="self">self</span>.indexed_graph.insert_tx(tx).into());
         <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor {
             changeset.append(<span class="self">self</span>.indexed_graph.insert_anchor(txid, anchor).into());
@@ -4077,10 +4078,7 @@
         <span class="kw">let </span>recipients = params.recipients.iter().map(|(r, v)| (r, <span class="kw-2">*</span>v));
 
         <span class="kw">for </span>(index, (script_pubkey, value)) <span class="kw">in </span>recipients.enumerate() {
-            <span class="kw">if </span>!params.allow_dust
-                &amp;&amp; value.is_dust(script_pubkey)
-                &amp;&amp; !script_pubkey.is_provably_unspendable()
-            {
+            <span class="kw">if </span>!params.allow_dust &amp;&amp; value.is_dust(script_pubkey) &amp;&amp; !script_pubkey.is_op_return() {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::OutputBelowDustLimit(index));
             }
 
@@ -4234,7 +4232,7 @@
     /// let tx = psbt.clone().extract_tx().expect("tx");
     /// // broadcast tx but it's taking too long to confirm so we want to bump the fee
     /// let mut psbt =  {
-    ///     let mut builder = wallet.build_fee_bump(tx.txid())?;
+    ///     let mut builder = wallet.build_fee_bump(tx.compute_txid())?;
     ///     builder
     ///         .fee_rate(FeeRate::from_sat_per_vb(5).expect("valid feerate"));
     ///     builder.finish()?
@@ -4272,7 +4270,9 @@
             .iter()
             .any(|txin| txin.sequence.to_consensus_u32() &lt;= <span class="number">0xFFFFFFFD</span>)
         {
-            <span class="kw">return </span><span class="prelude-val">Err</span>(BuildFeeBumpError::IrreplaceableTransaction(tx.txid()));
+            <span class="kw">return </span><span class="prelude-val">Err</span>(BuildFeeBumpError::IrreplaceableTransaction(
+                tx.compute_txid(),
+            ));
         }
 
         <span class="kw">let </span>fee = <span class="self">self
@@ -4303,7 +4303,8 @@
                         <span class="kw">let </span>satisfaction_weight = <span class="self">self
                             </span>.get_descriptor_for_keychain(keychain)
                             .max_weight_to_satisfy()
-                            .unwrap();
+                            .unwrap()
+                            .to_wu() <span class="kw">as </span>usize;
                         WeightedUtxo {
                             utxo: Utxo::Local(LocalOutput {
                                 outpoint: txin.previous_output,
@@ -4636,6 +4637,7 @@
                     <span class="self">self</span>.get_descriptor_for_keychain(keychain)
                         .max_weight_to_satisfy()
                         .unwrap()
+                        .to_wu() <span class="kw">as </span>usize
                 })
             })
             .collect()

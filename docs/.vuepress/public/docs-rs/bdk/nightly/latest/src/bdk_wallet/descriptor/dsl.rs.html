@@ -1215,6 +1215,17 @@
 <a href="#1215" id="1215">1215</a>
 <a href="#1216" id="1216">1216</a>
 <a href="#1217" id="1217">1217</a>
+<a href="#1218" id="1218">1218</a>
+<a href="#1219" id="1219">1219</a>
+<a href="#1220" id="1220">1220</a>
+<a href="#1221" id="1221">1221</a>
+<a href="#1222" id="1222">1222</a>
+<a href="#1223" id="1223">1223</a>
+<a href="#1224" id="1224">1224</a>
+<a href="#1225" id="1225">1225</a>
+<a href="#1226" id="1226">1226</a>
+<a href="#1227" id="1227">1227</a>
+<a href="#1228" id="1228">1228</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1920,10 +1931,10 @@
         <span class="macro-nonterminal">$crate::keys::make_pkh</span>(<span class="macro-nonterminal">$key</span>, <span class="kw-2">&amp;</span>secp)
     });
     ( after ( <span class="macro-nonterminal">$value</span>:expr ) ) =&gt; ({
-        <span class="macro-nonterminal">$</span><span class="macro">crate::impl_leaf_opcode_value!</span>(<span class="macro-nonterminal">After</span>, <span class="macro-nonterminal">$crate::miniscript::AbsLockTime::from_consensus</span>(<span class="macro-nonterminal">$value</span>))
+        <span class="macro-nonterminal">$</span><span class="macro">crate::impl_leaf_opcode_value!</span>(<span class="macro-nonterminal">After</span>, <span class="macro-nonterminal">$crate::miniscript::AbsLockTime::from_consensus</span>(<span class="macro-nonterminal">$value</span>).expect(<span class="string">"valid `AbsLockTime`"</span>))
     });
     ( older ( <span class="macro-nonterminal">$value</span>:expr ) ) =&gt; ({
-        <span class="macro-nonterminal">$</span><span class="macro">crate::impl_leaf_opcode_value!</span>(<span class="macro-nonterminal">Older</span>, <span class="macro-nonterminal">$crate::bitcoin::Sequence</span>(<span class="macro-nonterminal">$value</span>)) <span class="comment">// TODO!!
+        <span class="macro-nonterminal">$</span><span class="macro">crate::impl_leaf_opcode_value!</span>(<span class="macro-nonterminal">Older</span>, <span class="macro-nonterminal">$crate::miniscript::RelLockTime::from_consensus</span>(<span class="macro-nonterminal">$value</span>).expect(<span class="string">"valid `RelLockTime`"</span>)) <span class="comment">// TODO!!
     </span>});
     ( sha256 ( <span class="macro-nonterminal">$hash</span>:expr ) ) =&gt; ({
         <span class="macro-nonterminal">$</span><span class="macro">crate::impl_leaf_opcode_value!</span>(<span class="macro-nonterminal">Sha256</span>, <span class="macro-nonterminal">$hash</span>)
@@ -1974,7 +1985,8 @@
             (keys_acc, net_acc)
         });
 
-        <span class="macro-nonterminal">$</span><span class="macro">crate::impl_leaf_opcode_value_two!</span>(<span class="macro-nonterminal">Thresh</span>, <span class="macro-nonterminal">$thresh</span>, items)
+        <span class="kw">let </span>thresh = <span class="macro-nonterminal">$crate::miniscript::Threshold::new</span>(<span class="macro-nonterminal">$thresh</span>, items).expect(<span class="string">"valid threshold and pks collection"</span>);
+        <span class="macro-nonterminal">$</span><span class="macro">crate::impl_leaf_opcode_value!</span>(<span class="macro-nonterminal">Thresh</span>, thresh)
             .map(|(minisc, <span class="kw">_</span>, <span class="kw">_</span>)| (minisc, key_maps, valid_networks))
     });
     ( thresh ( <span class="macro-nonterminal">$thresh</span>:expr, $( <span class="macro-nonterminal">$inner</span>:tt )* ) ) =&gt; ({
@@ -1986,7 +1998,12 @@
     ( multi_vec ( <span class="macro-nonterminal">$thresh</span>:expr, <span class="macro-nonterminal">$keys</span>:expr ) ) =&gt; ({
         <span class="kw">let </span>secp = <span class="macro-nonterminal">$crate::bitcoin::secp256k1::Secp256k1::new</span>();
 
-        <span class="macro-nonterminal">$crate::keys::make_multi</span>(<span class="macro-nonterminal">$thresh</span>, <span class="macro-nonterminal">$crate::miniscript::Terminal::Multi</span>, <span class="macro-nonterminal">$keys</span>, <span class="kw-2">&amp;</span>secp)
+        <span class="kw">let </span>fun = |k, pks| {
+            <span class="kw">let </span>thresh = <span class="macro-nonterminal">$crate::miniscript::Threshold::new</span>(k, pks).expect(<span class="string">"valid threshold and pks collection"</span>);
+            <span class="macro-nonterminal">$crate::miniscript::Terminal::Multi</span>(thresh)
+        };
+
+        <span class="macro-nonterminal">$crate::keys::make_multi</span>(<span class="macro-nonterminal">$thresh</span>, fun, <span class="macro-nonterminal">$keys</span>, <span class="kw-2">&amp;</span>secp)
     });
     ( multi ( <span class="macro-nonterminal">$thresh</span>:expr $(, <span class="macro-nonterminal">$key</span>:expr )+ ) ) =&gt; ({
         <span class="macro-nonterminal">$</span><span class="macro">crate::group_multi_keys!</span>( $( <span class="macro-nonterminal">$key </span>),* )
@@ -1995,7 +2012,12 @@
     ( multi_a_vec ( <span class="macro-nonterminal">$thresh</span>:expr, <span class="macro-nonterminal">$keys</span>:expr ) ) =&gt; ({
         <span class="kw">let </span>secp = <span class="macro-nonterminal">$crate::bitcoin::secp256k1::Secp256k1::new</span>();
 
-        <span class="macro-nonterminal">$crate::keys::make_multi</span>(<span class="macro-nonterminal">$thresh</span>, <span class="macro-nonterminal">$crate::miniscript::Terminal::MultiA</span>, <span class="macro-nonterminal">$keys</span>, <span class="kw-2">&amp;</span>secp)
+        <span class="kw">let </span>fun = |k, pks| {
+            <span class="kw">let </span>thresh = <span class="macro-nonterminal">$crate::miniscript::Threshold::new</span>(k, pks).expect(<span class="string">"valid threshold and pks collection"</span>);
+            <span class="macro-nonterminal">$crate::miniscript::Terminal::MultiA</span>(thresh)
+        };
+
+        <span class="macro-nonterminal">$crate::keys::make_multi</span>(<span class="macro-nonterminal">$thresh</span>, fun, <span class="macro-nonterminal">$keys</span>, <span class="kw-2">&amp;</span>secp)
     });
     ( multi_a ( <span class="macro-nonterminal">$thresh</span>:expr $(, <span class="macro-nonterminal">$key</span>:expr )+ ) ) =&gt; ({
         <span class="macro-nonterminal">$</span><span class="macro">crate::group_multi_keys!</span>( $( <span class="macro-nonterminal">$key </span>),* )
