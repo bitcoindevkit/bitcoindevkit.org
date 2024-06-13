@@ -734,9 +734,6 @@
 <a href="#734" id="734">734</a>
 <a href="#735" id="735">735</a>
 <a href="#736" id="736">736</a>
-<a href="#737" id="737">737</a>
-<a href="#738" id="738">738</a>
-<a href="#739" id="739">739</a>
 </pre></div><pre class="rust"><code><span class="kw">pub use </span>anyhow;
 <span class="kw">use </span>anyhow::Context;
 <span class="kw">use </span>bdk_coin_select::{coin_select_bnb, CoinSelector, CoinSelectorOpt, WeightedValue};
@@ -1004,9 +1001,6 @@
         .expect(<span class="string">"Must exist"</span>);
     changeset.append(change_changeset);
 
-    <span class="comment">// Clone to drop the immutable reference.
-    </span><span class="kw">let </span>change_script = change_script.into();
-
     <span class="kw">let </span>change_plan = bdk_tmp_plan::plan_satisfaction(
         <span class="kw-2">&amp;</span>graph
             .index
@@ -1166,7 +1160,7 @@
     <span class="kw">let </span>outpoints = graph.index.outpoints();
     graph
         .graph()
-        .try_filter_chain_unspents(chain, chain_tip, outpoints)
+        .try_filter_chain_unspents(chain, chain_tip, outpoints.iter().cloned())
         .filter_map(|r| -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;PlannedUtxo&lt;K, A&gt;, <span class="kw">_</span>&gt;&gt; {
             <span class="kw">let </span>(k, i, full_txo) = <span class="kw">match </span>r {
                 <span class="prelude-val">Err</span>(err) =&gt; <span class="kw">return </span><span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(err)),
@@ -1220,8 +1214,8 @@
                         local_chain::ChangeSet::default(),
                         indexed_tx_graph::ChangeSet::from(index_changeset),
                     )))<span class="question-mark">?</span>;
-                    <span class="kw">let </span>addr =
-                        Address::from_script(spk, network).context(<span class="string">"failed to derive address"</span>)<span class="question-mark">?</span>;
+                    <span class="kw">let </span>addr = Address::from_script(spk.as_script(), network)
+                        .context(<span class="string">"failed to derive address"</span>)<span class="question-mark">?</span>;
                     <span class="macro">println!</span>(<span class="string">"[address @ {}] {}"</span>, spk_i, addr);
                     <span class="prelude-val">Ok</span>(())
                 }
@@ -1266,7 +1260,7 @@
             <span class="kw">let </span>balance = graph.graph().try_balance(
                 chain,
                 chain.get_chain_tip()<span class="question-mark">?</span>,
-                graph.index.outpoints(),
+                graph.index.outpoints().iter().cloned(),
                 |(k, <span class="kw">_</span>), <span class="kw">_</span>| k == <span class="kw-2">&amp;</span>Keychain::Internal,
             )<span class="question-mark">?</span>;
 
@@ -1307,7 +1301,7 @@
                 } =&gt; {
                     <span class="kw">let </span>txouts = graph
                         .graph()
-                        .try_filter_chain_txouts(chain, chain_tip, outpoints)
+                        .try_filter_chain_txouts(chain, chain_tip, outpoints.iter().cloned())
                         .filter(|r| <span class="kw">match </span>r {
                             <span class="prelude-val">Ok</span>((<span class="kw">_</span>, full_txo)) =&gt; <span class="kw">match </span>(spent, unspent) {
                                 (<span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; full_txo.spent_by.is_some(),
@@ -1448,7 +1442,7 @@
     // them in the index here. However, the keymap is not stored in the database.
     </span><span class="kw">let </span>(descriptor, <span class="kw-2">mut </span>keymap) =
         Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(<span class="kw-2">&amp;</span>secp, <span class="kw-2">&amp;</span>args.descriptor)<span class="question-mark">?</span>;
-    <span class="kw">let _ </span>= index.insert_descriptor(Keychain::External, descriptor);
+    <span class="kw">let _ </span>= index.insert_descriptor(Keychain::External, descriptor)<span class="question-mark">?</span>;
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>((internal_descriptor, internal_keymap)) = args
         .change_descriptor
@@ -1457,7 +1451,7 @@
         .transpose()<span class="question-mark">?
     </span>{
         keymap.extend(internal_keymap);
-        <span class="kw">let _ </span>= index.insert_descriptor(Keychain::Internal, internal_descriptor);
+        <span class="kw">let _ </span>= index.insert_descriptor(Keychain::Internal, internal_descriptor)<span class="question-mark">?</span>;
     }
 
     <span class="kw">let </span><span class="kw-2">mut </span>db_backend = <span class="kw">match </span>Store::&lt;C&gt;::open_or_create_new(db_magic, <span class="kw-2">&amp;</span>args.db_path) {

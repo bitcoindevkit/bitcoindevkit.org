@@ -361,6 +361,10 @@
 <a href="#361" id="361">361</a>
 <a href="#362" id="362">362</a>
 <a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{
     collections::BTreeSet,
     io::{<span class="self">self</span>, Write},
@@ -567,7 +571,7 @@
             // addresses derived so we need to derive up to last active addresses the scan found
             // before adding the transactions.
             </span>(chain.apply_update(update.chain_update)<span class="question-mark">?</span>, {
-                <span class="kw">let </span>(<span class="kw">_</span>, index_changeset) = graph
+                <span class="kw">let </span>index_changeset = graph
                     .index
                     .reveal_to_target_multi(<span class="kw-2">&amp;</span>update.last_active_indices);
                 <span class="kw">let </span><span class="kw-2">mut </span>indexed_tx_graph_changeset = graph.apply_update(update.graph_update);
@@ -608,7 +612,7 @@
                     <span class="kw">let </span>all_spks = graph
                         .index
                         .revealed_spks(..)
-                        .map(|(k, i, spk)| (k.to_owned(), i, spk.to_owned()))
+                        .map(|((k, i), spk)| (k, i, spk.to_owned()))
                         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
                     request = request.chain_spks(all_spks.into_iter().map(|(k, i, spk)| {
                         <span class="macro">eprint!</span>(<span class="string">"scanning {}:{}"</span>, k, i);
@@ -621,10 +625,10 @@
                     <span class="kw">let </span>unused_spks = graph
                         .index
                         .unused_spks()
-                        .map(|(k, i, spk)| (k, i, spk.to_owned()))
+                        .map(|(index, spk)| (index, spk.to_owned()))
                         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
                     request =
-                        request.chain_spks(unused_spks.into_iter().map(<span class="kw">move </span>|(k, i, spk)| {
+                        request.chain_spks(unused_spks.into_iter().map(<span class="kw">move </span>|((k, i), spk)| {
                             <span class="macro">eprint!</span>(
                                 <span class="string">"Checking if address {} {}:{} has been used"</span>,
                                 Address::from_script(<span class="kw-2">&amp;</span>spk, args.network).unwrap(),
@@ -643,7 +647,11 @@
                     </span><span class="kw">let </span>init_outpoints = graph.index.outpoints();
                     <span class="kw">let </span>utxos = graph
                         .graph()
-                        .filter_chain_unspents(<span class="kw-2">&amp;*</span>chain, local_tip.block_id(), init_outpoints)
+                        .filter_chain_unspents(
+                            <span class="kw-2">&amp;*</span>chain,
+                            local_tip.block_id(),
+                            init_outpoints.iter().cloned(),
+                        )
                         .map(|(<span class="kw">_</span>, utxo)| utxo)
                         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
                     request = request.chain_outpoints(

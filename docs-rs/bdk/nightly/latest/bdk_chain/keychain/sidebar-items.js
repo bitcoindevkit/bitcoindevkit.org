@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Balance","ChangeSet","KeychainTxOutIndex"]};
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_LOOKAHEAD"],"enum":["InsertDescriptorError"],"struct":["Balance","ChangeSet","KeychainTxOutIndex","NoSuchKeychain"],"type":["Indexed","KeychainIndexed"]};

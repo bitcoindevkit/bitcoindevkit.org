@@ -2598,6 +2598,17 @@
 <a href="#2598" id="2598">2598</a>
 <a href="#2599" id="2599">2599</a>
 <a href="#2600" id="2600">2600</a>
+<a href="#2601" id="2601">2601</a>
+<a href="#2602" id="2602">2602</a>
+<a href="#2603" id="2603">2603</a>
+<a href="#2604" id="2604">2604</a>
+<a href="#2605" id="2605">2605</a>
+<a href="#2606" id="2606">2606</a>
+<a href="#2607" id="2607">2607</a>
+<a href="#2608" id="2608">2608</a>
+<a href="#2609" id="2609">2609</a>
+<a href="#2610" id="2610">2610</a>
+<a href="#2611" id="2611">2611</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2629,7 +2640,7 @@
     spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult},
     tx_graph::{CanonicalTx, TxGraph},
     Append, BlockId, ChainPosition, ConfirmationTime, ConfirmationTimeHeightAnchor, FullTxOut,
-    IndexedTxGraph,
+    Indexed, IndexedTxGraph,
 };
 <span class="kw">use </span>bdk_persist::{Persist, PersistBackend};
 <span class="kw">use </span>bitcoin::secp256k1::{All, Secp256k1};
@@ -3352,7 +3363,8 @@
 
         <span class="prelude-val">Ok</span>(AddressInfo {
             index,
-            address: Address::from_script(spk, <span class="self">self</span>.network).expect(<span class="string">"must have address form"</span>),
+            address: Address::from_script(spk.as_script(), <span class="self">self</span>.network)
+                .expect(<span class="string">"must have address form"</span>),
             keychain,
         })
     }
@@ -3372,7 +3384,7 @@
         keychain: KeychainKind,
         index: u32,
     ) -&gt; anyhow::Result&lt;<span class="kw">impl </span>Iterator&lt;Item = AddressInfo&gt; + <span class="lifetime">'_</span>&gt; {
-        <span class="kw">let </span>(spk_iter, index_changeset) = <span class="self">self
+        <span class="kw">let </span>(spks, index_changeset) = <span class="self">self
             </span>.indexed_graph
             .index
             .reveal_to_target(<span class="kw-2">&amp;</span>keychain, index)
@@ -3381,7 +3393,7 @@
         <span class="self">self</span>.persist
             .stage_and_commit(indexed_tx_graph::ChangeSet::from(index_changeset).into())<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(spk_iter.map(<span class="kw">move </span>|(index, spk)| AddressInfo {
+        <span class="prelude-val">Ok</span>(spks.into_iter().map(<span class="kw">move </span>|(index, spk)| AddressInfo {
             index,
             address: Address::from_script(<span class="kw-2">&amp;</span>spk, <span class="self">self</span>.network).expect(<span class="string">"must have address form"</span>),
             keychain,
@@ -3409,7 +3421,8 @@
 
         <span class="prelude-val">Ok</span>(AddressInfo {
             index,
-            address: Address::from_script(spk, <span class="self">self</span>.network).expect(<span class="string">"must have address form"</span>),
+            address: Address::from_script(spk.as_script(), <span class="self">self</span>.network)
+                .expect(<span class="string">"must have address form"</span>),
             keychain,
         })
     }
@@ -3461,7 +3474,7 @@
     ///
     /// Will only return `Some(_)` if the wallet has given out the spk.
     </span><span class="kw">pub fn </span>derivation_of_spk(<span class="kw-2">&amp;</span><span class="self">self</span>, spk: <span class="kw-2">&amp;</span>Script) -&gt; <span class="prelude-ty">Option</span>&lt;(KeychainKind, u32)&gt; {
-        <span class="self">self</span>.indexed_graph.index.index_of_spk(spk)
+        <span class="self">self</span>.indexed_graph.index.index_of_spk(spk).cloned()
     }
 
     <span class="doccomment">/// Return the list of unspent outputs of this wallet
@@ -3471,7 +3484,7 @@
             .filter_chain_unspents(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
                 <span class="self">self</span>.chain.tip().block_id(),
-                <span class="self">self</span>.indexed_graph.index.outpoints(),
+                <span class="self">self</span>.indexed_graph.index.outpoints().iter().cloned(),
             )
             .map(|((k, i), full_txo)| new_local_utxo(k, i, full_txo))
     }
@@ -3485,7 +3498,7 @@
             .filter_chain_txouts(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
                 <span class="self">self</span>.chain.tip().block_id(),
-                <span class="self">self</span>.indexed_graph.index.outpoints(),
+                <span class="self">self</span>.indexed_graph.index.outpoints().iter().cloned(),
             )
             .map(|((k, i), full_txo)| new_local_utxo(k, i, full_txo))
     }
@@ -3510,7 +3523,7 @@
     /// script pubkeys the wallet is storing internally).
     </span><span class="kw">pub fn </span>all_unbounded_spk_iters(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; BTreeMap&lt;KeychainKind, <span class="kw">impl </span>Iterator&lt;Item = (u32, ScriptBuf)&gt; + Clone&gt; {
+    ) -&gt; BTreeMap&lt;KeychainKind, <span class="kw">impl </span>Iterator&lt;Item = Indexed&lt;ScriptBuf&gt;&gt; + Clone&gt; {
         <span class="self">self</span>.indexed_graph.index.all_unbounded_spk_iters()
     }
 
@@ -3522,7 +3535,7 @@
     </span><span class="kw">pub fn </span>unbounded_spk_iter(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         keychain: KeychainKind,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (u32, ScriptBuf)&gt; + Clone {
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = Indexed&lt;ScriptBuf&gt;&gt; + Clone {
         <span class="self">self</span>.indexed_graph
             .index
             .unbounded_spk_iter(<span class="kw-2">&amp;</span>keychain)
@@ -3532,7 +3545,7 @@
     <span class="doccomment">/// Returns the utxo owned by this wallet corresponding to `outpoint` if it exists in the
     /// wallet's database.
     </span><span class="kw">pub fn </span>get_utxo(<span class="kw-2">&amp;</span><span class="self">self</span>, op: OutPoint) -&gt; <span class="prelude-ty">Option</span>&lt;LocalOutput&gt; {
-        <span class="kw">let </span>(keychain, index, <span class="kw">_</span>) = <span class="self">self</span>.indexed_graph.index.txout(op)<span class="question-mark">?</span>;
+        <span class="kw">let </span>((keychain, index), <span class="kw">_</span>) = <span class="self">self</span>.indexed_graph.index.txout(op)<span class="question-mark">?</span>;
         <span class="self">self</span>.indexed_graph
             .graph()
             .filter_chain_unspents(
@@ -3807,7 +3820,7 @@
         <span class="self">self</span>.indexed_graph.graph().balance(
             <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
             <span class="self">self</span>.chain.tip().block_id(),
-            <span class="self">self</span>.indexed_graph.index.outpoints(),
+            <span class="self">self</span>.indexed_graph.index.outpoints().iter().cloned(),
             |<span class="kw-2">&amp;</span>(k, <span class="kw">_</span>), <span class="kw">_</span>| k == KeychainKind::Internal,
         )
     }
@@ -4111,7 +4124,6 @@
                     .index
                     .next_unused_spk(<span class="kw-2">&amp;</span>change_keychain)
                     .expect(<span class="string">"keychain must exist"</span>);
-                <span class="kw">let </span>spk = spk.into();
                 <span class="self">self</span>.indexed_graph.index.mark_used(change_keychain, index);
                 <span class="self">self</span>.persist
                     .stage(ChangeSet::from(indexed_tx_graph::ChangeSet::from(
@@ -4299,7 +4311,7 @@
                     .into();
 
                 <span class="kw">let </span>weighted_utxo = <span class="kw">match </span>txout_index.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
-                    <span class="prelude-val">Some</span>((keychain, derivation_index)) =&gt; {
+                    <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(keychain, derivation_index)) =&gt; {
                         <span class="kw">let </span>satisfaction_weight = <span class="self">self
                             </span>.get_descriptor_for_keychain(keychain)
                             .max_weight_to_satisfy()
@@ -4344,7 +4356,7 @@
             <span class="kw">for </span>(index, txout) <span class="kw">in </span>tx.output.iter().enumerate() {
                 <span class="kw">let </span>change_keychain = KeychainKind::Internal;
                 <span class="kw">match </span>txout_index.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
-                    <span class="prelude-val">Some</span>((keychain, <span class="kw">_</span>)) <span class="kw">if </span>keychain == change_keychain =&gt; {
+                    <span class="prelude-val">Some</span>((keychain, <span class="kw">_</span>)) <span class="kw">if </span><span class="kw-2">*</span>keychain == change_keychain =&gt; {
                         change_index = <span class="prelude-val">Some</span>(index)
                     }
                     <span class="kw">_ </span>=&gt; {}
@@ -4615,13 +4627,13 @@
             <span class="kw">if let </span><span class="prelude-val">Some</span>((keychain, index)) = txout_index.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
                 <span class="comment">// NOTE: unmark_used will **not** make something unused if it has actually been used
                 // by a tx in the tracker. It only removes the superficial marking.
-                </span>txout_index.unmark_used(keychain, index);
+                </span>txout_index.unmark_used(<span class="kw-2">*</span>keychain, <span class="kw-2">*</span>index);
             }
         }
     }
 
     <span class="kw">fn </span>get_descriptor_for_txout(<span class="kw-2">&amp;</span><span class="self">self</span>, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="prelude-ty">Option</span>&lt;DerivedDescriptor&gt; {
-        <span class="kw">let </span>(keychain, child) = <span class="self">self
+        <span class="kw">let </span><span class="kw-2">&amp;</span>(keychain, child) = <span class="self">self
             </span>.indexed_graph
             .index
             .index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey)<span class="question-mark">?</span>;
@@ -4837,7 +4849,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;psbt::Input, CreateTxError&gt; {
         <span class="comment">// Try to find the prev_script in our db to figure out if this is internal or external,
         // and the derivation index
-        </span><span class="kw">let </span>(keychain, child) = <span class="self">self
+        </span><span class="kw">let </span><span class="kw-2">&amp;</span>(keychain, child) = <span class="self">self
             </span>.indexed_graph
             .index
             .index_of_spk(<span class="kw-2">&amp;</span>utxo.txout.script_pubkey)
@@ -4885,7 +4897,7 @@
 
         <span class="comment">// Try to figure out the keychain and derivation for every input and output
         </span><span class="kw">for </span>(is_input, index, out) <span class="kw">in </span>utxos.into_iter() {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>((keychain, child)) =
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(keychain, child)) =
                 <span class="self">self</span>.indexed_graph.index.index_of_spk(<span class="kw-2">&amp;</span>out.script_pubkey)
             {
                 <span class="kw">let </span>desc = <span class="self">self</span>.get_descriptor_for_keychain(keychain);
@@ -4931,7 +4943,7 @@
             <span class="prelude-val">None </span>=&gt; ChangeSet::default(),
         };
 
-        <span class="kw">let </span>(<span class="kw">_</span>, index_changeset) = <span class="self">self
+        <span class="kw">let </span>index_changeset = <span class="self">self
             </span>.indexed_graph
             .index
             .reveal_to_target_multi(<span class="kw-2">&amp;</span>update.last_active_indices);
@@ -5136,17 +5148,27 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(Arc&lt;SignersContainer&gt;, Arc&lt;SignersContainer&gt;), DescriptorError&gt; {
     <span class="kw">let </span>descriptor = into_wallet_descriptor_checked(descriptor, secp, network)<span class="question-mark">?</span>;
     <span class="kw">let </span>change_descriptor = into_wallet_descriptor_checked(change_descriptor, secp, network)<span class="question-mark">?</span>;
-    <span class="kw">if </span>descriptor.<span class="number">0 </span>== change_descriptor.<span class="number">0 </span>{
-        <span class="kw">return </span><span class="prelude-val">Err</span>(DescriptorError::ExternalAndInternalAreTheSame);
-    }
-
     <span class="kw">let </span>(descriptor, keymap) = descriptor;
     <span class="kw">let </span>signers = Arc::new(SignersContainer::build(keymap, <span class="kw-2">&amp;</span>descriptor, secp));
-    <span class="kw">let _ </span>= index.insert_descriptor(KeychainKind::External, descriptor);
+    <span class="kw">let _ </span>= index
+        .insert_descriptor(KeychainKind::External, descriptor)
+        .expect(<span class="string">"this is the first descriptor we're inserting"</span>);
 
     <span class="kw">let </span>(descriptor, keymap) = change_descriptor;
     <span class="kw">let </span>change_signers = Arc::new(SignersContainer::build(keymap, <span class="kw-2">&amp;</span>descriptor, secp));
-    <span class="kw">let _ </span>= index.insert_descriptor(KeychainKind::Internal, descriptor);
+    <span class="kw">let _ </span>= index
+        .insert_descriptor(KeychainKind::Internal, descriptor)
+        .map_err(|e| {
+            <span class="kw">use </span>bdk_chain::keychain::InsertDescriptorError;
+            <span class="kw">match </span>e {
+                InsertDescriptorError::DescriptorAlreadyAssigned { .. } =&gt; {
+                    <span class="kw">crate</span>::descriptor::error::Error::ExternalAndInternalAreTheSame
+                }
+                InsertDescriptorError::KeychainAlreadyAssigned { .. } =&gt; {
+                    <span class="macro">unreachable!</span>(<span class="string">"this is the first time we're assigning internal"</span>)
+                }
+            }
+        })<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>((signers, change_signers))
 }
