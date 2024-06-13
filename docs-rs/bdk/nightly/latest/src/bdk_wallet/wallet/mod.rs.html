@@ -2577,38 +2577,6 @@
 <a href="#2577" id="2577">2577</a>
 <a href="#2578" id="2578">2578</a>
 <a href="#2579" id="2579">2579</a>
-<a href="#2580" id="2580">2580</a>
-<a href="#2581" id="2581">2581</a>
-<a href="#2582" id="2582">2582</a>
-<a href="#2583" id="2583">2583</a>
-<a href="#2584" id="2584">2584</a>
-<a href="#2585" id="2585">2585</a>
-<a href="#2586" id="2586">2586</a>
-<a href="#2587" id="2587">2587</a>
-<a href="#2588" id="2588">2588</a>
-<a href="#2589" id="2589">2589</a>
-<a href="#2590" id="2590">2590</a>
-<a href="#2591" id="2591">2591</a>
-<a href="#2592" id="2592">2592</a>
-<a href="#2593" id="2593">2593</a>
-<a href="#2594" id="2594">2594</a>
-<a href="#2595" id="2595">2595</a>
-<a href="#2596" id="2596">2596</a>
-<a href="#2597" id="2597">2597</a>
-<a href="#2598" id="2598">2598</a>
-<a href="#2599" id="2599">2599</a>
-<a href="#2600" id="2600">2600</a>
-<a href="#2601" id="2601">2601</a>
-<a href="#2602" id="2602">2602</a>
-<a href="#2603" id="2603">2603</a>
-<a href="#2604" id="2604">2604</a>
-<a href="#2605" id="2605">2605</a>
-<a href="#2606" id="2606">2606</a>
-<a href="#2607" id="2607">2607</a>
-<a href="#2608" id="2608">2608</a>
-<a href="#2609" id="2609">2609</a>
-<a href="#2610" id="2610">2610</a>
-<a href="#2611" id="2611">2611</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2637,12 +2605,12 @@
     local_chain::{
         <span class="self">self</span>, ApplyHeaderError, CannotConnectError, CheckPoint, CheckPointIter, LocalChain,
     },
+    persist::{PersistBackend, StageExt},
     spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult},
     tx_graph::{CanonicalTx, TxGraph},
     Append, BlockId, ChainPosition, ConfirmationTime, ConfirmationTimeHeightAnchor, FullTxOut,
     Indexed, IndexedTxGraph,
 };
-<span class="kw">use </span>bdk_persist::{Persist, PersistBackend};
 <span class="kw">use </span>bitcoin::secp256k1::{All, Secp256k1};
 <span class="kw">use </span>bitcoin::sighash::{EcdsaSighashType, TapSighashType};
 <span class="kw">use </span>bitcoin::{
@@ -2696,6 +2664,11 @@
 /// 1. output *descriptors* from which it can derive addresses.
 /// 2. [`signer`]s that can contribute signatures to addresses instantiated from the descriptors.
 ///
+/// The user is responsible for loading and writing wallet changes using an implementation of
+/// [`PersistBackend`]. See individual functions and example for instructions on when [`Wallet`]
+/// state needs to be persisted.
+///
+/// [`PersistBackend`]: bdk_chain::persist::PersistBackend
 /// [`signer`]: crate::signer
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>Wallet {
@@ -2703,7 +2676,7 @@
     change_signers: Arc&lt;SignersContainer&gt;,
     chain: LocalChain,
     indexed_graph: IndexedTxGraph&lt;ConfirmationTimeHeightAnchor, KeychainTxOutIndex&lt;KeychainKind&gt;&gt;,
-    persist: Persist&lt;ChangeSet&gt;,
+    stage: ChangeSet,
     network: Network,
     secp: SecpCtx,
 }
@@ -2747,7 +2720,8 @@
 }
 
 <span class="doccomment">/// The changes made to a wallet by applying an [`Update`].
-</span><span class="kw">pub type </span>ChangeSet = bdk_persist::CombinedChangeSet&lt;KeychainKind, ConfirmationTimeHeightAnchor&gt;;
+</span><span class="kw">pub type </span>ChangeSet =
+    bdk_chain::persist::CombinedChangeSet&lt;KeychainKind, ConfirmationTimeHeightAnchor&gt;;
 
 <span class="doccomment">/// A derived address and the index it was found at.
 /// For convenience this automatically derefs to `Address`
@@ -2775,36 +2749,6 @@
     }
 }
 
-<span class="kw">impl </span>Wallet {
-    <span class="doccomment">/// Creates a wallet that does not persist data.
-    </span><span class="kw">pub fn </span>new_no_persist&lt;E: IntoWalletDescriptor&gt;(
-        descriptor: E,
-        change_descriptor: E,
-        network: Network,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, DescriptorError&gt; {
-        <span class="self">Self</span>::new(descriptor, change_descriptor, (), network).map_err(|e| <span class="kw">match </span>e {
-            NewError::NonEmptyDatabase =&gt; <span class="macro">unreachable!</span>(<span class="string">"mock-database cannot have data"</span>),
-            NewError::Descriptor(e) =&gt; e,
-            NewError::Persist(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">"mock-write must always succeed"</span>),
-        })
-    }
-
-    <span class="doccomment">/// Creates a wallet that does not persist data, with a custom genesis hash.
-    </span><span class="kw">pub fn </span>new_no_persist_with_genesis_hash&lt;E: IntoWalletDescriptor&gt;(
-        descriptor: E,
-        change_descriptor: E,
-        network: Network,
-        genesis_hash: BlockHash,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="kw">crate</span>::descriptor::DescriptorError&gt; {
-        <span class="self">Self</span>::new_with_genesis_hash(descriptor, change_descriptor, (), network, genesis_hash)
-            .map_err(|e| <span class="kw">match </span>e {
-                NewError::NonEmptyDatabase =&gt; <span class="macro">unreachable!</span>(<span class="string">"mock-database cannot have data"</span>),
-                NewError::Descriptor(e) =&gt; e,
-                NewError::Persist(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">"mock-write must always succeed"</span>),
-            })
-    }
-}
-
 <span class="doccomment">/// The error type when constructing a fresh [`Wallet`].
 ///
 /// Methods [`new`] and [`new_with_genesis_hash`] may return this error.
@@ -2813,23 +2757,14 @@
 /// [`new_with_genesis_hash`]: Wallet::new_with_genesis_hash
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub enum </span>NewError {
-    <span class="doccomment">/// Database already has data.
-    </span>NonEmptyDatabase,
     <span class="doccomment">/// There was problem with the passed-in descriptor(s).
     </span>Descriptor(<span class="kw">crate</span>::descriptor::DescriptorError),
-    <span class="doccomment">/// We were unable to write the wallet's data to the persistence backend.
-    </span>Persist(anyhow::Error),
 }
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>NewError {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
-            NewError::NonEmptyDatabase =&gt; <span class="macro">write!</span>(
-                f,
-                <span class="string">"database already has data - use `load` or `new_or_load` methods instead"
-            </span>),
             NewError::Descriptor(e) =&gt; e.fmt(f),
-            NewError::Persist(e) =&gt; e.fmt(f),
         }
     }
 }
@@ -2837,19 +2772,15 @@
 <span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>NewError {}
 
-<span class="doccomment">/// The error type when loading a [`Wallet`] from persistence.
+<span class="doccomment">/// The error type when loading a [`Wallet`] from a [`ChangeSet`].
 ///
-/// Method [`load`] may return this error.
+/// Method [`load_from_changeset`] may return this error.
 ///
-/// [`load`]: Wallet::load
+/// [`load_from_changeset`]: Wallet::load_from_changeset
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub enum </span>LoadError {
     <span class="doccomment">/// There was a problem with the passed-in descriptor(s).
     </span>Descriptor(<span class="kw">crate</span>::descriptor::DescriptorError),
-    <span class="doccomment">/// Loading data from the persistence backend failed.
-    </span>Persist(anyhow::Error),
-    <span class="doccomment">/// Wallet not initialized, persistence backend is empty.
-    </span>NotInitialized,
     <span class="doccomment">/// Data loaded from persistence is missing network type.
     </span>MissingNetwork,
     <span class="doccomment">/// Data loaded from persistence is missing genesis hash.
@@ -2862,10 +2793,6 @@
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
             LoadError::Descriptor(e) =&gt; e.fmt(f),
-            LoadError::Persist(e) =&gt; e.fmt(f),
-            LoadError::NotInitialized =&gt; {
-                <span class="macro">write!</span>(f, <span class="string">"wallet is not initialized, persistence backend is empty"</span>)
-            }
             LoadError::MissingNetwork =&gt; <span class="macro">write!</span>(f, <span class="string">"loaded data is missing network type"</span>),
             LoadError::MissingGenesis =&gt; <span class="macro">write!</span>(f, <span class="string">"loaded data is missing genesis hash"</span>),
             LoadError::MissingDescriptor(k) =&gt; {
@@ -2888,10 +2815,6 @@
 </span><span class="kw">pub enum </span>NewOrLoadError {
     <span class="doccomment">/// There is a problem with the passed-in descriptor.
     </span>Descriptor(<span class="kw">crate</span>::descriptor::DescriptorError),
-    <span class="doccomment">/// Either writing to or loading from the persistence backend failed.
-    </span>Persist(anyhow::Error),
-    <span class="doccomment">/// Wallet is not initialized, persistence backend is empty.
-    </span>NotInitialized,
     <span class="doccomment">/// The loaded genesis hash does not match what was provided.
     </span>LoadedGenesisDoesNotMatch {
         <span class="doccomment">/// The expected genesis block hash.
@@ -2919,14 +2842,6 @@
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
             NewOrLoadError::Descriptor(e) =&gt; e.fmt(f),
-            NewOrLoadError::Persist(e) =&gt; <span class="macro">write!</span>(
-                f,
-                <span class="string">"failed to either write to or load from persistence, {}"</span>,
-                e
-            ),
-            NewOrLoadError::NotInitialized =&gt; {
-                <span class="macro">write!</span>(f, <span class="string">"wallet is not initialized, persistence backend is empty"</span>)
-            }
             NewOrLoadError::LoadedGenesisDoesNotMatch { expected, got } =&gt; {
                 <span class="macro">write!</span>(f, <span class="string">"loaded genesis hash is not {}, got {:?}"</span>, expected, got)
             }
@@ -3014,11 +2929,10 @@
     </span><span class="kw">pub fn </span>new&lt;E: IntoWalletDescriptor&gt;(
         descriptor: E,
         change_descriptor: E,
-        db: <span class="kw">impl </span>PersistBackend&lt;ChangeSet&gt; + Send + Sync + <span class="lifetime">'static</span>,
         network: Network,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, NewError&gt; {
         <span class="kw">let </span>genesis_hash = genesis_block(network).block_hash();
-        <span class="self">Self</span>::new_with_genesis_hash(descriptor, change_descriptor, db, network, genesis_hash)
+        <span class="self">Self</span>::new_with_genesis_hash(descriptor, change_descriptor, network, genesis_hash)
     }
 
     <span class="doccomment">/// Initialize an empty [`Wallet`] with a custom genesis hash.
@@ -3028,15 +2942,9 @@
     </span><span class="kw">pub fn </span>new_with_genesis_hash&lt;E: IntoWalletDescriptor&gt;(
         descriptor: E,
         change_descriptor: E,
-        <span class="kw-2">mut </span>db: <span class="kw">impl </span>PersistBackend&lt;ChangeSet&gt; + Send + Sync + <span class="lifetime">'static</span>,
         network: Network,
         genesis_hash: BlockHash,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, NewError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Ok</span>(changeset) = db.load_from_persistence() {
-            <span class="kw">if </span>changeset.is_some() {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(NewError::NonEmptyDatabase);
-            }
-        }
         <span class="kw">let </span>secp = Secp256k1::new();
         <span class="kw">let </span>(chain, chain_changeset) = LocalChain::from_genesis_hash(genesis_hash);
         <span class="kw">let </span><span class="kw-2">mut </span>index = KeychainTxOutIndex::&lt;KeychainKind&gt;::default();
@@ -3047,13 +2955,11 @@
 
         <span class="kw">let </span>indexed_graph = IndexedTxGraph::new(index);
 
-        <span class="kw">let </span><span class="kw-2">mut </span>persist = Persist::new(db);
-        persist.stage(ChangeSet {
+        <span class="kw">let </span>staged = ChangeSet {
             chain: chain_changeset,
             indexed_tx_graph: indexed_graph.initial_changeset(),
             network: <span class="prelude-val">Some</span>(network),
-        });
-        persist.commit().map_err(NewError::Persist)<span class="question-mark">?</span>;
+        };
 
         <span class="prelude-val">Ok</span>(Wallet {
             signers,
@@ -3061,12 +2967,12 @@
             network,
             chain,
             indexed_graph,
-            persist,
+            stage: staged,
             secp,
         })
     }
 
-    <span class="doccomment">/// Load [`Wallet`] from the given persistence backend.
+    <span class="doccomment">/// Load [`Wallet`] from the given previously persisted [`ChangeSet`].
     ///
     /// Note that the descriptor secret keys are not persisted to the db; this means that after
     /// calling this method the [`Wallet`] **won't** know the secret keys, and as such, won't be
@@ -3084,10 +2990,11 @@
     /// # use bdk_sqlite::{Store, rusqlite::Connection};
     /// #
     /// # fn main() -&gt; Result&lt;(), anyhow::Error&gt; {
+    /// # use bdk_chain::persist::PersistBackend;
     /// # let temp_dir = tempfile::tempdir().expect("must create tempdir");
     /// # let file_path = temp_dir.path().join("store.db");
     /// # let conn = Connection::open(file_path).expect("must open connection");
-    /// # let db = Store::new(conn).expect("must create db");
+    /// # let mut db = Store::new(conn).expect("must create db");
     /// let secp = Secp256k1::new();
     ///
     /// let (external_descriptor, external_keymap) = Descriptor::parse_descriptor(&amp;secp, "wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/0/*)").unwrap();
@@ -3095,8 +3002,8 @@
     ///
     /// let external_signer_container = SignersContainer::build(external_keymap, &amp;external_descriptor, &amp;secp);
     /// let internal_signer_container = SignersContainer::build(internal_keymap, &amp;internal_descriptor, &amp;secp);
-    ///
-    /// let mut wallet = Wallet::load(db)?;
+    /// let changeset = db.load_changes()?.expect("there must be an existing changeset");
+    /// let mut wallet = Wallet::load_from_changeset(changeset)?;
     ///
     /// external_signer_container.signers().into_iter()
     ///     .for_each(|s| wallet.add_signer(KeychainKind::External, SignerOrdering::default(), s.clone()));
@@ -3108,20 +3015,7 @@
     ///
     /// Alternatively, you can call [`Wallet::new_or_load`], which will add the private keys of the
     /// passed-in descriptors to the [`Wallet`].
-    </span><span class="kw">pub fn </span>load(
-        <span class="kw-2">mut </span>db: <span class="kw">impl </span>PersistBackend&lt;ChangeSet&gt; + Send + Sync + <span class="lifetime">'static</span>,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, LoadError&gt; {
-        <span class="kw">let </span>changeset = db
-            .load_from_persistence()
-            .map_err(LoadError::Persist)<span class="question-mark">?
-            </span>.ok_or(LoadError::NotInitialized)<span class="question-mark">?</span>;
-        <span class="self">Self</span>::load_from_changeset(db, changeset)
-    }
-
-    <span class="kw">fn </span>load_from_changeset(
-        db: <span class="kw">impl </span>PersistBackend&lt;ChangeSet&gt; + Send + Sync + <span class="lifetime">'static</span>,
-        changeset: ChangeSet,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, LoadError&gt; {
+    </span><span class="kw">pub fn </span>load_from_changeset(changeset: ChangeSet) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, LoadError&gt; {
         <span class="kw">let </span>secp = Secp256k1::new();
         <span class="kw">let </span>network = changeset.network.ok_or(LoadError::MissingNetwork)<span class="question-mark">?</span>;
         <span class="kw">let </span>chain =
@@ -3149,157 +3043,156 @@
         <span class="kw">let </span><span class="kw-2">mut </span>indexed_graph = IndexedTxGraph::new(index);
         indexed_graph.apply_changeset(changeset.indexed_tx_graph);
 
-        <span class="kw">let </span>persist = Persist::new(db);
+        <span class="kw">let </span>stage = ChangeSet::default();
 
         <span class="prelude-val">Ok</span>(Wallet {
             signers,
             change_signers,
             chain,
             indexed_graph,
-            persist,
+            stage,
             network,
             secp,
         })
     }
 
-    <span class="doccomment">/// Either loads [`Wallet`] from persistence, or initializes it if it does not exist.
+    <span class="doccomment">/// Either loads [`Wallet`] from the given [`ChangeSet`] or initializes it if one does not exist.
     ///
-    /// This method will fail if the loaded [`Wallet`] has different parameters to those provided.
+    /// This method will fail if the loaded [`ChangeSet`] has different parameters to those provided.
+    ///
+    /// ```rust,no_run
+    /// # use bdk_chain::persist::PersistBackend;
+    /// # use bdk_wallet::Wallet;
+    /// # use bdk_sqlite::{Store, rusqlite::Connection};
+    /// # use bitcoin::Network::Testnet;
+    /// # let conn = Connection::open_in_memory().expect("must open connection");
+    /// let mut db = Store::new(conn).expect("must create db");
+    /// let changeset = db.load_changes()?;
+    ///
+    /// let external_descriptor = "wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/0/*)";
+    /// let internal_descriptor = "wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/1/*)";
+    ///
+    /// let mut wallet = Wallet::new_or_load(external_descriptor, internal_descriptor, changeset, Testnet)?;
+    /// # Ok::&lt;(), anyhow::Error&gt;(())
+    /// ```
     </span><span class="kw">pub fn </span>new_or_load&lt;E: IntoWalletDescriptor&gt;(
         descriptor: E,
         change_descriptor: E,
-        db: <span class="kw">impl </span>PersistBackend&lt;ChangeSet&gt; + Send + Sync + <span class="lifetime">'static</span>,
+        changeset: <span class="prelude-ty">Option</span>&lt;ChangeSet&gt;,
         network: Network,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, NewOrLoadError&gt; {
         <span class="kw">let </span>genesis_hash = genesis_block(network).block_hash();
         <span class="self">Self</span>::new_or_load_with_genesis_hash(
             descriptor,
             change_descriptor,
-            db,
+            changeset,
             network,
             genesis_hash,
         )
     }
 
-    <span class="doccomment">/// Either loads [`Wallet`] from persistence, or initializes it if it does not exist, using the
+    <span class="doccomment">/// Either loads [`Wallet`] from a [`ChangeSet`] or initializes it if one does not exist, using the
     /// provided descriptor, change descriptor, network, and custom genesis hash.
     ///
-    /// This method will fail if the loaded [`Wallet`] has different parameters to those provided.
+    /// This method will fail if the loaded [`ChangeSet`] has different parameters to those provided.
     /// This is like [`Wallet::new_or_load`] with an additional `genesis_hash` parameter. This is
     /// useful for syncing from alternative networks.
     </span><span class="kw">pub fn </span>new_or_load_with_genesis_hash&lt;E: IntoWalletDescriptor&gt;(
         descriptor: E,
         change_descriptor: E,
-        <span class="kw-2">mut </span>db: <span class="kw">impl </span>PersistBackend&lt;ChangeSet&gt; + Send + Sync + <span class="lifetime">'static</span>,
+        changeset: <span class="prelude-ty">Option</span>&lt;ChangeSet&gt;,
         network: Network,
         genesis_hash: BlockHash,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, NewOrLoadError&gt; {
-        <span class="kw">let </span>changeset = db
-            .load_from_persistence()
-            .map_err(NewOrLoadError::Persist)<span class="question-mark">?</span>;
-        <span class="kw">match </span>changeset {
-            <span class="prelude-val">Some</span>(changeset) =&gt; {
-                <span class="kw">let </span><span class="kw-2">mut </span>wallet = <span class="self">Self</span>::load_from_changeset(db, changeset).map_err(|e| <span class="kw">match </span>e {
-                    LoadError::Descriptor(e) =&gt; NewOrLoadError::Descriptor(e),
-                    LoadError::Persist(e) =&gt; NewOrLoadError::Persist(e),
-                    LoadError::NotInitialized =&gt; NewOrLoadError::NotInitialized,
-                    LoadError::MissingNetwork =&gt; NewOrLoadError::LoadedNetworkDoesNotMatch {
-                        expected: network,
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = changeset {
+            <span class="kw">let </span><span class="kw-2">mut </span>wallet = <span class="self">Self</span>::load_from_changeset(changeset).map_err(|e| <span class="kw">match </span>e {
+                LoadError::Descriptor(e) =&gt; NewOrLoadError::Descriptor(e),
+                LoadError::MissingNetwork =&gt; NewOrLoadError::LoadedNetworkDoesNotMatch {
+                    expected: network,
+                    got: <span class="prelude-val">None</span>,
+                },
+                LoadError::MissingGenesis =&gt; NewOrLoadError::LoadedGenesisDoesNotMatch {
+                    expected: genesis_hash,
+                    got: <span class="prelude-val">None</span>,
+                },
+                LoadError::MissingDescriptor(keychain) =&gt; {
+                    NewOrLoadError::LoadedDescriptorDoesNotMatch {
                         got: <span class="prelude-val">None</span>,
-                    },
-                    LoadError::MissingGenesis =&gt; NewOrLoadError::LoadedGenesisDoesNotMatch {
-                        expected: genesis_hash,
-                        got: <span class="prelude-val">None</span>,
-                    },
-                    LoadError::MissingDescriptor(keychain) =&gt; {
-                        NewOrLoadError::LoadedDescriptorDoesNotMatch {
-                            got: <span class="prelude-val">None</span>,
-                            keychain,
-                        }
+                        keychain,
                     }
-                })<span class="question-mark">?</span>;
-                <span class="kw">if </span>wallet.network != network {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(NewOrLoadError::LoadedNetworkDoesNotMatch {
-                        expected: network,
-                        got: <span class="prelude-val">Some</span>(wallet.network),
-                    });
                 }
-                <span class="kw">if </span>wallet.chain.genesis_hash() != genesis_hash {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(NewOrLoadError::LoadedGenesisDoesNotMatch {
-                        expected: genesis_hash,
-                        got: <span class="prelude-val">Some</span>(wallet.chain.genesis_hash()),
-                    });
-                }
-
-                <span class="kw">let </span>(expected_descriptor, expected_descriptor_keymap) = descriptor
-                    .into_wallet_descriptor(<span class="kw-2">&amp;</span>wallet.secp, network)
-                    .map_err(NewOrLoadError::Descriptor)<span class="question-mark">?</span>;
-                <span class="kw">let </span>wallet_descriptor = wallet.public_descriptor(KeychainKind::External);
-                <span class="kw">if </span>wallet_descriptor != <span class="kw-2">&amp;</span>expected_descriptor {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(NewOrLoadError::LoadedDescriptorDoesNotMatch {
-                        got: <span class="prelude-val">Some</span>(wallet_descriptor.clone()),
-                        keychain: KeychainKind::External,
-                    });
-                }
-                <span class="comment">// if expected descriptor has private keys add them as new signers
-                </span><span class="kw">if </span>!expected_descriptor_keymap.is_empty() {
-                    <span class="kw">let </span>signer_container = SignersContainer::build(
-                        expected_descriptor_keymap,
-                        <span class="kw-2">&amp;</span>expected_descriptor,
-                        <span class="kw-2">&amp;</span>wallet.secp,
-                    );
-                    signer_container.signers().into_iter().for_each(|signer| {
-                        wallet.add_signer(
-                            KeychainKind::External,
-                            SignerOrdering::default(),
-                            signer.clone(),
-                        )
-                    });
-                }
-
-                <span class="kw">let </span>(expected_change_descriptor, expected_change_descriptor_keymap) =
-                    change_descriptor
-                        .into_wallet_descriptor(<span class="kw-2">&amp;</span>wallet.secp, network)
-                        .map_err(NewOrLoadError::Descriptor)<span class="question-mark">?</span>;
-                <span class="kw">let </span>wallet_change_descriptor = wallet.public_descriptor(KeychainKind::Internal);
-                <span class="kw">if </span>wallet_change_descriptor != <span class="kw-2">&amp;</span>expected_change_descriptor {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(NewOrLoadError::LoadedDescriptorDoesNotMatch {
-                        got: <span class="prelude-val">Some</span>(wallet_change_descriptor.clone()),
-                        keychain: KeychainKind::Internal,
-                    });
-                }
-                <span class="comment">// if expected change descriptor has private keys add them as new signers
-                </span><span class="kw">if </span>!expected_change_descriptor_keymap.is_empty() {
-                    <span class="kw">let </span>signer_container = SignersContainer::build(
-                        expected_change_descriptor_keymap,
-                        <span class="kw-2">&amp;</span>expected_change_descriptor,
-                        <span class="kw-2">&amp;</span>wallet.secp,
-                    );
-                    signer_container.signers().into_iter().for_each(|signer| {
-                        wallet.add_signer(
-                            KeychainKind::Internal,
-                            SignerOrdering::default(),
-                            signer.clone(),
-                        )
-                    });
-                }
-
-                <span class="prelude-val">Ok</span>(wallet)
+            })<span class="question-mark">?</span>;
+            <span class="kw">if </span>wallet.network != network {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(NewOrLoadError::LoadedNetworkDoesNotMatch {
+                    expected: network,
+                    got: <span class="prelude-val">Some</span>(wallet.network),
+                });
             }
-            <span class="prelude-val">None </span>=&gt; <span class="self">Self</span>::new_with_genesis_hash(
-                descriptor,
-                change_descriptor,
-                db,
-                network,
-                genesis_hash,
-            )
-            .map_err(|e| <span class="kw">match </span>e {
-                NewError::NonEmptyDatabase =&gt; {
-                    <span class="macro">unreachable!</span>(<span class="string">"database is already checked to have no data"</span>)
-                }
-                NewError::Descriptor(e) =&gt; NewOrLoadError::Descriptor(e),
-                NewError::Persist(e) =&gt; NewOrLoadError::Persist(e),
-            }),
+            <span class="kw">if </span>wallet.chain.genesis_hash() != genesis_hash {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(NewOrLoadError::LoadedGenesisDoesNotMatch {
+                    expected: genesis_hash,
+                    got: <span class="prelude-val">Some</span>(wallet.chain.genesis_hash()),
+                });
+            }
+
+            <span class="kw">let </span>(expected_descriptor, expected_descriptor_keymap) = descriptor
+                .into_wallet_descriptor(<span class="kw-2">&amp;</span>wallet.secp, network)
+                .map_err(NewOrLoadError::Descriptor)<span class="question-mark">?</span>;
+            <span class="kw">let </span>wallet_descriptor = wallet.public_descriptor(KeychainKind::External);
+            <span class="kw">if </span>wallet_descriptor != <span class="kw-2">&amp;</span>expected_descriptor {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(NewOrLoadError::LoadedDescriptorDoesNotMatch {
+                    got: <span class="prelude-val">Some</span>(wallet_descriptor.clone()),
+                    keychain: KeychainKind::External,
+                });
+            }
+            <span class="comment">// if expected descriptor has private keys add them as new signers
+            </span><span class="kw">if </span>!expected_descriptor_keymap.is_empty() {
+                <span class="kw">let </span>signer_container = SignersContainer::build(
+                    expected_descriptor_keymap,
+                    <span class="kw-2">&amp;</span>expected_descriptor,
+                    <span class="kw-2">&amp;</span>wallet.secp,
+                );
+                signer_container.signers().into_iter().for_each(|signer| {
+                    wallet.add_signer(
+                        KeychainKind::External,
+                        SignerOrdering::default(),
+                        signer.clone(),
+                    )
+                });
+            }
+
+            <span class="kw">let </span>(expected_change_descriptor, expected_change_descriptor_keymap) = change_descriptor
+                .into_wallet_descriptor(<span class="kw-2">&amp;</span>wallet.secp, network)
+                .map_err(NewOrLoadError::Descriptor)<span class="question-mark">?</span>;
+            <span class="kw">let </span>wallet_change_descriptor = wallet.public_descriptor(KeychainKind::Internal);
+            <span class="kw">if </span>wallet_change_descriptor != <span class="kw-2">&amp;</span>expected_change_descriptor {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(NewOrLoadError::LoadedDescriptorDoesNotMatch {
+                    got: <span class="prelude-val">Some</span>(wallet_change_descriptor.clone()),
+                    keychain: KeychainKind::Internal,
+                });
+            }
+            <span class="comment">// if expected change descriptor has private keys add them as new signers
+            </span><span class="kw">if </span>!expected_change_descriptor_keymap.is_empty() {
+                <span class="kw">let </span>signer_container = SignersContainer::build(
+                    expected_change_descriptor_keymap,
+                    <span class="kw-2">&amp;</span>expected_change_descriptor,
+                    <span class="kw-2">&amp;</span>wallet.secp,
+                );
+                signer_container.signers().into_iter().for_each(|signer| {
+                    wallet.add_signer(
+                        KeychainKind::Internal,
+                        SignerOrdering::default(),
+                        signer.clone(),
+                    )
+                });
+            }
+
+            <span class="prelude-val">Ok</span>(wallet)
+        } <span class="kw">else </span>{
+            <span class="self">Self</span>::new_with_genesis_hash(descriptor, change_descriptor, network, genesis_hash)
+                .map_err(|e| <span class="kw">match </span>e {
+                    NewError::Descriptor(e) =&gt; NewOrLoadError::Descriptor(e),
+                })
         }
     }
 
@@ -3343,30 +3236,46 @@
 
     <span class="doccomment">/// Attempt to reveal the next address of the given `keychain`.
     ///
-    /// This will increment the internal derivation index. If the keychain's descriptor doesn't
+    /// This will increment the keychain's derivation index. If the keychain's descriptor doesn't
     /// contain a wildcard or every address is already revealed up to the maximum derivation
     /// index defined in [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki),
-    /// then returns the last revealed address.
+    /// then the last revealed address will be returned.
     ///
-    /// # Errors
+    /// **WARNING**: To avoid address reuse you must persist the changes resulting from one or more
+    /// calls to this method before closing the wallet. For example:
     ///
-    /// If writing to persistent storage fails.
-    </span><span class="kw">pub fn </span>reveal_next_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: KeychainKind) -&gt; anyhow::Result&lt;AddressInfo&gt; {
-        <span class="kw">let </span>((index, spk), index_changeset) = <span class="self">self
-            </span>.indexed_graph
-            .index
+    /// ```rust,no_run
+    /// # use bdk_chain::persist::PersistBackend;
+    /// # use bdk_wallet::wallet::{Wallet, ChangeSet};
+    /// # use bdk_wallet::KeychainKind;
+    /// # use bdk_sqlite::{Store, rusqlite::Connection};
+    /// # let conn = Connection::open_in_memory().expect("must open connection");
+    /// # let mut db = Store::new(conn).expect("must create store");
+    /// # let changeset = ChangeSet::default();
+    /// # let mut wallet = Wallet::load_from_changeset(changeset).expect("load wallet");
+    /// let next_address = wallet.reveal_next_address(KeychainKind::External);
+    /// wallet.commit_to(&amp;mut db)?;
+    ///
+    /// // Now it's safe to show the user their next address!
+    /// println!("Next address: {}", next_address.address);
+    /// # Ok::&lt;(), anyhow::Error&gt;(())
+    /// ```
+    </span><span class="kw">pub fn </span>reveal_next_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: KeychainKind) -&gt; AddressInfo {
+        <span class="kw">let </span>index = <span class="kw-2">&amp;mut </span><span class="self">self</span>.indexed_graph.index;
+        <span class="kw">let </span>stage = <span class="kw-2">&amp;mut </span><span class="self">self</span>.stage;
+
+        <span class="kw">let </span>((index, spk), index_changeset) = index
             .reveal_next_spk(<span class="kw-2">&amp;</span>keychain)
             .expect(<span class="string">"keychain must exist"</span>);
 
-        <span class="self">self</span>.persist
-            .stage_and_commit(indexed_tx_graph::ChangeSet::from(index_changeset).into())<span class="question-mark">?</span>;
+        stage.append(indexed_tx_graph::ChangeSet::from(index_changeset).into());
 
-        <span class="prelude-val">Ok</span>(AddressInfo {
+        AddressInfo {
             index,
             address: Address::from_script(spk.as_script(), <span class="self">self</span>.network)
                 .expect(<span class="string">"must have address form"</span>),
             keychain,
-        })
+        }
     }
 
     <span class="doccomment">/// Reveal addresses up to and including the target `index` and return an iterator
@@ -3376,28 +3285,26 @@
     /// possible index. If all addresses up to the given `index` are already revealed, then
     /// no new addresses are returned.
     ///
-    /// # Errors
-    ///
-    /// If writing to persistent storage fails.
+    /// **WARNING**: To avoid address reuse you must persist the changes resulting from one or more
+    /// calls to this method before closing the wallet. See [`Wallet::reveal_next_address`].
     </span><span class="kw">pub fn </span>reveal_addresses_to(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         keychain: KeychainKind,
         index: u32,
-    ) -&gt; anyhow::Result&lt;<span class="kw">impl </span>Iterator&lt;Item = AddressInfo&gt; + <span class="lifetime">'_</span>&gt; {
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = AddressInfo&gt; + <span class="lifetime">'_ </span>{
         <span class="kw">let </span>(spks, index_changeset) = <span class="self">self
             </span>.indexed_graph
             .index
             .reveal_to_target(<span class="kw-2">&amp;</span>keychain, index)
             .expect(<span class="string">"keychain must exist"</span>);
 
-        <span class="self">self</span>.persist
-            .stage_and_commit(indexed_tx_graph::ChangeSet::from(index_changeset).into())<span class="question-mark">?</span>;
+        <span class="self">self</span>.stage.append(index_changeset.into());
 
-        <span class="prelude-val">Ok</span>(spks.into_iter().map(<span class="kw">move </span>|(index, spk)| AddressInfo {
+        spks.into_iter().map(<span class="kw">move </span>|(index, spk)| AddressInfo {
             index,
             address: Address::from_script(<span class="kw-2">&amp;</span>spk, <span class="self">self</span>.network).expect(<span class="string">"must have address form"</span>),
             keychain,
-        }))
+        })
     }
 
     <span class="doccomment">/// Get the next unused address for the given `keychain`, i.e. the address with the lowest
@@ -3406,25 +3313,24 @@
     /// This will attempt to derive and reveal a new address if no newly revealed addresses
     /// are available. See also [`reveal_next_address`](Self::reveal_next_address).
     ///
-    /// # Errors
-    ///
-    /// If writing to persistent storage fails.
-    </span><span class="kw">pub fn </span>next_unused_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: KeychainKind) -&gt; anyhow::Result&lt;AddressInfo&gt; {
-        <span class="kw">let </span>((index, spk), index_changeset) = <span class="self">self
-            </span>.indexed_graph
-            .index
+    /// **WARNING**: To avoid address reuse you must persist the changes resulting from one or more
+    /// calls to this method before closing the wallet. See [`Wallet::reveal_next_address`].
+    </span><span class="kw">pub fn </span>next_unused_address(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: KeychainKind) -&gt; AddressInfo {
+        <span class="kw">let </span>index = <span class="kw-2">&amp;mut </span><span class="self">self</span>.indexed_graph.index;
+
+        <span class="kw">let </span>((index, spk), index_changeset) = index
             .next_unused_spk(<span class="kw-2">&amp;</span>keychain)
             .expect(<span class="string">"keychain must exist"</span>);
 
-        <span class="self">self</span>.persist
-            .stage_and_commit(indexed_tx_graph::ChangeSet::from(index_changeset).into())<span class="question-mark">?</span>;
+        <span class="self">self</span>.stage
+            .append(indexed_tx_graph::ChangeSet::from(index_changeset).into());
 
-        <span class="prelude-val">Ok</span>(AddressInfo {
+        AddressInfo {
             index,
             address: Address::from_script(spk.as_script(), <span class="self">self</span>.network)
                 .expect(<span class="string">"must have address form"</span>),
             keychain,
-        })
+        }
     }
 
     <span class="doccomment">/// Marks an address used of the given `keychain` at `index`.
@@ -3563,19 +3469,20 @@
     /// or [`calculate_fee_rate`] on a given transaction. Outputs inserted with this method will
     /// not be returned in [`list_unspent`] or [`list_output`].
     ///
-    /// Any inserted `TxOut`s are not persisted until [`commit`] is called.
-    ///
-    /// **WARNING:** This should only be used to add `TxOut`s that the wallet does not own. Only
+    /// **WARNINGS:** This should only be used to add `TxOut`s that the wallet does not own. Only
     /// insert `TxOut`s that you trust the values for!
+    ///
+    /// You must persist the changes resulting from one or more calls to this method if you need
+    /// the inserted `TxOut` data to be reloaded after closing the wallet.
+    /// See [`Wallet::reveal_next_address`].
     ///
     /// [`calculate_fee`]: Self::calculate_fee
     /// [`calculate_fee_rate`]: Self::calculate_fee_rate
     /// [`list_unspent`]: Self::list_unspent
     /// [`list_output`]: Self::list_output
-    /// [`commit`]: Self::commit
     </span><span class="kw">pub fn </span>insert_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: TxOut) {
         <span class="kw">let </span>additions = <span class="self">self</span>.indexed_graph.insert_txout(outpoint, txout);
-        <span class="self">self</span>.persist.stage(ChangeSet::from(additions));
+        <span class="self">self</span>.stage.append(additions.into());
     }
 
     <span class="doccomment">/// Calculates the fee of a given transaction. Returns [`Amount::ZERO`] if `tx` is a coinbase transaction.
@@ -3729,10 +3636,13 @@
     }
 
     <span class="doccomment">/// Add a new checkpoint to the wallet's internal view of the chain.
-    /// This stages but does not [`commit`] the change.
     ///
     /// Returns whether anything changed with the insertion (e.g. `false` if checkpoint was already
     /// there).
+    ///
+    /// **WARNING**: You must persist the changes resulting from one or more calls to this method
+    /// if you need the inserted checkpoint data to be reloaded after closing the wallet.
+    /// See [`Wallet::reveal_next_address`].
     ///
     /// [`commit`]: Self::commit
     </span><span class="kw">pub fn </span>insert_checkpoint(
@@ -3741,12 +3651,12 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, local_chain::AlterCheckPointError&gt; {
         <span class="kw">let </span>changeset = <span class="self">self</span>.chain.insert_block(block_id)<span class="question-mark">?</span>;
         <span class="kw">let </span>changed = !changeset.is_empty();
-        <span class="self">self</span>.persist.stage(changeset.into());
+        <span class="self">self</span>.stage.append(changeset.into());
         <span class="prelude-val">Ok</span>(changed)
     }
 
-    <span class="doccomment">/// Add a transaction to the wallet's internal view of the chain. This stages but does not
-    /// [`commit`] the change.
+    <span class="doccomment">/// Add a transaction to the wallet's internal view of the chain. This stages the change,
+    /// you must persist it later.
     ///
     /// Returns whether anything changed with the transaction insertion (e.g. `false` if the
     /// transaction was already inserted at the same position).
@@ -3755,9 +3665,12 @@
     /// Therefore you should use [`insert_checkpoint`] to insert new checkpoints before manually
     /// inserting new transactions.
     ///
-    /// **WARNING:** If `position` is confirmed, we anchor the `tx` to a the lowest checkpoint that
+    /// **WARNING**: If `position` is confirmed, we anchor the `tx` to the lowest checkpoint that
     /// is &gt;= the `position`'s height. The caller is responsible for ensuring the `tx` exists in our
     /// local view of the best chain's history.
+    ///
+    /// You must persist the changes resulting from one or more calls to this method if you need
+    /// the inserted tx to be reloaded after closing the wallet.
     ///
     /// [`commit`]: Self::commit
     /// [`latest_checkpoint`]: Self::latest_checkpoint
@@ -3800,7 +3713,7 @@
         }
 
         <span class="kw">let </span>changed = !changeset.is_empty();
-        <span class="self">self</span>.persist.stage(changeset);
+        <span class="self">self</span>.stage.append(changeset);
         <span class="prelude-val">Ok</span>(changed)
     }
 
@@ -3851,7 +3764,7 @@
     /// # use bdk_wallet::bitcoin::Network;
     /// let descriptor = "wpkh(tprv8ZgxMBicQKsPe73PBRSmNbTfbcsZnwWhz5eVmhHpi31HW29Z7mc9B4cWGRQzopNUzZUT391DeDJxL2PefNunWyLgqCKRMDkU1s2s8bAfoSk/84'/1'/0'/0/*)";
     /// let change_descriptor = "wpkh(tprv8ZgxMBicQKsPe73PBRSmNbTfbcsZnwWhz5eVmhHpi31HW29Z7mc9B4cWGRQzopNUzZUT391DeDJxL2PefNunWyLgqCKRMDkU1s2s8bAfoSk/84'/1'/0'/1/*)";
-    /// let wallet = Wallet::new_no_persist(descriptor, change_descriptor, Network::Testnet)?;
+    /// let wallet = Wallet::new(descriptor, change_descriptor, Network::Testnet)?;
     /// for secret_key in wallet.get_signers(KeychainKind::External).signers().iter().filter_map(|s| s.descriptor_secret_key()) {
     ///     // secret_key: tprv8ZgxMBicQKsPe73PBRSmNbTfbcsZnwWhz5eVmhHpi31HW29Z7mc9B4cWGRQzopNUzZUT391DeDJxL2PefNunWyLgqCKRMDkU1s2s8bAfoSk/84'/0'/0'/0/*
     ///     println!("secret_key: {}", secret_key);
@@ -3878,7 +3791,6 @@
     /// # use bdk_wallet::*;
     /// # use bdk_wallet::wallet::ChangeSet;
     /// # use bdk_wallet::wallet::error::CreateTxError;
-    /// # use bdk_persist::PersistBackend;
     /// # use anyhow::Error;
     /// # let descriptor = "wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)";
     /// # let mut wallet = doctest_wallet!();
@@ -4125,11 +4037,7 @@
                     .next_unused_spk(<span class="kw-2">&amp;</span>change_keychain)
                     .expect(<span class="string">"keychain must exist"</span>);
                 <span class="self">self</span>.indexed_graph.index.mark_used(change_keychain, index);
-                <span class="self">self</span>.persist
-                    .stage(ChangeSet::from(indexed_tx_graph::ChangeSet::from(
-                        index_changeset,
-                    )));
-                <span class="self">self</span>.persist.commit().map_err(CreateTxError::Persist)<span class="question-mark">?</span>;
+                <span class="self">self</span>.stage.append(index_changeset.into());
                 spk
             }
         };
@@ -4228,7 +4136,6 @@
     /// # use bdk_wallet::*;
     /// # use bdk_wallet::wallet::ChangeSet;
     /// # use bdk_wallet::wallet::error::CreateTxError;
-    /// # use bdk_persist::PersistBackend;
     /// # use anyhow::Error;
     /// # let descriptor = "wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)";
     /// # let mut wallet = doctest_wallet!();
@@ -4407,7 +4314,6 @@
     /// # use bdk_wallet::*;
     /// # use bdk_wallet::wallet::ChangeSet;
     /// # use bdk_wallet::wallet::error::CreateTxError;
-    /// # use bdk_persist::PersistBackend;
     /// # let descriptor = "wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)";
     /// # let mut wallet = doctest_wallet!();
     /// # let to_address = Address::from_str("2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt").unwrap().assume_checked();
@@ -4930,10 +4836,13 @@
             </span>.to_string()
     }
 
-    <span class="doccomment">/// Applies an update to the wallet and stages the changes (but does not [`commit`] them).
+    <span class="doccomment">/// Applies an update to the wallet and stages the changes (but does not persist them).
     ///
     /// Usually you create an `update` by interacting with some blockchain data source and inserting
     /// transactions related to your wallet into it.
+    ///
+    /// After applying updates you should persist the staged wallet changes. For an example of how
+    /// to persist staged wallet changes see [`Wallet::reveal_next_address`]. `
     ///
     /// [`commit`]: Self::commit
     </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: <span class="kw">impl </span>Into&lt;Update&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), CannotConnectError&gt; {
@@ -4947,31 +4856,50 @@
             </span>.indexed_graph
             .index
             .reveal_to_target_multi(<span class="kw-2">&amp;</span>update.last_active_indices);
-        changeset.append(ChangeSet::from(indexed_tx_graph::ChangeSet::from(
-            index_changeset,
-        )));
-        changeset.append(ChangeSet::from(
-            <span class="self">self</span>.indexed_graph.apply_update(update.graph),
-        ));
-        <span class="self">self</span>.persist.stage(changeset);
+        changeset.append(index_changeset.into());
+        changeset.append(<span class="self">self</span>.indexed_graph.apply_update(update.graph).into());
+        <span class="self">self</span>.stage.append(changeset);
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Commits all currently [`staged`] changed to the persistence backend returning and error when
-    /// this fails.
+    <span class="doccomment">/// Commits all currently [`staged`](Wallet::staged) changes to the `persist_backend`.
     ///
-    /// This returns whether the `update` resulted in any changes.
+    /// This returns whether anything was persisted.
     ///
-    /// [`staged`]: Self::staged
-    </span><span class="kw">pub fn </span>commit(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;bool&gt; {
-        <span class="self">self</span>.persist.commit().map(|c| c.is_some())
+    /// # Error
+    ///
+    /// Returns a backend-defined error if this fails.
+    </span><span class="kw">pub fn </span>commit_to&lt;B&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, persist_backend: <span class="kw-2">&amp;mut </span>B) -&gt; <span class="prelude-ty">Result</span>&lt;bool, B::WriteError&gt;
+    <span class="kw">where
+        </span>B: PersistBackend&lt;ChangeSet&gt;,
+    {
+        <span class="kw">let </span>committed = StageExt::commit_to(<span class="kw-2">&amp;mut </span><span class="self">self</span>.stage, persist_backend)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(committed.is_some())
     }
 
-    <span class="doccomment">/// Returns the changes that will be committed with the next call to [`commit`].
+    <span class="doccomment">/// Commits all currently [`staged`](Wallet::staged) changes to the async `persist_backend`.
     ///
-    /// [`commit`]: Self::commit
+    /// This returns whether anything was persisted.
+    ///
+    /// # Error
+    ///
+    /// Returns a backend-defined error if this fails.
+    </span><span class="attr">#[cfg(feature = <span class="string">"async"</span>)]
+    </span><span class="kw">pub async fn </span>commit_to_async&lt;B&gt;(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        persist_backend: <span class="kw-2">&amp;mut </span>B,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, B::WriteError&gt;
+    <span class="kw">where
+        </span>B: bdk_chain::persist::PersistBackendAsync&lt;ChangeSet&gt; + Send + Sync,
+    {
+        <span class="kw">let </span>committed =
+            bdk_chain::persist::StageExtAsync::commit_to(<span class="kw-2">&amp;mut </span><span class="self">self</span>.stage, persist_backend).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(committed.is_some())
+    }
+
+    <span class="doccomment">/// Get the staged [`ChangeSet`] that is yet to be committed.
     </span><span class="kw">pub fn </span>staged(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ChangeSet {
-        <span class="self">self</span>.persist.staged()
+        <span class="kw-2">&amp;</span><span class="self">self</span>.stage
     }
 
     <span class="doccomment">/// Get a reference to the inner [`TxGraph`].
@@ -5022,6 +4950,10 @@
     /// The `connected_to` parameter informs the wallet how this block connects to the internal
     /// [`LocalChain`]. Relevant transactions are filtered from the `block` and inserted into the
     /// internal [`TxGraph`].
+    ///
+    /// **WARNING**: You must persist the changes resulting from one or more calls to this method
+    /// if you need the inserted block data to be reloaded after closing the wallet.
+    /// See [`Wallet::reveal_next_address`].
     </span><span class="kw">pub fn </span>apply_block_connected_to(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         block: <span class="kw-2">&amp;</span>Block,
@@ -5039,7 +4971,7 @@
                 .apply_block_relevant(block, height)
                 .into(),
         );
-        <span class="self">self</span>.persist.stage(changeset);
+        <span class="self">self</span>.stage.append(changeset);
         <span class="prelude-val">Ok</span>(())
     }
 
@@ -5051,6 +4983,10 @@
     /// when the transaction was last seen in the mempool. This is used for conflict resolution
     /// when there is conflicting unconfirmed transactions. The transaction with the later
     /// `last_seen` is prioritized.
+    ///
+    /// **WARNING**: You must persist the changes resulting from one or more calls to this method
+    /// if you need the applied unconfirmed transactions to be reloaded after closing the wallet.
+    /// See [`Wallet::reveal_next_address`].
     </span><span class="kw">pub fn </span>apply_unconfirmed_txs&lt;<span class="lifetime">'t</span>&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         unconfirmed_txs: <span class="kw">impl </span>IntoIterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">'t </span>Transaction, u64)&gt;,
@@ -5058,7 +4994,7 @@
         <span class="kw">let </span>indexed_graph_changeset = <span class="self">self
             </span>.indexed_graph
             .batch_insert_relevant_unconfirmed(unconfirmed_txs);
-        <span class="self">self</span>.persist.stage(ChangeSet::from(indexed_graph_changeset));
+        <span class="self">self</span>.stage.append(indexed_graph_changeset.into());
     }
 }
 
@@ -5195,7 +5131,7 @@
         <span class="kw">let </span>descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/0/*)"</span>;
         <span class="kw">let </span>change_descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/1/*)"</span>;
 
-        <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::new_no_persist(
+        <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::new(
             descriptor,
             change_descriptor,
             Network::Regtest,
