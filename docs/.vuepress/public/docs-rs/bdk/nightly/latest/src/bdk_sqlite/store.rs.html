@@ -774,9 +774,6 @@
 <a href="#774" id="774">774</a>
 <a href="#775" id="775">775</a>
 <a href="#776" id="776">776</a>
-<a href="#777" id="777">777</a>
-<a href="#778" id="778">778</a>
-<a href="#779" id="779">779</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_chain::bitcoin::consensus::{deserialize, serialize};
 <span class="kw">use </span>bdk_chain::bitcoin::hashes::Hash;
 <span class="kw">use </span>bdk_chain::bitcoin::{Amount, Network, OutPoint, ScriptBuf, Transaction, TxOut};
@@ -791,10 +788,10 @@
 <span class="kw">use </span>std::sync::{Arc, Mutex};
 
 <span class="kw">use </span><span class="kw">crate</span>::Error;
+<span class="kw">use </span>bdk_chain::persist::{CombinedChangeSet, PersistBackend};
 <span class="kw">use </span>bdk_chain::{
     indexed_tx_graph, keychain, local_chain, tx_graph, Anchor, Append, DescriptorExt, DescriptorId,
 };
-<span class="kw">use </span>bdk_persist::CombinedChangeSet;
 
 <span class="doccomment">/// Persists data in to a relational schema based [SQLite] database file.
 ///
@@ -836,21 +833,23 @@
     }
 }
 
-<span class="kw">impl</span>&lt;K, A, C&gt; bdk_persist::PersistBackend&lt;C&gt; <span class="kw">for </span>Store&lt;K, A&gt;
+<span class="kw">impl</span>&lt;K, A&gt; PersistBackend&lt;CombinedChangeSet&lt;K, A&gt;&gt; <span class="kw">for </span>Store&lt;K, A&gt;
 <span class="kw">where
     </span>K: Ord + <span class="kw">for</span>&lt;<span class="lifetime">'de</span>&gt; Deserialize&lt;<span class="lifetime">'de</span>&gt; + Serialize + Send,
     A: Anchor + <span class="kw">for</span>&lt;<span class="lifetime">'de</span>&gt; Deserialize&lt;<span class="lifetime">'de</span>&gt; + Serialize + Send,
-    C: Clone + From&lt;CombinedChangeSet&lt;K, A&gt;&gt; + Into&lt;CombinedChangeSet&lt;K, A&gt;&gt;,
 {
-    <span class="kw">fn </span>write_changes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>C) -&gt; anyhow::Result&lt;()&gt; {
-        <span class="self">self</span>.write(<span class="kw-2">&amp;</span>changeset.clone().into())
-            .map_err(|e| <span class="macro">anyhow::anyhow!</span>(e).context(<span class="string">"unable to write changes to sqlite database"</span>))
+    <span class="kw">type </span>WriteError = Error;
+    <span class="kw">type </span>LoadError = Error;
+
+    <span class="kw">fn </span>write_changes(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        changeset: <span class="kw-2">&amp;</span>CombinedChangeSet&lt;K, A&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::WriteError&gt; {
+        <span class="self">self</span>.write(changeset)
     }
 
-    <span class="kw">fn </span>load_from_persistence(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;<span class="prelude-ty">Option</span>&lt;C&gt;&gt; {
+    <span class="kw">fn </span>load_changes(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;CombinedChangeSet&lt;K, A&gt;&gt;, <span class="self">Self</span>::LoadError&gt; {
         <span class="self">self</span>.read()
-            .map(|c| c.map(Into::into))
-            .map_err(|e| <span class="macro">anyhow::anyhow!</span>(e).context(<span class="string">"unable to read changes from sqlite database"</span>))
     }
 }
 
@@ -1340,11 +1339,11 @@
     <span class="kw">use </span>bdk_chain::bitcoin::Network::Testnet;
     <span class="kw">use </span>bdk_chain::bitcoin::{secp256k1, BlockHash, OutPoint};
     <span class="kw">use </span>bdk_chain::miniscript::Descriptor;
+    <span class="kw">use </span>bdk_chain::persist::{CombinedChangeSet, PersistBackend};
     <span class="kw">use </span>bdk_chain::{
         indexed_tx_graph, keychain, tx_graph, BlockId, ConfirmationHeightAnchor,
         ConfirmationTimeHeightAnchor, DescriptorExt,
     };
-    <span class="kw">use </span>bdk_persist::PersistBackend;
     <span class="kw">use </span>std::str::FromStr;
     <span class="kw">use </span>std::sync::Arc;
 
@@ -1355,8 +1354,7 @@
     }
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>insert_and_load_aggregate_changesets_with_confirmation_time_height_anchor(
-    ) -&gt; anyhow::Result&lt;()&gt; {
+    </span><span class="kw">fn </span>insert_and_load_aggregate_changesets_with_confirmation_time_height_anchor() {
         <span class="kw">let </span>(test_changesets, agg_test_changesets) =
             create_test_changesets(<span class="kw-2">&amp;</span>|height, time, hash| ConfirmationTimeHeightAnchor {
                 confirmation_height: height,
@@ -1372,15 +1370,13 @@
             store.write_changes(changeset).expect(<span class="string">"write changeset"</span>);
         });
 
-        <span class="kw">let </span>agg_changeset = store.load_from_persistence().expect(<span class="string">"aggregated changeset"</span>);
+        <span class="kw">let </span>agg_changeset = store.load_changes().expect(<span class="string">"aggregated changeset"</span>);
 
         <span class="macro">assert_eq!</span>(agg_changeset, <span class="prelude-val">Some</span>(agg_test_changesets));
-        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>insert_and_load_aggregate_changesets_with_confirmation_height_anchor() -&gt; anyhow::Result&lt;()&gt;
-    {
+    </span><span class="kw">fn </span>insert_and_load_aggregate_changesets_with_confirmation_height_anchor() {
         <span class="kw">let </span>(test_changesets, agg_test_changesets) =
             create_test_changesets(<span class="kw-2">&amp;</span>|height, _time, hash| ConfirmationHeightAnchor {
                 confirmation_height: height,
@@ -1395,14 +1391,13 @@
             store.write_changes(changeset).expect(<span class="string">"write changeset"</span>);
         });
 
-        <span class="kw">let </span>agg_changeset = store.load_from_persistence().expect(<span class="string">"aggregated changeset"</span>);
+        <span class="kw">let </span>agg_changeset = store.load_changes().expect(<span class="string">"aggregated changeset"</span>);
 
         <span class="macro">assert_eq!</span>(agg_changeset, <span class="prelude-val">Some</span>(agg_test_changesets));
-        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>insert_and_load_aggregate_changesets_with_blockid_anchor() -&gt; anyhow::Result&lt;()&gt; {
+    </span><span class="kw">fn </span>insert_and_load_aggregate_changesets_with_blockid_anchor() {
         <span class="kw">let </span>(test_changesets, agg_test_changesets) =
             create_test_changesets(<span class="kw-2">&amp;</span>|height, _time, hash| BlockId { height, hash });
 
@@ -1413,10 +1408,9 @@
             store.write_changes(changeset).expect(<span class="string">"write changeset"</span>);
         });
 
-        <span class="kw">let </span>agg_changeset = store.load_from_persistence().expect(<span class="string">"aggregated changeset"</span>);
+        <span class="kw">let </span>agg_changeset = store.load_changes().expect(<span class="string">"aggregated changeset"</span>);
 
         <span class="macro">assert_eq!</span>(agg_changeset, <span class="prelude-val">Some</span>(agg_test_changesets));
-        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">fn </span>create_test_changesets&lt;A: Anchor + Copy&gt;(

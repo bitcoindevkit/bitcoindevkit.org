@@ -381,6 +381,9 @@
 <a href="#381" id="381">381</a>
 <a href="#382" id="382">382</a>
 <a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{
     path::PathBuf,
     sync::{
@@ -394,11 +397,12 @@
     bitcoincore_rpc::{Auth, Client, RpcApi},
     Emitter,
 };
+<span class="kw">use </span>bdk_chain::persist::{PersistBackend, StageExt};
 <span class="kw">use </span>bdk_chain::{
     bitcoin::{constants::genesis_block, Block, Transaction},
     indexed_tx_graph, keychain,
     local_chain::{<span class="self">self</span>, LocalChain},
-    ConfirmationTimeHeightAnchor, IndexedTxGraph,
+    Append, ConfirmationTimeHeightAnchor, IndexedTxGraph,
 };
 <span class="kw">use </span>example_cli::{
     anyhow,
@@ -520,8 +524,7 @@
         <span class="kw">let </span>genesis_hash = genesis_block(args.network).block_hash();
         <span class="kw">let </span>(chain, chain_changeset) = LocalChain::from_genesis_hash(genesis_hash);
         <span class="kw">let </span><span class="kw-2">mut </span>db = db.lock().unwrap();
-        db.stage((chain_changeset, Default::default()));
-        db.commit()<span class="question-mark">?</span>;
+        db.write_changes(<span class="kw-2">&amp;</span>(chain_changeset, Default::default()))<span class="question-mark">?</span>;
         chain
     } <span class="kw">else </span>{
         LocalChain::from_changeset(init_chain_changeset)<span class="question-mark">?
@@ -559,6 +562,7 @@
             <span class="kw">let </span>chain_tip = chain.lock().unwrap().tip();
             <span class="kw">let </span>rpc_client = rpc_args.new_client()<span class="question-mark">?</span>;
             <span class="kw">let </span><span class="kw-2">mut </span>emitter = Emitter::new(<span class="kw-2">&amp;</span>rpc_client, chain_tip, fallback_height);
+            <span class="kw">let </span><span class="kw-2">mut </span>db_stage = ChangeSet::default();
 
             <span class="kw">let </span><span class="kw-2">mut </span>last_db_commit = Instant::now();
             <span class="kw">let </span><span class="kw-2">mut </span>last_print = Instant::now();
@@ -568,18 +572,18 @@
 
                 <span class="kw">let </span><span class="kw-2">mut </span>chain = chain.lock().unwrap();
                 <span class="kw">let </span><span class="kw-2">mut </span>graph = graph.lock().unwrap();
-                <span class="kw">let </span><span class="kw-2">mut </span>db = db.lock().unwrap();
 
                 <span class="kw">let </span>chain_changeset = chain
                     .apply_update(emission.checkpoint)
                     .expect(<span class="string">"must always apply as we receive blocks in order from emitter"</span>);
                 <span class="kw">let </span>graph_changeset = graph.apply_block_relevant(<span class="kw-2">&amp;</span>emission.block, height);
-                db.stage((chain_changeset, graph_changeset));
+                db_stage.append((chain_changeset, graph_changeset));
 
                 <span class="comment">// commit staged db changes in intervals
                 </span><span class="kw">if </span>last_db_commit.elapsed() &gt;= DB_COMMIT_DELAY {
+                    <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
                     last_db_commit = Instant::now();
-                    db.commit()<span class="question-mark">?</span>;
+                    db_stage.commit_to(db)<span class="question-mark">?</span>;
                     <span class="macro">println!</span>(
                         <span class="string">"[{:&gt;10}s] committed to db (took {}s)"</span>,
                         start.elapsed().as_secs_f32(),
@@ -614,10 +618,12 @@
                 mempool_txs.iter().map(|(tx, time)| (tx, <span class="kw-2">*</span>time)),
             );
             {
-                <span class="kw">let </span><span class="kw-2">mut </span>db = db.lock().unwrap();
-                db.stage((local_chain::ChangeSet::default(), graph_changeset));
-                db.commit()<span class="question-mark">?</span>; <span class="comment">// commit one last time
-            </span>}
+                <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
+                db_stage.append_and_commit_to(
+                    (local_chain::ChangeSet::default(), graph_changeset),
+                    db,
+                )<span class="question-mark">?</span>;
+            }
         }
         RpcCommands::Live { rpc_args } =&gt; {
             <span class="kw">let </span>RpcArgs {
@@ -672,9 +678,9 @@
             <span class="kw">let </span><span class="kw-2">mut </span>tip_height = <span class="number">0_u32</span>;
             <span class="kw">let </span><span class="kw-2">mut </span>last_db_commit = Instant::now();
             <span class="kw">let </span><span class="kw-2">mut </span>last_print = <span class="prelude-ty">Option</span>::&lt;Instant&gt;::None;
+            <span class="kw">let </span><span class="kw-2">mut </span>db_stage = ChangeSet::default();
 
             <span class="kw">for </span>emission <span class="kw">in </span>rx {
-                <span class="kw">let </span><span class="kw-2">mut </span>db = db.lock().unwrap();
                 <span class="kw">let </span><span class="kw-2">mut </span>graph = graph.lock().unwrap();
                 <span class="kw">let </span><span class="kw-2">mut </span>chain = chain.lock().unwrap();
 
@@ -699,12 +705,12 @@
                         <span class="kw">continue</span>;
                     }
                 };
-
-                db.stage(changeset);
+                db_stage.append(changeset);
 
                 <span class="kw">if </span>last_db_commit.elapsed() &gt;= DB_COMMIT_DELAY {
+                    <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
                     last_db_commit = Instant::now();
-                    db.commit()<span class="question-mark">?</span>;
+                    db_stage.commit_to(db)<span class="question-mark">?</span>;
                     <span class="macro">println!</span>(
                         <span class="string">"[{:&gt;10}s] committed to db (took {}s)"</span>,
                         start.elapsed().as_secs_f32(),

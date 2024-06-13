@@ -1,12 +1,11 @@
 var srcIndex = new Map(JSON.parse('[\
 ["bdk_bitcoind_rpc",["",[],["lib.rs"]]],\
-["bdk_chain",["",[["keychain",[],["txout_index.rs"]]],["chain_data.rs","chain_oracle.rs","descriptor_ext.rs","example_utils.rs","indexed_tx_graph.rs","keychain.rs","lib.rs","local_chain.rs","spk_client.rs","spk_iter.rs","spk_txout_index.rs","tx_data_traits.rs","tx_graph.rs"]]],\
+["bdk_chain",["",[["keychain",[],["txout_index.rs"]]],["chain_data.rs","chain_oracle.rs","descriptor_ext.rs","example_utils.rs","indexed_tx_graph.rs","keychain.rs","lib.rs","local_chain.rs","persist.rs","spk_client.rs","spk_iter.rs","spk_txout_index.rs","tx_data_traits.rs","tx_graph.rs"]]],\
 ["bdk_coin_select",["",[],["bnb.rs","coin_selector.rs","lib.rs"]]],\
 ["bdk_electrum",["",[],["bdk_electrum_client.rs","lib.rs"]]],\
 ["bdk_esplora",["",[],["async_ext.rs","blocking_ext.rs","lib.rs"]]],\
 ["bdk_file_store",["",[],["entry_iter.rs","lib.rs","store.rs"]]],\
 ["bdk_hwi",["",[],["lib.rs","signer.rs"]]],\
-["bdk_persist",["",[],["changeset.rs","lib.rs","persist.rs"]]],\
 ["bdk_sqlite",["",[],["lib.rs","schema.rs","store.rs"]]],\
 ["bdk_testenv",["",[],["lib.rs"]]],\
 ["bdk_tmp_plan",["",[],["lib.rs","plan_impls.rs","requirements.rs","template.rs"]]],\

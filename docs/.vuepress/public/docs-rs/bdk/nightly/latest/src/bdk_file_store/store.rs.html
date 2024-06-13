@@ -462,10 +462,10 @@
 <a href="#462" id="462">462</a>
 <a href="#463" id="463">463</a>
 <a href="#464" id="464">464</a>
+<a href="#465" id="465">465</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{bincode_options, EntryIter, FileError, IterError};
-<span class="kw">use </span>anyhow::anyhow;
+<span class="kw">use </span>bdk_chain::persist::PersistBackend;
 <span class="kw">use </span>bdk_chain::Append;
-<span class="kw">use </span>bdk_persist::PersistBackend;
 <span class="kw">use </span>bincode::Options;
 <span class="kw">use </span>std::{
     fmt::{<span class="self">self</span>, Debug},
@@ -489,19 +489,21 @@
 <span class="kw">impl</span>&lt;C&gt; PersistBackend&lt;C&gt; <span class="kw">for </span>Store&lt;C&gt;
 <span class="kw">where
     </span>C: Append
+        + Debug
         + serde::Serialize
         + serde::de::DeserializeOwned
         + core::marker::Send
         + core::marker::Sync,
 {
-    <span class="kw">fn </span>write_changes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>C) -&gt; anyhow::Result&lt;()&gt; {
+    <span class="kw">type </span>WriteError = io::Error;
+    <span class="kw">type </span>LoadError = AggregateChangesetsError&lt;C&gt;;
+
+    <span class="kw">fn </span>write_changes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>C) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::WriteError&gt; {
         <span class="self">self</span>.append_changeset(changeset)
-            .map_err(|e| <span class="macro">anyhow!</span>(e).context(<span class="string">"failed to write changes to persistence backend"</span>))
     }
 
-    <span class="kw">fn </span>load_from_persistence(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;<span class="prelude-ty">Option</span>&lt;C&gt;&gt; {
+    <span class="kw">fn </span>load_changes(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;C&gt;, <span class="self">Self</span>::LoadError&gt; {
         <span class="self">self</span>.aggregate_changesets()
-            .map_err(|e| <span class="macro">anyhow!</span>(e.iter_error).context(<span class="string">"error loading from persistence backend"</span>))
     }
 }
 

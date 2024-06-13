@@ -84,6 +84,9 @@
 <a href="#84" id="84">84</a>
 <a href="#85" id="85">85</a>
 <a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
 </pre></div><pre class="rust"><code><span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">"bdk_wallet_esplora_example"</span>;
 <span class="kw">const </span>SEND_AMOUNT: Amount = Amount::from_sat(<span class="number">1000</span>);
 <span class="kw">const </span>STOP_GAP: usize = <span class="number">5</span>;
@@ -93,6 +96,7 @@
 
 <span class="kw">use </span>bdk_esplora::{esplora_client, EsploraExt};
 <span class="kw">use </span>bdk_file_store::Store;
+<span class="kw">use </span>bdk_wallet::chain::persist::PersistBackend;
 <span class="kw">use </span>bdk_wallet::{
     bitcoin::{Address, Amount, Network},
     KeychainKind, SignOptions, Wallet,
@@ -100,19 +104,21 @@
 
 <span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), anyhow::Error&gt; {
     <span class="kw">let </span>db_path = std::env::temp_dir().join(<span class="string">"bdk-esplora-example"</span>);
-    <span class="kw">let </span>db =
+    <span class="kw">let </span><span class="kw-2">mut </span>db =
         Store::&lt;bdk_wallet::wallet::ChangeSet&gt;::open_or_create_new(DB_MAGIC.as_bytes(), db_path)<span class="question-mark">?</span>;
     <span class="kw">let </span>external_descriptor = <span class="string">"wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/0/*)"</span>;
     <span class="kw">let </span>internal_descriptor = <span class="string">"wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/1/*)"</span>;
+    <span class="kw">let </span>changeset = db.load_changes()<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::new_or_load(
         external_descriptor,
         internal_descriptor,
-        db,
+        changeset,
         Network::Testnet,
     )<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>address = wallet.next_unused_address(KeychainKind::External)<span class="question-mark">?</span>;
+    <span class="kw">let </span>address = wallet.next_unused_address(KeychainKind::External);
+    wallet.commit_to(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
     <span class="macro">println!</span>(<span class="string">"Generated Address: {}"</span>, address);
 
     <span class="kw">let </span>balance = wallet.balance();
@@ -138,7 +144,7 @@
     <span class="kw">let _ </span>= update.graph_update.update_last_seen_unconfirmed(now);
 
     wallet.apply_update(update)<span class="question-mark">?</span>;
-    wallet.commit()<span class="question-mark">?</span>;
+    wallet.commit_to(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
     <span class="macro">println!</span>();
 
     <span class="kw">let </span>balance = wallet.balance();

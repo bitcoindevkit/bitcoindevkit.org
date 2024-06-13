@@ -258,15 +258,6 @@
 <a href="#258" id="258">258</a>
 <a href="#259" id="259">259</a>
 <a href="#260" id="260">260</a>
-<a href="#261" id="261">261</a>
-<a href="#262" id="262">262</a>
-<a href="#263" id="263">263</a>
-<a href="#264" id="264">264</a>
-<a href="#265" id="265">265</a>
-<a href="#266" id="266">266</a>
-<a href="#267" id="267">267</a>
-<a href="#268" id="268">268</a>
-<a href="#269" id="269">269</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -319,8 +310,6 @@
 </span><span class="kw">pub enum </span>CreateTxError {
     <span class="doccomment">/// There was a problem with the descriptors passed in
     </span>Descriptor(DescriptorError),
-    <span class="doccomment">/// We were unable to load wallet data from or write wallet data to the persistence backend
-    </span>Persist(anyhow::Error),
     <span class="doccomment">/// There was a problem while extracting and manipulating policies
     </span>Policy(PolicyError),
     <span class="doccomment">/// Spending policy is not compatible with this [`KeychainKind`]
@@ -383,13 +372,6 @@
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Descriptor(e) =&gt; e.fmt(f),
-            <span class="self">Self</span>::Persist(e) =&gt; {
-                <span class="macro">write!</span>(
-                    f,
-                    <span class="string">"failed to load wallet data from or write wallet data to persistence backend: {}"</span>,
-                    e
-                )
-            }
             <span class="self">Self</span>::Policy(e) =&gt; e.fmt(f),
             CreateTxError::SpendingPolicyRequired(keychain_kind) =&gt; {
                 <span class="macro">write!</span>(f, <span class="string">"Spending policy required: {:?}"</span>, keychain_kind)

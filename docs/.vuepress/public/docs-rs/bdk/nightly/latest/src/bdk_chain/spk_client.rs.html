@@ -386,15 +386,16 @@
 <a href="#386" id="386">386</a>
 <a href="#387" id="387">387</a>
 <a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Helper types for spk-based blockchain clients.
 
 </span><span class="kw">use crate</span>::{
     collections::BTreeMap, keychain::Indexed, local_chain::CheckPoint,
     ConfirmationTimeHeightAnchor, TxGraph,
 };
-<span class="kw">use </span>alloc::{boxed::Box, vec::Vec};
+<span class="kw">use </span>alloc::boxed::Box;
 <span class="kw">use </span>bitcoin::{OutPoint, Script, ScriptBuf, Txid};
-<span class="kw">use </span>core::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
+<span class="kw">use </span>core::marker::PhantomData;
 
 <span class="doccomment">/// Data required to perform a spk-based blockchain client sync.
 ///
@@ -546,12 +547,13 @@
     /// This consumes the [`SyncRequest`] and returns the updated one.
     </span><span class="attr">#[cfg(feature = <span class="string">"miniscript"</span>)]
     #[must_use]
-    </span><span class="kw">pub fn </span>populate_with_revealed_spks&lt;K: Clone + Ord + Debug + Send + Sync&gt;(
+    </span><span class="kw">pub fn </span>populate_with_revealed_spks&lt;K: Clone + Ord + core::fmt::Debug + Send + Sync&gt;(
         <span class="self">self</span>,
         index: <span class="kw-2">&amp;</span><span class="kw">crate</span>::keychain::KeychainTxOutIndex&lt;K&gt;,
-        spk_range: <span class="kw">impl </span>RangeBounds&lt;K&gt;,
+        spk_range: <span class="kw">impl </span>core::ops::RangeBounds&lt;K&gt;,
     ) -&gt; <span class="self">Self </span>{
         <span class="kw">use </span>alloc::borrow::ToOwned;
+        <span class="kw">use </span>alloc::vec::Vec;
         <span class="self">self</span>.chain_spks(
             index
                 .revealed_spks(spk_range)
@@ -611,7 +613,7 @@
         index: <span class="kw-2">&amp;</span><span class="kw">crate</span>::keychain::KeychainTxOutIndex&lt;K&gt;,
     ) -&gt; <span class="self">Self
     </span><span class="kw">where
-        </span>K: Debug,
+        </span>K: core::fmt::Debug,
     {
         <span class="kw">let </span><span class="kw-2">mut </span>req = <span class="self">Self</span>::from_chain_tip(chain_tip);
         <span class="kw">for </span>(keychain, spks) <span class="kw">in </span>index.all_unbounded_spk_iters() {
