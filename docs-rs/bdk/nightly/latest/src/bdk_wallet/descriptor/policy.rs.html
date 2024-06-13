@@ -1945,6 +1945,7 @@
 <span class="kw">use </span>alloc::string::String;
 <span class="kw">use </span>alloc::vec::Vec;
 <span class="kw">use </span>core::cmp::max;
+<span class="kw">use </span>miniscript::miniscript::limits::{MAX_PUBKEYS_IN_CHECKSIGADD, MAX_PUBKEYS_PER_MULTISIG};
 
 <span class="kw">use </span>core::fmt;
 
@@ -1953,12 +1954,12 @@
 
 <span class="kw">use </span>bitcoin::bip32::Fingerprint;
 <span class="kw">use </span>bitcoin::hashes::{hash160, ripemd160, sha256};
-<span class="kw">use </span>bitcoin::{absolute, key::XOnlyPublicKey, PublicKey, Sequence};
+<span class="kw">use </span>bitcoin::{absolute, key::XOnlyPublicKey, relative, PublicKey, Sequence};
 
 <span class="kw">use </span>miniscript::descriptor::{
     DescriptorPublicKey, ShInner, SinglePub, SinglePubKey, SortedMultiVec, WshInner,
 };
-<span class="kw">use </span>miniscript::hash256;
+<span class="kw">use </span>miniscript::{hash256, Threshold};
 <span class="kw">use </span>miniscript::{
     Descriptor, Miniscript, Satisfier, ScriptContext, SigType, Terminal, ToPublicKey,
 };
@@ -2042,7 +2043,7 @@
     <span class="doccomment">/// Relative timelock locktime
     </span>RelativeTimelock {
         <span class="doccomment">/// The timelock value
-        </span>value: Sequence,
+        </span>value: relative::LockTime,
     },
     <span class="doccomment">/// Multi-signature public keys with threshold count
     </span>Multisig {
@@ -2491,30 +2492,25 @@
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(policy))
     }
 
-    <span class="kw">fn </span>make_multisig&lt;Ctx: ScriptContext + <span class="lifetime">'static</span>&gt;(
-        keys: <span class="kw-2">&amp;</span>[DescriptorPublicKey],
+    <span class="kw">fn </span>make_multi&lt;Ctx: ScriptContext + <span class="lifetime">'static</span>, <span class="kw">const </span>MAX: usize&gt;(
+        threshold: <span class="kw-2">&amp;</span>Threshold&lt;DescriptorPublicKey, MAX&gt;,
         signers: <span class="kw-2">&amp;</span>SignersContainer,
         build_sat: BuildSatisfaction,
-        threshold: usize,
         sorted: bool,
         secp: <span class="kw-2">&amp;</span>SecpCtx,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Policy&gt;, PolicyError&gt; {
-        <span class="kw">if </span>threshold == <span class="number">0 </span>{
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
-        }
-
-        <span class="kw">let </span>parsed_keys = keys.iter().map(|k| PkOrF::from_key(k, secp)).collect();
+        <span class="kw">let </span>parsed_keys = threshold.iter().map(|k| PkOrF::from_key(k, secp)).collect();
 
         <span class="kw">let </span><span class="kw-2">mut </span>contribution = Satisfaction::Partial {
-            n: keys.len(),
-            m: threshold,
+            n: threshold.n(),
+            m: threshold.k(),
             items: <span class="macro">vec!</span>[],
             conditions: Default::default(),
             sorted: <span class="prelude-val">Some</span>(sorted),
         };
         <span class="kw">let </span><span class="kw-2">mut </span>satisfaction = contribution.clone();
 
-        <span class="kw">for </span>(index, key) <span class="kw">in </span>keys.iter().enumerate() {
+        <span class="kw">for </span>(index, key) <span class="kw">in </span>threshold.iter().enumerate() {
             <span class="kw">if </span>signers.find(signer_id(key, secp)).is_some() {
                 contribution.add(
                     <span class="kw-2">&amp;</span>Satisfaction::Complete {
@@ -2523,7 +2519,6 @@
                     index,
                 )<span class="question-mark">?</span>;
             }
-
             <span class="kw">if let </span><span class="prelude-val">Some</span>(psbt) = build_sat.psbt() {
                 <span class="kw">if </span>Ctx::find_signature(psbt, key, secp) {
                     satisfaction.add(
@@ -2540,12 +2535,11 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>policy: Policy = SatisfiableItem::Multisig {
             keys: parsed_keys,
-            threshold,
+            threshold: threshold.k(),
         }
         .into();
         policy.contribution = contribution;
         policy.satisfaction = satisfaction;
-
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(policy))
     }
 
@@ -2630,7 +2624,7 @@
                 timelock: <span class="prelude-val">Some</span>(<span class="kw-2">*</span>value),
             }),
             SatisfiableItem::RelativeTimelock { value } =&gt; <span class="prelude-val">Ok</span>(Condition {
-                csv: <span class="prelude-val">Some</span>(<span class="kw-2">*</span>value),
+                csv: <span class="prelude-val">Some</span>((<span class="kw-2">*</span>value).into()),
                 timelock: <span class="prelude-val">None</span>,
             }),
             <span class="kw">_ </span>=&gt; <span class="prelude-val">Ok</span>(Condition::default()),
@@ -2857,11 +2851,14 @@
                 <span class="prelude-val">Some</span>(policy)
             }
             Terminal::Older(value) =&gt; {
-                <span class="kw">let </span><span class="kw-2">mut </span>policy: Policy = SatisfiableItem::RelativeTimelock { value: <span class="kw-2">*</span>value }.into();
+                <span class="kw">let </span><span class="kw-2">mut </span>policy: Policy = SatisfiableItem::RelativeTimelock {
+                    value: (<span class="kw-2">*</span>value).into(),
+                }
+                .into();
                 policy.contribution = Satisfaction::Complete {
                     condition: Condition {
                         timelock: <span class="prelude-val">None</span>,
-                        csv: <span class="prelude-val">Some</span>(<span class="kw-2">*</span>value),
+                        csv: <span class="prelude-val">Some</span>((<span class="kw-2">*</span>value).into()),
                     },
                 };
                 <span class="kw">if let </span>BuildSatisfaction::PsbtTimelocks {
@@ -2871,9 +2868,11 @@
                 } = build_sat
                 {
                     <span class="kw">let </span>older = Older::new(<span class="prelude-val">Some</span>(current_height), <span class="prelude-val">Some</span>(input_max_height), <span class="bool-val">false</span>);
-                    <span class="kw">let </span>older_sat = Satisfier::&lt;bitcoin::PublicKey&gt;::check_older(<span class="kw-2">&amp;</span>older, <span class="kw-2">*</span>value);
-                    <span class="kw">let </span>inputs_sat = psbt_inputs_sat(psbt)
-                        .all(|sat| Satisfier::&lt;bitcoin::PublicKey&gt;::check_older(<span class="kw-2">&amp;</span>sat, <span class="kw-2">*</span>value));
+                    <span class="kw">let </span>older_sat =
+                        Satisfier::&lt;bitcoin::PublicKey&gt;::check_older(<span class="kw-2">&amp;</span>older, (<span class="kw-2">*</span>value).into());
+                    <span class="kw">let </span>inputs_sat = psbt_inputs_sat(psbt).all(|sat| {
+                        Satisfier::&lt;bitcoin::PublicKey&gt;::check_older(<span class="kw-2">&amp;</span>sat, (<span class="kw-2">*</span>value).into())
+                    });
                     <span class="kw">if </span>older_sat &amp;&amp; inputs_sat {
                         policy.satisfaction = policy.contribution.clone();
                     }
@@ -2891,9 +2890,12 @@
             Terminal::Hash160(hash) =&gt; {
                 <span class="prelude-val">Some</span>(SatisfiableItem::Hash160Preimage { hash: <span class="kw-2">*</span>hash }.into())
             }
-            Terminal::Multi(k, pks) | Terminal::MultiA(k, pks) =&gt; {
-                Policy::make_multisig::&lt;Ctx&gt;(pks, signers, build_sat, <span class="kw-2">*</span>k, <span class="bool-val">false</span>, secp)<span class="question-mark">?
-            </span>}
+            Terminal::Multi(threshold) =&gt; Policy::make_multi::&lt;Ctx, MAX_PUBKEYS_PER_MULTISIG&gt;(
+                threshold, signers, build_sat, <span class="bool-val">false</span>, secp,
+            )<span class="question-mark">?</span>,
+            Terminal::MultiA(threshold) =&gt; Policy::make_multi::&lt;Ctx, MAX_PUBKEYS_IN_CHECKSIGADD&gt;(
+                threshold, signers, build_sat, <span class="bool-val">false</span>, secp,
+            )<span class="question-mark">?</span>,
             <span class="comment">// Identities
             </span>Terminal::Alt(inner)
             | Terminal::Swap(inner)
@@ -2921,8 +2923,9 @@
                 a.extract_policy(signers, build_sat, secp)<span class="question-mark">?</span>,
                 b.extract_policy(signers, build_sat, secp)<span class="question-mark">?</span>,
             )<span class="question-mark">?</span>,
-            Terminal::Thresh(k, nodes) =&gt; {
-                <span class="kw">let </span><span class="kw-2">mut </span>threshold = <span class="kw-2">*</span>k;
+            Terminal::Thresh(threshold) =&gt; {
+                <span class="kw">let </span><span class="kw-2">mut </span>k = threshold.k();
+                <span class="kw">let </span>nodes = threshold.data();
                 <span class="kw">let </span>mapped: Vec&lt;<span class="kw">_</span>&gt; = nodes
                     .iter()
                     .map(|n| n.extract_policy(signers, build_sat, secp))
@@ -2932,13 +2935,13 @@
                     .collect();
 
                 <span class="kw">if </span>mapped.len() &lt; nodes.len() {
-                    threshold = <span class="kw">match </span>threshold.checked_sub(nodes.len() - mapped.len()) {
+                    k = <span class="kw">match </span>k.checked_sub(nodes.len() - mapped.len()) {
                         <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
                         <span class="prelude-val">Some</span>(x) =&gt; x,
                     };
                 }
 
-                Policy::make_thresh(mapped, threshold)<span class="question-mark">?
+                Policy::make_thresh(mapped, k)<span class="question-mark">?
             </span>}
 
             <span class="comment">// Unsupported
@@ -2992,13 +2995,10 @@
             build_sat: BuildSatisfaction,
             secp: <span class="kw-2">&amp;</span>SecpCtx,
         ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Policy&gt;, Error&gt; {
-            <span class="prelude-val">Ok</span>(Policy::make_multisig::&lt;Ctx&gt;(
-                keys.pks.as_ref(),
-                signers,
-                build_sat,
-                keys.k,
-                <span class="bool-val">true</span>,
-                secp,
+            <span class="kw">let </span>threshold = Threshold::new(keys.k(), keys.pks().to_vec())
+                .expect(<span class="string">"valid threshold and pks collection"</span>);
+            <span class="prelude-val">Ok</span>(Policy::make_multi::&lt;Ctx, MAX_PUBKEYS_PER_MULTISIG&gt;(
+                <span class="kw-2">&amp;</span>threshold, signers, build_sat, <span class="bool-val">true</span>, secp,
             )<span class="question-mark">?</span>)
         }
 

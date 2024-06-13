@@ -1192,6 +1192,30 @@
 <a href="#1192" id="1192">1192</a>
 <a href="#1193" id="1193">1193</a>
 <a href="#1194" id="1194">1194</a>
+<a href="#1195" id="1195">1195</a>
+<a href="#1196" id="1196">1196</a>
+<a href="#1197" id="1197">1197</a>
+<a href="#1198" id="1198">1198</a>
+<a href="#1199" id="1199">1199</a>
+<a href="#1200" id="1200">1200</a>
+<a href="#1201" id="1201">1201</a>
+<a href="#1202" id="1202">1202</a>
+<a href="#1203" id="1203">1203</a>
+<a href="#1204" id="1204">1204</a>
+<a href="#1205" id="1205">1205</a>
+<a href="#1206" id="1206">1206</a>
+<a href="#1207" id="1207">1207</a>
+<a href="#1208" id="1208">1208</a>
+<a href="#1209" id="1209">1209</a>
+<a href="#1210" id="1210">1210</a>
+<a href="#1211" id="1211">1211</a>
+<a href="#1212" id="1212">1212</a>
+<a href="#1213" id="1213">1213</a>
+<a href="#1214" id="1214">1214</a>
+<a href="#1215" id="1215">1215</a>
+<a href="#1216" id="1216">1216</a>
+<a href="#1217" id="1217">1217</a>
+<a href="#1218" id="1218">1218</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1285,7 +1309,7 @@
 <span class="kw">use </span>bitcoin::hashes::hash160;
 <span class="kw">use </span>bitcoin::secp256k1::Message;
 <span class="kw">use </span>bitcoin::sighash::{EcdsaSighashType, TapSighash, TapSighashType};
-<span class="kw">use </span>bitcoin::{ecdsa, psbt, sighash, taproot};
+<span class="kw">use </span>bitcoin::{ecdsa, psbt, sighash, taproot, transaction};
 <span class="kw">use </span>bitcoin::{key::TapTweak, key::XOnlyPublicKey, secp256k1};
 <span class="kw">use </span>bitcoin::{PrivateKey, Psbt, PublicKey};
 
@@ -1353,8 +1377,12 @@
     </span>NonStandardSighash,
     <span class="doccomment">/// Invalid SIGHASH for the signing context in use
     </span>InvalidSighash,
-    <span class="doccomment">/// Error while computing the hash to sign
-    </span>SighashError(sighash::Error),
+    <span class="doccomment">/// Error while computing the hash to sign a P2WPKH input.
+    </span>SighashP2wpkh(sighash::P2wpkhError),
+    <span class="doccomment">/// Error while computing the hash to sign a Taproot input.
+    </span>SighashTaproot(sighash::TaprootError),
+    <span class="doccomment">/// Error while computing the hash, out of bounds access on the transaction inputs.
+    </span>TxInputsIndexError(transaction::InputsIndexError),
     <span class="doccomment">/// Miniscript PSBT error
     </span>MiniscriptPsbt(MiniscriptPsbtError),
     <span class="doccomment">/// To be used only by external libraries implementing [`InputSigner`] or
@@ -1363,9 +1391,21 @@
     </span>External(String),
 }
 
-<span class="kw">impl </span>From&lt;sighash::Error&gt; <span class="kw">for </span>SignerError {
-    <span class="kw">fn </span>from(e: sighash::Error) -&gt; <span class="self">Self </span>{
-        SignerError::SighashError(e)
+<span class="kw">impl </span>From&lt;transaction::InputsIndexError&gt; <span class="kw">for </span>SignerError {
+    <span class="kw">fn </span>from(v: transaction::InputsIndexError) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::TxInputsIndexError(v)
+    }
+}
+
+<span class="kw">impl </span>From&lt;sighash::P2wpkhError&gt; <span class="kw">for </span>SignerError {
+    <span class="kw">fn </span>from(e: sighash::P2wpkhError) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::SighashP2wpkh(e)
+    }
+}
+
+<span class="kw">impl </span>From&lt;sighash::TaprootError&gt; <span class="kw">for </span>SignerError {
+    <span class="kw">fn </span>from(e: sighash::TaprootError) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::SighashTaproot(e)
     }
 }
 
@@ -1383,7 +1423,9 @@
             <span class="self">Self</span>::MissingHdKeypath =&gt; <span class="macro">write!</span>(f, <span class="string">"Missing fingerprint and derivation path"</span>),
             <span class="self">Self</span>::NonStandardSighash =&gt; <span class="macro">write!</span>(f, <span class="string">"The psbt contains a non standard sighash"</span>),
             <span class="self">Self</span>::InvalidSighash =&gt; <span class="macro">write!</span>(f, <span class="string">"Invalid SIGHASH for the signing context in use"</span>),
-            <span class="self">Self</span>::SighashError(err) =&gt; <span class="macro">write!</span>(f, <span class="string">"Error while computing the hash to sign: {}"</span>, err),
+            <span class="self">Self</span>::SighashP2wpkh(err) =&gt; <span class="macro">write!</span>(f, <span class="string">"Error while computing the hash to sign a P2WPKH input: {}"</span>, err),
+            <span class="self">Self</span>::SighashTaproot(err) =&gt; <span class="macro">write!</span>(f, <span class="string">"Error while computing the hash to sign a Taproot input: {}"</span>, err),
+            <span class="self">Self</span>::TxInputsIndexError(err) =&gt; <span class="macro">write!</span>(f, <span class="string">"Error while computing the hash, out of bounds access on the transaction inputs: {}"</span>, err),
             <span class="self">Self</span>::MiniscriptPsbt(err) =&gt; <span class="macro">write!</span>(f, <span class="string">"Miniscript PSBT error: {}"</span>, err),
             <span class="self">Self</span>::External(err) =&gt; <span class="macro">write!</span>(f, <span class="string">"{}"</span>, err),
         }
@@ -1743,21 +1785,24 @@
     secret_key: <span class="kw-2">&amp;</span>secp256k1::SecretKey,
     pubkey: PublicKey,
     psbt_input: <span class="kw-2">&amp;mut </span>psbt::Input,
-    hash: <span class="kw">impl </span>bitcoin::hashes::Hash + bitcoin::secp256k1::ThirtyTwoByteHash,
-    hash_ty: EcdsaSighashType,
+    hash: <span class="kw">impl </span>bitcoin::hashes::Hash&lt;Bytes = [u8; <span class="number">32</span>]&gt;,
+    sighash_type: EcdsaSighashType,
     secp: <span class="kw-2">&amp;</span>SecpCtx,
     allow_grinding: bool,
 ) {
-    <span class="kw">let </span>msg = <span class="kw-2">&amp;</span>Message::from(hash);
-    <span class="kw">let </span>sig = <span class="kw">if </span>allow_grinding {
+    <span class="kw">let </span>msg = <span class="kw-2">&amp;</span>Message::from_digest(hash.to_byte_array());
+    <span class="kw">let </span>signature = <span class="kw">if </span>allow_grinding {
         secp.sign_ecdsa_low_r(msg, secret_key)
     } <span class="kw">else </span>{
         secp.sign_ecdsa(msg, secret_key)
     };
-    secp.verify_ecdsa(msg, <span class="kw-2">&amp;</span>sig, <span class="kw-2">&amp;</span>pubkey.inner)
+    secp.verify_ecdsa(msg, <span class="kw-2">&amp;</span>signature, <span class="kw-2">&amp;</span>pubkey.inner)
         .expect(<span class="string">"invalid or corrupted ecdsa signature"</span>);
 
-    <span class="kw">let </span>final_signature = ecdsa::Signature { sig, hash_ty };
+    <span class="kw">let </span>final_signature = ecdsa::Signature {
+        signature,
+        sighash_type,
+    };
     psbt_input.partial_sigs.insert(pubkey, final_signature);
 }
 
@@ -1768,7 +1813,7 @@
     leaf_hash: <span class="prelude-ty">Option</span>&lt;taproot::TapLeafHash&gt;,
     psbt_input: <span class="kw-2">&amp;mut </span>psbt::Input,
     hash: TapSighash,
-    hash_ty: TapSighashType,
+    sighash_type: TapSighashType,
     secp: <span class="kw-2">&amp;</span>SecpCtx,
 ) {
     <span class="kw">let </span>keypair = secp256k1::Keypair::from_seckey_slice(secp, secret_key.as_ref()).unwrap();
@@ -1780,11 +1825,14 @@
     </span>};
 
     <span class="kw">let </span>msg = <span class="kw-2">&amp;</span>Message::from(hash);
-    <span class="kw">let </span>sig = secp.sign_schnorr(msg, <span class="kw-2">&amp;</span>keypair);
-    secp.verify_schnorr(<span class="kw-2">&amp;</span>sig, msg, <span class="kw-2">&amp;</span>XOnlyPublicKey::from_keypair(<span class="kw-2">&amp;</span>keypair).<span class="number">0</span>)
+    <span class="kw">let </span>signature = secp.sign_schnorr(msg, <span class="kw-2">&amp;</span>keypair);
+    secp.verify_schnorr(<span class="kw-2">&amp;</span>signature, msg, <span class="kw-2">&amp;</span>XOnlyPublicKey::from_keypair(<span class="kw-2">&amp;</span>keypair).<span class="number">0</span>)
         .expect(<span class="string">"invalid or corrupted schnorr signature"</span>);
 
-    <span class="kw">let </span>final_signature = taproot::Signature { sig, hash_ty };
+    <span class="kw">let </span>final_signature = taproot::Signature {
+        signature,
+        sighash_type,
+    };
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(lh) = leaf_hash {
         psbt_input
@@ -2127,7 +2175,7 @@
         <span class="comment">// Always try first with the non-witness utxo
         </span><span class="kw">let </span>utxo = <span class="kw">if let </span><span class="prelude-val">Some</span>(prev_tx) = <span class="kw-2">&amp;</span>psbt_input.non_witness_utxo {
             <span class="comment">// Check the provided prev-tx
-            </span><span class="kw">if </span>prev_tx.txid() != tx_input.previous_output.txid {
+            </span><span class="kw">if </span>prev_tx.compute_txid() != tx_input.previous_output.txid {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(SignerError::InvalidNonWitnessUtxo);
             }
 

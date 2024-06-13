@@ -195,7 +195,7 @@
 // licenses.
 
 </span><span class="kw">use </span>bitcoin::secp256k1::{All, Secp256k1};
-<span class="kw">use </span>bitcoin::{absolute, Script, Sequence};
+<span class="kw">use </span>bitcoin::{absolute, relative, Script, Sequence};
 
 <span class="kw">use </span>miniscript::{MiniscriptKey, Satisfier, ToPublicKey};
 
@@ -211,7 +211,7 @@
 
 <span class="kw">impl </span>IsDust <span class="kw">for </span>u64 {
     <span class="kw">fn </span>is_dust(<span class="kw-2">&amp;</span><span class="self">self</span>, script: <span class="kw-2">&amp;</span>Script) -&gt; bool {
-        <span class="kw-2">*</span><span class="self">self </span>&lt; script.dust_value().to_sat()
+        <span class="kw-2">*</span><span class="self">self </span>&lt; script.minimal_non_dust().to_sat()
     }
 }
 
@@ -280,7 +280,7 @@
 }
 
 <span class="kw">impl</span>&lt;Pk: MiniscriptKey + ToPublicKey&gt; Satisfier&lt;Pk&gt; <span class="kw">for </span>Older {
-    <span class="kw">fn </span>check_older(<span class="kw-2">&amp;</span><span class="self">self</span>, n: Sequence) -&gt; bool {
+    <span class="kw">fn </span>check_older(<span class="kw-2">&amp;</span><span class="self">self</span>, n: relative::LockTime) -&gt; bool {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(current_height) = <span class="self">self</span>.current_height {
             <span class="comment">// TODO: test &gt;= / &gt;
             </span>current_height

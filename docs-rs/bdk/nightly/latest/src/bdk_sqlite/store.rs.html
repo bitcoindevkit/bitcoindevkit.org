@@ -1082,7 +1082,7 @@
             <span class="kw">let </span>insert_tx_stmt = <span class="kw-2">&amp;mut </span>db_transaction
                 .prepare_cached(<span class="string">"INSERT INTO tx (txid, whole_tx) VALUES (:txid, :whole_tx) ON CONFLICT (txid) DO UPDATE SET whole_tx = :whole_tx WHERE txid = :txid"</span>)
                 .expect(<span class="string">"insert or update tx whole_tx statement"</span>);
-            <span class="kw">let </span>txid = tx.txid().to_string();
+            <span class="kw">let </span>txid = tx.compute_txid().to_string();
             <span class="kw">let </span>whole_tx = serialize(<span class="kw-2">&amp;</span>tx);
             insert_tx_stmt
                 .execute(<span class="macro">named_params!</span> {<span class="string">":txid"</span>: txid, <span class="string">":whole_tx"</span>: whole_tx })
@@ -1464,9 +1464,9 @@
         <span class="kw">let </span>tx2_hex = Vec::&lt;u8&gt;::from_hex(<span class="string">"01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0e0432e7494d010e062f503253482fffffffff0100f2052a010000002321038a7f6ef1c8ca0c588aa53fa860128077c9e6c11e6830f4d7ee4e763a56b7718fac00000000"</span>).unwrap();
         <span class="kw">let </span>tx2: Arc&lt;Transaction&gt; = Arc::new(deserialize(tx2_hex.as_slice()).unwrap());
 
-        <span class="kw">let </span>outpoint0_0 = OutPoint::new(tx0.txid(), <span class="number">0</span>);
+        <span class="kw">let </span>outpoint0_0 = OutPoint::new(tx0.compute_txid(), <span class="number">0</span>);
         <span class="kw">let </span>txout0_0 = tx0.output.first().unwrap().clone();
-        <span class="kw">let </span>outpoint1_0 = OutPoint::new(tx1.txid(), <span class="number">0</span>);
+        <span class="kw">let </span>outpoint1_0 = OutPoint::new(tx1.compute_txid(), <span class="number">0</span>);
         <span class="kw">let </span>txout1_0 = tx1.output.first().unwrap().clone();
 
         <span class="kw">let </span>anchor1 = anchor_fn(<span class="number">1</span>, <span class="number">1296667328</span>, block_hash_1);
@@ -1475,11 +1475,11 @@
         <span class="kw">let </span>tx_graph_changeset = tx_graph::ChangeSet::&lt;A&gt; {
             txs: [tx0.clone(), tx1.clone()].into(),
             txouts: [(outpoint0_0, txout0_0), (outpoint1_0, txout1_0)].into(),
-            anchors: [(anchor1, tx0.txid()), (anchor1, tx1.txid())].into(),
+            anchors: [(anchor1, tx0.compute_txid()), (anchor1, tx1.compute_txid())].into(),
             last_seen: [
-                (tx0.txid(), <span class="number">1598918400</span>),
-                (tx1.txid(), <span class="number">1598919121</span>),
-                (tx2.txid(), <span class="number">1608919121</span>),
+                (tx0.compute_txid(), <span class="number">1598918400</span>),
+                (tx1.compute_txid(), <span class="number">1598919121</span>),
+                (tx2.compute_txid(), <span class="number">1608919121</span>),
             ]
             .into(),
         };
@@ -1509,7 +1509,7 @@
             txs: [tx2.clone()].into(),
             txouts: BTreeMap::default(),
             anchors: BTreeSet::default(),
-            last_seen: [(tx2.txid(), <span class="number">1708919121</span>)].into(),
+            last_seen: [(tx2.compute_txid(), <span class="number">1708919121</span>)].into(),
         };
 
         <span class="kw">let </span>graph_changeset2: indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;Keychain&gt;&gt; =
@@ -1528,7 +1528,7 @@
         </span><span class="kw">let </span>tx_graph_changeset3 = tx_graph::ChangeSet::&lt;A&gt; {
             txs: BTreeSet::default(),
             txouts: BTreeMap::default(),
-            anchors: [(anchor2, tx0.txid()), (anchor2, tx1.txid())].into(),
+            anchors: [(anchor2, tx0.compute_txid()), (anchor2, tx1.compute_txid())].into(),
             last_seen: BTreeMap::default(),
         };
 
