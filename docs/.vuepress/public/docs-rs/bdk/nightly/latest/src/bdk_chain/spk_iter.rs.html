@@ -265,8 +265,14 @@
 <a href="#265" id="265">265</a>
 <a href="#266" id="266">266</a>
 <a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     bitcoin::{secp256k1::Secp256k1, ScriptBuf},
+    keychain::Indexed,
     miniscript::{Descriptor, DescriptorPublicKey},
 };
 <span class="kw">use </span>core::{borrow::Borrow, ops::Bound, ops::RangeBounds};
@@ -364,7 +370,7 @@
 <span class="kw">where
     </span>D: Borrow&lt;Descriptor&lt;DescriptorPublicKey&gt;&gt;,
 {
-    <span class="kw">type </span>Item = (u32, ScriptBuf);
+    <span class="kw">type </span>Item = Indexed&lt;ScriptBuf&gt;;
 
     <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
         <span class="comment">// For non-wildcard descriptors, we expect the first element to be Some((0, spk)), then None after.
@@ -425,8 +431,12 @@
         <span class="kw">let </span>(external_descriptor,<span class="kw">_</span>) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(<span class="kw-2">&amp;</span>secp, <span class="string">"tr([73c5da0a/86'/0'/0']xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/0/*)"</span>).unwrap();
         <span class="kw">let </span>(internal_descriptor,<span class="kw">_</span>) = Descriptor::&lt;DescriptorPublicKey&gt;::parse_descriptor(<span class="kw-2">&amp;</span>secp, <span class="string">"tr([73c5da0a/86'/0'/0']xprv9xgqHN7yz9MwCkxsBPN5qetuNdQSUttZNKw1dcYTV4mkaAFiBVGQziHs3NRSWMkCzvgjEe3n9xV8oYywvM8at9yRqyaZVz6TYYhX98VjsUk/1/*)"</span>).unwrap();
 
-        <span class="kw">let _ </span>= txout_index.insert_descriptor(TestKeychain::External, external_descriptor.clone());
-        <span class="kw">let _ </span>= txout_index.insert_descriptor(TestKeychain::Internal, internal_descriptor.clone());
+        <span class="kw">let _ </span>= txout_index
+            .insert_descriptor(TestKeychain::External, external_descriptor.clone())
+            .unwrap();
+        <span class="kw">let _ </span>= txout_index
+            .insert_descriptor(TestKeychain::Internal, internal_descriptor.clone())
+            .unwrap();
 
         (txout_index, external_descriptor, internal_descriptor)
     }

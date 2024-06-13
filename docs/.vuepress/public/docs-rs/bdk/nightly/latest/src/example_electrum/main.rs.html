@@ -351,6 +351,10 @@
 <a href="#351" id="351">351</a>
 <a href="#352" id="352">352</a>
 <a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{
     io::{<span class="self">self</span>, Write},
     sync::Mutex,
@@ -581,9 +585,9 @@
                 <span class="kw">let </span>all_spks = graph
                     .index
                     .revealed_spks(..)
-                    .map(|(k, i, spk)| (k.to_owned(), i, spk.to_owned()))
+                    .map(|(index, spk)| (index, spk.to_owned()))
                     .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-                request = request.chain_spks(all_spks.into_iter().map(|(k, spk_i, spk)| {
+                request = request.chain_spks(all_spks.into_iter().map(|((k, spk_i), spk)| {
                     <span class="macro">eprint!</span>(<span class="string">"Scanning {}: {}"</span>, k, spk_i);
                     spk
                 }));
@@ -592,10 +596,10 @@
                 <span class="kw">let </span>unused_spks = graph
                     .index
                     .unused_spks()
-                    .map(|(k, i, spk)| (k, i, spk.to_owned()))
+                    .map(|(index, spk)| (index, spk.to_owned()))
                     .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
                 request =
-                    request.chain_spks(unused_spks.into_iter().map(<span class="kw">move </span>|(k, spk_i, spk)| {
+                    request.chain_spks(unused_spks.into_iter().map(<span class="kw">move </span>|((k, spk_i), spk)| {
                         <span class="macro">eprint!</span>(
                             <span class="string">"Checking if address {} {}:{} has been used"</span>,
                             Address::from_script(<span class="kw-2">&amp;</span>spk, args.network).unwrap(),
@@ -611,7 +615,11 @@
 
                 <span class="kw">let </span>utxos = graph
                     .graph()
-                    .filter_chain_unspents(<span class="kw-2">&amp;*</span>chain, chain_tip.block_id(), init_outpoints)
+                    .filter_chain_unspents(
+                        <span class="kw-2">&amp;*</span>chain,
+                        chain_tip.block_id(),
+                        init_outpoints.iter().cloned(),
+                    )
                     .map(|(<span class="kw">_</span>, utxo)| utxo)
                     .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
                 request = request.chain_outpoints(utxos.into_iter().map(|utxo| {
@@ -691,7 +699,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>indexed_tx_graph_changeset =
             indexed_tx_graph::ChangeSet::&lt;ConfirmationHeightAnchor, <span class="kw">_</span>&gt;::default();
         <span class="kw">if let </span><span class="prelude-val">Some</span>(keychain_update) = keychain_update {
-            <span class="kw">let </span>(<span class="kw">_</span>, keychain_changeset) = graph.index.reveal_to_target_multi(<span class="kw-2">&amp;</span>keychain_update);
+            <span class="kw">let </span>keychain_changeset = graph.index.reveal_to_target_multi(<span class="kw-2">&amp;</span>keychain_update);
             indexed_tx_graph_changeset.append(keychain_changeset.into());
         }
         indexed_tx_graph_changeset.append(graph.apply_update(graph_update));

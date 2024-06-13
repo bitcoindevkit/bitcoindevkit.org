@@ -385,10 +385,12 @@
 <a href="#385" id="385">385</a>
 <a href="#386" id="386">386</a>
 <a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Helper types for spk-based blockchain clients.
 
 </span><span class="kw">use crate</span>::{
-    collections::BTreeMap, local_chain::CheckPoint, ConfirmationTimeHeightAnchor, TxGraph,
+    collections::BTreeMap, keychain::Indexed, local_chain::CheckPoint,
+    ConfirmationTimeHeightAnchor, TxGraph,
 };
 <span class="kw">use </span>alloc::{boxed::Box, vec::Vec};
 <span class="kw">use </span>bitcoin::{OutPoint, Script, ScriptBuf, Txid};
@@ -553,7 +555,7 @@
         <span class="self">self</span>.chain_spks(
             index
                 .revealed_spks(spk_range)
-                .map(|(<span class="kw">_</span>, <span class="kw">_</span>, spk)| spk.to_owned())
+                .map(|(<span class="kw">_</span>, spk)| spk.to_owned())
                 .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
         )
     }
@@ -582,7 +584,7 @@
     /// [`LocalChain::tip`]: crate::local_chain::LocalChain::tip
     </span><span class="kw">pub </span>chain_tip: CheckPoint,
     <span class="doccomment">/// Iterators of script pubkeys indexed by the keychain index.
-    </span><span class="kw">pub </span>spks_by_keychain: BTreeMap&lt;K, Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = (u32, ScriptBuf)&gt; + Send&gt;&gt;,
+    </span><span class="kw">pub </span>spks_by_keychain: BTreeMap&lt;K, Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = Indexed&lt;ScriptBuf&gt;&gt; + Send&gt;&gt;,
 }
 
 <span class="kw">impl</span>&lt;K: Ord + Clone&gt; FullScanRequest&lt;K&gt; {
@@ -625,7 +627,7 @@
     </span><span class="kw">pub fn </span>set_spks_for_keychain(
         <span class="kw-2">mut </span><span class="self">self</span>,
         keychain: K,
-        spks: <span class="kw">impl </span>IntoIterator&lt;IntoIter = <span class="kw">impl </span>Iterator&lt;Item = (u32, ScriptBuf)&gt; + Send + <span class="lifetime">'static</span>&gt;,
+        spks: <span class="kw">impl </span>IntoIterator&lt;IntoIter = <span class="kw">impl </span>Iterator&lt;Item = Indexed&lt;ScriptBuf&gt;&gt; + Send + <span class="lifetime">'static</span>&gt;,
     ) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.spks_by_keychain
             .insert(keychain, Box::new(spks.into_iter()));
@@ -639,7 +641,7 @@
     </span><span class="kw">pub fn </span>chain_spks_for_keychain(
         <span class="kw-2">mut </span><span class="self">self</span>,
         keychain: K,
-        spks: <span class="kw">impl </span>IntoIterator&lt;IntoIter = <span class="kw">impl </span>Iterator&lt;Item = (u32, ScriptBuf)&gt; + Send + <span class="lifetime">'static</span>&gt;,
+        spks: <span class="kw">impl </span>IntoIterator&lt;IntoIter = <span class="kw">impl </span>Iterator&lt;Item = Indexed&lt;ScriptBuf&gt;&gt; + Send + <span class="lifetime">'static</span>&gt;,
     ) -&gt; <span class="self">Self </span>{
         <span class="kw">match </span><span class="self">self</span>.spks_by_keychain.remove(<span class="kw-2">&amp;</span>keychain) {
             <span class="comment">// clippy here suggests to remove `into_iter` from `spks.into_iter()`, but doing so
