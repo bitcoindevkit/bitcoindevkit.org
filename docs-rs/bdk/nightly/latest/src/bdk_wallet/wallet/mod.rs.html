@@ -2548,35 +2548,6 @@
 <a href="#2548" id="2548">2548</a>
 <a href="#2549" id="2549">2549</a>
 <a href="#2550" id="2550">2550</a>
-<a href="#2551" id="2551">2551</a>
-<a href="#2552" id="2552">2552</a>
-<a href="#2553" id="2553">2553</a>
-<a href="#2554" id="2554">2554</a>
-<a href="#2555" id="2555">2555</a>
-<a href="#2556" id="2556">2556</a>
-<a href="#2557" id="2557">2557</a>
-<a href="#2558" id="2558">2558</a>
-<a href="#2559" id="2559">2559</a>
-<a href="#2560" id="2560">2560</a>
-<a href="#2561" id="2561">2561</a>
-<a href="#2562" id="2562">2562</a>
-<a href="#2563" id="2563">2563</a>
-<a href="#2564" id="2564">2564</a>
-<a href="#2565" id="2565">2565</a>
-<a href="#2566" id="2566">2566</a>
-<a href="#2567" id="2567">2567</a>
-<a href="#2568" id="2568">2568</a>
-<a href="#2569" id="2569">2569</a>
-<a href="#2570" id="2570">2570</a>
-<a href="#2571" id="2571">2571</a>
-<a href="#2572" id="2572">2572</a>
-<a href="#2573" id="2573">2573</a>
-<a href="#2574" id="2574">2574</a>
-<a href="#2575" id="2575">2575</a>
-<a href="#2576" id="2576">2576</a>
-<a href="#2577" id="2577">2577</a>
-<a href="#2578" id="2578">2578</a>
-<a href="#2579" id="2579">2579</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2605,7 +2576,6 @@
     local_chain::{
         <span class="self">self</span>, ApplyHeaderError, CannotConnectError, CheckPoint, CheckPointIter, LocalChain,
     },
-    persist::{PersistBackend, StageExt},
     spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult},
     tx_graph::{CanonicalTx, TxGraph},
     Append, BlockId, ChainPosition, ConfirmationTime, ConfirmationTimeHeightAnchor, FullTxOut,
@@ -2664,12 +2634,12 @@
 /// 1. output *descriptors* from which it can derive addresses.
 /// 2. [`signer`]s that can contribute signatures to addresses instantiated from the descriptors.
 ///
-/// The user is responsible for loading and writing wallet changes using an implementation of
-/// [`PersistBackend`]. See individual functions and example for instructions on when [`Wallet`]
-/// state needs to be persisted.
+/// The user is responsible for loading and writing wallet changes which are represented as
+/// [`ChangeSet`]s (see [`take_staged`]). Also see individual functions and example for instructions
+/// on when [`Wallet`] state needs to be persisted.
 ///
-/// [`PersistBackend`]: bdk_chain::persist::PersistBackend
 /// [`signer`]: crate::signer
+/// [`take_staged`]: Wallet::take_staged
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>Wallet {
     signers: Arc&lt;SignersContainer&gt;,
@@ -2720,8 +2690,7 @@
 }
 
 <span class="doccomment">/// The changes made to a wallet by applying an [`Update`].
-</span><span class="kw">pub type </span>ChangeSet =
-    bdk_chain::persist::CombinedChangeSet&lt;KeychainKind, ConfirmationTimeHeightAnchor&gt;;
+</span><span class="kw">pub type </span>ChangeSet = bdk_chain::CombinedChangeSet&lt;KeychainKind, ConfirmationTimeHeightAnchor&gt;;
 
 <span class="doccomment">/// A derived address and the index it was found at.
 /// For convenience this automatically derefs to `Address`
@@ -2987,14 +2956,13 @@
     /// # use bdk_wallet::descriptor::Descriptor;
     /// # use bitcoin::key::Secp256k1;
     /// # use bdk_wallet::KeychainKind;
-    /// # use bdk_sqlite::{Store, rusqlite::Connection};
+    /// use bdk_sqlite::{Store, rusqlite::Connection};
     /// #
     /// # fn main() -&gt; Result&lt;(), anyhow::Error&gt; {
-    /// # use bdk_chain::persist::PersistBackend;
     /// # let temp_dir = tempfile::tempdir().expect("must create tempdir");
     /// # let file_path = temp_dir.path().join("store.db");
-    /// # let conn = Connection::open(file_path).expect("must open connection");
-    /// # let mut db = Store::new(conn).expect("must create db");
+    /// let conn = Connection::open(file_path).expect("must open connection");
+    /// let mut db = Store::new(conn).expect("must create db");
     /// let secp = Secp256k1::new();
     ///
     /// let (external_descriptor, external_keymap) = Descriptor::parse_descriptor(&amp;secp, "wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/0/*)").unwrap();
@@ -3002,7 +2970,7 @@
     ///
     /// let external_signer_container = SignersContainer::build(external_keymap, &amp;external_descriptor, &amp;secp);
     /// let internal_signer_container = SignersContainer::build(internal_keymap, &amp;internal_descriptor, &amp;secp);
-    /// let changeset = db.load_changes()?.expect("there must be an existing changeset");
+    /// let changeset = db.read()?.expect("there must be an existing changeset");
     /// let mut wallet = Wallet::load_from_changeset(changeset)?;
     ///
     /// external_signer_container.signers().into_iter()
@@ -3061,13 +3029,12 @@
     /// This method will fail if the loaded [`ChangeSet`] has different parameters to those provided.
     ///
     /// ```rust,no_run
-    /// # use bdk_chain::persist::PersistBackend;
     /// # use bdk_wallet::Wallet;
-    /// # use bdk_sqlite::{Store, rusqlite::Connection};
+    /// use bdk_sqlite::{Store, rusqlite::Connection};
     /// # use bitcoin::Network::Testnet;
-    /// # let conn = Connection::open_in_memory().expect("must open connection");
+    /// let conn = Connection::open_in_memory().expect("must open connection");
     /// let mut db = Store::new(conn).expect("must create db");
-    /// let changeset = db.load_changes()?;
+    /// let changeset = db.read()?;
     ///
     /// let external_descriptor = "wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/0/*)";
     /// let internal_descriptor = "wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/1/*)";
@@ -3245,16 +3212,17 @@
     /// calls to this method before closing the wallet. For example:
     ///
     /// ```rust,no_run
-    /// # use bdk_chain::persist::PersistBackend;
     /// # use bdk_wallet::wallet::{Wallet, ChangeSet};
     /// # use bdk_wallet::KeychainKind;
-    /// # use bdk_sqlite::{Store, rusqlite::Connection};
-    /// # let conn = Connection::open_in_memory().expect("must open connection");
-    /// # let mut db = Store::new(conn).expect("must create store");
+    /// use bdk_sqlite::{rusqlite::Connection, Store};
+    /// let conn = Connection::open_in_memory().expect("must open connection");
+    /// let mut db = Store::new(conn).expect("must create store");
     /// # let changeset = ChangeSet::default();
     /// # let mut wallet = Wallet::load_from_changeset(changeset).expect("load wallet");
     /// let next_address = wallet.reveal_next_address(KeychainKind::External);
-    /// wallet.commit_to(&amp;mut db)?;
+    /// if let Some(changeset) = wallet.take_staged() {
+    ///     db.write(&amp;changeset)?;
+    /// }
     ///
     /// // Now it's safe to show the user their next address!
     /// println!("Next address: {}", next_address.address);
@@ -4862,44 +4830,18 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Commits all currently [`staged`](Wallet::staged) changes to the `persist_backend`.
-    ///
-    /// This returns whether anything was persisted.
-    ///
-    /// # Error
-    ///
-    /// Returns a backend-defined error if this fails.
-    </span><span class="kw">pub fn </span>commit_to&lt;B&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, persist_backend: <span class="kw-2">&amp;mut </span>B) -&gt; <span class="prelude-ty">Result</span>&lt;bool, B::WriteError&gt;
-    <span class="kw">where
-        </span>B: PersistBackend&lt;ChangeSet&gt;,
-    {
-        <span class="kw">let </span>committed = StageExt::commit_to(<span class="kw-2">&amp;mut </span><span class="self">self</span>.stage, persist_backend)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(committed.is_some())
+    <span class="doccomment">/// Get a reference of the staged [`ChangeSet`] that are yet to be committed (if any).
+    </span><span class="kw">pub fn </span>staged(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>ChangeSet&gt; {
+        <span class="kw">if </span><span class="self">self</span>.stage.is_empty() {
+            <span class="prelude-val">None
+        </span>} <span class="kw">else </span>{
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.stage)
+        }
     }
 
-    <span class="doccomment">/// Commits all currently [`staged`](Wallet::staged) changes to the async `persist_backend`.
-    ///
-    /// This returns whether anything was persisted.
-    ///
-    /// # Error
-    ///
-    /// Returns a backend-defined error if this fails.
-    </span><span class="attr">#[cfg(feature = <span class="string">"async"</span>)]
-    </span><span class="kw">pub async fn </span>commit_to_async&lt;B&gt;(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        persist_backend: <span class="kw-2">&amp;mut </span>B,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, B::WriteError&gt;
-    <span class="kw">where
-        </span>B: bdk_chain::persist::PersistBackendAsync&lt;ChangeSet&gt; + Send + Sync,
-    {
-        <span class="kw">let </span>committed =
-            bdk_chain::persist::StageExtAsync::commit_to(<span class="kw-2">&amp;mut </span><span class="self">self</span>.stage, persist_backend).<span class="kw">await</span><span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(committed.is_some())
-    }
-
-    <span class="doccomment">/// Get the staged [`ChangeSet`] that is yet to be committed.
-    </span><span class="kw">pub fn </span>staged(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ChangeSet {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.stage
+    <span class="doccomment">/// Take the staged [`ChangeSet`] to be persisted now (if any).
+    </span><span class="kw">pub fn </span>take_staged(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;ChangeSet&gt; {
+        <span class="self">self</span>.stage.take()
     }
 
     <span class="doccomment">/// Get a reference to the inner [`TxGraph`].

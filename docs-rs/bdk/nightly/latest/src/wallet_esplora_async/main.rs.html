@@ -110,6 +110,9 @@
 <a href="#110" id="110">110</a>
 <a href="#111" id="111">111</a>
 <a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{collections::BTreeSet, io::Write, str::FromStr};
 
 <span class="kw">use </span>bdk_esplora::{esplora_client, EsploraAsyncExt};
@@ -119,7 +122,6 @@
 };
 
 <span class="kw">use </span>bdk_sqlite::{rusqlite::Connection, Store};
-<span class="kw">use </span>bdk_wallet::chain::persist::PersistBackend;
 
 <span class="kw">const </span>SEND_AMOUNT: Amount = Amount::from_sat(<span class="number">5000</span>);
 <span class="kw">const </span>STOP_GAP: usize = <span class="number">50</span>;
@@ -132,7 +134,7 @@
     <span class="kw">let </span><span class="kw-2">mut </span>db = Store::new(conn)<span class="question-mark">?</span>;
     <span class="kw">let </span>external_descriptor = <span class="string">"wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/0/*)"</span>;
     <span class="kw">let </span>internal_descriptor = <span class="string">"wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/1/*)"</span>;
-    <span class="kw">let </span>changeset = db.load_changes()<span class="question-mark">?</span>;
+    <span class="kw">let </span>changeset = db.read()<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::new_or_load(
         external_descriptor,
@@ -142,7 +144,9 @@
     )<span class="question-mark">?</span>;
 
     <span class="kw">let </span>address = wallet.next_unused_address(KeychainKind::External);
-    wallet.commit_to(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = wallet.take_staged() {
+        db.write(<span class="kw-2">&amp;</span>changeset)<span class="question-mark">?</span>;
+    }
     <span class="macro">println!</span>(<span class="string">"Generated Address: {}"</span>, address);
 
     <span class="kw">let </span>balance = wallet.balance();
@@ -190,7 +194,9 @@
     <span class="kw">let _ </span>= update.graph_update.update_last_seen_unconfirmed(now);
 
     wallet.apply_update(update)<span class="question-mark">?</span>;
-    wallet.commit_to(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = wallet.take_staged() {
+        db.write(<span class="kw-2">&amp;</span>changeset)<span class="question-mark">?</span>;
+    }
     <span class="macro">println!</span>();
 
     <span class="kw">let </span>balance = wallet.balance();
