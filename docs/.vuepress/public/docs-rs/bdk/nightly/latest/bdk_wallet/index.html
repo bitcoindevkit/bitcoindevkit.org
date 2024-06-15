@@ -46,29 +46,40 @@ that the <code>Wallet</code> can use to update its view of the chain.</p>
 <li><a href="https://github.com/bitcoindevkit/bdk/tree/master/example-crates/wallet_rpc"><code>example-crates/wallet_rpc</code></a></li>
 </ul>
 <h3 id="persistence"><a class="doc-anchor" href="#persistence">§</a>Persistence</h3>
-<p>To persist <code>Wallet</code> state data on disk use an implementation of the <a href="https://docs.rs/bdk_chain/latest/bdk_chain/persist/trait.PersistBackend.html"><code>PersistBackend</code></a> trait.</p>
+<p>To persist <code>Wallet</code> state data use a data store crate that reads and writes <a href="../bdk_chain/changeset/struct.CombinedChangeSet.html" title="struct bdk_chain::changeset::CombinedChangeSet"><code>bdk_chain::CombinedChangeSet</code></a>.</p>
 <p><strong>Implementations</strong></p>
 <ul>
-<li><a href="https://docs.rs/bdk_file_store/latest"><code>bdk_file_store</code></a>: A simple flat-file implementation of <a href="https://docs.rs/bdk_chain/latest/bdk_chain/persist/trait.PersistBackend.html"><code>PersistBackend</code></a>.</li>
-<li><a href="https://docs.rs/bdk_sqlite/latest"><code>bdk_sqlite</code></a>: A simple sqlite implementation of <a href="https://docs.rs/bdk_chain/latest/bdk_chain/persist/trait.PersistBackend.html"><code>PersistBackend</code></a>.</li>
+<li><a href="https://docs.rs/bdk_file_store/latest"><code>bdk_file_store</code></a>: Stores wallet changes in a simple flat file.</li>
+<li><a href="https://docs.rs/bdk_sqlite/latest"><code>bdk_sqlite</code></a>: Stores wallet changes in a SQLite relational database file.</li>
 </ul>
 <p><strong>Example</strong></p>
 <!-- compile_fail because outpoint and txout are fake variables -->
 
-<div class="example-wrap compile_fail"><a href="#" class="tooltip" title="This example deliberately fails to compile">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="kw">use </span>bdk_wallet::{bitcoin::Network, wallet::{ChangeSet, Wallet}};
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>bdk_wallet::{bitcoin::Network, KeychainKind, wallet::{ChangeSet, Wallet}};
 
 <span class="kw">fn </span>main() {
-    <span class="comment">// Create a new file `Store`.
-    </span><span class="kw">let </span><span class="kw-2">mut </span>db = bdk_file_store::Store::&lt;ChangeSet&gt;::open_or_create_new(<span class="string">b"magic_bytes"</span>, <span class="string">"path/to/my_wallet.db"</span>).expect(<span class="string">"create store"</span>);
+    <span class="comment">// Open or create a new file store for wallet data.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>db =
+        bdk_file_store::Store::&lt;ChangeSet&gt;::open_or_create_new(<span class="string">b"magic_bytes"</span>, <span class="string">"/tmp/my_wallet.db"</span>)
+            .expect(<span class="string">"create store"</span>);
 
-    <span class="kw">let </span>descriptor = <span class="string">"wpkh(tprv8ZgxMBicQKsPdcAqYBpzAFwU5yxBUo88ggoBqu1qPcHUfSbKK1sKMLmC7EAk438btHQrSdu3jGGQa6PA71nvH5nkDexhLteJqkM4dQmWF9g/84'/1'/0'/0/*)"</span>;
+    <span class="comment">// Create a wallet with initial wallet data read from the file store.
+    </span><span class="kw">let </span>descriptor = <span class="string">"wpkh(tprv8ZgxMBicQKsPdcAqYBpzAFwU5yxBUo88ggoBqu1qPcHUfSbKK1sKMLmC7EAk438btHQrSdu3jGGQa6PA71nvH5nkDexhLteJqkM4dQmWF9g/84'/1'/0'/0/*)"</span>;
     <span class="kw">let </span>change_descriptor = <span class="string">"wpkh(tprv8ZgxMBicQKsPdcAqYBpzAFwU5yxBUo88ggoBqu1qPcHUfSbKK1sKMLmC7EAk438btHQrSdu3jGGQa6PA71nvH5nkDexhLteJqkM4dQmWF9g/84'/1'/0'/1/*)"</span>;
-    <span class="kw">let </span>changeset = db.load_changes().expect(<span class="string">"changeset loaded"</span>);
-    <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::new_or_load(descriptor, change_descriptor, changeset, Network::Testnet).expect(<span class="string">"create or load wallet"</span>);
+    <span class="kw">let </span>changeset = db.aggregate_changesets().expect(<span class="string">"changeset loaded"</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>wallet =
+        Wallet::new_or_load(descriptor, change_descriptor, changeset, Network::Testnet)
+            .expect(<span class="string">"create or load wallet"</span>);
 
-    <span class="comment">// Insert a single `TxOut` at `OutPoint` into the wallet.
-    </span><span class="kw">let _ </span>= wallet.insert_txout(outpoint, txout);
-    wallet.commit_to(<span class="kw-2">&amp;mut </span>db).expect(<span class="string">"must commit changes to database"</span>);
+    <span class="comment">// Get a new address to receive bitcoin.
+    </span><span class="kw">let </span>receive_address = wallet.reveal_next_address(KeychainKind::External);
+    <span class="comment">// Persist staged wallet data changes to the file store.
+    </span><span class="kw">let </span>staged_changeset = wallet.take_staged();
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = staged_changeset {
+        db.append_changeset(<span class="kw-2">&amp;</span>changeset)
+            .expect(<span class="string">"must commit changes to database"</span>);
+    }
+    <span class="macro">println!</span>(<span class="string">"Your new receive address is: {}"</span>, receive_address.address);
 }</code></pre></div>
 <!-- ### Sync the balance of a descriptor -->
 <!-- ```rust,no_run -->

@@ -745,7 +745,6 @@
 <a href="#745" id="745">745</a>
 <a href="#746" id="746">746</a>
 <a href="#747" id="747">747</a>
-<a href="#748" id="748">748</a>
 </pre></div><pre class="rust"><code><span class="kw">pub use </span>anyhow;
 <span class="kw">use </span>anyhow::Context;
 <span class="kw">use </span>bdk_coin_select::{coin_select_bnb, CoinSelector, CoinSelectorOpt, WeightedValue};
@@ -773,7 +772,6 @@
 <span class="kw">pub use </span>bdk_file_store;
 <span class="kw">pub use </span>clap;
 
-<span class="kw">use </span>bdk_chain::persist::PersistBackend;
 <span class="kw">use </span>clap::{Parser, Subcommand};
 
 <span class="kw">pub type </span>KeychainTxGraph&lt;A&gt; = IndexedTxGraph&lt;A, KeychainTxOutIndex&lt;Keychain&gt;&gt;;
@@ -1230,7 +1228,7 @@
                     <span class="kw">let </span>((spk_i, spk), index_changeset) =
                         spk_chooser(index, <span class="kw-2">&amp;</span>Keychain::External).expect(<span class="string">"Must exist"</span>);
                     <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
-                    db.write_changes(<span class="kw-2">&amp;</span>C::from((
+                    db.append_changeset(<span class="kw-2">&amp;</span>C::from((
                         local_chain::ChangeSet::default(),
                         indexed_tx_graph::ChangeSet::from(index_changeset),
                     )))<span class="question-mark">?</span>;
@@ -1378,7 +1376,7 @@
                     // If we're unable to persist this, then we don't want to broadcast.
                     </span>{
                         <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
-                        db.write_changes(<span class="kw-2">&amp;</span>C::from((
+                        db.append_changeset(<span class="kw-2">&amp;</span>C::from((
                             local_chain::ChangeSet::default(),
                             indexed_tx_graph::ChangeSet::from(index_changeset),
                         )))<span class="question-mark">?</span>;
@@ -1403,7 +1401,7 @@
                     <span class="comment">// We know the tx is at least unconfirmed now. Note if persisting here fails,
                     // it's not a big deal since we can always find it again form
                     // blockchain.
-                    </span>db.lock().unwrap().write_changes(<span class="kw-2">&amp;</span>C::from((
+                    </span>db.lock().unwrap().append_changeset(<span class="kw-2">&amp;</span>C::from((
                         local_chain::ChangeSet::default(),
                         keychain_changeset,
                     )))<span class="question-mark">?</span>;
@@ -1484,7 +1482,7 @@
         </span><span class="prelude-val">Err</span>(err) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">anyhow::anyhow!</span>(<span class="string">"failed to init db backend: {:?}"</span>, err)),
     };
 
-    <span class="kw">let </span>init_changeset = db_backend.load_changes()<span class="question-mark">?</span>.unwrap_or_default();
+    <span class="kw">let </span>init_changeset = db_backend.aggregate_changesets()<span class="question-mark">?</span>.unwrap_or_default();
 
     <span class="prelude-val">Ok</span>(Init {
         args,

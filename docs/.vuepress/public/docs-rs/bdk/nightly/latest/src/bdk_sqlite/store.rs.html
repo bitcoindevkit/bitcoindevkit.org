@@ -756,24 +756,6 @@
 <a href="#756" id="756">756</a>
 <a href="#757" id="757">757</a>
 <a href="#758" id="758">758</a>
-<a href="#759" id="759">759</a>
-<a href="#760" id="760">760</a>
-<a href="#761" id="761">761</a>
-<a href="#762" id="762">762</a>
-<a href="#763" id="763">763</a>
-<a href="#764" id="764">764</a>
-<a href="#765" id="765">765</a>
-<a href="#766" id="766">766</a>
-<a href="#767" id="767">767</a>
-<a href="#768" id="768">768</a>
-<a href="#769" id="769">769</a>
-<a href="#770" id="770">770</a>
-<a href="#771" id="771">771</a>
-<a href="#772" id="772">772</a>
-<a href="#773" id="773">773</a>
-<a href="#774" id="774">774</a>
-<a href="#775" id="775">775</a>
-<a href="#776" id="776">776</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_chain::bitcoin::consensus::{deserialize, serialize};
 <span class="kw">use </span>bdk_chain::bitcoin::hashes::Hash;
 <span class="kw">use </span>bdk_chain::bitcoin::{Amount, Network, OutPoint, ScriptBuf, Transaction, TxOut};
@@ -788,7 +770,7 @@
 <span class="kw">use </span>std::sync::{Arc, Mutex};
 
 <span class="kw">use </span><span class="kw">crate</span>::Error;
-<span class="kw">use </span>bdk_chain::persist::{CombinedChangeSet, PersistBackend};
+<span class="kw">use </span>bdk_chain::CombinedChangeSet;
 <span class="kw">use </span>bdk_chain::{
     indexed_tx_graph, keychain, local_chain, tx_graph, Anchor, Append, DescriptorExt, DescriptorId,
 };
@@ -830,26 +812,6 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>db_transaction(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;rusqlite::Transaction, Error&gt; {
         <span class="kw">let </span>connection = <span class="self">self</span>.conn.get_mut().expect(<span class="string">"unlocked connection mutex"</span>);
         connection.transaction().map_err(Error::Sqlite)
-    }
-}
-
-<span class="kw">impl</span>&lt;K, A&gt; PersistBackend&lt;CombinedChangeSet&lt;K, A&gt;&gt; <span class="kw">for </span>Store&lt;K, A&gt;
-<span class="kw">where
-    </span>K: Ord + <span class="kw">for</span>&lt;<span class="lifetime">'de</span>&gt; Deserialize&lt;<span class="lifetime">'de</span>&gt; + Serialize + Send,
-    A: Anchor + <span class="kw">for</span>&lt;<span class="lifetime">'de</span>&gt; Deserialize&lt;<span class="lifetime">'de</span>&gt; + Serialize + Send,
-{
-    <span class="kw">type </span>WriteError = Error;
-    <span class="kw">type </span>LoadError = Error;
-
-    <span class="kw">fn </span>write_changes(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        changeset: <span class="kw-2">&amp;</span>CombinedChangeSet&lt;K, A&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::WriteError&gt; {
-        <span class="self">self</span>.write(changeset)
-    }
-
-    <span class="kw">fn </span>load_changes(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;CombinedChangeSet&lt;K, A&gt;&gt;, <span class="self">Self</span>::LoadError&gt; {
-        <span class="self">self</span>.read()
     }
 }
 
@@ -1258,13 +1220,14 @@
     }
 }
 
-<span class="doccomment">/// Functions to read and write all [`ChangeSet`] data.
+<span class="doccomment">/// Functions to read and write all [`CombinedChangeSet`] data.
 </span><span class="kw">impl</span>&lt;K, A&gt; Store&lt;K, A&gt;
 <span class="kw">where
     </span>K: Ord + <span class="kw">for</span>&lt;<span class="lifetime">'de</span>&gt; Deserialize&lt;<span class="lifetime">'de</span>&gt; + Serialize + Send,
     A: Anchor + <span class="kw">for</span>&lt;<span class="lifetime">'de</span>&gt; Deserialize&lt;<span class="lifetime">'de</span>&gt; + Serialize + Send,
 {
-    <span class="kw">fn </span>write(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>CombinedChangeSet&lt;K, A&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    <span class="doccomment">/// Write the given `changeset` atomically.
+    </span><span class="kw">pub fn </span>write(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>CombinedChangeSet&lt;K, A&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="comment">// no need to write anything if changeset is empty
         </span><span class="kw">if </span>changeset.is_empty() {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(());
@@ -1289,7 +1252,8 @@
         db_transaction.commit().map_err(Error::Sqlite)
     }
 
-    <span class="kw">fn </span>read(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;CombinedChangeSet&lt;K, A&gt;&gt;, Error&gt; {
+    <span class="doccomment">/// Read the entire database and return the aggregate [`CombinedChangeSet`].
+    </span><span class="kw">pub fn </span>read(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;CombinedChangeSet&lt;K, A&gt;&gt;, Error&gt; {
         <span class="kw">let </span>db_transaction = <span class="self">self</span>.db_transaction()<span class="question-mark">?</span>;
 
         <span class="kw">let </span>network = <span class="self">Self</span>::select_network(<span class="kw-2">&amp;</span>db_transaction)<span class="question-mark">?</span>;
@@ -1339,7 +1303,7 @@
     <span class="kw">use </span>bdk_chain::bitcoin::Network::Testnet;
     <span class="kw">use </span>bdk_chain::bitcoin::{secp256k1, BlockHash, OutPoint};
     <span class="kw">use </span>bdk_chain::miniscript::Descriptor;
-    <span class="kw">use </span>bdk_chain::persist::{CombinedChangeSet, PersistBackend};
+    <span class="kw">use </span>bdk_chain::CombinedChangeSet;
     <span class="kw">use </span>bdk_chain::{
         indexed_tx_graph, keychain, tx_graph, BlockId, ConfirmationHeightAnchor,
         ConfirmationTimeHeightAnchor, DescriptorExt,
@@ -1367,10 +1331,10 @@
             .expect(<span class="string">"create new memory db store"</span>);
 
         test_changesets.iter().for_each(|changeset| {
-            store.write_changes(changeset).expect(<span class="string">"write changeset"</span>);
+            store.write(changeset).expect(<span class="string">"write changeset"</span>);
         });
 
-        <span class="kw">let </span>agg_changeset = store.load_changes().expect(<span class="string">"aggregated changeset"</span>);
+        <span class="kw">let </span>agg_changeset = store.read().expect(<span class="string">"aggregated changeset"</span>);
 
         <span class="macro">assert_eq!</span>(agg_changeset, <span class="prelude-val">Some</span>(agg_test_changesets));
     }
@@ -1388,10 +1352,10 @@
             .expect(<span class="string">"create new memory db store"</span>);
 
         test_changesets.iter().for_each(|changeset| {
-            store.write_changes(changeset).expect(<span class="string">"write changeset"</span>);
+            store.write(changeset).expect(<span class="string">"write changeset"</span>);
         });
 
-        <span class="kw">let </span>agg_changeset = store.load_changes().expect(<span class="string">"aggregated changeset"</span>);
+        <span class="kw">let </span>agg_changeset = store.read().expect(<span class="string">"aggregated changeset"</span>);
 
         <span class="macro">assert_eq!</span>(agg_changeset, <span class="prelude-val">Some</span>(agg_test_changesets));
     }
@@ -1405,10 +1369,10 @@
         <span class="kw">let </span><span class="kw-2">mut </span>store = Store::&lt;Keychain, BlockId&gt;::new(conn).expect(<span class="string">"create new memory db store"</span>);
 
         test_changesets.iter().for_each(|changeset| {
-            store.write_changes(changeset).expect(<span class="string">"write changeset"</span>);
+            store.write(changeset).expect(<span class="string">"write changeset"</span>);
         });
 
-        <span class="kw">let </span>agg_changeset = store.load_changes().expect(<span class="string">"aggregated changeset"</span>);
+        <span class="kw">let </span>agg_changeset = store.read().expect(<span class="string">"aggregated changeset"</span>);
 
         <span class="macro">assert_eq!</span>(agg_changeset, <span class="prelude-val">Some</span>(agg_test_changesets));
     }
