@@ -2548,6 +2548,7 @@
 <a href="#2548" id="2548">2548</a>
 <a href="#2549" id="2549">2549</a>
 <a href="#2550" id="2550">2550</a>
+<a href="#2551" id="2551">2551</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2590,6 +2591,7 @@
 <span class="kw">use </span>bitcoin::{consensus::encode::serialize, transaction, BlockHash, Psbt};
 <span class="kw">use </span>bitcoin::{constants::genesis_block, Amount};
 <span class="kw">use </span>core::fmt;
+<span class="kw">use </span>core::mem;
 <span class="kw">use </span>core::ops::Deref;
 <span class="kw">use </span>descriptor::error::Error <span class="kw">as </span>DescriptorError;
 <span class="kw">use </span>miniscript::psbt::{PsbtExt, PsbtInputExt, PsbtInputSatisfier};
@@ -4371,7 +4373,8 @@
 
     <span class="doccomment">/// Finalize a PSBT, i.e., for each input determine if sufficient data is available to pass
     /// validation and construct the respective `scriptSig` or `scriptWitness`. Please refer to
-    /// [BIP174](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki#Input_Finalizer)
+    /// [BIP174](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki#Input_Finalizer),
+    /// and [BIP371](https://github.com/bitcoin/bips/blob/master/bip-0371.mediawiki)
     /// for further information.
     ///
     /// Returns `true` if the PSBT could be finalized, and `false` otherwise.
@@ -4434,20 +4437,17 @@
                         ),
                     ) {
                         <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {
+                            <span class="comment">// Set the UTXO fields, final script_sig and witness
+                            // and clear everything else.
+                            </span><span class="kw">let </span>original = mem::take(<span class="kw-2">&amp;mut </span>psbt.inputs[n]);
                             <span class="kw">let </span>psbt_input = <span class="kw-2">&amp;mut </span>psbt.inputs[n];
-                            psbt_input.final_script_sig = <span class="prelude-val">Some</span>(tmp_input.script_sig);
-                            psbt_input.final_script_witness = <span class="prelude-val">Some</span>(tmp_input.witness);
-                            <span class="kw">if </span>sign_options.remove_partial_sigs {
-                                psbt_input.partial_sigs.clear();
+                            psbt_input.non_witness_utxo = original.non_witness_utxo;
+                            psbt_input.witness_utxo = original.witness_utxo;
+                            <span class="kw">if </span>!tmp_input.script_sig.is_empty() {
+                                psbt_input.final_script_sig = <span class="prelude-val">Some</span>(tmp_input.script_sig);
                             }
-                            <span class="kw">if </span>sign_options.remove_taproot_extras {
-                                <span class="comment">// We just constructed the final witness, clear these fields.
-                                </span>psbt_input.tap_key_sig = <span class="prelude-val">None</span>;
-                                psbt_input.tap_script_sigs.clear();
-                                psbt_input.tap_scripts.clear();
-                                psbt_input.tap_key_origins.clear();
-                                psbt_input.tap_internal_key = <span class="prelude-val">None</span>;
-                                psbt_input.tap_merkle_root = <span class="prelude-val">None</span>;
+                            <span class="kw">if </span>!tmp_input.witness.is_empty() {
+                                psbt_input.final_script_witness = <span class="prelude-val">Some</span>(tmp_input.witness);
                             }
                         }
                         <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; finished = <span class="bool-val">false</span>,
@@ -4457,8 +4457,10 @@
             }
         }
 
-        <span class="kw">if </span>finished &amp;&amp; sign_options.remove_taproot_extras {
+        <span class="comment">// Clear derivation paths from outputs
+        </span><span class="kw">if </span>finished {
             <span class="kw">for </span>output <span class="kw">in </span><span class="kw-2">&amp;mut </span>psbt.outputs {
+                output.bip32_derivation.clear();
                 output.tap_key_origins.clear();
             }
         }
