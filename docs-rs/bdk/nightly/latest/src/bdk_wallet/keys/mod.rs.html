@@ -1000,6 +1000,31 @@
 <a href="#1000" id="1000">1000</a>
 <a href="#1001" id="1001">1001</a>
 <a href="#1002" id="1002">1002</a>
+<a href="#1003" id="1003">1003</a>
+<a href="#1004" id="1004">1004</a>
+<a href="#1005" id="1005">1005</a>
+<a href="#1006" id="1006">1006</a>
+<a href="#1007" id="1007">1007</a>
+<a href="#1008" id="1008">1008</a>
+<a href="#1009" id="1009">1009</a>
+<a href="#1010" id="1010">1010</a>
+<a href="#1011" id="1011">1011</a>
+<a href="#1012" id="1012">1012</a>
+<a href="#1013" id="1013">1013</a>
+<a href="#1014" id="1014">1014</a>
+<a href="#1015" id="1015">1015</a>
+<a href="#1016" id="1016">1016</a>
+<a href="#1017" id="1017">1017</a>
+<a href="#1018" id="1018">1018</a>
+<a href="#1019" id="1019">1019</a>
+<a href="#1020" id="1020">1020</a>
+<a href="#1021" id="1021">1021</a>
+<a href="#1022" id="1022">1022</a>
+<a href="#1023" id="1023">1023</a>
+<a href="#1024" id="1024">1024</a>
+<a href="#1025" id="1025">1025</a>
+<a href="#1026" id="1026">1026</a>
+<a href="#1027" id="1027">1027</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1021,6 +1046,8 @@
 <span class="kw">use </span>core::marker::PhantomData;
 <span class="kw">use </span>core::ops::Deref;
 <span class="kw">use </span>core::str::FromStr;
+
+<span class="kw">use </span>rand_core::{CryptoRng, RngCore};
 
 <span class="kw">use </span>bitcoin::secp256k1::{<span class="self">self</span>, Secp256k1, Signing};
 
@@ -1633,12 +1660,23 @@ let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
         entropy: <span class="self">Self</span>::Entropy,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;GeneratedKey&lt;<span class="self">Self</span>, Ctx&gt;, <span class="self">Self</span>::Error&gt;;
 
-    <span class="doccomment">/// Generate a key given the options with a random entropy
+    <span class="doccomment">/// Generate a key given the options with random entropy.
+    ///
+    /// Uses the thread-local random number generator.
+    </span><span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
     </span><span class="kw">fn </span>generate(options: <span class="self">Self</span>::Options) -&gt; <span class="prelude-ty">Result</span>&lt;GeneratedKey&lt;<span class="self">Self</span>, Ctx&gt;, <span class="self">Self</span>::Error&gt; {
-        <span class="kw">use </span>rand::{thread_rng, Rng};
+        <span class="self">Self</span>::generate_with_aux_rand(options, <span class="kw-2">&amp;mut </span>bitcoin::key::rand::thread_rng())
+    }
 
+    <span class="doccomment">/// Generate a key given the options with random entropy.
+    ///
+    /// Uses a provided random number generator (rng).
+    </span><span class="kw">fn </span>generate_with_aux_rand(
+        options: <span class="self">Self</span>::Options,
+        rng: <span class="kw-2">&amp;mut </span>(<span class="kw">impl </span>CryptoRng + RngCore),
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;GeneratedKey&lt;<span class="self">Self</span>, Ctx&gt;, <span class="self">Self</span>::Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>entropy = <span class="self">Self</span>::Entropy::default();
-        thread_rng().fill(entropy.as_mut());
+        rng.fill_bytes(entropy.as_mut());
         <span class="self">Self</span>::generate_with_entropy(options, entropy)
     }
 }
@@ -1659,8 +1697,20 @@ let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
     }
 
     <span class="doccomment">/// Generate a key with the default options and a random entropy
+    ///
+    /// Uses the thread-local random number generator.
+    </span><span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
     </span><span class="kw">fn </span>generate_default() -&gt; <span class="prelude-ty">Result</span>&lt;GeneratedKey&lt;<span class="self">Self</span>, Ctx&gt;, <span class="self">Self</span>::Error&gt; {
-        <span class="self">Self</span>::generate(Default::default())
+        <span class="self">Self</span>::generate_with_aux_rand(Default::default(), <span class="kw-2">&amp;mut </span>bitcoin::key::rand::thread_rng())
+    }
+
+    <span class="doccomment">/// Generate a key with the default options and a random entropy
+    ///
+    /// Uses a provided random number generator (rng).
+    </span><span class="kw">fn </span>generate_default_with_aux_rand(
+        rng: <span class="kw-2">&amp;mut </span>(<span class="kw">impl </span>CryptoRng + RngCore),
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;GeneratedKey&lt;<span class="self">Self</span>, Ctx&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">Self</span>::generate_with_aux_rand(Default::default(), rng)
     }
 }
 
