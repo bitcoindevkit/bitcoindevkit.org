@@ -2520,61 +2520,6 @@
 <a href="#2520" id="2520">2520</a>
 <a href="#2521" id="2521">2521</a>
 <a href="#2522" id="2522">2522</a>
-<a href="#2523" id="2523">2523</a>
-<a href="#2524" id="2524">2524</a>
-<a href="#2525" id="2525">2525</a>
-<a href="#2526" id="2526">2526</a>
-<a href="#2527" id="2527">2527</a>
-<a href="#2528" id="2528">2528</a>
-<a href="#2529" id="2529">2529</a>
-<a href="#2530" id="2530">2530</a>
-<a href="#2531" id="2531">2531</a>
-<a href="#2532" id="2532">2532</a>
-<a href="#2533" id="2533">2533</a>
-<a href="#2534" id="2534">2534</a>
-<a href="#2535" id="2535">2535</a>
-<a href="#2536" id="2536">2536</a>
-<a href="#2537" id="2537">2537</a>
-<a href="#2538" id="2538">2538</a>
-<a href="#2539" id="2539">2539</a>
-<a href="#2540" id="2540">2540</a>
-<a href="#2541" id="2541">2541</a>
-<a href="#2542" id="2542">2542</a>
-<a href="#2543" id="2543">2543</a>
-<a href="#2544" id="2544">2544</a>
-<a href="#2545" id="2545">2545</a>
-<a href="#2546" id="2546">2546</a>
-<a href="#2547" id="2547">2547</a>
-<a href="#2548" id="2548">2548</a>
-<a href="#2549" id="2549">2549</a>
-<a href="#2550" id="2550">2550</a>
-<a href="#2551" id="2551">2551</a>
-<a href="#2552" id="2552">2552</a>
-<a href="#2553" id="2553">2553</a>
-<a href="#2554" id="2554">2554</a>
-<a href="#2555" id="2555">2555</a>
-<a href="#2556" id="2556">2556</a>
-<a href="#2557" id="2557">2557</a>
-<a href="#2558" id="2558">2558</a>
-<a href="#2559" id="2559">2559</a>
-<a href="#2560" id="2560">2560</a>
-<a href="#2561" id="2561">2561</a>
-<a href="#2562" id="2562">2562</a>
-<a href="#2563" id="2563">2563</a>
-<a href="#2564" id="2564">2564</a>
-<a href="#2565" id="2565">2565</a>
-<a href="#2566" id="2566">2566</a>
-<a href="#2567" id="2567">2567</a>
-<a href="#2568" id="2568">2568</a>
-<a href="#2569" id="2569">2569</a>
-<a href="#2570" id="2570">2570</a>
-<a href="#2571" id="2571">2571</a>
-<a href="#2572" id="2572">2572</a>
-<a href="#2573" id="2573">2573</a>
-<a href="#2574" id="2574">2574</a>
-<a href="#2575" id="2575">2575</a>
-<a href="#2576" id="2576">2576</a>
-<a href="#2577" id="2577">2577</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2604,7 +2549,7 @@
         <span class="self">self</span>, ApplyHeaderError, CannotConnectError, CheckPoint, CheckPointIter, LocalChain,
     },
     spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult},
-    tx_graph::{CanonicalTx, TxGraph},
+    tx_graph::{CanonicalTx, TxGraph, TxNode},
     Append, BlockId, ChainPosition, ConfirmationTime, ConfirmationTimeHeightAnchor, FullTxOut,
     Indexed, IndexedTxGraph,
 };
@@ -2866,35 +2811,6 @@
 
 <span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>NewOrLoadError {}
-
-<span class="doccomment">/// An error that may occur when inserting a transaction into [`Wallet`].
-</span><span class="attr">#[derive(Debug)]
-</span><span class="kw">pub enum </span>InsertTxError {
-    <span class="doccomment">/// The error variant that occurs when the caller attempts to insert a transaction with a
-    /// confirmation height that is greater than the internal chain tip.
-    </span>ConfirmationHeightCannotBeGreaterThanTip {
-        <span class="doccomment">/// The internal chain's tip height.
-        </span>tip_height: u32,
-        <span class="doccomment">/// The introduced transaction's confirmation height.
-        </span>tx_height: u32,
-    },
-}
-
-<span class="kw">impl </span>fmt::Display <span class="kw">for </span>InsertTxError {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
-        <span class="kw">match </span><span class="self">self </span>{
-            InsertTxError::ConfirmationHeightCannotBeGreaterThanTip {
-                tip_height,
-                tx_height,
-            } =&gt; {
-                <span class="macro">write!</span>(f, <span class="string">"cannot insert tx with confirmation height ({}) higher than internal tip height ({})"</span>, tx_height, tip_height)
-            }
-        }
-    }
-}
-
-<span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
-</span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>InsertTxError {}
 
 <span class="doccomment">/// An error that may occur when applying a block to [`Wallet`].
 </span><span class="attr">#[derive(Debug)]
@@ -3662,63 +3578,21 @@
     <span class="doccomment">/// Add a transaction to the wallet's internal view of the chain. This stages the change,
     /// you must persist it later.
     ///
-    /// Returns whether anything changed with the transaction insertion (e.g. `false` if the
-    /// transaction was already inserted at the same position).
+    /// This method inserts the given `tx` and returns whether anything changed after insertion,
+    /// which will be false if the same transaction already exists in the wallet's transaction
+    /// graph. Any changes are staged but not committed.
     ///
-    /// A `tx` can be rejected if `position` has a height greater than the [`latest_checkpoint`].
-    /// Therefore you should use [`insert_checkpoint`] to insert new checkpoints before manually
-    /// inserting new transactions.
+    /// # Note
     ///
-    /// **WARNING**: If `position` is confirmed, we anchor the `tx` to the lowest checkpoint that
-    /// is &gt;= the `position`'s height. The caller is responsible for ensuring the `tx` exists in our
-    /// local view of the best chain's history.
-    ///
-    /// You must persist the changes resulting from one or more calls to this method if you need
-    /// the inserted tx to be reloaded after closing the wallet.
-    ///
-    /// [`commit`]: Self::commit
-    /// [`latest_checkpoint`]: Self::latest_checkpoint
-    /// [`insert_checkpoint`]: Self::insert_checkpoint
-    </span><span class="kw">pub fn </span>insert_tx(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        tx: Transaction,
-        position: ConfirmationTime,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, InsertTxError&gt; {
-        <span class="kw">let </span>(anchor, last_seen) = <span class="kw">match </span>position {
-            ConfirmationTime::Confirmed { height, time } =&gt; {
-                <span class="comment">// anchor tx to checkpoint with lowest height that is &gt;= position's height
-                </span><span class="kw">let </span>anchor = <span class="self">self
-                    </span>.chain
-                    .range(height..)
-                    .last()
-                    .ok_or(InsertTxError::ConfirmationHeightCannotBeGreaterThanTip {
-                        tip_height: <span class="self">self</span>.chain.tip().height(),
-                        tx_height: height,
-                    })
-                    .map(|anchor_cp| ConfirmationTimeHeightAnchor {
-                        anchor_block: anchor_cp.block_id(),
-                        confirmation_height: height,
-                        confirmation_time: time,
-                    })<span class="question-mark">?</span>;
-
-                (<span class="prelude-val">Some</span>(anchor), <span class="prelude-val">None</span>)
-            }
-            ConfirmationTime::Unconfirmed { last_seen } =&gt; (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(last_seen)),
-        };
-
+    /// By default the inserted `tx` won't be considered "canonical" because it's not known
+    /// whether the transaction exists in the best chain. To know whether it exists, the tx
+    /// must be broadcast to the network and the wallet synced via a chain source.
+    </span><span class="kw">pub fn </span>insert_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: Transaction) -&gt; bool {
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
-        <span class="kw">let </span>txid = tx.compute_txid();
         changeset.append(<span class="self">self</span>.indexed_graph.insert_tx(tx).into());
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor {
-            changeset.append(<span class="self">self</span>.indexed_graph.insert_anchor(txid, anchor).into());
-        }
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(last_seen) = last_seen {
-            changeset.append(<span class="self">self</span>.indexed_graph.insert_seen_at(txid, last_seen).into());
-        }
-
-        <span class="kw">let </span>changed = !changeset.is_empty();
+        <span class="kw">let </span>ret = !changeset.is_empty();
         <span class="self">self</span>.stage.append(changeset);
-        <span class="prelude-val">Ok</span>(changed)
+        ret
     }
 
     <span class="doccomment">/// Iterate over the transactions in the wallet.
@@ -3728,7 +3602,7 @@
     </span>{
         <span class="self">self</span>.indexed_graph
             .graph()
-            .list_chain_txs(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, <span class="self">self</span>.chain.tip().block_id())
+            .list_canonical_txs(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, <span class="self">self</span>.chain.tip().block_id())
     }
 
     <span class="doccomment">/// Return the balance, separated into available, trusted-pending, untrusted-pending and immature
@@ -4903,6 +4777,14 @@
         <span class="self">self</span>.indexed_graph.graph()
     }
 
+    <span class="doccomment">/// Iterate over transactions in the wallet that are unseen and unanchored likely
+    /// because they haven't been broadcast.
+    </span><span class="kw">pub fn </span>unbroadcast_transactions(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TxNode&lt;<span class="lifetime">'_</span>, Arc&lt;Transaction&gt;, ConfirmationTimeHeightAnchor&gt;&gt; {
+        <span class="self">self</span>.tx_graph().txs_with_no_anchor_or_last_seen()
+    }
+
     <span class="doccomment">/// Get a reference to the inner [`KeychainTxOutIndex`].
     </span><span class="kw">pub fn </span>spk_index(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>KeychainTxOutIndex&lt;KeychainKind&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index
@@ -5122,8 +5004,9 @@
 </span><span class="macro">macro_rules!</span> doctest_wallet {
     () =&gt; {{
         <span class="kw">use </span><span class="macro-nonterminal">$crate::bitcoin</span>::{BlockHash, Transaction, absolute, TxOut, Network, hashes::Hash};
-        <span class="kw">use </span><span class="macro-nonterminal">$crate::chain</span>::{ConfirmationTime, BlockId};
-        <span class="kw">use </span><span class="macro-nonterminal">$</span><span class="kw">crate</span>::{<span class="macro-nonterminal">KeychainKind</span>, wallet::Wallet};
+        <span class="kw">use </span><span class="macro-nonterminal">$crate::chain</span>::{ConfirmationTimeHeightAnchor, BlockId, TxGraph};
+        <span class="kw">use </span><span class="macro-nonterminal">$crate::wallet</span>::{Update, Wallet};
+        <span class="kw">use </span><span class="macro-nonterminal">$crate::KeychainKind</span>;
         <span class="kw">let </span>descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/0/*)"</span>;
         <span class="kw">let </span>change_descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/1/*)"</span>;
 
@@ -5143,12 +5026,19 @@
                 script_pubkey: address.script_pubkey(),
             }],
         };
-        <span class="kw">let _ </span>= wallet.insert_checkpoint(BlockId { height: <span class="number">1_000</span>, hash: BlockHash::all_zeros() });
-        <span class="kw">let _ </span>= wallet.insert_tx(tx.clone(), ConfirmationTime::Confirmed {
-            height: <span class="number">500</span>,
-            time: <span class="number">50_000
-        </span>});
-
+        <span class="kw">let </span>txid = tx.txid();
+        <span class="kw">let </span>block = BlockId { height: <span class="number">1_000</span>, hash: BlockHash::all_zeros() };
+        <span class="kw">let _ </span>= wallet.insert_checkpoint(block);
+        <span class="kw">let _ </span>= wallet.insert_tx(tx);
+        <span class="kw">let </span>anchor = ConfirmationTimeHeightAnchor {
+            confirmation_height: <span class="number">500</span>,
+            confirmation_time: <span class="number">50_000</span>,
+            anchor_block: block,
+        };
+        <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::default();
+        <span class="kw">let _ </span>= graph.insert_anchor(txid, anchor);
+        <span class="kw">let </span>update = Update { graph, ..Default::default() };
+        wallet.apply_update(update).unwrap();
         wallet
     }}
 }
