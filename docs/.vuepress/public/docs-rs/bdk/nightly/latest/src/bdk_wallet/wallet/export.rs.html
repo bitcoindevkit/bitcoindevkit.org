@@ -347,6 +347,13 @@
 <a href="#347" id="347">347</a>
 <a href="#348" id="348">348</a>
 <a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -563,7 +570,7 @@
     <span class="kw">use </span>core::str::FromStr;
 
     <span class="kw">use </span><span class="kw">crate</span>::std::string::ToString;
-    <span class="kw">use </span>bdk_chain::{BlockId, ConfirmationTime};
+    <span class="kw">use </span>bdk_chain::{BlockId, ConfirmationTimeHeightAnchor};
     <span class="kw">use </span>bitcoin::hashes::Hash;
     <span class="kw">use </span>bitcoin::{transaction, BlockHash, Network, Transaction};
 
@@ -571,6 +578,8 @@
     <span class="kw">use </span><span class="kw">crate</span>::wallet::Wallet;
 
     <span class="kw">fn </span>get_test_wallet(descriptor: <span class="kw-2">&amp;</span>str, change_descriptor: <span class="kw-2">&amp;</span>str, network: Network) -&gt; Wallet {
+        <span class="kw">use </span><span class="kw">crate</span>::wallet::Update;
+        <span class="kw">use </span>bdk_chain::TxGraph;
         <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::new(descriptor, change_descriptor, network).unwrap();
         <span class="kw">let </span>transaction = Transaction {
             input: <span class="macro">vec!</span>[],
@@ -578,20 +587,25 @@
             version: transaction::Version::non_standard(<span class="number">0</span>),
             lock_time: bitcoin::absolute::LockTime::ZERO,
         };
+        <span class="kw">let </span>txid = transaction.compute_txid();
+        <span class="kw">let </span>block_id = BlockId {
+            height: <span class="number">5001</span>,
+            hash: BlockHash::all_zeros(),
+        };
+        wallet.insert_checkpoint(block_id).unwrap();
+        wallet.insert_tx(transaction);
+        <span class="kw">let </span>anchor = ConfirmationTimeHeightAnchor {
+            confirmation_height: <span class="number">5000</span>,
+            confirmation_time: <span class="number">0</span>,
+            anchor_block: block_id,
+        };
+        <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::default();
+        <span class="kw">let _ </span>= graph.insert_anchor(txid, anchor);
         wallet
-            .insert_checkpoint(BlockId {
-                height: <span class="number">5001</span>,
-                hash: BlockHash::all_zeros(),
+            .apply_update(Update {
+                graph,
+                ..Default::default()
             })
-            .unwrap();
-        wallet
-            .insert_tx(
-                transaction,
-                ConfirmationTime::Confirmed {
-                    height: <span class="number">5000</span>,
-                    time: <span class="number">0</span>,
-                },
-            )
             .unwrap();
         wallet
     }
