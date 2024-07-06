@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["ChangeSet","IndexedTxGraph"],"trait":["Indexer"]};
+window.SIDEBAR_ITEMS = {"struct":["ChangeSet","IndexedTxGraph"]};

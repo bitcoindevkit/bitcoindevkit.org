@@ -336,28 +336,6 @@
 <a href="#336" id="336">336</a>
 <a href="#337" id="337">337</a>
 <a href="#338" id="338">338</a>
-<a href="#339" id="339">339</a>
-<a href="#340" id="340">340</a>
-<a href="#341" id="341">341</a>
-<a href="#342" id="342">342</a>
-<a href="#343" id="343">343</a>
-<a href="#344" id="344">344</a>
-<a href="#345" id="345">345</a>
-<a href="#346" id="346">346</a>
-<a href="#347" id="347">347</a>
-<a href="#348" id="348">348</a>
-<a href="#349" id="349">349</a>
-<a href="#350" id="350">350</a>
-<a href="#351" id="351">351</a>
-<a href="#352" id="352">352</a>
-<a href="#353" id="353">353</a>
-<a href="#354" id="354">354</a>
-<a href="#355" id="355">355</a>
-<a href="#356" id="356">356</a>
-<a href="#357" id="357">357</a>
-<a href="#358" id="358">358</a>
-<a href="#359" id="359">359</a>
-<a href="#360" id="360">360</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Contains the [`IndexedTxGraph`] and associated types. Refer to the
 //! [`IndexedTxGraph`] documentation for more.
 </span><span class="kw">use </span>alloc::vec::Vec;
@@ -365,7 +343,7 @@
 
 <span class="kw">use crate</span>::{
     tx_graph::{<span class="self">self</span>, TxGraph},
-    Anchor, AnchorFromBlockPosition, Append, BlockId,
+    Anchor, AnchorFromBlockPosition, Append, BlockId, Indexer,
 };
 
 <span class="doccomment">/// The [`IndexedTxGraph`] combines a [`TxGraph`] and an [`Indexer`] implementation.
@@ -680,37 +658,15 @@
 }
 
 <span class="attr">#[cfg(feature = <span class="string">"miniscript"</span>)]
-</span><span class="kw">impl</span>&lt;A, K&gt; From&lt;<span class="kw">crate</span>::keychain::ChangeSet&lt;K&gt;&gt; <span class="kw">for </span>ChangeSet&lt;A, <span class="kw">crate</span>::keychain::ChangeSet&lt;K&gt;&gt; {
-    <span class="kw">fn </span>from(indexer: <span class="kw">crate</span>::keychain::ChangeSet&lt;K&gt;) -&gt; <span class="self">Self </span>{
+</span><span class="kw">impl</span>&lt;A, K&gt; From&lt;<span class="kw">crate</span>::indexer::keychain_txout::ChangeSet&lt;K&gt;&gt;
+    <span class="kw">for </span>ChangeSet&lt;A, <span class="kw">crate</span>::indexer::keychain_txout::ChangeSet&lt;K&gt;&gt;
+{
+    <span class="kw">fn </span>from(indexer: <span class="kw">crate</span>::indexer::keychain_txout::ChangeSet&lt;K&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             graph: Default::default(),
             indexer,
         }
     }
-}
-
-<span class="doccomment">/// Utilities for indexing transaction data.
-///
-/// Types which implement this trait can be used to construct an [`IndexedTxGraph`].
-/// This trait's methods should rarely be called directly.
-</span><span class="kw">pub trait </span>Indexer {
-    <span class="doccomment">/// The resultant "changeset" when new transaction data is indexed.
-    </span><span class="kw">type </span>ChangeSet;
-
-    <span class="doccomment">/// Scan and index the given `outpoint` and `txout`.
-    </span><span class="kw">fn </span>index_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="self">Self</span>::ChangeSet;
-
-    <span class="doccomment">/// Scans a transaction for relevant outpoints, which are stored and indexed internally.
-    </span><span class="kw">fn </span>index_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; <span class="self">Self</span>::ChangeSet;
-
-    <span class="doccomment">/// Apply changeset to itself.
-    </span><span class="kw">fn </span>apply_changeset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: <span class="self">Self</span>::ChangeSet);
-
-    <span class="doccomment">/// Determines the [`ChangeSet`] between `self` and an empty [`Indexer`].
-    </span><span class="kw">fn </span>initial_changeset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::ChangeSet;
-
-    <span class="doccomment">/// Determines whether the transaction should be included in the index.
-    </span><span class="kw">fn </span>is_tx_relevant(<span class="kw-2">&amp;</span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>Transaction) -&gt; bool;
 }
 
 <span class="kw">impl</span>&lt;A, I&gt; AsRef&lt;TxGraph&lt;A&gt;&gt; <span class="kw">for </span>IndexedTxGraph&lt;A, I&gt; {

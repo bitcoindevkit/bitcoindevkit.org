@@ -756,6 +756,7 @@
 <a href="#756" id="756">756</a>
 <a href="#757" id="757">757</a>
 <a href="#758" id="758">758</a>
+<a href="#759" id="759">759</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_chain::bitcoin::consensus::{deserialize, serialize};
 <span class="kw">use </span>bdk_chain::bitcoin::hashes::Hash;
 <span class="kw">use </span>bdk_chain::bitcoin::{Amount, Network, OutPoint, ScriptBuf, Transaction, TxOut};
@@ -772,7 +773,8 @@
 <span class="kw">use </span><span class="kw">crate</span>::Error;
 <span class="kw">use </span>bdk_chain::CombinedChangeSet;
 <span class="kw">use </span>bdk_chain::{
-    indexed_tx_graph, keychain, local_chain, tx_graph, Anchor, Append, DescriptorExt, DescriptorId,
+    indexed_tx_graph, indexer::keychain_txout, local_chain, tx_graph, Anchor, Append,
+    DescriptorExt, DescriptorId,
 };
 
 <span class="doccomment">/// Persists data in to a relational schema based [SQLite] database file.
@@ -945,7 +947,7 @@
     /// If keychain exists only update last active index.
     </span><span class="kw">fn </span>insert_keychains(
         db_transaction: <span class="kw-2">&amp;</span>rusqlite::Transaction,
-        tx_graph_changeset: <span class="kw-2">&amp;</span>indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;K&gt;&gt;,
+        tx_graph_changeset: <span class="kw-2">&amp;</span>indexed_tx_graph::ChangeSet&lt;A, keychain_txout::ChangeSet&lt;K&gt;&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>keychain_changeset = <span class="kw-2">&amp;</span>tx_graph_changeset.indexer;
         <span class="kw">for </span>(keychain, descriptor) <span class="kw">in </span>keychain_changeset.keychains_added.iter() {
@@ -964,7 +966,7 @@
     <span class="doccomment">/// Update descriptor last revealed index.
     </span><span class="kw">fn </span>update_last_revealed(
         db_transaction: <span class="kw-2">&amp;</span>rusqlite::Transaction,
-        tx_graph_changeset: <span class="kw-2">&amp;</span>indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;K&gt;&gt;,
+        tx_graph_changeset: <span class="kw-2">&amp;</span>indexed_tx_graph::ChangeSet&lt;A, keychain_txout::ChangeSet&lt;K&gt;&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>keychain_changeset = <span class="kw-2">&amp;</span>tx_graph_changeset.indexer;
         <span class="kw">for </span>(descriptor_id, last_revealed) <span class="kw">in </span>keychain_changeset.last_revealed.iter() {
@@ -1037,7 +1039,7 @@
     /// Error if trying to insert existing txid.
     </span><span class="kw">fn </span>insert_txs(
         db_transaction: <span class="kw-2">&amp;</span>rusqlite::Transaction,
-        tx_graph_changeset: <span class="kw-2">&amp;</span>indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;K&gt;&gt;,
+        tx_graph_changeset: <span class="kw-2">&amp;</span>indexed_tx_graph::ChangeSet&lt;A, keychain_txout::ChangeSet&lt;K&gt;&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">for </span>tx <span class="kw">in </span>tx_graph_changeset.graph.txs.iter() {
             <span class="kw">let </span>insert_tx_stmt = <span class="kw-2">&amp;mut </span>db_transaction
@@ -1101,7 +1103,7 @@
     /// Error if trying to insert existing outpoint.
     </span><span class="kw">fn </span>insert_txouts(
         db_transaction: <span class="kw-2">&amp;</span>rusqlite::Transaction,
-        tx_graph_changeset: <span class="kw-2">&amp;</span>indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;K&gt;&gt;,
+        tx_graph_changeset: <span class="kw-2">&amp;</span>indexed_tx_graph::ChangeSet&lt;A, keychain_txout::ChangeSet&lt;K&gt;&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">for </span>txout <span class="kw">in </span>tx_graph_changeset.graph.txouts.iter() {
             <span class="kw">let </span>insert_txout_stmt = <span class="kw-2">&amp;mut </span>db_transaction
@@ -1151,7 +1153,7 @@
     <span class="doccomment">/// Update transaction last seen times.
     </span><span class="kw">fn </span>update_last_seen(
         db_transaction: <span class="kw-2">&amp;</span>rusqlite::Transaction,
-        tx_graph_changeset: <span class="kw-2">&amp;</span>indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;K&gt;&gt;,
+        tx_graph_changeset: <span class="kw-2">&amp;</span>indexed_tx_graph::ChangeSet&lt;A, keychain_txout::ChangeSet&lt;K&gt;&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">for </span>tx_last_seen <span class="kw">in </span>tx_graph_changeset.graph.last_seen.iter() {
             <span class="kw">let </span>insert_or_update_tx_stmt = <span class="kw-2">&amp;mut </span>db_transaction
@@ -1176,7 +1178,7 @@
     <span class="doccomment">/// Insert anchors.
     </span><span class="kw">fn </span>insert_anchors(
         db_transaction: <span class="kw-2">&amp;</span>rusqlite::Transaction,
-        tx_graph_changeset: <span class="kw-2">&amp;</span>indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;K&gt;&gt;,
+        tx_graph_changeset: <span class="kw-2">&amp;</span>indexed_tx_graph::ChangeSet&lt;A, keychain_txout::ChangeSet&lt;K&gt;&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="comment">// serde_json::to_string
         </span><span class="kw">for </span>anchor <span class="kw">in </span>tx_graph_changeset.graph.anchors.iter() {
@@ -1272,12 +1274,12 @@
             last_seen,
         };
 
-        <span class="kw">let </span>indexer: keychain::ChangeSet&lt;K&gt; = keychain::ChangeSet {
+        <span class="kw">let </span>indexer = keychain_txout::ChangeSet {
             keychains_added,
             last_revealed,
         };
 
-        <span class="kw">let </span>indexed_tx_graph: indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;K&gt;&gt; =
+        <span class="kw">let </span>indexed_tx_graph: indexed_tx_graph::ChangeSet&lt;A, keychain_txout::ChangeSet&lt;K&gt;&gt; =
             indexed_tx_graph::ChangeSet { graph, indexer };
 
         <span class="kw">if </span>network.is_none() &amp;&amp; chain.is_empty() &amp;&amp; indexed_tx_graph.is_empty() {
@@ -1305,7 +1307,7 @@
     <span class="kw">use </span>bdk_chain::miniscript::Descriptor;
     <span class="kw">use </span>bdk_chain::CombinedChangeSet;
     <span class="kw">use </span>bdk_chain::{
-        indexed_tx_graph, keychain, tx_graph, BlockId, ConfirmationHeightAnchor,
+        indexed_tx_graph, tx_graph, BlockId, ConfirmationHeightAnchor,
         ConfirmationTimeHeightAnchor, DescriptorExt,
     };
     <span class="kw">use </span>std::str::FromStr;
@@ -1442,12 +1444,12 @@
             .into(),
         };
 
-        <span class="kw">let </span>keychain_changeset = keychain::ChangeSet {
+        <span class="kw">let </span>keychain_changeset = keychain_txout::ChangeSet {
             keychains_added: [(ext_keychain, ext_desc), (int_keychain, int_desc)].into(),
             last_revealed: [(ext_desc_id, <span class="number">124</span>), (int_desc_id, <span class="number">421</span>)].into(),
         };
 
-        <span class="kw">let </span>graph_changeset: indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;Keychain&gt;&gt; =
+        <span class="kw">let </span>graph_changeset: indexed_tx_graph::ChangeSet&lt;A, keychain_txout::ChangeSet&lt;Keychain&gt;&gt; =
             indexed_tx_graph::ChangeSet {
                 graph: tx_graph_changeset,
                 indexer: keychain_changeset,
@@ -1470,10 +1472,10 @@
             last_seen: [(tx2.compute_txid(), <span class="number">1708919121</span>)].into(),
         };
 
-        <span class="kw">let </span>graph_changeset2: indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;Keychain&gt;&gt; =
+        <span class="kw">let </span>graph_changeset2: indexed_tx_graph::ChangeSet&lt;A, keychain_txout::ChangeSet&lt;Keychain&gt;&gt; =
             indexed_tx_graph::ChangeSet {
                 graph: tx_graph_changeset2,
-                indexer: keychain::ChangeSet::default(),
+                indexer: keychain_txout::ChangeSet::default(),
             };
 
         changesets.push(CombinedChangeSet {
@@ -1490,10 +1492,10 @@
             last_seen: BTreeMap::default(),
         };
 
-        <span class="kw">let </span>graph_changeset3: indexed_tx_graph::ChangeSet&lt;A, keychain::ChangeSet&lt;Keychain&gt;&gt; =
+        <span class="kw">let </span>graph_changeset3: indexed_tx_graph::ChangeSet&lt;A, keychain_txout::ChangeSet&lt;Keychain&gt;&gt; =
             indexed_tx_graph::ChangeSet {
                 graph: tx_graph_changeset3,
-                indexer: keychain::ChangeSet::default(),
+                indexer: keychain_txout::ChangeSet::default(),
             };
 
         changesets.push(CombinedChangeSet {

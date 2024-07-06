@@ -87,6 +87,10 @@
 <a href="#87" id="87">87</a>
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
 </pre></div><pre class="rust"><code><span class="doccomment">/// A changeset containing [`crate`] structures typically persisted together.
 </span><span class="attr">#[cfg(feature = <span class="string">"miniscript"</span>)]
 #[derive(Debug, Clone, PartialEq)]
@@ -105,7 +109,8 @@
     <span class="doccomment">/// Changes to the [`LocalChain`](crate::local_chain::LocalChain).
     </span><span class="kw">pub </span>chain: <span class="kw">crate</span>::local_chain::ChangeSet,
     <span class="doccomment">/// Changes to [`IndexedTxGraph`](crate::indexed_tx_graph::IndexedTxGraph).
-    </span><span class="kw">pub </span>indexed_tx_graph: <span class="kw">crate</span>::indexed_tx_graph::ChangeSet&lt;A, <span class="kw">crate</span>::keychain::ChangeSet&lt;K&gt;&gt;,
+    </span><span class="kw">pub </span>indexed_tx_graph:
+        <span class="kw">crate</span>::indexed_tx_graph::ChangeSet&lt;A, <span class="kw">crate</span>::indexer::keychain_txout::ChangeSet&lt;K&gt;&gt;,
     <span class="doccomment">/// Stores the network type of the transaction data.
     </span><span class="kw">pub </span>network: <span class="prelude-ty">Option</span>&lt;bitcoin::Network&gt;,
 }
@@ -151,11 +156,14 @@
 }
 
 <span class="attr">#[cfg(feature = <span class="string">"miniscript"</span>)]
-</span><span class="kw">impl</span>&lt;K, A&gt; From&lt;<span class="kw">crate</span>::indexed_tx_graph::ChangeSet&lt;A, <span class="kw">crate</span>::keychain::ChangeSet&lt;K&gt;&gt;&gt;
+</span><span class="kw">impl</span>&lt;K, A&gt; From&lt;<span class="kw">crate</span>::indexed_tx_graph::ChangeSet&lt;A, <span class="kw">crate</span>::indexer::keychain_txout::ChangeSet&lt;K&gt;&gt;&gt;
     <span class="kw">for </span>CombinedChangeSet&lt;K, A&gt;
 {
     <span class="kw">fn </span>from(
-        indexed_tx_graph: <span class="kw">crate</span>::indexed_tx_graph::ChangeSet&lt;A, <span class="kw">crate</span>::keychain::ChangeSet&lt;K&gt;&gt;,
+        indexed_tx_graph: <span class="kw">crate</span>::indexed_tx_graph::ChangeSet&lt;
+            A,
+            <span class="kw">crate</span>::indexer::keychain_txout::ChangeSet&lt;K&gt;,
+        &gt;,
     ) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             indexed_tx_graph,
@@ -165,8 +173,8 @@
 }
 
 <span class="attr">#[cfg(feature = <span class="string">"miniscript"</span>)]
-</span><span class="kw">impl</span>&lt;K, A&gt; From&lt;<span class="kw">crate</span>::keychain::ChangeSet&lt;K&gt;&gt; <span class="kw">for </span>CombinedChangeSet&lt;K, A&gt; {
-    <span class="kw">fn </span>from(indexer: <span class="kw">crate</span>::keychain::ChangeSet&lt;K&gt;) -&gt; <span class="self">Self </span>{
+</span><span class="kw">impl</span>&lt;K, A&gt; From&lt;<span class="kw">crate</span>::indexer::keychain_txout::ChangeSet&lt;K&gt;&gt; <span class="kw">for </span>CombinedChangeSet&lt;K, A&gt; {
+    <span class="kw">fn </span>from(indexer: <span class="kw">crate</span>::indexer::keychain_txout::ChangeSet&lt;K&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             indexed_tx_graph: <span class="kw">crate</span>::indexed_tx_graph::ChangeSet {
                 indexer,
