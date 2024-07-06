@@ -1,6 +1,6 @@
 var srcIndex = new Map(JSON.parse('[\
 ["bdk_bitcoind_rpc",["",[],["lib.rs"]]],\
-["bdk_chain",["",[["keychain",[],["txout_index.rs"]]],["chain_data.rs","chain_oracle.rs","changeset.rs","descriptor_ext.rs","example_utils.rs","indexed_tx_graph.rs","keychain.rs","lib.rs","local_chain.rs","spk_client.rs","spk_iter.rs","spk_txout_index.rs","tx_data_traits.rs","tx_graph.rs"]]],\
+["bdk_chain",["",[["indexer",[],["keychain_txout.rs","spk_txout.rs"]]],["balance.rs","chain_data.rs","chain_oracle.rs","changeset.rs","descriptor_ext.rs","example_utils.rs","indexed_tx_graph.rs","indexer.rs","lib.rs","local_chain.rs","spk_client.rs","spk_iter.rs","tx_data_traits.rs","tx_graph.rs"]]],\
 ["bdk_coin_select",["",[],["bnb.rs","coin_selector.rs","lib.rs"]]],\
 ["bdk_electrum",["",[],["bdk_electrum_client.rs","lib.rs"]]],\
 ["bdk_esplora",["",[],["async_ext.rs","blocking_ext.rs","lib.rs"]]],\
