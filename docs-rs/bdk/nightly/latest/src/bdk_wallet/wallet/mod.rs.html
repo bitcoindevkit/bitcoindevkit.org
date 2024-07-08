@@ -2514,12 +2514,6 @@
 <a href="#2514" id="2514">2514</a>
 <a href="#2515" id="2515">2515</a>
 <a href="#2516" id="2516">2516</a>
-<a href="#2517" id="2517">2517</a>
-<a href="#2518" id="2518">2518</a>
-<a href="#2519" id="2519">2519</a>
-<a href="#2520" id="2520">2520</a>
-<a href="#2521" id="2521">2521</a>
-<a href="#2522" id="2522">2522</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -4117,7 +4111,7 @@
                 <span class="kw">let </span>weighted_utxo = <span class="kw">match </span>txout_index.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
                     <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(keychain, derivation_index)) =&gt; {
                         <span class="kw">let </span>satisfaction_weight = <span class="self">self
-                            </span>.get_descriptor_for_keychain(keychain)
+                            </span>.public_descriptor(keychain)
                             .max_weight_to_satisfy()
                             .unwrap();
                         WeightedUtxo {
@@ -4285,16 +4279,15 @@
         )
     }
 
-    <span class="doccomment">/// Return the "public" version of the wallet's descriptor, meaning a new descriptor that has
-    /// the same structure but with every secret key removed
+    <span class="doccomment">/// Returns the descriptor used to create addresses for a particular `keychain`.
+    /// It's the "public" version of the wallet's descriptor, meaning a new descriptor that has
+    /// the same structure but with the all secret keys replaced by their corresponding public key.
     ///
-    /// This can be used to build a watch-only version of a wallet
+    /// This can be used to build a watch-only version of a wallet.
     </span><span class="kw">pub fn </span>public_descriptor(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: KeychainKind) -&gt; <span class="kw-2">&amp;</span>ExtendedDescriptor {
         <span class="self">self</span>.indexed_graph
             .index
-            .keychains()
-            .find(|(k, <span class="kw">_</span>)| <span class="kw-2">*</span>k == <span class="kw-2">&amp;</span>keychain)
-            .map(|(<span class="kw">_</span>, d)| d)
+            .get_descriptor(<span class="kw-2">&amp;</span>keychain)
             .expect(<span class="string">"keychain must exist"</span>)
     }
 
@@ -4400,11 +4393,6 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>.secp
     }
 
-    <span class="doccomment">/// Returns the descriptor used to create addresses for a particular `keychain`.
-    </span><span class="kw">pub fn </span>get_descriptor_for_keychain(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: KeychainKind) -&gt; <span class="kw-2">&amp;</span>ExtendedDescriptor {
-        <span class="self">self</span>.public_descriptor(keychain)
-    }
-
     <span class="doccomment">/// The derivation index of this wallet. It will return `None` if it has not derived any addresses.
     /// Otherwise, it will return the index of the highest address it has derived.
     </span><span class="kw">pub fn </span>derivation_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: KeychainKind) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
@@ -4440,7 +4428,7 @@
             </span>.indexed_graph
             .index
             .index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey)<span class="question-mark">?</span>;
-        <span class="kw">let </span>descriptor = <span class="self">self</span>.get_descriptor_for_keychain(keychain);
+        <span class="kw">let </span>descriptor = <span class="self">self</span>.public_descriptor(keychain);
         descriptor.at_derivation_index(child).ok()
     }
 
@@ -4449,7 +4437,7 @@
             .map(|utxo| {
                 <span class="kw">let </span>keychain = utxo.keychain;
                 (utxo, {
-                    <span class="self">self</span>.get_descriptor_for_keychain(keychain)
+                    <span class="self">self</span>.public_descriptor(keychain)
                         .max_weight_to_satisfy()
                         .unwrap()
                 })
@@ -4662,7 +4650,7 @@
             ..psbt::Input::default()
         };
 
-        <span class="kw">let </span>desc = <span class="self">self</span>.get_descriptor_for_keychain(keychain);
+        <span class="kw">let </span>desc = <span class="self">self</span>.public_descriptor(keychain);
         <span class="kw">let </span>derived_descriptor = desc
             .at_derivation_index(child)
             .expect(<span class="string">"child can't be hardened"</span>);
@@ -4702,7 +4690,7 @@
             <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(keychain, child)) =
                 <span class="self">self</span>.indexed_graph.index.index_of_spk(<span class="kw-2">&amp;</span>out.script_pubkey)
             {
-                <span class="kw">let </span>desc = <span class="self">self</span>.get_descriptor_for_keychain(keychain);
+                <span class="kw">let </span>desc = <span class="self">self</span>.public_descriptor(keychain);
                 <span class="kw">let </span>desc = desc
                     .at_derivation_index(child)
                     .expect(<span class="string">"child can't be hardened"</span>);
@@ -4722,9 +4710,9 @@
 
     <span class="doccomment">/// Return the checksum of the public descriptor associated to `keychain`
     ///
-    /// Internally calls [`Self::get_descriptor_for_keychain`] to fetch the right descriptor
+    /// Internally calls [`Self::public_descriptor`] to fetch the right descriptor
     </span><span class="kw">pub fn </span>descriptor_checksum(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: KeychainKind) -&gt; String {
-        <span class="self">self</span>.get_descriptor_for_keychain(keychain)
+        <span class="self">self</span>.public_descriptor(keychain)
             .to_string()
             .split_once(<span class="string">'#'</span>)
             .unwrap()
