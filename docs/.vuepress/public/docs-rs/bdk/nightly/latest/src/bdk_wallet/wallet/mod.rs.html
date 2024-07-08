@@ -2550,8 +2550,8 @@
     },
     spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult},
     tx_graph::{CanonicalTx, TxGraph, TxNode},
-    Append, BlockId, ChainPosition, ConfirmationTime, ConfirmationTimeHeightAnchor, FullTxOut,
-    Indexed, IndexedTxGraph,
+    BlockId, ChainPosition, ConfirmationTime, ConfirmationTimeHeightAnchor, FullTxOut, Indexed,
+    IndexedTxGraph, Merge,
 };
 <span class="kw">use </span>bitcoin::sighash::{EcdsaSighashType, TapSighashType};
 <span class="kw">use </span>bitcoin::{
@@ -3188,7 +3188,7 @@
             .reveal_next_spk(<span class="kw-2">&amp;</span>keychain)
             .expect(<span class="string">"keychain must exist"</span>);
 
-        stage.append(indexed_tx_graph::ChangeSet::from(index_changeset).into());
+        stage.merge(indexed_tx_graph::ChangeSet::from(index_changeset).into());
 
         AddressInfo {
             index,
@@ -3218,7 +3218,7 @@
             .reveal_to_target(<span class="kw-2">&amp;</span>keychain, index)
             .expect(<span class="string">"keychain must exist"</span>);
 
-        <span class="self">self</span>.stage.append(index_changeset.into());
+        <span class="self">self</span>.stage.merge(index_changeset.into());
 
         spks.into_iter().map(<span class="kw">move </span>|(index, spk)| AddressInfo {
             index,
@@ -3243,7 +3243,7 @@
             .expect(<span class="string">"keychain must exist"</span>);
 
         <span class="self">self</span>.stage
-            .append(indexed_tx_graph::ChangeSet::from(index_changeset).into());
+            .merge(indexed_tx_graph::ChangeSet::from(index_changeset).into());
 
         AddressInfo {
             index,
@@ -3402,7 +3402,7 @@
     /// [`list_output`]: Self::list_output
     </span><span class="kw">pub fn </span>insert_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: TxOut) {
         <span class="kw">let </span>additions = <span class="self">self</span>.indexed_graph.insert_txout(outpoint, txout);
-        <span class="self">self</span>.stage.append(additions.into());
+        <span class="self">self</span>.stage.merge(additions.into());
     }
 
     <span class="doccomment">/// Calculates the fee of a given transaction. Returns [`Amount::ZERO`] if `tx` is a coinbase transaction.
@@ -3571,7 +3571,7 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, local_chain::AlterCheckPointError&gt; {
         <span class="kw">let </span>changeset = <span class="self">self</span>.chain.insert_block(block_id)<span class="question-mark">?</span>;
         <span class="kw">let </span>changed = !changeset.is_empty();
-        <span class="self">self</span>.stage.append(changeset.into());
+        <span class="self">self</span>.stage.merge(changeset.into());
         <span class="prelude-val">Ok</span>(changed)
     }
 
@@ -3589,9 +3589,9 @@
     /// must be broadcast to the network and the wallet synced via a chain source.
     </span><span class="kw">pub fn </span>insert_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: Transaction) -&gt; bool {
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
-        changeset.append(<span class="self">self</span>.indexed_graph.insert_tx(tx).into());
+        changeset.merge(<span class="self">self</span>.indexed_graph.insert_tx(tx).into());
         <span class="kw">let </span>ret = !changeset.is_empty();
-        <span class="self">self</span>.stage.append(changeset);
+        <span class="self">self</span>.stage.merge(changeset);
         ret
     }
 
@@ -3916,7 +3916,7 @@
                     .next_unused_spk(<span class="kw-2">&amp;</span>change_keychain)
                     .expect(<span class="string">"keychain must exist"</span>);
                 <span class="self">self</span>.indexed_graph.index.mark_used(change_keychain, index);
-                <span class="self">self</span>.stage.append(index_changeset.into());
+                <span class="self">self</span>.stage.merge(index_changeset.into());
                 spk
             }
         };
@@ -4752,9 +4752,9 @@
             </span>.indexed_graph
             .index
             .reveal_to_target_multi(<span class="kw-2">&amp;</span>update.last_active_indices);
-        changeset.append(index_changeset.into());
-        changeset.append(<span class="self">self</span>.indexed_graph.apply_update(update.graph).into());
-        <span class="self">self</span>.stage.append(changeset);
+        changeset.merge(index_changeset.into());
+        changeset.merge(<span class="self">self</span>.indexed_graph.apply_update(update.graph).into());
+        <span class="self">self</span>.stage.merge(changeset);
         <span class="prelude-val">Ok</span>(())
     }
 
@@ -4839,17 +4839,17 @@
         connected_to: BlockId,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), ApplyHeaderError&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
-        changeset.append(
+        changeset.merge(
             <span class="self">self</span>.chain
                 .apply_header_connected_to(<span class="kw-2">&amp;</span>block.header, height, connected_to)<span class="question-mark">?
                 </span>.into(),
         );
-        changeset.append(
+        changeset.merge(
             <span class="self">self</span>.indexed_graph
                 .apply_block_relevant(block, height)
                 .into(),
         );
-        <span class="self">self</span>.stage.append(changeset);
+        <span class="self">self</span>.stage.merge(changeset);
         <span class="prelude-val">Ok</span>(())
     }
 
@@ -4872,7 +4872,7 @@
         <span class="kw">let </span>indexed_graph_changeset = <span class="self">self
             </span>.indexed_graph
             .batch_insert_relevant_unconfirmed(unconfirmed_txs);
-        <span class="self">self</span>.stage.append(indexed_graph_changeset.into());
+        <span class="self">self</span>.stage.merge(indexed_graph_changeset.into());
     }
 }
 

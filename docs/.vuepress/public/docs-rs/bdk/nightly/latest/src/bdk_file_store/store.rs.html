@@ -442,7 +442,7 @@
 <a href="#442" id="442">442</a>
 <a href="#443" id="443">443</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{bincode_options, EntryIter, FileError, IterError};
-<span class="kw">use </span>bdk_chain::Append;
+<span class="kw">use </span>bdk_chain::Merge;
 <span class="kw">use </span>bincode::Options;
 <span class="kw">use </span>std::{
     fmt::{<span class="self">self</span>, Debug},
@@ -465,7 +465,7 @@
 
 <span class="kw">impl</span>&lt;C&gt; Store&lt;C&gt;
 <span class="kw">where
-    </span>C: Append
+    </span>C: Merge
         + serde::Serialize
         + serde::de::DeserializeOwned
         + core::marker::Send
@@ -590,7 +590,7 @@
                 }
             };
             <span class="kw">match </span><span class="kw-2">&amp;mut </span>changeset {
-                <span class="prelude-val">Some</span>(changeset) =&gt; changeset.append(next_changeset),
+                <span class="prelude-val">Some</span>(changeset) =&gt; changeset.merge(next_changeset),
                 changeset =&gt; <span class="kw-2">*</span>changeset = <span class="prelude-val">Some</span>(next_changeset),
             }
         }
@@ -808,7 +808,7 @@
                 <span class="macro">assert_eq!</span>(
                     err.changeset,
                     changesets.iter().cloned().reduce(|<span class="kw-2">mut </span>acc, cs| {
-                        Append::append(<span class="kw-2">&amp;mut </span>acc, cs);
+                        Merge::merge(<span class="kw-2">&amp;mut </span>acc, cs);
                         acc
                     }),
                     <span class="string">"should recover all changesets that are written in full"</span>,
@@ -829,7 +829,7 @@
                         .cloned()
                         .chain(core::iter::once(last_changeset.clone()))
                         .reduce(|<span class="kw-2">mut </span>acc, cs| {
-                            Append::append(<span class="kw-2">&amp;mut </span>acc, cs);
+                            Merge::merge(<span class="kw-2">&amp;mut </span>acc, cs);
                             acc
                         }),
                     <span class="string">"should recover all changesets"</span>,
@@ -865,13 +865,13 @@
                 .take(read_count)
                 .map(|r| r.expect(<span class="string">"must read valid changeset"</span>))
                 .fold(TestChangeSet::default(), |<span class="kw-2">mut </span>acc, v| {
-                    Append::append(<span class="kw-2">&amp;mut </span>acc, v);
+                    Merge::merge(<span class="kw-2">&amp;mut </span>acc, v);
                     acc
                 });
             <span class="comment">// We write after a short read.
             </span>db.append_changeset(<span class="kw-2">&amp;</span>last_changeset)
                 .expect(<span class="string">"last write must succeed"</span>);
-            Append::append(<span class="kw-2">&amp;mut </span>exp_aggregation, last_changeset.clone());
+            Merge::merge(<span class="kw-2">&amp;mut </span>exp_aggregation, last_changeset.clone());
             drop(db);
 
             <span class="comment">// We open the file again and check whether aggregate changeset is expected.

@@ -307,10 +307,10 @@
     </span><span class="kw">fn </span>from_block_position(block: <span class="kw-2">&amp;</span>bitcoin::Block, block_id: BlockId, tx_pos: usize) -&gt; <span class="self">Self</span>;
 }
 
-<span class="doccomment">/// Trait that makes an object appendable.
-</span><span class="kw">pub trait </span>Append: Default {
-    <span class="doccomment">/// Append another object of the same type onto `self`.
-    </span><span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>);
+<span class="doccomment">/// Trait that makes an object mergeable.
+</span><span class="kw">pub trait </span>Merge: Default {
+    <span class="doccomment">/// Merge another object of the same type onto `self`.
+    </span><span class="kw">fn </span>merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>);
 
     <span class="doccomment">/// Returns whether the structure is considered empty.
     </span><span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool;
@@ -325,8 +325,8 @@
     }
 }
 
-<span class="kw">impl</span>&lt;K: Ord, V&gt; Append <span class="kw">for </span>BTreeMap&lt;K, V&gt; {
-    <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
+<span class="kw">impl</span>&lt;K: Ord, V&gt; Merge <span class="kw">for </span>BTreeMap&lt;K, V&gt; {
+    <span class="kw">fn </span>merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
         <span class="comment">// We use `extend` instead of `BTreeMap::append` due to performance issues with `append`.
         // Refer to https://github.com/rust-lang/rust/issues/34666#issuecomment-675658420
         </span>BTreeMap::extend(<span class="self">self</span>, other)
@@ -337,8 +337,8 @@
     }
 }
 
-<span class="kw">impl</span>&lt;T: Ord&gt; Append <span class="kw">for </span>BTreeSet&lt;T&gt; {
-    <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
+<span class="kw">impl</span>&lt;T: Ord&gt; Merge <span class="kw">for </span>BTreeSet&lt;T&gt; {
+    <span class="kw">fn </span>merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
         <span class="comment">// We use `extend` instead of `BTreeMap::append` due to performance issues with `append`.
         // Refer to https://github.com/rust-lang/rust/issues/34666#issuecomment-675658420
         </span>BTreeSet::extend(<span class="self">self</span>, other)
@@ -349,8 +349,8 @@
     }
 }
 
-<span class="kw">impl</span>&lt;T&gt; Append <span class="kw">for </span>Vec&lt;T&gt; {
-    <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>other: <span class="self">Self</span>) {
+<span class="kw">impl</span>&lt;T&gt; Merge <span class="kw">for </span>Vec&lt;T&gt; {
+    <span class="kw">fn </span>merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>other: <span class="self">Self</span>) {
         Vec::append(<span class="self">self</span>, <span class="kw-2">&amp;mut </span>other)
     }
 
@@ -359,31 +359,31 @@
     }
 }
 
-<span class="macro">macro_rules!</span> impl_append_for_tuple {
+<span class="macro">macro_rules!</span> impl_merge_for_tuple {
     ($(<span class="macro-nonterminal">$a</span>:ident <span class="macro-nonterminal">$b</span>:tt)<span class="kw-2">*</span>) =&gt; {
-        <span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$a</span>),<span class="kw-2">*</span>&gt; Append <span class="kw">for </span>($(<span class="macro-nonterminal">$a</span>,)<span class="kw-2">*</span>) <span class="kw">where </span>$(<span class="macro-nonterminal">$a</span>: Append),* {
+        <span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$a</span>),<span class="kw-2">*</span>&gt; Merge <span class="kw">for </span>($(<span class="macro-nonterminal">$a</span>,)<span class="kw-2">*</span>) <span class="kw">where </span>$(<span class="macro-nonterminal">$a</span>: Merge),* {
 
-            <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _other: <span class="self">Self</span>) {
-                $(Append::append(<span class="kw-2">&amp;mut </span><span class="self">self</span>.<span class="macro-nonterminal">$b</span>, _other.<span class="macro-nonterminal">$b</span>) );*
+            <span class="kw">fn </span>merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _other: <span class="self">Self</span>) {
+                $(Merge::merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>.<span class="macro-nonterminal">$b</span>, _other.<span class="macro-nonterminal">$b</span>) );*
             }
 
             <span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-                $(Append::is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="macro-nonterminal">$b</span>) &amp;&amp; )* <span class="bool-val">true
+                $(Merge::is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="macro-nonterminal">$b</span>) &amp;&amp; )* <span class="bool-val">true
             </span>}
         }
     }
 }
 
-<span class="macro">impl_append_for_tuple!</span>();
-<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0</span>);
-<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1</span>);
-<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2</span>);
-<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3</span>);
-<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4</span>);
-<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5</span>);
-<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6</span>);
-<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6 </span>T7 <span class="number">7</span>);
-<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6 </span>T7 <span class="number">7 </span>T8 <span class="number">8</span>);
-<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6 </span>T7 <span class="number">7 </span>T8 <span class="number">8 </span>T9 <span class="number">9</span>);
-<span class="macro">impl_append_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6 </span>T7 <span class="number">7 </span>T8 <span class="number">8 </span>T9 <span class="number">9 </span>T10 <span class="number">10</span>);
+<span class="macro">impl_merge_for_tuple!</span>();
+<span class="macro">impl_merge_for_tuple!</span>(T0 <span class="number">0</span>);
+<span class="macro">impl_merge_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1</span>);
+<span class="macro">impl_merge_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2</span>);
+<span class="macro">impl_merge_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3</span>);
+<span class="macro">impl_merge_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4</span>);
+<span class="macro">impl_merge_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5</span>);
+<span class="macro">impl_merge_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6</span>);
+<span class="macro">impl_merge_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6 </span>T7 <span class="number">7</span>);
+<span class="macro">impl_merge_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6 </span>T7 <span class="number">7 </span>T8 <span class="number">8</span>);
+<span class="macro">impl_merge_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6 </span>T7 <span class="number">7 </span>T8 <span class="number">8 </span>T9 <span class="number">9</span>);
+<span class="macro">impl_merge_for_tuple!</span>(T0 <span class="number">0 </span>T1 <span class="number">1 </span>T2 <span class="number">2 </span>T3 <span class="number">3 </span>T4 <span class="number">4 </span>T5 <span class="number">5 </span>T6 <span class="number">6 </span>T7 <span class="number">7 </span>T8 <span class="number">8 </span>T9 <span class="number">9 </span>T10 <span class="number">10</span>);
 </code></pre></div></section></main></body></html>

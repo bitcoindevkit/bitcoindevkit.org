@@ -960,7 +960,7 @@
     ops::{Bound, RangeBounds},
 };
 
-<span class="kw">use </span><span class="kw">crate</span>::Append;
+<span class="kw">use </span><span class="kw">crate</span>::Merge;
 
 <span class="doccomment">/// The default lookahead for a [`KeychainTxOutIndex`]
 </span><span class="kw">pub const </span>DEFAULT_LOOKAHEAD: u32 = <span class="number">25</span>;
@@ -1103,7 +1103,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::&lt;K&gt;::default();
         <span class="kw">let </span>txid = tx.compute_txid();
         <span class="kw">for </span>(op, txout) <span class="kw">in </span>tx.output.iter().enumerate() {
-            changeset.append(<span class="self">self</span>.index_txout(OutPoint::new(txid, op <span class="kw">as </span>u32), txout));
+            changeset.merge(<span class="self">self</span>.index_txout(OutPoint::new(txid, op <span class="kw">as </span>u32), txout));
         }
         changeset
     }
@@ -1578,7 +1578,7 @@
 
         <span class="kw">for </span>(keychain, <span class="kw-2">&amp;</span>index) <span class="kw">in </span>keychains {
             <span class="kw">if let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, new_changeset)) = <span class="self">self</span>.reveal_to_target(keychain, index) {
-                changeset.append(new_changeset);
+                changeset.merge(new_changeset);
             }
         }
 
@@ -1612,7 +1612,7 @@
             <span class="kw">match </span><span class="self">self</span>.reveal_next_spk(keychain) {
                 <span class="prelude-val">Some</span>(((i, spk), change)) =&gt; {
                     spks.push((i, spk));
-                    changeset.append(change);
+                    changeset.merge(change);
                 }
                 <span class="prelude-val">None </span>=&gt; <span class="kw">break</span>,
             }
@@ -1802,12 +1802,12 @@
 ///
 /// It can be applied to [`KeychainTxOutIndex`] with [`apply_changeset`].
 ///
-/// The `last_revealed` field is monotone in that [`append`] will never decrease it.
+/// The `last_revealed` field is monotone in that [`merge`] will never decrease it.
 /// `keychains_added` is *not* monotone, once it is set any attempt to change it is subject to the
 /// same *one-to-one* keychain &lt;-&gt; descriptor mapping invariant as [`KeychainTxOutIndex`] itself.
 ///
 /// [`apply_changeset`]: KeychainTxOutIndex::apply_changeset
-/// [`append`]: Self::append
+/// [`Merge`]: Self::merge
 </span><span class="attr">#[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(
     feature = <span class="string">"serde"</span>,
@@ -1828,14 +1828,14 @@
     </span><span class="kw">pub </span>last_revealed: BTreeMap&lt;DescriptorId, u32&gt;,
 }
 
-<span class="kw">impl</span>&lt;K: Ord&gt; Append <span class="kw">for </span>ChangeSet&lt;K&gt; {
+<span class="kw">impl</span>&lt;K: Ord&gt; Merge <span class="kw">for </span>ChangeSet&lt;K&gt; {
     <span class="doccomment">/// Merge another [`ChangeSet&lt;K&gt;`] into self.
     ///
     /// For the `keychains_added` field this method respects the invariants of
     /// [`insert_descriptor`]. `last_revealed` always becomes the larger of the two.
     ///
     /// [`insert_descriptor`]: KeychainTxOutIndex::insert_descriptor
-    </span><span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
+    </span><span class="kw">fn </span>merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
         <span class="kw">for </span>(new_keychain, new_descriptor) <span class="kw">in </span>other.keychains_added {
             <span class="comment">// enforce 1-to-1 invariance
             </span><span class="kw">if </span>!<span class="self">self</span>.keychains_added.contains_key(<span class="kw-2">&amp;</span>new_keychain)

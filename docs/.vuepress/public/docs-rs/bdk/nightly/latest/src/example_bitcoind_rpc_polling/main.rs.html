@@ -406,7 +406,7 @@
     indexed_tx_graph,
     indexer::keychain_txout,
     local_chain::{<span class="self">self</span>, LocalChain},
-    Append, ConfirmationTimeHeightAnchor, IndexedTxGraph,
+    ConfirmationTimeHeightAnchor, IndexedTxGraph, Merge,
 };
 <span class="kw">use </span>example_cli::{
     anyhow,
@@ -581,7 +581,7 @@
                     .apply_update(emission.checkpoint)
                     .expect(<span class="string">"must always apply as we receive blocks in order from emitter"</span>);
                 <span class="kw">let </span>graph_changeset = graph.apply_block_relevant(<span class="kw-2">&amp;</span>emission.block, height);
-                db_stage.append((chain_changeset, graph_changeset));
+                db_stage.merge((chain_changeset, graph_changeset));
 
                 <span class="comment">// commit staged db changes in intervals
                 </span><span class="kw">if </span>last_db_commit.elapsed() &gt;= DB_COMMIT_DELAY {
@@ -625,7 +625,7 @@
             );
             {
                 <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
-                db_stage.append((local_chain::ChangeSet::default(), graph_changeset));
+                db_stage.merge((local_chain::ChangeSet::default(), graph_changeset));
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = db_stage.take() {
                     db.append_changeset(<span class="kw-2">&amp;</span>changeset)<span class="question-mark">?</span>;
                 }
@@ -711,7 +711,7 @@
                         <span class="kw">continue</span>;
                     }
                 };
-                db_stage.append(changeset);
+                db_stage.merge(changeset);
 
                 <span class="kw">if </span>last_db_commit.elapsed() &gt;= DB_COMMIT_DELAY {
                     <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
