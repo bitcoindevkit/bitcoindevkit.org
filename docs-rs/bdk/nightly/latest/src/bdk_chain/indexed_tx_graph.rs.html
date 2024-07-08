@@ -343,7 +343,7 @@
 
 <span class="kw">use crate</span>::{
     tx_graph::{<span class="self">self</span>, TxGraph},
-    Anchor, AnchorFromBlockPosition, Append, BlockId, Indexer,
+    Anchor, AnchorFromBlockPosition, BlockId, Indexer, Merge,
 };
 
 <span class="doccomment">/// The [`IndexedTxGraph`] combines a [`TxGraph`] and an [`Indexer`] implementation.
@@ -405,7 +405,7 @@
 
 <span class="kw">impl</span>&lt;A: Anchor, I: Indexer&gt; IndexedTxGraph&lt;A, I&gt;
 <span class="kw">where
-    </span>I::ChangeSet: Default + Append,
+    </span>I::ChangeSet: Default + Merge,
 {
     <span class="kw">fn </span>index_tx_graph_changeset(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
@@ -413,10 +413,10 @@
     ) -&gt; I::ChangeSet {
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = I::ChangeSet::default();
         <span class="kw">for </span>added_tx <span class="kw">in </span><span class="kw-2">&amp;</span>tx_graph_changeset.txs {
-            changeset.append(<span class="self">self</span>.index.index_tx(added_tx));
+            changeset.merge(<span class="self">self</span>.index.index_tx(added_tx));
         }
         <span class="kw">for </span>(<span class="kw-2">&amp;</span>added_outpoint, added_txout) <span class="kw">in </span><span class="kw-2">&amp;</span>tx_graph_changeset.txouts {
-            changeset.append(<span class="self">self</span>.index.index_txout(added_outpoint, added_txout));
+            changeset.merge(<span class="self">self</span>.index.index_txout(added_outpoint, added_txout));
         }
         changeset
     }
@@ -475,16 +475,16 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>indexer = I::ChangeSet::default();
         <span class="kw">for </span>(tx, <span class="kw">_</span>) <span class="kw">in </span><span class="kw-2">&amp;</span>txs {
-            indexer.append(<span class="self">self</span>.index.index_tx(tx));
+            indexer.merge(<span class="self">self</span>.index.index_tx(tx));
         }
 
         <span class="kw">let </span><span class="kw-2">mut </span>graph = tx_graph::ChangeSet::default();
         <span class="kw">for </span>(tx, anchors) <span class="kw">in </span>txs {
             <span class="kw">if </span><span class="self">self</span>.index.is_tx_relevant(tx) {
                 <span class="kw">let </span>txid = tx.compute_txid();
-                graph.append(<span class="self">self</span>.graph.insert_tx(tx.clone()));
+                graph.merge(<span class="self">self</span>.graph.insert_tx(tx.clone()));
                 <span class="kw">for </span>anchor <span class="kw">in </span>anchors {
-                    graph.append(<span class="self">self</span>.graph.insert_anchor(txid, anchor));
+                    graph.merge(<span class="self">self</span>.graph.insert_anchor(txid, anchor));
                 }
             }
         }
@@ -514,7 +514,7 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>indexer = I::ChangeSet::default();
         <span class="kw">for </span>(tx, <span class="kw">_</span>) <span class="kw">in </span><span class="kw-2">&amp;</span>txs {
-            indexer.append(<span class="self">self</span>.index.index_tx(tx));
+            indexer.merge(<span class="self">self</span>.index.index_tx(tx));
         }
 
         <span class="kw">let </span>graph = <span class="self">self</span>.graph.batch_insert_unconfirmed(
@@ -548,7 +548,7 @@
 <span class="doccomment">/// Methods are available if the anchor (`A`) implements [`AnchorFromBlockPosition`].
 </span><span class="kw">impl</span>&lt;A: Anchor, I: Indexer&gt; IndexedTxGraph&lt;A, I&gt;
 <span class="kw">where
-    </span>I::ChangeSet: Default + Append,
+    </span>I::ChangeSet: Default + Merge,
     A: AnchorFromBlockPosition,
 {
     <span class="doccomment">/// Batch insert all transactions of the given `block` of `height`, filtering out those that are
@@ -570,14 +570,14 @@
         };
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::&lt;A, I::ChangeSet&gt;::default();
         <span class="kw">for </span>(tx_pos, tx) <span class="kw">in </span>block.txdata.iter().enumerate() {
-            changeset.indexer.append(<span class="self">self</span>.index.index_tx(tx));
+            changeset.indexer.merge(<span class="self">self</span>.index.index_tx(tx));
             <span class="kw">if </span><span class="self">self</span>.index.is_tx_relevant(tx) {
                 <span class="kw">let </span>txid = tx.compute_txid();
                 <span class="kw">let </span>anchor = A::from_block_position(block, block_id, tx_pos);
-                changeset.graph.append(<span class="self">self</span>.graph.insert_tx(tx.clone()));
+                changeset.graph.merge(<span class="self">self</span>.graph.insert_tx(tx.clone()));
                 changeset
                     .graph
-                    .append(<span class="self">self</span>.graph.insert_anchor(txid, anchor));
+                    .merge(<span class="self">self</span>.graph.insert_anchor(txid, anchor));
             }
         }
         changeset
@@ -599,8 +599,8 @@
         <span class="kw">let </span><span class="kw-2">mut </span>graph = tx_graph::ChangeSet::default();
         <span class="kw">for </span>(tx_pos, tx) <span class="kw">in </span>block.txdata.iter().enumerate() {
             <span class="kw">let </span>anchor = A::from_block_position(<span class="kw-2">&amp;</span>block, block_id, tx_pos);
-            graph.append(<span class="self">self</span>.graph.insert_anchor(tx.compute_txid(), anchor));
-            graph.append(<span class="self">self</span>.graph.insert_tx(tx.clone()));
+            graph.merge(<span class="self">self</span>.graph.insert_anchor(tx.compute_txid(), anchor));
+            graph.merge(<span class="self">self</span>.graph.insert_tx(tx.clone()));
         }
         <span class="kw">let </span>indexer = <span class="self">self</span>.index_tx_graph_changeset(<span class="kw-2">&amp;</span>graph);
         ChangeSet { graph, indexer }
@@ -637,10 +637,10 @@
     }
 }
 
-<span class="kw">impl</span>&lt;A: Anchor, IA: Append&gt; Append <span class="kw">for </span>ChangeSet&lt;A, IA&gt; {
-    <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
-        <span class="self">self</span>.graph.append(other.graph);
-        <span class="self">self</span>.indexer.append(other.indexer);
+<span class="kw">impl</span>&lt;A: Anchor, IA: Merge&gt; Merge <span class="kw">for </span>ChangeSet&lt;A, IA&gt; {
+    <span class="kw">fn </span>merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
+        <span class="self">self</span>.graph.merge(other.graph);
+        <span class="self">self</span>.indexer.merge(other.indexer);
     }
 
     <span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {

@@ -1655,7 +1655,7 @@
 //! A [`TxGraph`] can also be updated with another [`TxGraph`] which merges them together.
 //!
 //! ```
-//! # use bdk_chain::{Append, BlockId};
+//! # use bdk_chain::{Merge, BlockId};
 //! # use bdk_chain::tx_graph::TxGraph;
 //! # use bdk_chain::example_utils::*;
 //! # use bitcoin::Transaction;
@@ -1675,7 +1675,7 @@
 //! [`insert_txout`]: TxGraph::insert_txout
 
 </span><span class="kw">use crate</span>::{
-    collections::<span class="kw-2">*</span>, Anchor, Append, Balance, BlockId, ChainOracle, ChainPosition, FullTxOut,
+    collections::<span class="kw-2">*</span>, Anchor, Balance, BlockId, ChainOracle, ChainPosition, FullTxOut, Merge,
 };
 <span class="kw">use </span>alloc::collections::vec_deque::VecDeque;
 <span class="kw">use </span>alloc::sync::Arc;
@@ -2133,8 +2133,8 @@
     ) -&gt; ChangeSet&lt;A&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::&lt;A&gt;::default();
         <span class="kw">for </span>(tx, seen_at) <span class="kw">in </span>txs {
-            changeset.append(<span class="self">self</span>.insert_seen_at(tx.compute_txid(), seen_at));
-            changeset.append(<span class="self">self</span>.insert_tx(tx));
+            changeset.merge(<span class="self">self</span>.insert_seen_at(tx.compute_txid(), seen_at));
+            changeset.merge(<span class="self">self</span>.insert_tx(tx));
         }
         changeset
     }
@@ -2216,7 +2216,7 @@
             .collect();
 
         <span class="kw">for </span>txid <span class="kw">in </span>unanchored_txs {
-            changeset.append(<span class="self">self</span>.insert_seen_at(txid, seen_at));
+            changeset.merge(<span class="self">self</span>.insert_seen_at(txid, seen_at));
         }
         changeset
     }
@@ -2879,8 +2879,8 @@
     }
 }
 
-<span class="kw">impl</span>&lt;A: Ord&gt; Append <span class="kw">for </span>ChangeSet&lt;A&gt; {
-    <span class="kw">fn </span>append(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
+<span class="kw">impl</span>&lt;A: Ord&gt; Merge <span class="kw">for </span>ChangeSet&lt;A&gt; {
+    <span class="kw">fn </span>merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
         <span class="comment">// We use `extend` instead of `BTreeMap::append` due to performance issues with `append`.
         // Refer to https://github.com/rust-lang/rust/issues/34666#issuecomment-675658420
         </span><span class="self">self</span>.txs.extend(other.txs);
