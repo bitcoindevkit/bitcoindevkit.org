@@ -285,51 +285,6 @@
 <a href="#285" id="285">285</a>
 <a href="#286" id="286">286</a>
 <a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
-<a href="#307" id="307">307</a>
-<a href="#308" id="308">308</a>
-<a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
-<a href="#312" id="312">312</a>
-<a href="#313" id="313">313</a>
-<a href="#314" id="314">314</a>
-<a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
-<a href="#320" id="320">320</a>
-<a href="#321" id="321">321</a>
-<a href="#322" id="322">322</a>
-<a href="#323" id="323">323</a>
-<a href="#324" id="324">324</a>
-<a href="#325" id="325">325</a>
-<a href="#326" id="326">326</a>
-<a href="#327" id="327">327</a>
-<a href="#328" id="328">328</a>
-<a href="#329" id="329">329</a>
-<a href="#330" id="330">330</a>
-<a href="#331" id="331">331</a>
-<a href="#332" id="332">332</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bitcoin::{hashes::Hash, BlockHash, OutPoint, TxOut, Txid};
 
 <span class="kw">use crate</span>::{Anchor, AnchorFromBlockPosition, COINBASE_MATURITY};
@@ -406,11 +361,11 @@
     }
 }
 
-<span class="kw">impl </span>From&lt;ChainPosition&lt;ConfirmationTimeHeightAnchor&gt;&gt; <span class="kw">for </span>ConfirmationTime {
-    <span class="kw">fn </span>from(observed_as: ChainPosition&lt;ConfirmationTimeHeightAnchor&gt;) -&gt; <span class="self">Self </span>{
+<span class="kw">impl </span>From&lt;ChainPosition&lt;ConfirmationBlockTime&gt;&gt; <span class="kw">for </span>ConfirmationTime {
+    <span class="kw">fn </span>from(observed_as: ChainPosition&lt;ConfirmationBlockTime&gt;) -&gt; <span class="self">Self </span>{
         <span class="kw">match </span>observed_as {
             ChainPosition::Confirmed(a) =&gt; <span class="self">Self</span>::Confirmed {
-                height: a.confirmation_height,
+                height: a.block_id.height,
                 time: a.confirmation_time,
             },
             ChainPosition::Unconfirmed(last_seen) =&gt; <span class="self">Self</span>::Unconfirmed { last_seen },
@@ -477,9 +432,7 @@
     }
 }
 
-<span class="doccomment">/// An [`Anchor`] implementation that also records the exact confirmation height of the transaction.
-///
-/// Note that the confirmation block and the anchor block can be different here.
+<span class="doccomment">/// An [`Anchor`] implementation that also records the exact confirmation time of the transaction.
 ///
 /// Refer to [`Anchor`] for more details.
 </span><span class="attr">#[derive(Debug, Default, Clone, PartialEq, Eq, Copy, PartialOrd, Ord, core::hash::Hash)]
@@ -488,70 +441,27 @@
     derive(serde::Deserialize, serde::Serialize),
     serde(<span class="kw">crate </span>= <span class="string">"serde_crate"</span>)
 )]
-</span><span class="kw">pub struct </span>ConfirmationHeightAnchor {
-    <span class="doccomment">/// The exact confirmation height of the transaction.
-    ///
-    /// It is assumed that this value is never larger than the height of the anchor block.
-    </span><span class="kw">pub </span>confirmation_height: u32,
+</span><span class="kw">pub struct </span>ConfirmationBlockTime {
     <span class="doccomment">/// The anchor block.
-    </span><span class="kw">pub </span>anchor_block: BlockId,
-}
-
-<span class="kw">impl </span>Anchor <span class="kw">for </span>ConfirmationHeightAnchor {
-    <span class="kw">fn </span>anchor_block(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; BlockId {
-        <span class="self">self</span>.anchor_block
-    }
-
-    <span class="kw">fn </span>confirmation_height_upper_bound(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
-        <span class="self">self</span>.confirmation_height
-    }
-}
-
-<span class="kw">impl </span>AnchorFromBlockPosition <span class="kw">for </span>ConfirmationHeightAnchor {
-    <span class="kw">fn </span>from_block_position(_block: <span class="kw-2">&amp;</span>bitcoin::Block, block_id: BlockId, _tx_pos: usize) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            anchor_block: block_id,
-            confirmation_height: block_id.height,
-        }
-    }
-}
-
-<span class="doccomment">/// An [`Anchor`] implementation that also records the exact confirmation time and height of the
-/// transaction.
-///
-/// Note that the confirmation block and the anchor block can be different here.
-///
-/// Refer to [`Anchor`] for more details.
-</span><span class="attr">#[derive(Debug, Default, Clone, PartialEq, Eq, Copy, PartialOrd, Ord, core::hash::Hash)]
-#[cfg_attr(
-    feature = <span class="string">"serde"</span>,
-    derive(serde::Deserialize, serde::Serialize),
-    serde(<span class="kw">crate </span>= <span class="string">"serde_crate"</span>)
-)]
-</span><span class="kw">pub struct </span>ConfirmationTimeHeightAnchor {
-    <span class="doccomment">/// The confirmation height of the transaction being anchored.
-    </span><span class="kw">pub </span>confirmation_height: u32,
+    </span><span class="kw">pub </span>block_id: BlockId,
     <span class="doccomment">/// The confirmation time of the transaction being anchored.
     </span><span class="kw">pub </span>confirmation_time: u64,
-    <span class="doccomment">/// The anchor block.
-    </span><span class="kw">pub </span>anchor_block: BlockId,
 }
 
-<span class="kw">impl </span>Anchor <span class="kw">for </span>ConfirmationTimeHeightAnchor {
+<span class="kw">impl </span>Anchor <span class="kw">for </span>ConfirmationBlockTime {
     <span class="kw">fn </span>anchor_block(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; BlockId {
-        <span class="self">self</span>.anchor_block
+        <span class="self">self</span>.block_id
     }
 
     <span class="kw">fn </span>confirmation_height_upper_bound(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
-        <span class="self">self</span>.confirmation_height
+        <span class="self">self</span>.block_id.height
     }
 }
 
-<span class="kw">impl </span>AnchorFromBlockPosition <span class="kw">for </span>ConfirmationTimeHeightAnchor {
+<span class="kw">impl </span>AnchorFromBlockPosition <span class="kw">for </span>ConfirmationBlockTime {
     <span class="kw">fn </span>from_block_position(block: <span class="kw-2">&amp;</span>bitcoin::Block, block_id: BlockId, _tx_pos: usize) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            anchor_block: block_id,
-            confirmation_height: block_id.height,
+            block_id,
             confirmation_time: block.header.time <span class="kw">as _</span>,
         }
     }
@@ -637,19 +547,19 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>chain_position_ord() {
-        <span class="kw">let </span>unconf1 = ChainPosition::&lt;ConfirmationHeightAnchor&gt;::Unconfirmed(<span class="number">10</span>);
-        <span class="kw">let </span>unconf2 = ChainPosition::&lt;ConfirmationHeightAnchor&gt;::Unconfirmed(<span class="number">20</span>);
-        <span class="kw">let </span>conf1 = ChainPosition::Confirmed(ConfirmationHeightAnchor {
-            confirmation_height: <span class="number">9</span>,
-            anchor_block: BlockId {
-                height: <span class="number">20</span>,
+        <span class="kw">let </span>unconf1 = ChainPosition::&lt;ConfirmationBlockTime&gt;::Unconfirmed(<span class="number">10</span>);
+        <span class="kw">let </span>unconf2 = ChainPosition::&lt;ConfirmationBlockTime&gt;::Unconfirmed(<span class="number">20</span>);
+        <span class="kw">let </span>conf1 = ChainPosition::Confirmed(ConfirmationBlockTime {
+            confirmation_time: <span class="number">20</span>,
+            block_id: BlockId {
+                height: <span class="number">9</span>,
                 ..Default::default()
             },
         });
-        <span class="kw">let </span>conf2 = ChainPosition::Confirmed(ConfirmationHeightAnchor {
-            confirmation_height: <span class="number">12</span>,
-            anchor_block: BlockId {
-                height: <span class="number">15</span>,
+        <span class="kw">let </span>conf2 = ChainPosition::Confirmed(ConfirmationBlockTime {
+            confirmation_time: <span class="number">15</span>,
+            block_id: BlockId {
+                height: <span class="number">12</span>,
                 ..Default::default()
             },
         });

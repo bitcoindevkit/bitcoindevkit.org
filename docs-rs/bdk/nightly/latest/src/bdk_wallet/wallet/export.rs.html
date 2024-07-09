@@ -354,6 +354,11 @@
 <a href="#354" id="354">354</a>
 <a href="#355" id="355">355</a>
 <a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -484,7 +489,7 @@
         <span class="kw">let </span>blockheight = <span class="kw">if </span>include_blockheight {
             wallet.transactions().next().map_or(<span class="number">0</span>, |canonical_tx| {
                 <span class="kw">match </span>canonical_tx.chain_position {
-                    bdk_chain::ChainPosition::Confirmed(a) =&gt; a.confirmation_height,
+                    bdk_chain::ChainPosition::Confirmed(a) =&gt; a.block_id.height,
                     bdk_chain::ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; <span class="number">0</span>,
                 }
             })
@@ -570,7 +575,7 @@
     <span class="kw">use </span>core::str::FromStr;
 
     <span class="kw">use </span><span class="kw">crate</span>::std::string::ToString;
-    <span class="kw">use </span>bdk_chain::{BlockId, ConfirmationTimeHeightAnchor};
+    <span class="kw">use </span>bdk_chain::{BlockId, ConfirmationBlockTime};
     <span class="kw">use </span>bitcoin::hashes::Hash;
     <span class="kw">use </span>bitcoin::{transaction, BlockHash, Network, Transaction};
 
@@ -589,15 +594,20 @@
         };
         <span class="kw">let </span>txid = transaction.compute_txid();
         <span class="kw">let </span>block_id = BlockId {
-            height: <span class="number">5001</span>,
+            height: <span class="number">5000</span>,
             hash: BlockHash::all_zeros(),
         };
         wallet.insert_checkpoint(block_id).unwrap();
+        wallet
+            .insert_checkpoint(BlockId {
+                height: <span class="number">5001</span>,
+                hash: BlockHash::all_zeros(),
+            })
+            .unwrap();
         wallet.insert_tx(transaction);
-        <span class="kw">let </span>anchor = ConfirmationTimeHeightAnchor {
-            confirmation_height: <span class="number">5000</span>,
+        <span class="kw">let </span>anchor = ConfirmationBlockTime {
             confirmation_time: <span class="number">0</span>,
-            anchor_block: block_id,
+            block_id,
         };
         <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::default();
         <span class="kw">let _ </span>= graph.insert_anchor(txid, anchor);

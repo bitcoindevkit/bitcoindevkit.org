@@ -596,7 +596,7 @@
     bitcoin::{BlockHash, OutPoint, ScriptBuf, TxOut, Txid},
     collections::BTreeMap,
     local_chain::CheckPoint,
-    BlockId, ConfirmationTimeHeightAnchor, TxGraph,
+    BlockId, ConfirmationBlockTime, TxGraph,
 };
 <span class="kw">use </span>bdk_chain::{Anchor, Indexed};
 <span class="kw">use </span>esplora_client::{Amount, TxStatus};
@@ -830,10 +830,10 @@
     &gt;,
     stop_gap: usize,
     parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationTimeHeightAnchor&gt;, BTreeMap&lt;K, u32&gt;), Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationBlockTime&gt;, BTreeMap&lt;K, u32&gt;), Error&gt; {
     <span class="kw">type </span>TxsOfSpkIndex = (u32, Vec&lt;esplora_client::Tx&gt;);
     <span class="kw">let </span>parallel_requests = Ord::max(parallel_requests, <span class="number">1</span>);
-    <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::&lt;ConfirmationTimeHeightAnchor&gt;::default();
+    <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::&lt;ConfirmationBlockTime&gt;::default();
     <span class="kw">let </span><span class="kw-2">mut </span>last_active_indexes = BTreeMap::&lt;K, u32&gt;::new();
 
     <span class="kw">for </span>(keychain, spks) <span class="kw">in </span>keychain_spks {
@@ -923,7 +923,7 @@
     txids: <span class="kw">impl </span>IntoIterator&lt;IntoIter = <span class="kw">impl </span>Iterator&lt;Item = Txid&gt; + Send&gt; + Send,
     outpoints: <span class="kw">impl </span>IntoIterator&lt;IntoIter = <span class="kw">impl </span>Iterator&lt;Item = OutPoint&gt; + Send&gt; + Send,
     parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationTimeHeightAnchor&gt;, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationBlockTime&gt;, Error&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>graph = full_scan_for_index_and_graph(
         client,
         [(
