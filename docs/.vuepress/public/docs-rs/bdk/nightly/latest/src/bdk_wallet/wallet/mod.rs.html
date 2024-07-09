@@ -2513,7 +2513,6 @@
 <a href="#2513" id="2513">2513</a>
 <a href="#2514" id="2514">2514</a>
 <a href="#2515" id="2515">2515</a>
-<a href="#2516" id="2516">2516</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2544,7 +2543,7 @@
     },
     spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult},
     tx_graph::{CanonicalTx, TxGraph, TxNode},
-    BlockId, ChainPosition, ConfirmationTime, ConfirmationTimeHeightAnchor, FullTxOut, Indexed,
+    BlockId, ChainPosition, ConfirmationBlockTime, ConfirmationTime, FullTxOut, Indexed,
     IndexedTxGraph, Merge,
 };
 <span class="kw">use </span>bitcoin::sighash::{EcdsaSighashType, TapSighashType};
@@ -2620,7 +2619,7 @@
     signers: Arc&lt;SignersContainer&gt;,
     change_signers: Arc&lt;SignersContainer&gt;,
     chain: LocalChain,
-    indexed_graph: IndexedTxGraph&lt;ConfirmationTimeHeightAnchor, KeychainTxOutIndex&lt;KeychainKind&gt;&gt;,
+    indexed_graph: IndexedTxGraph&lt;ConfirmationBlockTime, KeychainTxOutIndex&lt;KeychainKind&gt;&gt;,
     stage: ChangeSet,
     network: Network,
     secp: SecpCtx,
@@ -2636,7 +2635,7 @@
     </span><span class="kw">pub </span>last_active_indices: BTreeMap&lt;KeychainKind, u32&gt;,
 
     <span class="doccomment">/// Update for the wallet's internal [`TxGraph`].
-    </span><span class="kw">pub </span>graph: TxGraph&lt;ConfirmationTimeHeightAnchor&gt;,
+    </span><span class="kw">pub </span>graph: TxGraph&lt;ConfirmationBlockTime&gt;,
 
     <span class="doccomment">/// Update for the wallet's internal [`LocalChain`].
     ///
@@ -2665,7 +2664,7 @@
 }
 
 <span class="doccomment">/// The changes made to a wallet by applying an [`Update`].
-</span><span class="kw">pub type </span>ChangeSet = bdk_chain::CombinedChangeSet&lt;KeychainKind, ConfirmationTimeHeightAnchor&gt;;
+</span><span class="kw">pub type </span>ChangeSet = bdk_chain::CombinedChangeSet&lt;KeychainKind, ConfirmationBlockTime&gt;;
 
 <span class="doccomment">/// A derived address and the index it was found at.
 /// For convenience this automatically derefs to `Address`
@@ -3523,7 +3522,7 @@
     /// match canonical_tx.chain_position {
     ///     ChainPosition::Confirmed(anchor) =&gt; println!(
     ///         "tx is confirmed at height {}, we know this since {}:{} is in the best chain",
-    ///         anchor.confirmation_height, anchor.anchor_block.height, anchor.anchor_block.hash,
+    ///         anchor.block_id.height, anchor.block_id.height, anchor.block_id.hash,
     ///     ),
     ///     ChainPosition::Unconfirmed(last_seen) =&gt; println!(
     ///         "tx is last seen at {}, it is unconfirmed as it is not anchored in the best chain",
@@ -3536,7 +3535,7 @@
     </span><span class="kw">pub fn </span>get_tx(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         txid: Txid,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;CanonicalTx&lt;<span class="lifetime">'_</span>, Arc&lt;Transaction&gt;, ConfirmationTimeHeightAnchor&gt;&gt; {
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;CanonicalTx&lt;<span class="lifetime">'_</span>, Arc&lt;Transaction&gt;, ConfirmationBlockTime&gt;&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.indexed_graph.graph();
 
         <span class="prelude-val">Some</span>(CanonicalTx {
@@ -3592,8 +3591,7 @@
     <span class="doccomment">/// Iterate over the transactions in the wallet.
     </span><span class="kw">pub fn </span>transactions(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = CanonicalTx&lt;<span class="lifetime">'_</span>, Arc&lt;Transaction&gt;, ConfirmationTimeHeightAnchor&gt;&gt; + <span class="lifetime">'_
-    </span>{
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = CanonicalTx&lt;<span class="lifetime">'_</span>, Arc&lt;Transaction&gt;, ConfirmationBlockTime&gt;&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.indexed_graph
             .graph()
             .list_canonical_txs(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, <span class="self">self</span>.chain.tip().block_id())
@@ -4323,7 +4321,7 @@
                 .graph()
                 .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, input.previous_output.txid)
                 .map(|chain_position| <span class="kw">match </span>chain_position {
-                    ChainPosition::Confirmed(a) =&gt; a.confirmation_height,
+                    ChainPosition::Confirmed(a) =&gt; a.block_id.height,
                     ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; u32::MAX,
                 });
             <span class="kw">let </span>current_height = sign_options
@@ -4761,7 +4759,7 @@
     }
 
     <span class="doccomment">/// Get a reference to the inner [`TxGraph`].
-    </span><span class="kw">pub fn </span>tx_graph(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>TxGraph&lt;ConfirmationTimeHeightAnchor&gt; {
+    </span><span class="kw">pub fn </span>tx_graph(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>TxGraph&lt;ConfirmationBlockTime&gt; {
         <span class="self">self</span>.indexed_graph.graph()
     }
 
@@ -4769,7 +4767,7 @@
     /// because they haven't been broadcast.
     </span><span class="kw">pub fn </span>unbroadcast_transactions(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TxNode&lt;<span class="lifetime">'_</span>, Arc&lt;Transaction&gt;, ConfirmationTimeHeightAnchor&gt;&gt; {
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TxNode&lt;<span class="lifetime">'_</span>, Arc&lt;Transaction&gt;, ConfirmationBlockTime&gt;&gt; {
         <span class="self">self</span>.tx_graph().txs_with_no_anchor_or_last_seen()
     }
 
@@ -4889,8 +4887,8 @@
     }
 }
 
-<span class="kw">impl </span>AsRef&lt;bdk_chain::tx_graph::TxGraph&lt;ConfirmationTimeHeightAnchor&gt;&gt; <span class="kw">for </span>Wallet {
-    <span class="kw">fn </span>as_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>bdk_chain::tx_graph::TxGraph&lt;ConfirmationTimeHeightAnchor&gt; {
+<span class="kw">impl </span>AsRef&lt;bdk_chain::tx_graph::TxGraph&lt;ConfirmationBlockTime&gt;&gt; <span class="kw">for </span>Wallet {
+    <span class="kw">fn </span>as_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>bdk_chain::tx_graph::TxGraph&lt;ConfirmationBlockTime&gt; {
         <span class="self">self</span>.indexed_graph.graph()
     }
 }
@@ -4929,7 +4927,7 @@
 <span class="kw">fn </span>new_local_utxo(
     keychain: KeychainKind,
     derivation_index: u32,
-    full_txo: FullTxOut&lt;ConfirmationTimeHeightAnchor&gt;,
+    full_txo: FullTxOut&lt;ConfirmationBlockTime&gt;,
 ) -&gt; LocalOutput {
     LocalOutput {
         outpoint: full_txo.outpoint,
@@ -4992,7 +4990,7 @@
 </span><span class="macro">macro_rules!</span> doctest_wallet {
     () =&gt; {{
         <span class="kw">use </span><span class="macro-nonterminal">$crate::bitcoin</span>::{BlockHash, Transaction, absolute, TxOut, Network, hashes::Hash};
-        <span class="kw">use </span><span class="macro-nonterminal">$crate::chain</span>::{ConfirmationTimeHeightAnchor, BlockId, TxGraph};
+        <span class="kw">use </span><span class="macro-nonterminal">$crate::chain</span>::{ConfirmationBlockTime, BlockId, TxGraph};
         <span class="kw">use </span><span class="macro-nonterminal">$crate::wallet</span>::{Update, Wallet};
         <span class="kw">use </span><span class="macro-nonterminal">$crate::KeychainKind</span>;
         <span class="kw">let </span>descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/0/*)"</span>;
@@ -5015,13 +5013,13 @@
             }],
         };
         <span class="kw">let </span>txid = tx.txid();
-        <span class="kw">let </span>block = BlockId { height: <span class="number">1_000</span>, hash: BlockHash::all_zeros() };
-        <span class="kw">let _ </span>= wallet.insert_checkpoint(block);
+        <span class="kw">let </span>block_id = BlockId { height: <span class="number">500</span>, hash: BlockHash::all_zeros() };
+        <span class="kw">let _ </span>= wallet.insert_checkpoint(block_id);
+        <span class="kw">let _ </span>= wallet.insert_checkpoint(BlockId { height: <span class="number">1_000</span>, hash: BlockHash::all_zeros() });
         <span class="kw">let _ </span>= wallet.insert_tx(tx);
-        <span class="kw">let </span>anchor = ConfirmationTimeHeightAnchor {
-            confirmation_height: <span class="number">500</span>,
+        <span class="kw">let </span>anchor = ConfirmationBlockTime {
             confirmation_time: <span class="number">50_000</span>,
-            anchor_block: block,
+            block_id,
         };
         <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::default();
         <span class="kw">let _ </span>= graph.insert_anchor(txid, anchor);

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["BdkElectrumClient","ElectrumFullScanResult","ElectrumSyncResult"]};
+window.SIDEBAR_ITEMS = {"struct":["BdkElectrumClient"]};

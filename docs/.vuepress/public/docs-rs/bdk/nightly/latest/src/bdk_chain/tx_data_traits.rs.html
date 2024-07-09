@@ -171,27 +171,6 @@
 <a href="#171" id="171">171</a>
 <a href="#172" id="172">172</a>
 <a href="#173" id="173">173</a>
-<a href="#174" id="174">174</a>
-<a href="#175" id="175">175</a>
-<a href="#176" id="176">176</a>
-<a href="#177" id="177">177</a>
-<a href="#178" id="178">178</a>
-<a href="#179" id="179">179</a>
-<a href="#180" id="180">180</a>
-<a href="#181" id="181">181</a>
-<a href="#182" id="182">182</a>
-<a href="#183" id="183">183</a>
-<a href="#184" id="184">184</a>
-<a href="#185" id="185">185</a>
-<a href="#186" id="186">186</a>
-<a href="#187" id="187">187</a>
-<a href="#188" id="188">188</a>
-<a href="#189" id="189">189</a>
-<a href="#190" id="190">190</a>
-<a href="#191" id="191">191</a>
-<a href="#192" id="192">192</a>
-<a href="#193" id="193">193</a>
-<a href="#194" id="194">194</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::collections::BTreeMap;
 <span class="kw">use </span><span class="kw">crate</span>::collections::BTreeSet;
 <span class="kw">use </span><span class="kw">crate</span>::BlockId;
@@ -214,8 +193,7 @@
 /// # use bdk_chain::local_chain::LocalChain;
 /// # use bdk_chain::tx_graph::TxGraph;
 /// # use bdk_chain::BlockId;
-/// # use bdk_chain::ConfirmationHeightAnchor;
-/// # use bdk_chain::ConfirmationTimeHeightAnchor;
+/// # use bdk_chain::ConfirmationBlockTime;
 /// # use bdk_chain::example_utils::*;
 /// # use bitcoin::hashes::Hash;
 /// // Initialize the local chain with two blocks.
@@ -244,39 +222,19 @@
 ///     },
 /// );
 ///
-/// // Insert `tx` into a `TxGraph` that uses `ConfirmationHeightAnchor` as the anchor type.
-/// // This anchor records the anchor block and the confirmation height of the transaction.
-/// // When a transaction is anchored with `ConfirmationHeightAnchor`, the anchor block and
-/// // confirmation block can be different. However, the confirmation block cannot be higher than
-/// // the anchor block and both blocks must be in the same chain for the anchor to be valid.
-/// let mut graph_b = TxGraph::&lt;ConfirmationHeightAnchor&gt;::default();
-/// let _ = graph_b.insert_tx(tx.clone());
-/// graph_b.insert_anchor(
-///     tx.compute_txid(),
-///     ConfirmationHeightAnchor {
-///         anchor_block: BlockId {
-///             height: 2,
-///             hash: Hash::hash("second".as_bytes()),
-///         },
-///         confirmation_height: 1,
-///     },
-/// );
-///
-/// // Insert `tx` into a `TxGraph` that uses `ConfirmationTimeHeightAnchor` as the anchor type.
-/// // This anchor records the anchor block, the confirmation height and time of the transaction.
-/// // When a transaction is anchored with `ConfirmationTimeHeightAnchor`, the anchor block and
-/// // confirmation block can be different. However, the confirmation block cannot be higher than
-/// // the anchor block and both blocks must be in the same chain for the anchor to be valid.
-/// let mut graph_c = TxGraph::&lt;ConfirmationTimeHeightAnchor&gt;::default();
+/// // Insert `tx` into a `TxGraph` that uses `ConfirmationBlockTime` as the anchor type.
+/// // This anchor records the anchor block and the confirmation time of the transaction. When a
+/// // transaction is anchored with `ConfirmationBlockTime`, the anchor block and confirmation block
+/// // of the transaction is the same block.
+/// let mut graph_c = TxGraph::&lt;ConfirmationBlockTime&gt;::default();
 /// let _ = graph_c.insert_tx(tx.clone());
 /// graph_c.insert_anchor(
 ///     tx.compute_txid(),
-///     ConfirmationTimeHeightAnchor {
-///         anchor_block: BlockId {
+///     ConfirmationBlockTime {
+///         block_id: BlockId {
 ///             height: 2,
 ///             hash: Hash::hash("third".as_bytes()),
 ///         },
-///         confirmation_height: 1,
 ///         confirmation_time: 123,
 ///     },
 /// );
