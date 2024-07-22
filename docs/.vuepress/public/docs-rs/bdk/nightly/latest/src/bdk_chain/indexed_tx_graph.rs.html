@@ -336,9 +336,35 @@
 <a href="#336" id="336">336</a>
 <a href="#337" id="337">337</a>
 <a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Contains the [`IndexedTxGraph`] and associated types. Refer to the
 //! [`IndexedTxGraph`] documentation for more.
-</span><span class="kw">use </span>alloc::vec::Vec;
+</span><span class="kw">use </span>core::fmt::Debug;
+
+<span class="kw">use </span>alloc::vec::Vec;
 <span class="kw">use </span>bitcoin::{Block, OutPoint, Transaction, TxOut, Txid};
 
 <span class="kw">use crate</span>::{
@@ -385,21 +411,24 @@
     </span><span class="kw">pub fn </span>apply_changeset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: ChangeSet&lt;A, I::ChangeSet&gt;) {
         <span class="self">self</span>.index.apply_changeset(changeset.indexer);
 
-        <span class="kw">for </span>tx <span class="kw">in </span><span class="kw-2">&amp;</span>changeset.graph.txs {
+        <span class="kw">for </span>tx <span class="kw">in </span><span class="kw-2">&amp;</span>changeset.tx_graph.txs {
             <span class="self">self</span>.index.index_tx(tx);
         }
-        <span class="kw">for </span>(<span class="kw-2">&amp;</span>outpoint, txout) <span class="kw">in </span><span class="kw-2">&amp;</span>changeset.graph.txouts {
+        <span class="kw">for </span>(<span class="kw-2">&amp;</span>outpoint, txout) <span class="kw">in </span><span class="kw-2">&amp;</span>changeset.tx_graph.txouts {
             <span class="self">self</span>.index.index_txout(outpoint, txout);
         }
 
-        <span class="self">self</span>.graph.apply_changeset(changeset.graph);
+        <span class="self">self</span>.graph.apply_changeset(changeset.tx_graph);
     }
 
     <span class="doccomment">/// Determines the [`ChangeSet`] between `self` and an empty [`IndexedTxGraph`].
     </span><span class="kw">pub fn </span>initial_changeset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.graph.initial_changeset();
         <span class="kw">let </span>indexer = <span class="self">self</span>.index.initial_changeset();
-        ChangeSet { graph, indexer }
+        ChangeSet {
+            tx_graph: graph,
+            indexer,
+        }
     }
 }
 
@@ -427,21 +456,30 @@
     </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: TxGraph&lt;A&gt;) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.graph.apply_update(update);
         <span class="kw">let </span>indexer = <span class="self">self</span>.index_tx_graph_changeset(<span class="kw-2">&amp;</span>graph);
-        ChangeSet { graph, indexer }
+        ChangeSet {
+            tx_graph: graph,
+            indexer,
+        }
     }
 
     <span class="doccomment">/// Insert a floating `txout` of given `outpoint`.
     </span><span class="kw">pub fn </span>insert_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: TxOut) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.graph.insert_txout(outpoint, txout);
         <span class="kw">let </span>indexer = <span class="self">self</span>.index_tx_graph_changeset(<span class="kw-2">&amp;</span>graph);
-        ChangeSet { graph, indexer }
+        ChangeSet {
+            tx_graph: graph,
+            indexer,
+        }
     }
 
     <span class="doccomment">/// Insert and index a transaction into the graph.
     </span><span class="kw">pub fn </span>insert_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: Transaction) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.graph.insert_tx(tx);
         <span class="kw">let </span>indexer = <span class="self">self</span>.index_tx_graph_changeset(<span class="kw-2">&amp;</span>graph);
-        ChangeSet { graph, indexer }
+        ChangeSet {
+            tx_graph: graph,
+            indexer,
+        }
     }
 
     <span class="doccomment">/// Insert an `anchor` for a given transaction.
@@ -489,7 +527,10 @@
             }
         }
 
-        ChangeSet { graph, indexer }
+        ChangeSet {
+            tx_graph: graph,
+            indexer,
+        }
     }
 
     <span class="doccomment">/// Batch insert unconfirmed transactions, filtering out those that are irrelevant.
@@ -523,7 +564,10 @@
                 .map(|(tx, seen_at)| (tx.clone(), seen_at)),
         );
 
-        ChangeSet { graph, indexer }
+        ChangeSet {
+            tx_graph: graph,
+            indexer,
+        }
     }
 
     <span class="doccomment">/// Batch insert unconfirmed transactions.
@@ -541,7 +585,10 @@
     ) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.graph.batch_insert_unconfirmed(txs);
         <span class="kw">let </span>indexer = <span class="self">self</span>.index_tx_graph_changeset(<span class="kw-2">&amp;</span>graph);
-        ChangeSet { graph, indexer }
+        ChangeSet {
+            tx_graph: graph,
+            indexer,
+        }
     }
 }
 
@@ -574,9 +621,9 @@
             <span class="kw">if </span><span class="self">self</span>.index.is_tx_relevant(tx) {
                 <span class="kw">let </span>txid = tx.compute_txid();
                 <span class="kw">let </span>anchor = A::from_block_position(block, block_id, tx_pos);
-                changeset.graph.merge(<span class="self">self</span>.graph.insert_tx(tx.clone()));
+                changeset.tx_graph.merge(<span class="self">self</span>.graph.insert_tx(tx.clone()));
                 changeset
-                    .graph
+                    .tx_graph
                     .merge(<span class="self">self</span>.graph.insert_anchor(txid, anchor));
             }
         }
@@ -603,7 +650,16 @@
             graph.merge(<span class="self">self</span>.graph.insert_tx(tx.clone()));
         }
         <span class="kw">let </span>indexer = <span class="self">self</span>.index_tx_graph_changeset(<span class="kw-2">&amp;</span>graph);
-        ChangeSet { graph, indexer }
+        ChangeSet {
+            tx_graph: graph,
+            indexer,
+        }
+    }
+}
+
+<span class="kw">impl</span>&lt;A, I&gt; AsRef&lt;TxGraph&lt;A&gt;&gt; <span class="kw">for </span>IndexedTxGraph&lt;A, I&gt; {
+    <span class="kw">fn </span>as_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>TxGraph&lt;A&gt; {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.graph
     }
 }
 
@@ -623,7 +679,7 @@
 #[must_use]
 </span><span class="kw">pub struct </span>ChangeSet&lt;A, IA&gt; {
     <span class="doccomment">/// [`TxGraph`] changeset.
-    </span><span class="kw">pub </span>graph: tx_graph::ChangeSet&lt;A&gt;,
+    </span><span class="kw">pub </span>tx_graph: tx_graph::ChangeSet&lt;A&gt;,
     <span class="doccomment">/// [`Indexer`] changeset.
     </span><span class="kw">pub </span>indexer: IA,
 }
@@ -631,7 +687,7 @@
 <span class="kw">impl</span>&lt;A, IA: Default&gt; Default <span class="kw">for </span>ChangeSet&lt;A, IA&gt; {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            graph: Default::default(),
+            tx_graph: Default::default(),
             indexer: Default::default(),
         }
     }
@@ -639,39 +695,31 @@
 
 <span class="kw">impl</span>&lt;A: Anchor, IA: Merge&gt; Merge <span class="kw">for </span>ChangeSet&lt;A, IA&gt; {
     <span class="kw">fn </span>merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
-        <span class="self">self</span>.graph.merge(other.graph);
+        <span class="self">self</span>.tx_graph.merge(other.tx_graph);
         <span class="self">self</span>.indexer.merge(other.indexer);
     }
 
     <span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.graph.is_empty() &amp;&amp; <span class="self">self</span>.indexer.is_empty()
+        <span class="self">self</span>.tx_graph.is_empty() &amp;&amp; <span class="self">self</span>.indexer.is_empty()
     }
 }
 
 <span class="kw">impl</span>&lt;A, IA: Default&gt; From&lt;tx_graph::ChangeSet&lt;A&gt;&gt; <span class="kw">for </span>ChangeSet&lt;A, IA&gt; {
     <span class="kw">fn </span>from(graph: tx_graph::ChangeSet&lt;A&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            graph,
+            tx_graph: graph,
             ..Default::default()
         }
     }
 }
 
 <span class="attr">#[cfg(feature = <span class="string">"miniscript"</span>)]
-</span><span class="kw">impl</span>&lt;A, K&gt; From&lt;<span class="kw">crate</span>::indexer::keychain_txout::ChangeSet&lt;K&gt;&gt;
-    <span class="kw">for </span>ChangeSet&lt;A, <span class="kw">crate</span>::indexer::keychain_txout::ChangeSet&lt;K&gt;&gt;
-{
-    <span class="kw">fn </span>from(indexer: <span class="kw">crate</span>::indexer::keychain_txout::ChangeSet&lt;K&gt;) -&gt; <span class="self">Self </span>{
+</span><span class="kw">impl</span>&lt;A&gt; From&lt;<span class="kw">crate</span>::keychain_txout::ChangeSet&gt; <span class="kw">for </span>ChangeSet&lt;A, <span class="kw">crate</span>::keychain_txout::ChangeSet&gt; {
+    <span class="kw">fn </span>from(indexer: <span class="kw">crate</span>::keychain_txout::ChangeSet) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            graph: Default::default(),
+            tx_graph: Default::default(),
             indexer,
         }
-    }
-}
-
-<span class="kw">impl</span>&lt;A, I&gt; AsRef&lt;TxGraph&lt;A&gt;&gt; <span class="kw">for </span>IndexedTxGraph&lt;A, I&gt; {
-    <span class="kw">fn </span>as_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>TxGraph&lt;A&gt; {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.graph
     }
 }
 </code></pre></div></section></main></body></html>

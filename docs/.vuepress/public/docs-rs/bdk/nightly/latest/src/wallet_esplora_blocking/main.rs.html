@@ -90,55 +90,62 @@
 <a href="#90" id="90">90</a>
 <a href="#91" id="91">91</a>
 <a href="#92" id="92">92</a>
-</pre></div><pre class="rust"><code><span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">"bdk_wallet_esplora_example"</span>;
-<span class="kw">const </span>SEND_AMOUNT: Amount = Amount::from_sat(<span class="number">1000</span>);
-<span class="kw">const </span>STOP_GAP: usize = <span class="number">5</span>;
-<span class="kw">const </span>PARALLEL_REQUESTS: usize = <span class="number">1</span>;
-
-<span class="kw">use </span>std::{collections::BTreeSet, io::Write, str::FromStr};
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::{collections::BTreeSet, io::Write};
 
 <span class="kw">use </span>bdk_esplora::{esplora_client, EsploraExt};
-<span class="kw">use </span>bdk_file_store::Store;
 <span class="kw">use </span>bdk_wallet::{
-    bitcoin::{Address, Amount, Network},
+    bitcoin::{Amount, Network},
+    file_store::Store,
     KeychainKind, SignOptions, Wallet,
 };
 
-<span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), anyhow::Error&gt; {
-    <span class="kw">let </span>db_path = std::env::temp_dir().join(<span class="string">"bdk-esplora-example"</span>);
-    <span class="kw">let </span><span class="kw-2">mut </span>db =
-        Store::&lt;bdk_wallet::wallet::ChangeSet&gt;::open_or_create_new(DB_MAGIC.as_bytes(), db_path)<span class="question-mark">?</span>;
-    <span class="kw">let </span>external_descriptor = <span class="string">"wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/0/*)"</span>;
-    <span class="kw">let </span>internal_descriptor = <span class="string">"wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/1/*)"</span>;
-    <span class="kw">let </span>changeset = db.aggregate_changesets()<span class="question-mark">?</span>;
+<span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">"bdk_wallet_esplora_example"</span>;
+<span class="kw">const </span>DB_PATH: <span class="kw-2">&amp;</span>str = <span class="string">"bdk-example-esplora-blocking.db"</span>;
+<span class="kw">const </span>SEND_AMOUNT: Amount = Amount::from_sat(<span class="number">5000</span>);
+<span class="kw">const </span>STOP_GAP: usize = <span class="number">5</span>;
+<span class="kw">const </span>PARALLEL_REQUESTS: usize = <span class="number">5</span>;
 
-    <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::new_or_load(
-        external_descriptor,
-        internal_descriptor,
-        changeset,
-        Network::Testnet,
-    )<span class="question-mark">?</span>;
+<span class="kw">const </span>NETWORK: Network = Network::Signet;
+<span class="kw">const </span>EXTERNAL_DESC: <span class="kw-2">&amp;</span>str = <span class="string">"wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/0/*)"</span>;
+<span class="kw">const </span>INTERNAL_DESC: <span class="kw-2">&amp;</span>str = <span class="string">"wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/1/*)"</span>;
+<span class="kw">const </span>ESPLORA_URL: <span class="kw-2">&amp;</span>str = <span class="string">"http://signet.bitcoindevkit.net"</span>;
+
+<span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), anyhow::Error&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>db = Store::&lt;bdk_wallet::ChangeSet&gt;::open_or_create_new(DB_MAGIC.as_bytes(), DB_PATH)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>wallet_opt = Wallet::load()
+        .descriptors(EXTERNAL_DESC, INTERNAL_DESC)
+        .network(NETWORK)
+        .load_wallet(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>wallet = <span class="kw">match </span>wallet_opt {
+        <span class="prelude-val">Some</span>(wallet) =&gt; wallet,
+        <span class="prelude-val">None </span>=&gt; Wallet::create(EXTERNAL_DESC, INTERNAL_DESC)
+            .network(NETWORK)
+            .create_wallet(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>,
+    };
 
     <span class="kw">let </span>address = wallet.next_unused_address(KeychainKind::External);
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = wallet.take_staged() {
-        db.append_changeset(<span class="kw-2">&amp;</span>changeset)<span class="question-mark">?</span>;
-    }
-    <span class="macro">println!</span>(<span class="string">"Generated Address: {}"</span>, address);
+    wallet.persist(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
+    <span class="macro">println!</span>(
+        <span class="string">"Next unused address: ({}) {}"</span>,
+        address.index, address.address
+    );
 
     <span class="kw">let </span>balance = wallet.balance();
     <span class="macro">println!</span>(<span class="string">"Wallet balance before syncing: {} sats"</span>, balance.total());
 
     <span class="macro">print!</span>(<span class="string">"Syncing..."</span>);
-    <span class="kw">let </span>client =
-        esplora_client::Builder::new(<span class="string">"https://blockstream.info/testnet/api"</span>).build_blocking();
+    <span class="kw">let </span>client = esplora_client::Builder::new(ESPLORA_URL).build_blocking();
 
     <span class="kw">let </span>request = wallet.start_full_scan().inspect_spks_for_all_keychains({
         <span class="kw">let </span><span class="kw-2">mut </span>once = BTreeSet::&lt;KeychainKind&gt;::new();
         <span class="kw">move </span>|keychain, spk_i, <span class="kw">_</span>| {
-            <span class="kw">match </span>once.insert(keychain) {
-                <span class="bool-val">true </span>=&gt; <span class="macro">print!</span>(<span class="string">"\nScanning keychain [{:?}]"</span>, keychain),
-                <span class="bool-val">false </span>=&gt; <span class="macro">print!</span>(<span class="string">" {:&lt;3}"</span>, spk_i),
-            };
+            <span class="kw">if </span>once.insert(keychain) {
+                <span class="macro">print!</span>(<span class="string">"\nScanning keychain [{:?}] "</span>, keychain);
+            }
+            <span class="macro">print!</span>(<span class="string">" {:&lt;3}"</span>, spk_i);
             std::io::stdout().flush().expect(<span class="string">"must flush"</span>)
         }
     });
@@ -164,12 +171,9 @@
         std::process::exit(<span class="number">0</span>);
     }
 
-    <span class="kw">let </span>faucet_address = Address::from_str(<span class="string">"mkHS9ne12qx9pS9VojpwU5xtRd4T7X7ZUt"</span>)<span class="question-mark">?
-        </span>.require_network(Network::Testnet)<span class="question-mark">?</span>;
-
     <span class="kw">let </span><span class="kw-2">mut </span>tx_builder = wallet.build_tx();
     tx_builder
-        .add_recipient(faucet_address.script_pubkey(), SEND_AMOUNT)
+        .add_recipient(address.script_pubkey(), SEND_AMOUNT)
         .enable_rbf();
 
     <span class="kw">let </span><span class="kw-2">mut </span>psbt = tx_builder.finish()<span class="question-mark">?</span>;

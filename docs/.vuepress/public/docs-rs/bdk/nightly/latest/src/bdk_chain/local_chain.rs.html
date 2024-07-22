@@ -849,22 +849,67 @@
 <a href="#849" id="849">849</a>
 <a href="#850" id="850">850</a>
 <a href="#851" id="851">851</a>
+<a href="#852" id="852">852</a>
+<a href="#853" id="853">853</a>
+<a href="#854" id="854">854</a>
+<a href="#855" id="855">855</a>
+<a href="#856" id="856">856</a>
+<a href="#857" id="857">857</a>
+<a href="#858" id="858">858</a>
+<a href="#859" id="859">859</a>
+<a href="#860" id="860">860</a>
+<a href="#861" id="861">861</a>
+<a href="#862" id="862">862</a>
+<a href="#863" id="863">863</a>
+<a href="#864" id="864">864</a>
+<a href="#865" id="865">865</a>
+<a href="#866" id="866">866</a>
+<a href="#867" id="867">867</a>
+<a href="#868" id="868">868</a>
+<a href="#869" id="869">869</a>
+<a href="#870" id="870">870</a>
+<a href="#871" id="871">871</a>
+<a href="#872" id="872">872</a>
+<a href="#873" id="873">873</a>
+<a href="#874" id="874">874</a>
+<a href="#875" id="875">875</a>
+<a href="#876" id="876">876</a>
+<a href="#877" id="877">877</a>
+<a href="#878" id="878">878</a>
+<a href="#879" id="879">879</a>
+<a href="#880" id="880">880</a>
+<a href="#881" id="881">881</a>
+<a href="#882" id="882">882</a>
+<a href="#883" id="883">883</a>
+<a href="#884" id="884">884</a>
+<a href="#885" id="885">885</a>
+<a href="#886" id="886">886</a>
+<a href="#887" id="887">887</a>
+<a href="#888" id="888">888</a>
+<a href="#889" id="889">889</a>
+<a href="#890" id="890">890</a>
+<a href="#891" id="891">891</a>
+<a href="#892" id="892">892</a>
+<a href="#893" id="893">893</a>
+<a href="#894" id="894">894</a>
+<a href="#895" id="895">895</a>
+<a href="#896" id="896">896</a>
+<a href="#897" id="897">897</a>
+<a href="#898" id="898">898</a>
+<a href="#899" id="899">899</a>
+<a href="#900" id="900">900</a>
+<a href="#901" id="901">901</a>
+<a href="#902" id="902">902</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! The [`LocalChain`] is a local implementation of [`ChainOracle`].
 
 </span><span class="kw">use </span>core::convert::Infallible;
 <span class="kw">use </span>core::ops::RangeBounds;
 
 <span class="kw">use </span><span class="kw">crate</span>::collections::BTreeMap;
-<span class="kw">use crate</span>::{BlockId, ChainOracle};
+<span class="kw">use crate</span>::{BlockId, ChainOracle, Merge};
 <span class="kw">use </span>alloc::sync::Arc;
 <span class="kw">use </span>bitcoin::block::Header;
 <span class="kw">use </span>bitcoin::BlockHash;
-
-<span class="doccomment">/// The [`ChangeSet`] represents changes to [`LocalChain`].
-///
-/// The key represents the block height, and the value either represents added a new [`CheckPoint`]
-/// (if [`Some`]), or removing a [`CheckPoint`] (if [`None`]).
-</span><span class="kw">pub type </span>ChangeSet = BTreeMap&lt;u32, <span class="prelude-ty">Option</span>&lt;BlockHash&gt;&gt;;
 
 <span class="doccomment">/// A [`LocalChain`] checkpoint is used to find the agreement point between two chains and as a
 /// transaction anchor.
@@ -1067,7 +1112,7 @@
 
     <span class="doccomment">/// Apply `changeset` to the checkpoint.
     </span><span class="kw">fn </span>apply_changeset(<span class="kw-2">mut </span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>ChangeSet) -&gt; <span class="prelude-ty">Result</span>&lt;CheckPoint, MissingGenesisError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(start_height) = changeset.keys().next().cloned() {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(start_height) = changeset.blocks.keys().next().cloned() {
             <span class="comment">// changes after point of agreement
             </span><span class="kw">let </span><span class="kw-2">mut </span>extension = BTreeMap::default();
             <span class="comment">// point of agreement
@@ -1082,7 +1127,7 @@
                 }
             }
 
-            <span class="kw">for </span>(<span class="kw-2">&amp;</span>height, <span class="kw-2">&amp;</span>hash) <span class="kw">in </span>changeset {
+            <span class="kw">for </span>(<span class="kw-2">&amp;</span>height, <span class="kw-2">&amp;</span>hash) <span class="kw">in </span><span class="kw-2">&amp;</span>changeset.blocks {
                 <span class="kw">match </span>hash {
                     <span class="prelude-val">Some</span>(hash) =&gt; {
                         extension.insert(height, hash);
@@ -1182,7 +1227,7 @@
 
     <span class="doccomment">/// Construct a [`LocalChain`] from an initial `changeset`.
     </span><span class="kw">pub fn </span>from_changeset(changeset: ChangeSet) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, MissingGenesisError&gt; {
-        <span class="kw">let </span>genesis_entry = changeset.get(<span class="kw-2">&amp;</span><span class="number">0</span>).copied().flatten();
+        <span class="kw">let </span>genesis_entry = changeset.blocks.get(<span class="kw-2">&amp;</span><span class="number">0</span>).copied().flatten();
         <span class="kw">let </span>genesis_hash = <span class="kw">match </span>genesis_entry {
             <span class="prelude-val">Some</span>(hash) =&gt; hash,
             <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(MissingGenesisError),
@@ -1372,12 +1417,14 @@
         }
 
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
-        changeset.insert(block_id.height, <span class="prelude-val">Some</span>(block_id.hash));
+        changeset
+            .blocks
+            .insert(block_id.height, <span class="prelude-val">Some</span>(block_id.hash));
         <span class="self">self</span>.apply_changeset(<span class="kw-2">&amp;</span>changeset)
             .map_err(|<span class="kw">_</span>| AlterCheckPointError {
                 height: <span class="number">0</span>,
                 original_hash: <span class="self">self</span>.genesis_hash(),
-                update_hash: changeset.get(<span class="kw-2">&amp;</span><span class="number">0</span>).cloned().flatten(),
+                update_hash: changeset.blocks.get(<span class="kw-2">&amp;</span><span class="number">0</span>).cloned().flatten(),
             })<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(changeset)
     }
@@ -1399,7 +1446,7 @@
             <span class="kw">if </span>cp_id.height &lt; block_id.height {
                 <span class="kw">break</span>;
             }
-            changeset.insert(cp_id.height, <span class="prelude-val">None</span>);
+            changeset.blocks.insert(cp_id.height, <span class="prelude-val">None</span>);
             <span class="kw">if </span>cp_id == block_id {
                 remove_from = <span class="prelude-val">Some</span>(cp);
             }
@@ -1420,13 +1467,16 @@
     <span class="doccomment">/// Derives an initial [`ChangeSet`], meaning that it can be applied to an empty chain to
     /// recover the current chain.
     </span><span class="kw">pub fn </span>initial_changeset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ChangeSet {
-        <span class="self">self</span>.tip
-            .iter()
-            .map(|cp| {
-                <span class="kw">let </span>block_id = cp.block_id();
-                (block_id.height, <span class="prelude-val">Some</span>(block_id.hash))
-            })
-            .collect()
+        ChangeSet {
+            blocks: <span class="self">self
+                </span>.tip
+                .iter()
+                .map(|cp| {
+                    <span class="kw">let </span>block_id = cp.block_id();
+                    (block_id.height, <span class="prelude-val">Some</span>(block_id.hash))
+                })
+                .collect(),
+        }
     }
 
     <span class="doccomment">/// Iterate over checkpoints in descending height order.
@@ -1438,7 +1488,7 @@
 
     <span class="kw">fn </span>_check_changeset_is_applied(<span class="kw-2">&amp;</span><span class="self">self</span>, changeset: <span class="kw-2">&amp;</span>ChangeSet) -&gt; bool {
         <span class="kw">let </span><span class="kw-2">mut </span>curr_cp = <span class="self">self</span>.tip.clone();
-        <span class="kw">for </span>(height, exp_hash) <span class="kw">in </span>changeset.iter().rev() {
+        <span class="kw">for </span>(height, exp_hash) <span class="kw">in </span>changeset.blocks.iter().rev() {
             <span class="kw">match </span>curr_cp.get(<span class="kw-2">*</span>height) {
                 <span class="prelude-val">Some</span>(query_cp) =&gt; {
                     <span class="kw">if </span>query_cp.height() != <span class="kw-2">*</span>height || <span class="prelude-val">Some</span>(query_cp.hash()) != <span class="kw-2">*</span>exp_hash {
@@ -1478,6 +1528,58 @@
         </span>R: RangeBounds&lt;u32&gt;,
     {
         <span class="self">self</span>.tip.range(range)
+    }
+}
+
+<span class="doccomment">/// The [`ChangeSet`] represents changes to [`LocalChain`].
+</span><span class="attr">#[derive(Debug, Default, Clone, PartialEq)]
+#[cfg_attr(
+    feature = <span class="string">"serde"</span>,
+    derive(serde::Deserialize, serde::Serialize),
+    serde(<span class="kw">crate </span>= <span class="string">"serde_crate"</span>)
+)]
+</span><span class="kw">pub struct </span>ChangeSet {
+    <span class="doccomment">/// Changes to the [`LocalChain`] blocks.
+    ///
+    /// The key represents the block height, and the value either represents added a new [`CheckPoint`]
+    /// (if [`Some`]), or removing a [`CheckPoint`] (if [`None`]).
+    </span><span class="kw">pub </span>blocks: BTreeMap&lt;u32, <span class="prelude-ty">Option</span>&lt;BlockHash&gt;&gt;,
+}
+
+<span class="kw">impl </span>Merge <span class="kw">for </span>ChangeSet {
+    <span class="kw">fn </span>merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
+        Merge::merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>.blocks, other.blocks)
+    }
+
+    <span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.blocks.is_empty()
+    }
+}
+
+<span class="kw">impl</span>&lt;B: IntoIterator&lt;Item = (u32, <span class="prelude-ty">Option</span>&lt;BlockHash&gt;)&gt;&gt; From&lt;B&gt; <span class="kw">for </span>ChangeSet {
+    <span class="kw">fn </span>from(blocks: B) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            blocks: blocks.into_iter().collect(),
+        }
+    }
+}
+
+<span class="kw">impl </span>FromIterator&lt;(u32, <span class="prelude-ty">Option</span>&lt;BlockHash&gt;)&gt; <span class="kw">for </span>ChangeSet {
+    <span class="kw">fn </span>from_iter&lt;T: IntoIterator&lt;Item = (u32, <span class="prelude-ty">Option</span>&lt;BlockHash&gt;)&gt;&gt;(iter: T) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            blocks: iter.into_iter().collect(),
+        }
+    }
+}
+
+<span class="kw">impl </span>FromIterator&lt;(u32, BlockHash)&gt; <span class="kw">for </span>ChangeSet {
+    <span class="kw">fn </span>from_iter&lt;T: IntoIterator&lt;Item = (u32, BlockHash)&gt;&gt;(iter: T) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            blocks: iter
+                .into_iter()
+                .map(|(height, hash)| (height, <span class="prelude-val">Some</span>(hash)))
+                .collect(),
+        }
     }
 }
 
@@ -1612,7 +1714,7 @@
         <span class="kw">match </span>(curr_orig.as_ref(), curr_update.as_ref()) {
             <span class="comment">// Update block that doesn't exist in the original chain
             </span>(o, <span class="prelude-val">Some</span>(u)) <span class="kw">if </span><span class="prelude-val">Some</span>(u.height()) &gt; o.map(|o| o.height()) =&gt; {
-                changeset.insert(u.height(), <span class="prelude-val">Some</span>(u.hash()));
+                changeset.blocks.insert(u.height(), <span class="prelude-val">Some</span>(u.hash()));
                 prev_update = curr_update.take();
             }
             <span class="comment">// Original block that isn't in the update
@@ -1664,9 +1766,9 @@
                 } <span class="kw">else </span>{
                     <span class="comment">// We have an invalidation height so we set the height to the updated hash and
                     // also purge all the original chain block hashes above this block.
-                    </span>changeset.insert(u.height(), <span class="prelude-val">Some</span>(u.hash()));
+                    </span>changeset.blocks.insert(u.height(), <span class="prelude-val">Some</span>(u.hash()));
                     <span class="kw">for </span>invalidated_height <span class="kw">in </span>potentially_invalidated_heights.drain(..) {
-                        changeset.insert(invalidated_height, <span class="prelude-val">None</span>);
+                        changeset.blocks.insert(invalidated_height, <span class="prelude-val">None</span>);
                     }
                     prev_orig_was_invalidated = <span class="bool-val">true</span>;
                 }
