@@ -103,57 +103,57 @@
 <a href="#103" id="103">103</a>
 <a href="#104" id="104">104</a>
 <a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-</pre></div><pre class="rust"><code><span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">"bdk_wallet_electrum_example"</span>;
-<span class="kw">const </span>SEND_AMOUNT: Amount = Amount::from_sat(<span class="number">5000</span>);
-<span class="kw">const </span>STOP_GAP: usize = <span class="number">50</span>;
-<span class="kw">const </span>BATCH_SIZE: usize = <span class="number">5</span>;
-
-<span class="kw">use </span>anyhow::anyhow;
+</pre></div><pre class="rust"><code><span class="kw">use </span>bdk_wallet::file_store::Store;
+<span class="kw">use </span>bdk_wallet::Wallet;
 <span class="kw">use </span>std::io::Write;
 <span class="kw">use </span>std::str::FromStr;
 
 <span class="kw">use </span>bdk_electrum::electrum_client;
 <span class="kw">use </span>bdk_electrum::BdkElectrumClient;
-<span class="kw">use </span>bdk_file_store::Store;
+<span class="kw">use </span>bdk_wallet::bitcoin::Network;
 <span class="kw">use </span>bdk_wallet::bitcoin::{Address, Amount};
 <span class="kw">use </span>bdk_wallet::chain::collections::HashSet;
-<span class="kw">use </span>bdk_wallet::{bitcoin::Network, Wallet};
 <span class="kw">use </span>bdk_wallet::{KeychainKind, SignOptions};
 
+<span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>str = <span class="string">"bdk_wallet_electrum_example"</span>;
+<span class="kw">const </span>SEND_AMOUNT: Amount = Amount::from_sat(<span class="number">5000</span>);
+<span class="kw">const </span>STOP_GAP: usize = <span class="number">50</span>;
+<span class="kw">const </span>BATCH_SIZE: usize = <span class="number">5</span>;
+
+<span class="kw">const </span>NETWORK: Network = Network::Testnet;
+<span class="kw">const </span>EXTERNAL_DESC: <span class="kw-2">&amp;</span>str = <span class="string">"wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/0/*)"</span>;
+<span class="kw">const </span>INTERNAL_DESC: <span class="kw-2">&amp;</span>str = <span class="string">"wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/1/*)"</span>;
+<span class="kw">const </span>ELECTRUM_URL: <span class="kw-2">&amp;</span>str = <span class="string">"ssl://electrum.blockstream.info:60002"</span>;
+
 <span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), anyhow::Error&gt; {
-    <span class="kw">let </span>db_path = std::env::temp_dir().join(<span class="string">"bdk-electrum-example"</span>);
-    <span class="kw">let </span><span class="kw-2">mut </span>db =
-        Store::&lt;bdk_wallet::wallet::ChangeSet&gt;::open_or_create_new(DB_MAGIC.as_bytes(), db_path)<span class="question-mark">?</span>;
-    <span class="kw">let </span>external_descriptor = <span class="string">"wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/0/*)"</span>;
-    <span class="kw">let </span>internal_descriptor = <span class="string">"wpkh(tprv8ZgxMBicQKsPdy6LMhUtFHAgpocR8GC6QmwMSFpZs7h6Eziw3SpThFfczTDh5rW2krkqffa11UpX3XkeTTB2FvzZKWXqPY54Y6Rq4AQ5R8L/84'/1'/0'/1/*)"</span>;
-    <span class="kw">let </span>changeset = db
-        .aggregate_changesets()
-        .map_err(|e| <span class="macro">anyhow!</span>(<span class="string">"load changes error: {}"</span>, e))<span class="question-mark">?</span>;
-    <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::new_or_load(
-        external_descriptor,
-        internal_descriptor,
-        changeset,
-        Network::Testnet,
-    )<span class="question-mark">?</span>;
+    <span class="kw">let </span>db_path = <span class="string">"bdk-electrum-example.db"</span>;
+
+    <span class="kw">let </span><span class="kw-2">mut </span>db = Store::&lt;bdk_wallet::ChangeSet&gt;::open_or_create_new(DB_MAGIC.as_bytes(), db_path)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>wallet_opt = Wallet::load()
+        .descriptors(EXTERNAL_DESC, INTERNAL_DESC)
+        .network(NETWORK)
+        .load_wallet(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>wallet = <span class="kw">match </span>wallet_opt {
+        <span class="prelude-val">Some</span>(wallet) =&gt; wallet,
+        <span class="prelude-val">None </span>=&gt; Wallet::create(EXTERNAL_DESC, INTERNAL_DESC)
+            .network(NETWORK)
+            .create_wallet(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>,
+    };
 
     <span class="kw">let </span>address = wallet.next_unused_address(KeychainKind::External);
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = wallet.take_staged() {
-        db.append_changeset(<span class="kw-2">&amp;</span>changeset)<span class="question-mark">?</span>;
-    }
+    wallet.persist(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
     <span class="macro">println!</span>(<span class="string">"Generated Address: {}"</span>, address);
 
     <span class="kw">let </span>balance = wallet.balance();
     <span class="macro">println!</span>(<span class="string">"Wallet balance before syncing: {} sats"</span>, balance.total());
 
     <span class="macro">print!</span>(<span class="string">"Syncing..."</span>);
-    <span class="kw">let </span>client = BdkElectrumClient::new(electrum_client::Client::new(
-        <span class="string">"ssl://electrum.blockstream.info:60002"</span>,
-    )<span class="question-mark">?</span>);
+    <span class="kw">let </span>client = BdkElectrumClient::new(electrum_client::Client::new(ELECTRUM_URL)<span class="question-mark">?</span>);
 
     <span class="comment">// Populate the electrum client's transaction cache so it doesn't redownload transaction we
     // already have.
-    </span>client.populate_tx_cache(<span class="kw-2">&amp;</span>wallet);
+    </span>client.populate_tx_cache(wallet.tx_graph());
 
     <span class="kw">let </span>request = wallet
         .start_full_scan()
@@ -177,9 +177,7 @@
     <span class="macro">println!</span>();
 
     wallet.apply_update(update)<span class="question-mark">?</span>;
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = wallet.take_staged() {
-        db.append_changeset(<span class="kw-2">&amp;</span>changeset)<span class="question-mark">?</span>;
-    }
+    wallet.persist(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>balance = wallet.balance();
     <span class="macro">println!</span>(<span class="string">"Wallet balance after syncing: {} sats"</span>, balance.total());

@@ -359,6 +359,11 @@
 <a href="#359" id="359">359</a>
 <a href="#360" id="360">360</a>
 <a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -381,7 +386,7 @@
 //! ```
 //! # use std::str::FromStr;
 //! # use bitcoin::*;
-//! # use bdk_wallet::wallet::export::*;
+//! # use bdk_wallet::export::*;
 //! # use bdk_wallet::*;
 //! let import = r#"{
 //!     "descriptor": "wpkh([c258d2e4\/84h\/1h\/0h]tpubDD3ynpHgJQW8VvWRzQ5WFDCrs4jqVFGHB3vLC3r49XHJSqP8bHKdK4AriuUKLccK68zfzowx7YhmDN8SiSkgCDENUFx9qVw65YyqM78vyVe\/0\/*)",
@@ -390,24 +395,26 @@
 //! }"#;
 //!
 //! let import = FullyNodedExport::from_str(import)?;
-//! let wallet = Wallet::new(
-//!     &amp;import.descriptor(),
-//!     &amp;import.change_descriptor().expect("change descriptor"),
-//!     Network::Testnet,
-//! )?;
+//! let wallet = Wallet::create(
+//!     import.descriptor(),
+//!     import.change_descriptor().expect("change descriptor"),
+//! )
+//! .network(Network::Testnet)
+//! .create_wallet_no_persist()?;
 //! # Ok::&lt;_, Box&lt;dyn std::error::Error&gt;&gt;(())
 //! ```
 //!
 //! ### Export a `Wallet`
 //! ```
 //! # use bitcoin::*;
-//! # use bdk_wallet::wallet::export::*;
+//! # use bdk_wallet::export::*;
 //! # use bdk_wallet::*;
-//! let wallet = Wallet::new(
+//! let wallet = Wallet::create(
 //!     "wpkh([c258d2e4/84h/1h/0h]tpubDD3ynpHgJQW8VvWRzQ5WFDCrs4jqVFGHB3vLC3r49XHJSqP8bHKdK4AriuUKLccK68zfzowx7YhmDN8SiSkgCDENUFx9qVw65YyqM78vyVe/0/*)",
 //!     "wpkh([c258d2e4/84h/1h/0h]tpubDD3ynpHgJQW8VvWRzQ5WFDCrs4jqVFGHB3vLC3r49XHJSqP8bHKdK4AriuUKLccK68zfzowx7YhmDN8SiSkgCDENUFx9qVw65YyqM78vyVe/1/*)",
-//!     Network::Testnet,
-//! )?;
+//! )
+//! .network(Network::Testnet)
+//! .create_wallet_no_persist()?;
 //! let export = FullyNodedExport::export_wallet(&amp;wallet, "exported wallet", true).unwrap();
 //!
 //! println!("Exported: {}", export.to_string());
@@ -580,12 +587,15 @@
     <span class="kw">use </span>bitcoin::{transaction, BlockHash, Network, Transaction};
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span><span class="kw">crate</span>::wallet::Wallet;
+    <span class="kw">use </span><span class="kw">crate</span>::Wallet;
 
     <span class="kw">fn </span>get_test_wallet(descriptor: <span class="kw-2">&amp;</span>str, change_descriptor: <span class="kw-2">&amp;</span>str, network: Network) -&gt; Wallet {
         <span class="kw">use </span><span class="kw">crate</span>::wallet::Update;
         <span class="kw">use </span>bdk_chain::TxGraph;
-        <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::new(descriptor, change_descriptor, network).unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::create(descriptor.to_string(), change_descriptor.to_string())
+            .network(network)
+            .create_wallet_no_persist()
+            .expect(<span class="string">"must create wallet"</span>);
         <span class="kw">let </span>transaction = Transaction {
             input: <span class="macro">vec!</span>[],
             output: <span class="macro">vec!</span>[],

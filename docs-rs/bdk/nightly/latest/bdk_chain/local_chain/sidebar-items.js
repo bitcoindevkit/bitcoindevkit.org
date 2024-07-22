@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["ApplyHeaderError"],"struct":["AlterCheckPointError","CannotConnectError","CheckPoint","CheckPointIter","LocalChain","MissingGenesisError"],"type":["ChangeSet"]};
+window.SIDEBAR_ITEMS = {"enum":["ApplyHeaderError"],"struct":["AlterCheckPointError","CannotConnectError","ChangeSet","CheckPoint","CheckPointIter","LocalChain","MissingGenesisError"]};

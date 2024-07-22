@@ -879,71 +879,6 @@
 <a href="#879" id="879">879</a>
 <a href="#880" id="880">880</a>
 <a href="#881" id="881">881</a>
-<a href="#882" id="882">882</a>
-<a href="#883" id="883">883</a>
-<a href="#884" id="884">884</a>
-<a href="#885" id="885">885</a>
-<a href="#886" id="886">886</a>
-<a href="#887" id="887">887</a>
-<a href="#888" id="888">888</a>
-<a href="#889" id="889">889</a>
-<a href="#890" id="890">890</a>
-<a href="#891" id="891">891</a>
-<a href="#892" id="892">892</a>
-<a href="#893" id="893">893</a>
-<a href="#894" id="894">894</a>
-<a href="#895" id="895">895</a>
-<a href="#896" id="896">896</a>
-<a href="#897" id="897">897</a>
-<a href="#898" id="898">898</a>
-<a href="#899" id="899">899</a>
-<a href="#900" id="900">900</a>
-<a href="#901" id="901">901</a>
-<a href="#902" id="902">902</a>
-<a href="#903" id="903">903</a>
-<a href="#904" id="904">904</a>
-<a href="#905" id="905">905</a>
-<a href="#906" id="906">906</a>
-<a href="#907" id="907">907</a>
-<a href="#908" id="908">908</a>
-<a href="#909" id="909">909</a>
-<a href="#910" id="910">910</a>
-<a href="#911" id="911">911</a>
-<a href="#912" id="912">912</a>
-<a href="#913" id="913">913</a>
-<a href="#914" id="914">914</a>
-<a href="#915" id="915">915</a>
-<a href="#916" id="916">916</a>
-<a href="#917" id="917">917</a>
-<a href="#918" id="918">918</a>
-<a href="#919" id="919">919</a>
-<a href="#920" id="920">920</a>
-<a href="#921" id="921">921</a>
-<a href="#922" id="922">922</a>
-<a href="#923" id="923">923</a>
-<a href="#924" id="924">924</a>
-<a href="#925" id="925">925</a>
-<a href="#926" id="926">926</a>
-<a href="#927" id="927">927</a>
-<a href="#928" id="928">928</a>
-<a href="#929" id="929">929</a>
-<a href="#930" id="930">930</a>
-<a href="#931" id="931">931</a>
-<a href="#932" id="932">932</a>
-<a href="#933" id="933">933</a>
-<a href="#934" id="934">934</a>
-<a href="#935" id="935">935</a>
-<a href="#936" id="936">936</a>
-<a href="#937" id="937">937</a>
-<a href="#938" id="938">938</a>
-<a href="#939" id="939">939</a>
-<a href="#940" id="940">940</a>
-<a href="#941" id="941">941</a>
-<a href="#942" id="942">942</a>
-<a href="#943" id="943">943</a>
-<a href="#944" id="944">944</a>
-<a href="#945" id="945">945</a>
-<a href="#946" id="946">946</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! [`KeychainTxOutIndex`] controls how script pubkeys are revealed for multiple keychains and
 //! indexes [`TxOut`]s with them.
 
@@ -951,7 +886,8 @@
     collections::<span class="kw-2">*</span>,
     miniscript::{Descriptor, DescriptorPublicKey},
     spk_iter::BIP32_MAX_INDEX,
-    DescriptorExt, DescriptorId, Indexed, Indexer, KeychainIndexed, SpkIterator, SpkTxOutIndex,
+    spk_txout::SpkTxOutIndex,
+    DescriptorExt, DescriptorId, Indexed, Indexer, KeychainIndexed, SpkIterator,
 };
 <span class="kw">use </span>alloc::{borrow::ToOwned, vec::Vec};
 <span class="kw">use </span>bitcoin::{Amount, OutPoint, Script, ScriptBuf, SignedAmount, Transaction, TxOut, Txid};
@@ -1081,7 +1017,7 @@
 }
 
 <span class="kw">impl</span>&lt;K: Clone + Ord + Debug&gt; Indexer <span class="kw">for </span>KeychainTxOutIndex&lt;K&gt; {
-    <span class="kw">type </span>ChangeSet = ChangeSet&lt;K&gt;;
+    <span class="kw">type </span>ChangeSet = ChangeSet;
 
     <span class="kw">fn </span>index_txout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoint: OutPoint, txout: <span class="kw-2">&amp;</span>TxOut) -&gt; <span class="self">Self</span>::ChangeSet {
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
@@ -1100,7 +1036,7 @@
     }
 
     <span class="kw">fn </span>index_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: <span class="kw-2">&amp;</span>bitcoin::Transaction) -&gt; <span class="self">Self</span>::ChangeSet {
-        <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::&lt;K&gt;::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
         <span class="kw">let </span>txid = tx.compute_txid();
         <span class="kw">for </span>(op, txout) <span class="kw">in </span>tx.output.iter().enumerate() {
             changeset.merge(<span class="self">self</span>.index_txout(OutPoint::new(txid, op <span class="kw">as </span>u32), txout));
@@ -1110,10 +1046,6 @@
 
     <span class="kw">fn </span>initial_changeset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::ChangeSet {
         ChangeSet {
-            keychains_added: <span class="self">self
-                </span>.keychains()
-                .map(|(k, v)| (k.clone(), v.clone()))
-                .collect(),
             last_revealed: <span class="self">self</span>.last_revealed.clone().into_iter().collect(),
         }
     }
@@ -1300,7 +1232,7 @@
     /// keychain &lt;-&gt; descriptor is a one-to-one mapping that cannot be changed. Attempting to do so
     /// will return a [`InsertDescriptorError&lt;K&gt;`].
     ///
-    /// `[KeychainTxOutIndex]` will prevent you from inserting two descriptors which derive the same
+    /// [`KeychainTxOutIndex`] will prevent you from inserting two descriptors which derive the same
     /// script pubkey at index 0, but it's up to you to ensure that descriptors don't collide at
     /// other indices. If they do nothing catastrophic happens at the `KeychainTxOutIndex` level
     /// (one keychain just becomes the defacto owner of that spk arbitrarily) but this may have
@@ -1310,8 +1242,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         keychain: K,
         descriptor: Descriptor&lt;DescriptorPublicKey&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;ChangeSet&lt;K&gt;, InsertDescriptorError&lt;K&gt;&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::&lt;K&gt;::default();
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, InsertDescriptorError&lt;K&gt;&gt; {
         <span class="kw">let </span>did = descriptor.descriptor_id();
         <span class="kw">if </span>!<span class="self">self</span>.keychain_to_descriptor_id.contains_key(<span class="kw-2">&amp;</span>keychain)
             &amp;&amp; !<span class="self">self</span>.descriptor_id_to_keychain.contains_key(<span class="kw-2">&amp;</span>did)
@@ -1320,33 +1251,31 @@
             <span class="self">self</span>.keychain_to_descriptor_id.insert(keychain.clone(), did);
             <span class="self">self</span>.descriptor_id_to_keychain.insert(did, keychain.clone());
             <span class="self">self</span>.replenish_inner_index(did, <span class="kw-2">&amp;</span>keychain, <span class="self">self</span>.lookahead);
-            changeset
-                .keychains_added
-                .insert(keychain.clone(), descriptor);
-        } <span class="kw">else </span>{
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(existing_desc_id) = <span class="self">self</span>.keychain_to_descriptor_id.get(<span class="kw-2">&amp;</span>keychain) {
-                <span class="kw">let </span>descriptor = <span class="self">self</span>.descriptors.get(existing_desc_id).expect(<span class="string">"invariant"</span>);
-                <span class="kw">if </span><span class="kw-2">*</span>existing_desc_id != did {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(InsertDescriptorError::KeychainAlreadyAssigned {
-                        existing_assignment: descriptor.clone(),
-                        keychain,
-                    });
-                }
-            }
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">true</span>);
+        }
 
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(existing_keychain) = <span class="self">self</span>.descriptor_id_to_keychain.get(<span class="kw-2">&amp;</span>did) {
-                <span class="kw">let </span>descriptor = <span class="self">self</span>.descriptors.get(<span class="kw-2">&amp;</span>did).expect(<span class="string">"invariant"</span>).clone();
-
-                <span class="kw">if </span><span class="kw-2">*</span>existing_keychain != keychain {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(InsertDescriptorError::DescriptorAlreadyAssigned {
-                        existing_assignment: existing_keychain.clone(),
-                        descriptor,
-                    });
-                }
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(existing_desc_id) = <span class="self">self</span>.keychain_to_descriptor_id.get(<span class="kw-2">&amp;</span>keychain) {
+            <span class="kw">let </span>descriptor = <span class="self">self</span>.descriptors.get(existing_desc_id).expect(<span class="string">"invariant"</span>);
+            <span class="kw">if </span><span class="kw-2">*</span>existing_desc_id != did {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(InsertDescriptorError::KeychainAlreadyAssigned {
+                    existing_assignment: descriptor.clone(),
+                    keychain,
+                });
             }
         }
 
-        <span class="prelude-val">Ok</span>(changeset)
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(existing_keychain) = <span class="self">self</span>.descriptor_id_to_keychain.get(<span class="kw-2">&amp;</span>did) {
+            <span class="kw">let </span>descriptor = <span class="self">self</span>.descriptors.get(<span class="kw-2">&amp;</span>did).expect(<span class="string">"invariant"</span>).clone();
+
+            <span class="kw">if </span><span class="kw-2">*</span>existing_keychain != keychain {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(InsertDescriptorError::DescriptorAlreadyAssigned {
+                    existing_assignment: existing_keychain.clone(),
+                    descriptor,
+                });
+            }
+        }
+
+        <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>)
     }
 
     <span class="doccomment">/// Gets the descriptor associated with the keychain. Returns `None` if the keychain doesn't
@@ -1573,7 +1502,7 @@
     }
 
     <span class="doccomment">/// Convenience method to call [`Self::reveal_to_target`] on multiple keychains.
-    </span><span class="kw">pub fn </span>reveal_to_target_multi(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychains: <span class="kw-2">&amp;</span>BTreeMap&lt;K, u32&gt;) -&gt; ChangeSet&lt;K&gt; {
+    </span><span class="kw">pub fn </span>reveal_to_target_multi(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychains: <span class="kw-2">&amp;</span>BTreeMap&lt;K, u32&gt;) -&gt; ChangeSet {
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
 
         <span class="kw">for </span>(keychain, <span class="kw-2">&amp;</span>index) <span class="kw">in </span>keychains {
@@ -1602,7 +1531,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         keychain: <span class="kw-2">&amp;</span>K,
         target_index: u32,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;(Vec&lt;Indexed&lt;ScriptBuf&gt;&gt;, ChangeSet&lt;K&gt;)&gt; {
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;(Vec&lt;Indexed&lt;ScriptBuf&gt;&gt;, ChangeSet)&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
         <span class="kw">let </span><span class="kw-2">mut </span>spks: Vec&lt;Indexed&lt;ScriptBuf&gt;&gt; = <span class="macro">vec!</span>[];
         <span class="kw">while let </span><span class="prelude-val">Some</span>((i, new)) = <span class="self">self</span>.next_index(keychain) {
@@ -1633,7 +1562,7 @@
     ///  1. The descriptor has no wildcard and already has one script revealed.
     ///  2. The descriptor has already revealed scripts up to the numeric bound.
     ///  3. There is no descriptor associated with the given keychain.
-    </span><span class="kw">pub fn </span>reveal_next_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;(Indexed&lt;ScriptBuf&gt;, ChangeSet&lt;K&gt;)&gt; {
+    </span><span class="kw">pub fn </span>reveal_next_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;(Indexed&lt;ScriptBuf&gt;, ChangeSet)&gt; {
         <span class="kw">let </span>(next_index, new) = <span class="self">self</span>.next_index(keychain)<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
 
@@ -1663,7 +1592,7 @@
     /// could be revealed (see [`reveal_next_spk`] for when this happens).
     ///
     /// [`reveal_next_spk`]: Self::reveal_next_spk
-    </span><span class="kw">pub fn </span>next_unused_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;(Indexed&lt;ScriptBuf&gt;, ChangeSet&lt;K&gt;)&gt; {
+    </span><span class="kw">pub fn </span>next_unused_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;(Indexed&lt;ScriptBuf&gt;, ChangeSet)&gt; {
         <span class="kw">let </span>next_unused = <span class="self">self
             </span>.unused_keychain_spks(keychain)
             .next()
@@ -1726,26 +1655,11 @@
     }
 
     <span class="doccomment">/// Applies the `ChangeSet&lt;K&gt;` to the [`KeychainTxOutIndex&lt;K&gt;`]
-    ///
-    /// Keychains added by the `keychains_added` field of `ChangeSet&lt;K&gt;` respect the one-to-one
-    /// keychain &lt;-&gt; descriptor invariant by silently ignoring attempts to violate it (but will
-    /// panic if `debug_assertions` are enabled).
-    </span><span class="kw">pub fn </span>apply_changeset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: ChangeSet&lt;K&gt;) {
-        <span class="kw">let </span>ChangeSet {
-            keychains_added,
-            last_revealed,
-        } = changeset;
-        <span class="kw">for </span>(keychain, descriptor) <span class="kw">in </span>keychains_added {
-            <span class="kw">let </span>_ignore_invariant_violation = <span class="self">self</span>.insert_descriptor(keychain, descriptor);
-        }
-
-        <span class="kw">for </span>(<span class="kw-2">&amp;</span>desc_id, <span class="kw-2">&amp;</span>index) <span class="kw">in </span><span class="kw-2">&amp;</span>last_revealed {
+    </span><span class="kw">pub fn </span>apply_changeset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, changeset: ChangeSet) {
+        <span class="kw">for </span>(<span class="kw-2">&amp;</span>desc_id, <span class="kw-2">&amp;</span>index) <span class="kw">in </span><span class="kw-2">&amp;</span>changeset.last_revealed {
             <span class="kw">let </span>v = <span class="self">self</span>.last_revealed.entry(desc_id).or_default();
             <span class="kw-2">*</span>v = index.max(<span class="kw-2">*</span>v);
-        }
-
-        <span class="kw">for </span>did <span class="kw">in </span>last_revealed.keys() {
-            <span class="self">self</span>.replenish_inner_index_did(<span class="kw-2">*</span>did, <span class="self">self</span>.lookahead);
+            <span class="self">self</span>.replenish_inner_index_did(desc_id, <span class="self">self</span>.lookahead);
         }
     }
 }
@@ -1806,49 +1720,24 @@
 /// `keychains_added` is *not* monotone, once it is set any attempt to change it is subject to the
 /// same *one-to-one* keychain &lt;-&gt; descriptor mapping invariant as [`KeychainTxOutIndex`] itself.
 ///
-/// [`apply_changeset`]: KeychainTxOutIndex::apply_changeset
-/// [`Merge`]: Self::merge
-</span><span class="attr">#[derive(Clone, Debug, PartialEq)]
+/// [`KeychainTxOutIndex`]: crate::keychain_txout::KeychainTxOutIndex
+/// [`apply_changeset`]: crate::keychain_txout::KeychainTxOutIndex::apply_changeset
+/// [`merge`]: Self::merge
+</span><span class="attr">#[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(
     feature = <span class="string">"serde"</span>,
     derive(serde::Deserialize, serde::Serialize),
-    serde(
-        <span class="kw">crate </span>= <span class="string">"serde_crate"</span>,
-        bound(
-            deserialize = <span class="string">"K: Ord + serde::Deserialize&lt;'de&gt;"</span>,
-            serialize = <span class="string">"K: Ord + serde::Serialize"
-        </span>)
-    )
+    serde(<span class="kw">crate </span>= <span class="string">"serde_crate"</span>)
 )]
 #[must_use]
-</span><span class="kw">pub struct </span>ChangeSet&lt;K&gt; {
-    <span class="doccomment">/// Contains the keychains that have been added and their respective descriptor
-    </span><span class="kw">pub </span>keychains_added: BTreeMap&lt;K, Descriptor&lt;DescriptorPublicKey&gt;&gt;,
+</span><span class="kw">pub struct </span>ChangeSet {
     <span class="doccomment">/// Contains for each descriptor_id the last revealed index of derivation
     </span><span class="kw">pub </span>last_revealed: BTreeMap&lt;DescriptorId, u32&gt;,
 }
 
-<span class="kw">impl</span>&lt;K: Ord&gt; Merge <span class="kw">for </span>ChangeSet&lt;K&gt; {
-    <span class="doccomment">/// Merge another [`ChangeSet&lt;K&gt;`] into self.
-    ///
-    /// For the `keychains_added` field this method respects the invariants of
-    /// [`insert_descriptor`]. `last_revealed` always becomes the larger of the two.
-    ///
-    /// [`insert_descriptor`]: KeychainTxOutIndex::insert_descriptor
+<span class="kw">impl </span>Merge <span class="kw">for </span>ChangeSet {
+    <span class="doccomment">/// Merge another [`ChangeSet`] into self.
     </span><span class="kw">fn </span>merge(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="self">Self</span>) {
-        <span class="kw">for </span>(new_keychain, new_descriptor) <span class="kw">in </span>other.keychains_added {
-            <span class="comment">// enforce 1-to-1 invariance
-            </span><span class="kw">if </span>!<span class="self">self</span>.keychains_added.contains_key(<span class="kw-2">&amp;</span>new_keychain)
-                <span class="comment">// FIXME: very inefficient
-                </span>&amp;&amp; <span class="self">self
-                    </span>.keychains_added
-                    .values()
-                    .all(|descriptor| descriptor != <span class="kw-2">&amp;</span>new_descriptor)
-            {
-                <span class="self">self</span>.keychains_added.insert(new_keychain, new_descriptor);
-            }
-        }
-
         <span class="comment">// for `last_revealed`, entries of `other` will take precedence ONLY if it is greater than
         // what was originally in `self`.
         </span><span class="kw">for </span>(desc_id, index) <span class="kw">in </span>other.last_revealed {
@@ -1868,26 +1757,7 @@
 
     <span class="doccomment">/// Returns whether the changeset are empty.
     </span><span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="self">self</span>.last_revealed.is_empty() &amp;&amp; <span class="self">self</span>.keychains_added.is_empty()
-    }
-}
-
-<span class="kw">impl</span>&lt;K&gt; Default <span class="kw">for </span>ChangeSet&lt;K&gt; {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{
-            last_revealed: BTreeMap::default(),
-            keychains_added: BTreeMap::default(),
-        }
-    }
-}
-
-<span class="attr">#[derive(Clone, Debug, Eq, PartialEq)]
-</span><span class="doccomment">/// The keychain doesn't exist. Most likley hasn't been inserted with [`KeychainTxOutIndex::insert_descriptor`].
-</span><span class="kw">pub struct </span>NoSuchKeychain&lt;K&gt;(K);
-
-<span class="kw">impl</span>&lt;K: Debug&gt; core::fmt::Display <span class="kw">for </span>NoSuchKeychain&lt;K&gt; {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>core::fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; core::fmt::Result {
-        <span class="macro">write!</span>(f, <span class="string">"no such keychain {:?} exists"</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>)
+        <span class="self">self</span>.last_revealed.is_empty()
     }
 }
 </code></pre></div></section></main></body></html>

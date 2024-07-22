@@ -186,18 +186,14 @@
 <a href="#186" id="186">186</a>
 <a href="#187" id="187">187</a>
 <a href="#188" id="188">188</a>
-<a href="#189" id="189">189</a>
-<a href="#190" id="190">190</a>
-<a href="#191" id="191">191</a>
-<a href="#192" id="192">192</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_bitcoind_rpc::{
     bitcoincore_rpc::{Auth, Client, RpcApi},
     Emitter,
 };
-<span class="kw">use </span>bdk_file_store::Store;
 <span class="kw">use </span>bdk_wallet::{
     bitcoin::{Block, Network, Transaction},
-    wallet::Wallet,
+    file_store::Store,
+    Wallet,
 };
 <span class="kw">use </span>clap::{<span class="self">self</span>, Parser};
 <span class="kw">use </span>std::{path::PathBuf, sync::mpsc::sync_channel, thread::spawn, time::Instant};
@@ -278,18 +274,18 @@
     );
 
     <span class="kw">let </span>start_load_wallet = Instant::now();
-    <span class="kw">let </span><span class="kw-2">mut </span>db = Store::&lt;bdk_wallet::wallet::ChangeSet&gt;::open_or_create_new(
-        DB_MAGIC.as_bytes(),
-        args.db_path,
-    )<span class="question-mark">?</span>;
-    <span class="kw">let </span>changeset = db.aggregate_changesets()<span class="question-mark">?</span>;
-
-    <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::new_or_load(
-        <span class="kw-2">&amp;</span>args.descriptor,
-        <span class="kw-2">&amp;</span>args.change_descriptor,
-        changeset,
-        args.network,
-    )<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>db =
+        Store::&lt;bdk_wallet::ChangeSet&gt;::open_or_create_new(DB_MAGIC.as_bytes(), args.db_path)<span class="question-mark">?</span>;
+    <span class="kw">let </span>wallet_opt = Wallet::load()
+        .descriptors(args.descriptor.clone(), args.change_descriptor.clone())
+        .network(args.network)
+        .load_wallet(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>wallet = <span class="kw">match </span>wallet_opt {
+        <span class="prelude-val">Some</span>(wallet) =&gt; wallet,
+        <span class="prelude-val">None </span>=&gt; Wallet::create(args.descriptor, args.change_descriptor)
+            .network(args.network)
+            .create_wallet(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>,
+    };
     <span class="macro">println!</span>(
         <span class="string">"Loaded wallet in {}s"</span>,
         start_load_wallet.elapsed().as_secs_f32()
@@ -338,9 +334,7 @@
                 <span class="kw">let </span>connected_to = block_emission.connected_to();
                 <span class="kw">let </span>start_apply_block = Instant::now();
                 wallet.apply_block_connected_to(<span class="kw-2">&amp;</span>block_emission.block, height, connected_to)<span class="question-mark">?</span>;
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = wallet.take_staged() {
-                    db.append_changeset(<span class="kw-2">&amp;</span>changeset)<span class="question-mark">?</span>;
-                }
+                wallet.persist(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
                 <span class="kw">let </span>elapsed = start_apply_block.elapsed().as_secs_f32();
                 <span class="macro">println!</span>(
                     <span class="string">"Applied block {} at height {} in {}s"</span>,
@@ -350,9 +344,7 @@
             Emission::Mempool(mempool_emission) =&gt; {
                 <span class="kw">let </span>start_apply_mempool = Instant::now();
                 wallet.apply_unconfirmed_txs(mempool_emission.iter().map(|(tx, time)| (tx, <span class="kw-2">*</span>time)));
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = wallet.take_staged() {
-                    db.append_changeset(<span class="kw-2">&amp;</span>changeset)<span class="question-mark">?</span>;
-                }
+                wallet.persist(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
                 <span class="macro">println!</span>(
                     <span class="string">"Applied unconfirmed transactions in {}s"</span>,
                     start_apply_mempool.elapsed().as_secs_f32()

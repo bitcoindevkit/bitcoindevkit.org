@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ApplyBlockError","LoadError","NewError","NewOrLoadError"],"fn":["wallet_name_from_descriptor"],"mod":["coin_selection","error","export","signer","tx_builder"],"struct":["AddressInfo","Balance","Update","Wallet"],"trait":["IsDust"],"type":["ChangeSet"]};

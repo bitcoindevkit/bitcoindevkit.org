@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Coin selection"><title>bdk_wallet::coin_selection - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bdk_wallet" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0-nightly (78a775127 2024-05-11)" data-channel="nightly" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../../bdk_wallet/index.html"><img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../bdk_wallet/index.html"><img src="https://github.com/bitcoindevkit/bdk/raw/master/static/bdk.png" alt="logo"></a><h2><a href="../../bdk_wallet/index.html">bdk_wallet</a><span class="version">1.0.0-alpha.13</span></h2></div><h2 class="location"><a href="#">Module coin_selection</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Aliases</a></li></ul></section><h2><a href="../index.html">In crate bdk_wallet</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../index.html">bdk_wallet</a>::<wbr><a class="mod" href="#">coin_selection</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="../../src/bdk_wallet/wallet/coin_selection.rs.html#12-1601">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Coin selection</p>
+<p>This module provides the trait <a href="trait.CoinSelectionAlgorithm.html" title="trait bdk_wallet::coin_selection::CoinSelectionAlgorithm"><code>CoinSelectionAlgorithm</code></a> that can be implemented to
+define custom coin selection algorithms.</p>
+<p>You can specify a custom coin selection algorithm through the <a href="../tx_builder/struct.TxBuilder.html#method.coin_selection" title="method bdk_wallet::tx_builder::TxBuilder::coin_selection"><code>coin_selection</code></a> method on
+<a href="../tx_builder/struct.TxBuilder.html" title="struct bdk_wallet::tx_builder::TxBuilder"><code>TxBuilder</code></a>. <a href="type.DefaultCoinSelectionAlgorithm.html" title="type bdk_wallet::coin_selection::DefaultCoinSelectionAlgorithm"><code>DefaultCoinSelectionAlgorithm</code></a> aliases the coin selection algorithm that will
+be used if it is not explicitly set.</p>
+<h3 id="example"><a class="doc-anchor" href="#example">§</a>Example</h3>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(Debug)]
+</span><span class="kw">struct </span>AlwaysSpendEverything;
+
+<span class="kw">impl </span>CoinSelectionAlgorithm <span class="kw">for </span>AlwaysSpendEverything {
+    <span class="kw">fn </span>coin_select(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        required_utxos: Vec&lt;WeightedUtxo&gt;,
+        optional_utxos: Vec&lt;WeightedUtxo&gt;,
+        fee_rate: FeeRate,
+        target_amount: u64,
+        drain_script: <span class="kw-2">&amp;</span>Script,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;CoinSelectionResult, coin_selection::Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>selected_amount = <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>additional_weight = Weight::ZERO;
+        <span class="kw">let </span>all_utxos_selected = required_utxos
+            .into_iter()
+            .chain(optional_utxos)
+            .scan(
+                (<span class="kw-2">&amp;mut </span>selected_amount, <span class="kw-2">&amp;mut </span>additional_weight),
+                |(selected_amount, additional_weight), weighted_utxo| {
+                    <span class="kw-2">**</span>selected_amount += weighted_utxo.utxo.txout().value.to_sat();
+                    <span class="kw-2">**</span>additional_weight += TxIn::default()
+                        .segwit_weight()
+                        .checked_add(weighted_utxo.satisfaction_weight)
+                        .expect(<span class="string">"`Weight` addition should not cause an integer overflow"</span>);
+                    <span class="prelude-val">Some</span>(weighted_utxo.utxo)
+                },
+            )
+            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+        <span class="kw">let </span>additional_fees = (fee_rate * additional_weight).to_sat();
+        <span class="kw">let </span>amount_needed_with_fees = additional_fees + target_amount;
+        <span class="kw">if </span>selected_amount &lt; amount_needed_with_fees {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(coin_selection::Error::InsufficientFunds {
+                needed: amount_needed_with_fees,
+                available: selected_amount,
+            });
+        }
+
+        <span class="kw">let </span>remaining_amount = selected_amount - amount_needed_with_fees;
+
+        <span class="kw">let </span>excess = decide_change(remaining_amount, fee_rate, drain_script);
+
+        <span class="prelude-val">Ok</span>(CoinSelectionResult {
+            selected: all_utxos_selected,
+            fee_amount: additional_fees,
+            excess,
+        })
+    }
+}
+
+<span class="comment">// create wallet, sync, ...
+
+</span><span class="kw">let </span>to_address = Address::from_str(<span class="string">"2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt"</span>)
+    .unwrap()
+    .require_network(Network::Testnet)
+    .unwrap();
+<span class="kw">let </span>psbt = {
+    <span class="kw">let </span><span class="kw-2">mut </span>builder = wallet.build_tx().coin_selection(AlwaysSpendEverything);
+    builder.add_recipient(to_address.script_pubkey(), Amount::from_sat(<span class="number">50_000</span>));
+    builder.finish()<span class="question-mark">?
+</span>};
+
+<span class="comment">// inspect, sign, broadcast, ...
+</span></code></pre></div>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.BranchAndBoundCoinSelection.html" title="struct bdk_wallet::coin_selection::BranchAndBoundCoinSelection">BranchAndBoundCoinSelection</a></div><div class="desc docblock-short">Branch and bound coin selection</div></li><li><div class="item-name"><a class="struct" href="struct.CoinSelectionResult.html" title="struct bdk_wallet::coin_selection::CoinSelectionResult">CoinSelectionResult</a></div><div class="desc docblock-short">Result of a successful coin selection</div></li><li><div class="item-name"><a class="struct" href="struct.LargestFirstCoinSelection.html" title="struct bdk_wallet::coin_selection::LargestFirstCoinSelection">LargestFirstCoinSelection</a></div><div class="desc docblock-short">Simple and dumb coin selection</div></li><li><div class="item-name"><a class="struct" href="struct.OldestFirstCoinSelection.html" title="struct bdk_wallet::coin_selection::OldestFirstCoinSelection">OldestFirstCoinSelection</a></div><div class="desc docblock-short">OldestFirstCoinSelection always picks the utxo with the smallest blockheight to add to the selected coins next</div></li></ul><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.Error.html" title="enum bdk_wallet::coin_selection::Error">Error</a></div><div class="desc docblock-short">Errors that can be thrown by the <a href="index.html" title="mod bdk_wallet::coin_selection"><code>coin_selection</code></a> module</div></li><li><div class="item-name"><a class="enum" href="enum.Excess.html" title="enum bdk_wallet::coin_selection::Excess">Excess</a></div><div class="desc docblock-short">Remaining amount after performing coin selection</div></li></ul><h2 id="traits" class="section-header">Traits<a href="#traits" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="trait" href="trait.CoinSelectionAlgorithm.html" title="trait bdk_wallet::coin_selection::CoinSelectionAlgorithm">CoinSelectionAlgorithm</a></div><div class="desc docblock-short">Trait for generalized coin selection algorithms</div></li></ul><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="fn" href="fn.decide_change.html" title="fn bdk_wallet::coin_selection::decide_change">decide_change</a></div><div class="desc docblock-short">Decide if change can be created</div></li></ul><h2 id="types" class="section-header">Type Aliases<a href="#types" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="type" href="type.DefaultCoinSelectionAlgorithm.html" title="type bdk_wallet::coin_selection::DefaultCoinSelectionAlgorithm">DefaultCoinSelectionAlgorithm</a></div><div class="desc docblock-short">Default coin selection algorithm used by <a href="../tx_builder/struct.TxBuilder.html" title="struct bdk_wallet::tx_builder::TxBuilder"><code>TxBuilder</code></a> if not
+overridden</div></li></ul></section></div></main></body></html>
