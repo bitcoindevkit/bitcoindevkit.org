@@ -999,7 +999,7 @@
     <span class="kw">let </span>internal_keychain = <span class="kw">if </span>graph
         .index
         .keychains()
-        .any(|(k, <span class="kw">_</span>)| <span class="kw-2">*</span>k == Keychain::Internal)
+        .any(|(k, <span class="kw">_</span>)| k == Keychain::Internal)
     {
         Keychain::Internal
     } <span class="kw">else </span>{
@@ -1008,7 +1008,7 @@
 
     <span class="kw">let </span>((change_index, change_script), change_changeset) = graph
         .index
-        .next_unused_spk(<span class="kw-2">&amp;</span>internal_keychain)
+        .next_unused_spk(internal_keychain)
         .expect(<span class="string">"Must exist"</span>);
     changeset.merge(change_changeset);
 
@@ -1016,7 +1016,7 @@
         <span class="kw-2">&amp;</span>graph
             .index
             .keychains()
-            .find(|(k, <span class="kw">_</span>)| <span class="kw-2">*</span>k == <span class="kw-2">&amp;</span>internal_keychain)
+            .find(|(k, <span class="kw">_</span>)| <span class="kw-2">*</span>k == internal_keychain)
             .expect(<span class="string">"must exist"</span>)
             .<span class="number">1
             </span>.at_derivation_index(change_index)
@@ -1035,7 +1035,7 @@
         min_drain_value: graph
             .index
             .keychains()
-            .find(|(k, <span class="kw">_</span>)| <span class="kw-2">*</span>k == <span class="kw-2">&amp;</span>internal_keychain)
+            .find(|(k, <span class="kw">_</span>)| <span class="kw-2">*</span>k == internal_keychain)
             .expect(<span class="string">"must exist"</span>)
             .<span class="number">1
             </span>.dust_value(),
@@ -1180,7 +1180,7 @@
             <span class="kw">let </span>desc = graph
                 .index
                 .keychains()
-                .find(|(keychain, <span class="kw">_</span>)| <span class="kw-2">*</span>keychain == <span class="kw-2">&amp;</span>k)
+                .find(|(keychain, <span class="kw">_</span>)| <span class="kw-2">*</span>keychain == k)
                 .expect(<span class="string">"keychain must exist"</span>)
                 .<span class="number">1
                 </span>.at_derivation_index(i)
@@ -1226,7 +1226,7 @@
                     };
 
                     <span class="kw">let </span>((spk_i, spk), index_changeset) =
-                        spk_chooser(index, <span class="kw-2">&amp;</span>Keychain::External).expect(<span class="string">"Must exist"</span>);
+                        spk_chooser(index, Keychain::External).expect(<span class="string">"Must exist"</span>);
                     <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
                     db.append_changeset(<span class="kw-2">&amp;</span>C::from((
                         local_chain::ChangeSet::default(),
@@ -1248,8 +1248,8 @@
                         <span class="bool-val">true </span>=&gt; Keychain::Internal,
                         <span class="bool-val">false </span>=&gt; Keychain::External,
                     };
-                    <span class="kw">for </span>(spk_i, spk) <span class="kw">in </span>index.revealed_keychain_spks(<span class="kw-2">&amp;</span>target_keychain) {
-                        <span class="kw">let </span>address = Address::from_script(spk, network)
+                    <span class="kw">for </span>(spk_i, spk) <span class="kw">in </span>index.revealed_keychain_spks(target_keychain) {
+                        <span class="kw">let </span>address = Address::from_script(spk.as_script(), network)
                             .expect(<span class="string">"should always be able to derive address"</span>);
                         <span class="macro">println!</span>(
                             <span class="string">"{:?} {} used:{}"</span>,

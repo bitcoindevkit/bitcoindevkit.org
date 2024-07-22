@@ -890,7 +890,7 @@
     DescriptorExt, DescriptorId, Indexed, Indexer, KeychainIndexed, SpkIterator,
 };
 <span class="kw">use </span>alloc::{borrow::ToOwned, vec::Vec};
-<span class="kw">use </span>bitcoin::{Amount, OutPoint, Script, ScriptBuf, SignedAmount, Transaction, TxOut, Txid};
+<span class="kw">use </span>bitcoin::{Amount, OutPoint, ScriptBuf, SignedAmount, Transaction, TxOut, Txid};
 <span class="kw">use </span>core::{
     fmt::Debug,
     ops::{Bound, RangeBounds},
@@ -980,7 +980,7 @@
 /// let _ = txout_index.insert_descriptor(MyKeychain::Internal, internal_descriptor)?;
 /// let _ = txout_index.insert_descriptor(MyKeychain::MyAppUser { user_id: 42 }, descriptor_42)?;
 ///
-/// let new_spk_for_user = txout_index.reveal_next_spk(&amp;MyKeychain::MyAppUser{ user_id: 42 });
+/// let new_spk_for_user = txout_index.reveal_next_spk(MyKeychain::MyAppUser{ user_id: 42 });
 /// # Ok::&lt;_, bdk_chain::indexer::keychain_txout::InsertDescriptorError&lt;_&gt;&gt;(())
 /// ```
 ///
@@ -1132,14 +1132,14 @@
     <span class="doccomment">/// Return the script that exists under the given `keychain`'s `index`.
     ///
     /// This calls [`SpkTxOutIndex::spk_at_index`] internally.
-    </span><span class="kw">pub fn </span>spk_at_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: K, index: u32) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Script&gt; {
+    </span><span class="kw">pub fn </span>spk_at_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: K, index: u32) -&gt; <span class="prelude-ty">Option</span>&lt;ScriptBuf&gt; {
         <span class="self">self</span>.inner.spk_at_index(<span class="kw-2">&amp;</span>(keychain.clone(), index))
     }
 
     <span class="doccomment">/// Returns the keychain and keychain index associated with the spk.
     ///
     /// This calls [`SpkTxOutIndex::index_of_spk`] internally.
-    </span><span class="kw">pub fn </span>index_of_spk(<span class="kw-2">&amp;</span><span class="self">self</span>, script: <span class="kw-2">&amp;</span>Script) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>(K, u32)&gt; {
+    </span><span class="kw">pub fn </span>index_of_spk(<span class="kw-2">&amp;</span><span class="self">self</span>, script: ScriptBuf) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>(K, u32)&gt; {
         <span class="self">self</span>.inner.index_of_spk(script)
     }
 
@@ -1216,11 +1216,11 @@
     <span class="doccomment">/// Return all keychains and their corresponding descriptors.
     </span><span class="kw">pub fn </span>keychains(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (<span class="kw-2">&amp;</span>K, <span class="kw-2">&amp;</span>Descriptor&lt;DescriptorPublicKey&gt;)&gt; + ExactSizeIterator + <span class="lifetime">'_
+    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (K, <span class="kw-2">&amp;</span>Descriptor&lt;DescriptorPublicKey&gt;)&gt; + ExactSizeIterator + <span class="lifetime">'_
     </span>{
         <span class="self">self</span>.keychain_to_descriptor_id
             .iter()
-            .map(|(k, did)| (k, <span class="self">self</span>.descriptors.get(did).expect(<span class="string">"invariant"</span>)))
+            .map(|(k, did)| (k.clone(), <span class="self">self</span>.descriptors.get(did).expect(<span class="string">"invariant"</span>)))
     }
 
     <span class="doccomment">/// Insert a descriptor with a keychain associated to it.
@@ -1280,8 +1280,8 @@
 
     <span class="doccomment">/// Gets the descriptor associated with the keychain. Returns `None` if the keychain doesn't
     /// have a descriptor associated with it.
-    </span><span class="kw">pub fn </span>get_descriptor(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Descriptor&lt;DescriptorPublicKey&gt;&gt; {
-        <span class="kw">let </span>did = <span class="self">self</span>.keychain_to_descriptor_id.get(keychain)<span class="question-mark">?</span>;
+    </span><span class="kw">pub fn </span>get_descriptor(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: K) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Descriptor&lt;DescriptorPublicKey&gt;&gt; {
+        <span class="kw">let </span>did = <span class="self">self</span>.keychain_to_descriptor_id.get(<span class="kw-2">&amp;</span>keychain)<span class="question-mark">?</span>;
         <span class="self">self</span>.descriptors.get(did)
     }
 
@@ -1297,8 +1297,8 @@
     <span class="doccomment">/// Store lookahead scripts until `target_index` (inclusive).
     ///
     /// This does not change the global `lookahead` setting.
-    </span><span class="kw">pub fn </span>lookahead_to_target(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K, target_index: u32) {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>((next_index, <span class="kw">_</span>)) = <span class="self">self</span>.next_index(keychain) {
+    </span><span class="kw">pub fn </span>lookahead_to_target(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: K, target_index: u32) {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((next_index, <span class="kw">_</span>)) = <span class="self">self</span>.next_index(keychain.clone()) {
             <span class="kw">let </span>temp_lookahead = (target_index + <span class="number">1</span>)
                 .checked_sub(next_index)
                 .filter(|<span class="kw-2">&amp;</span>index| index &gt; <span class="number">0</span>);
@@ -1315,9 +1315,9 @@
         }
     }
 
-    <span class="kw">fn </span>replenish_inner_index_keychain(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K, lookahead: u32) {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(did) = <span class="self">self</span>.keychain_to_descriptor_id.get(keychain) {
-            <span class="self">self</span>.replenish_inner_index(<span class="kw-2">*</span>did, keychain, lookahead);
+    <span class="kw">fn </span>replenish_inner_index_keychain(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: K, lookahead: u32) {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(did) = <span class="self">self</span>.keychain_to_descriptor_id.get(<span class="kw-2">&amp;</span>keychain) {
+            <span class="self">self</span>.replenish_inner_index(<span class="kw-2">*</span>did, <span class="kw-2">&amp;</span>keychain, lookahead);
         }
     }
 
@@ -1345,7 +1345,7 @@
     /// keychain doesn't exist
     </span><span class="kw">pub fn </span>unbounded_spk_iter(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        keychain: <span class="kw-2">&amp;</span>K,
+        keychain: K,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;SpkIterator&lt;Descriptor&lt;DescriptorPublicKey&gt;&gt;&gt; {
         <span class="kw">let </span>descriptor = <span class="self">self</span>.get_descriptor(keychain)<span class="question-mark">?</span>.clone();
         <span class="prelude-val">Some</span>(SpkIterator::new(descriptor))
@@ -1370,7 +1370,7 @@
     </span><span class="kw">pub fn </span>revealed_spks(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         range: <span class="kw">impl </span>RangeBounds&lt;K&gt;,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = KeychainIndexed&lt;K, <span class="kw-2">&amp;</span>Script&gt;&gt; {
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = KeychainIndexed&lt;K, ScriptBuf&gt;&gt; + <span class="lifetime">'_ </span>{
         <span class="kw">let </span>start = range.start_bound();
         <span class="kw">let </span>end = range.end_bound();
         <span class="kw">let </span><span class="kw-2">mut </span>iter_last_revealed = <span class="self">self
@@ -1397,7 +1397,7 @@
             <span class="kw">let </span>(current_keychain, last_revealed) = current_keychain<span class="question-mark">?</span>;
 
             <span class="kw">if </span>current_keychain == keychain &amp;&amp; <span class="prelude-val">Some</span>(<span class="kw-2">*</span>index) &lt;= last_revealed {
-                <span class="kw">break </span><span class="prelude-val">Some</span>(((keychain.clone(), <span class="kw-2">*</span>index), spk.as_script()));
+                <span class="kw">break </span><span class="prelude-val">Some</span>(((keychain.clone(), <span class="kw-2">*</span>index), spk.clone()));
             }
         })
     }
@@ -1406,27 +1406,27 @@
     ///
     /// This is a double ended iterator so you can easily reverse it to get an iterator where
     /// the script pubkeys that were most recently revealed are first.
-    </span><span class="kw">pub fn </span>revealed_keychain_spks&lt;<span class="lifetime">'a</span>&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="self">self</span>,
-        keychain: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>K,
-    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = Indexed&lt;<span class="kw-2">&amp;</span>Script&gt;&gt; + <span class="lifetime">'a </span>{
+    </span><span class="kw">pub fn </span>revealed_keychain_spks(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        keychain: K,
+    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = Indexed&lt;ScriptBuf&gt;&gt; + <span class="lifetime">'_ </span>{
         <span class="kw">let </span>end = <span class="self">self
-            </span>.last_revealed_index(keychain)
+            </span>.last_revealed_index(keychain.clone())
             .map(|v| v + <span class="number">1</span>)
             .unwrap_or(<span class="number">0</span>);
         <span class="self">self</span>.inner
             .all_spks()
             .range((keychain.clone(), <span class="number">0</span>)..(keychain.clone(), end))
-            .map(|((<span class="kw">_</span>, index), spk)| (<span class="kw-2">*</span>index, spk.as_script()))
+            .map(|((<span class="kw">_</span>, index), spk)| (<span class="kw-2">*</span>index, spk.clone()))
     }
 
     <span class="doccomment">/// Iterate over revealed, but unused, spks of all keychains.
     </span><span class="kw">pub fn </span>unused_spks(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = KeychainIndexed&lt;K, <span class="kw-2">&amp;</span>Script&gt;&gt; + Clone {
+    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = KeychainIndexed&lt;K, ScriptBuf&gt;&gt; + Clone + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.keychain_to_descriptor_id.keys().flat_map(|keychain| {
-            <span class="self">self</span>.unused_keychain_spks(keychain)
-                .map(|(i, spk)| ((keychain.clone(), i), spk))
+            <span class="self">self</span>.unused_keychain_spks(keychain.clone())
+                .map(|(i, spk)| ((keychain.clone(), i), spk.clone()))
         })
     }
 
@@ -1434,9 +1434,9 @@
     /// Returns an empty iterator if the provided keychain doesn't exist.
     </span><span class="kw">pub fn </span>unused_keychain_spks(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        keychain: <span class="kw-2">&amp;</span>K,
-    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = Indexed&lt;<span class="kw-2">&amp;</span>Script&gt;&gt; + Clone {
-        <span class="kw">let </span>end = <span class="kw">match </span><span class="self">self</span>.keychain_to_descriptor_id.get(keychain) {
+        keychain: K,
+    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = Indexed&lt;ScriptBuf&gt;&gt; + Clone + <span class="lifetime">'_ </span>{
+        <span class="kw">let </span>end = <span class="kw">match </span><span class="self">self</span>.keychain_to_descriptor_id.get(<span class="kw-2">&amp;</span>keychain) {
             <span class="prelude-val">Some</span>(did) =&gt; <span class="self">self</span>.last_revealed.get(did).map(|v| <span class="kw-2">*</span>v + <span class="number">1</span>).unwrap_or(<span class="number">0</span>),
             <span class="prelude-val">None </span>=&gt; <span class="number">0</span>,
         };
@@ -1458,8 +1458,8 @@
     /// Not checking the second field of the tuple may result in address reuse.
     ///
     /// Returns None if the provided `keychain` doesn't exist.
-    </span><span class="kw">pub fn </span>next_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;(u32, bool)&gt; {
-        <span class="kw">let </span>did = <span class="self">self</span>.keychain_to_descriptor_id.get(keychain)<span class="question-mark">?</span>;
+    </span><span class="kw">pub fn </span>next_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: K) -&gt; <span class="prelude-ty">Option</span>&lt;(u32, bool)&gt; {
+        <span class="kw">let </span>did = <span class="self">self</span>.keychain_to_descriptor_id.get(<span class="kw-2">&amp;</span>keychain)<span class="question-mark">?</span>;
         <span class="kw">let </span>last_index = <span class="self">self</span>.last_revealed.get(did).cloned();
         <span class="kw">let </span>descriptor = <span class="self">self</span>.descriptors.get(did).expect(<span class="string">"invariant"</span>);
 
@@ -1496,8 +1496,8 @@
 
     <span class="doccomment">/// Get the last derivation index revealed for `keychain`. Returns None if the keychain doesn't
     /// exist, or if the keychain doesn't have any revealed scripts.
-    </span><span class="kw">pub fn </span>last_revealed_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
-        <span class="kw">let </span>descriptor_id = <span class="self">self</span>.keychain_to_descriptor_id.get(keychain)<span class="question-mark">?</span>;
+    </span><span class="kw">pub fn </span>last_revealed_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: K) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
+        <span class="kw">let </span>descriptor_id = <span class="self">self</span>.keychain_to_descriptor_id.get(<span class="kw-2">&amp;</span>keychain)<span class="question-mark">?</span>;
         <span class="self">self</span>.last_revealed.get(descriptor_id).cloned()
     }
 
@@ -1506,7 +1506,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
 
         <span class="kw">for </span>(keychain, <span class="kw-2">&amp;</span>index) <span class="kw">in </span>keychains {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, new_changeset)) = <span class="self">self</span>.reveal_to_target(keychain, index) {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, new_changeset)) = <span class="self">self</span>.reveal_to_target(keychain.clone(), index) {
                 changeset.merge(new_changeset);
             }
         }
@@ -1529,16 +1529,16 @@
     </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>reveal_to_target(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        keychain: <span class="kw-2">&amp;</span>K,
+        keychain: K,
         target_index: u32,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;(Vec&lt;Indexed&lt;ScriptBuf&gt;&gt;, ChangeSet)&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
         <span class="kw">let </span><span class="kw-2">mut </span>spks: Vec&lt;Indexed&lt;ScriptBuf&gt;&gt; = <span class="macro">vec!</span>[];
-        <span class="kw">while let </span><span class="prelude-val">Some</span>((i, new)) = <span class="self">self</span>.next_index(keychain) {
+        <span class="kw">while let </span><span class="prelude-val">Some</span>((i, new)) = <span class="self">self</span>.next_index(keychain.clone()) {
             <span class="kw">if </span>!new || i &gt; target_index {
                 <span class="kw">break</span>;
             }
-            <span class="kw">match </span><span class="self">self</span>.reveal_next_spk(keychain) {
+            <span class="kw">match </span><span class="self">self</span>.reveal_next_spk(keychain.clone()) {
                 <span class="prelude-val">Some</span>(((i, spk), change)) =&gt; {
                     spks.push((i, spk));
                     changeset.merge(change);
@@ -1562,21 +1562,21 @@
     ///  1. The descriptor has no wildcard and already has one script revealed.
     ///  2. The descriptor has already revealed scripts up to the numeric bound.
     ///  3. There is no descriptor associated with the given keychain.
-    </span><span class="kw">pub fn </span>reveal_next_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;(Indexed&lt;ScriptBuf&gt;, ChangeSet)&gt; {
-        <span class="kw">let </span>(next_index, new) = <span class="self">self</span>.next_index(keychain)<span class="question-mark">?</span>;
+    </span><span class="kw">pub fn </span>reveal_next_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: K) -&gt; <span class="prelude-ty">Option</span>&lt;(Indexed&lt;ScriptBuf&gt;, ChangeSet)&gt; {
+        <span class="kw">let </span>(next_index, new) = <span class="self">self</span>.next_index(keychain.clone())<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
 
         <span class="kw">if </span>new {
-            <span class="kw">let </span>did = <span class="self">self</span>.keychain_to_descriptor_id.get(keychain)<span class="question-mark">?</span>;
+            <span class="kw">let </span>did = <span class="self">self</span>.keychain_to_descriptor_id.get(<span class="kw-2">&amp;</span>keychain)<span class="question-mark">?</span>;
             <span class="self">self</span>.last_revealed.insert(<span class="kw-2">*</span>did, next_index);
             changeset.last_revealed.insert(<span class="kw-2">*</span>did, next_index);
-            <span class="self">self</span>.replenish_inner_index(<span class="kw-2">*</span>did, keychain, <span class="self">self</span>.lookahead);
+            <span class="self">self</span>.replenish_inner_index(<span class="kw-2">*</span>did, <span class="kw-2">&amp;</span>keychain, <span class="self">self</span>.lookahead);
         }
         <span class="kw">let </span>script = <span class="self">self
             </span>.inner
             .spk_at_index(<span class="kw-2">&amp;</span>(keychain.clone(), next_index))
             .expect(<span class="string">"we just inserted it"</span>);
-        <span class="prelude-val">Some</span>(((next_index, script.into()), changeset))
+        <span class="prelude-val">Some</span>(((next_index, script), changeset))
     }
 
     <span class="doccomment">/// Gets the next unused script pubkey in the keychain. I.e., the script pubkey with the lowest
@@ -1592,9 +1592,9 @@
     /// could be revealed (see [`reveal_next_spk`] for when this happens).
     ///
     /// [`reveal_next_spk`]: Self::reveal_next_spk
-    </span><span class="kw">pub fn </span>next_unused_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;(Indexed&lt;ScriptBuf&gt;, ChangeSet)&gt; {
+    </span><span class="kw">pub fn </span>next_unused_spk(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keychain: K) -&gt; <span class="prelude-ty">Option</span>&lt;(Indexed&lt;ScriptBuf&gt;, ChangeSet)&gt; {
         <span class="kw">let </span>next_unused = <span class="self">self
-            </span>.unused_keychain_spks(keychain)
+            </span>.unused_keychain_spks(keychain.clone())
             .next()
             .map(|(i, spk)| ((i, spk.to_owned()), ChangeSet::default()));
 
@@ -1603,11 +1603,11 @@
 
     <span class="doccomment">/// Iterate over all [`OutPoint`]s that have `TxOut`s with script pubkeys derived from
     /// `keychain`.
-    </span><span class="kw">pub fn </span>keychain_outpoints&lt;<span class="lifetime">'a</span>&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="self">self</span>,
-        keychain: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>K,
-    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = Indexed&lt;OutPoint&gt;&gt; + <span class="lifetime">'a </span>{
-        <span class="self">self</span>.keychain_outpoints_in_range(keychain..=keychain)
+    </span><span class="kw">pub fn </span>keychain_outpoints(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        keychain: K,
+    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = Indexed&lt;OutPoint&gt;&gt; + <span class="lifetime">'_ </span>{
+        <span class="self">self</span>.keychain_outpoints_in_range(keychain.clone()..=keychain)
             .map(|((<span class="kw">_</span>, i), op)| (i, op))
     }
 
@@ -1638,7 +1638,7 @@
 
     <span class="doccomment">/// Returns the highest derivation index of the `keychain` where [`KeychainTxOutIndex`] has
     /// found a [`TxOut`] with it's script pubkey.
-    </span><span class="kw">pub fn </span>last_used_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
+    </span><span class="kw">pub fn </span>last_used_index(<span class="kw-2">&amp;</span><span class="self">self</span>, keychain: K) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
         <span class="self">self</span>.keychain_outpoints(keychain).last().map(|(i, <span class="kw">_</span>)| i)
     }
 
@@ -1648,7 +1648,7 @@
         <span class="self">self</span>.keychain_to_descriptor_id
             .iter()
             .filter_map(|(keychain, <span class="kw">_</span>)| {
-                <span class="self">self</span>.last_used_index(keychain)
+                <span class="self">self</span>.last_used_index(keychain.clone())
                     .map(|index| (keychain.clone(), index))
             })
             .collect()
