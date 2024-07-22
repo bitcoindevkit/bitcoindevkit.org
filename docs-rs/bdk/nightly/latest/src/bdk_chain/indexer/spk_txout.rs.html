@@ -332,6 +332,9 @@
 <a href="#332" id="332">332</a>
 <a href="#333" id="333">333</a>
 <a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! [`SpkTxOutIndex`] is an index storing [`TxOut`]s that have a script pubkey that matches those in a list.
 
 </span><span class="kw">use </span>core::ops::RangeBounds;
@@ -340,7 +343,7 @@
     collections::{hash_map::Entry, BTreeMap, BTreeSet, HashMap},
     Indexer,
 };
-<span class="kw">use </span>bitcoin::{Amount, OutPoint, Script, ScriptBuf, SignedAmount, Transaction, TxOut, Txid};
+<span class="kw">use </span>bitcoin::{Amount, OutPoint, ScriptBuf, SignedAmount, Transaction, TxOut, Txid};
 
 <span class="doccomment">/// An index storing [`TxOut`]s that have a script pubkey that matches those in a list.
 ///
@@ -510,8 +513,8 @@
     <span class="doccomment">/// Returns the script that has been inserted at the `index`.
     ///
     /// If that index hasn't been inserted yet, it will return `None`.
-    </span><span class="kw">pub fn </span>spk_at_index(<span class="kw-2">&amp;</span><span class="self">self</span>, index: <span class="kw-2">&amp;</span>I) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Script&gt; {
-        <span class="self">self</span>.spks.get(index).map(|s| s.as_script())
+    </span><span class="kw">pub fn </span>spk_at_index(<span class="kw-2">&amp;</span><span class="self">self</span>, index: <span class="kw-2">&amp;</span>I) -&gt; <span class="prelude-ty">Option</span>&lt;ScriptBuf&gt; {
+        <span class="self">self</span>.spks.get(index).cloned()
     }
 
     <span class="doccomment">/// The script pubkeys that are being tracked by the index.
@@ -551,8 +554,11 @@
     /// let unused_change_spks =
     ///     txout_index.unused_spks((change_index, u32::MIN)..(change_index, u32::MAX));
     /// ```
-    </span><span class="kw">pub fn </span>unused_spks&lt;R&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, range: R) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (<span class="kw-2">&amp;</span>I, <span class="kw-2">&amp;</span>Script)&gt; + Clone
-    <span class="kw">where
+    </span><span class="kw">pub fn </span>unused_spks&lt;R&gt;(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        range: R,
+    ) -&gt; <span class="kw">impl </span>DoubleEndedIterator&lt;Item = (<span class="kw-2">&amp;</span>I, ScriptBuf)&gt; + Clone + <span class="lifetime">'_
+    </span><span class="kw">where
         </span>R: RangeBounds&lt;I&gt;,
     {
         <span class="self">self</span>.unused
@@ -602,8 +608,8 @@
     }
 
     <span class="doccomment">/// Returns the index associated with the script pubkey.
-    </span><span class="kw">pub fn </span>index_of_spk(<span class="kw-2">&amp;</span><span class="self">self</span>, script: <span class="kw-2">&amp;</span>Script) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>I&gt; {
-        <span class="self">self</span>.spk_indices.get(script)
+    </span><span class="kw">pub fn </span>index_of_spk(<span class="kw-2">&amp;</span><span class="self">self</span>, script: ScriptBuf) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>I&gt; {
+        <span class="self">self</span>.spk_indices.get(script.as_script())
     }
 
     <span class="doccomment">/// Computes the total value transfer effect `tx` has on the script pubkeys in `range`. Value is
@@ -627,7 +633,7 @@
             }
         }
         <span class="kw">for </span>txout <span class="kw">in </span><span class="kw-2">&amp;</span>tx.output {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(index) = <span class="self">self</span>.index_of_spk(<span class="kw-2">&amp;</span>txout.script_pubkey) {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(index) = <span class="self">self</span>.index_of_spk(txout.script_pubkey.clone()) {
                 <span class="kw">if </span>range.contains(index) {
                     received += txout.value;
                 }
