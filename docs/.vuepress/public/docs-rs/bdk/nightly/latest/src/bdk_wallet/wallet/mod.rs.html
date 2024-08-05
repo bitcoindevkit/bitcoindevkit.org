@@ -2471,8 +2471,6 @@
 <a href="#2471" id="2471">2471</a>
 <a href="#2472" id="2472">2472</a>
 <a href="#2473" id="2473">2473</a>
-<a href="#2474" id="2474">2474</a>
-<a href="#2475" id="2475">2475</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2554,7 +2552,7 @@
 
 <span class="kw">use </span><span class="kw">crate</span>::descriptor::policy::BuildSatisfaction;
 <span class="kw">use </span><span class="kw">crate</span>::descriptor::{
-    <span class="self">self</span>, calc_checksum, DerivedDescriptor, DescriptorMeta, ExtendedDescriptor, ExtractPolicy,
+    <span class="self">self</span>, DerivedDescriptor, DescriptorMeta, ExtendedDescriptor, ExtractPolicy,
     IntoWalletDescriptor, Policy, XKeyUtils,
 };
 <span class="kw">use </span><span class="kw">crate</span>::psbt::PsbtUtils;
@@ -4835,15 +4833,13 @@
         .into_wallet_descriptor(secp, network)<span class="question-mark">?
         </span>.<span class="number">0
         </span>.to_string();
-    <span class="kw">let </span><span class="kw-2">mut </span>wallet_name = calc_checksum(<span class="kw-2">&amp;</span>descriptor[..descriptor.find(<span class="string">'#'</span>).unwrap()])<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>wallet_name = descriptor.split_once(<span class="string">'#'</span>).unwrap().<span class="number">1</span>.to_string();
     <span class="kw">if let </span><span class="prelude-val">Some</span>(change_descriptor) = change_descriptor {
         <span class="kw">let </span>change_descriptor = change_descriptor
             .into_wallet_descriptor(secp, network)<span class="question-mark">?
             </span>.<span class="number">0
             </span>.to_string();
-        wallet_name.push_str(
-            calc_checksum(<span class="kw-2">&amp;</span>change_descriptor[..change_descriptor.find(<span class="string">'#'</span>).unwrap()])<span class="question-mark">?</span>.as_str(),
-        );
+        wallet_name.push_str(change_descriptor.split_once(<span class="string">'#'</span>).unwrap().<span class="number">1</span>);
     }
 
     <span class="prelude-val">Ok</span>(wallet_name)

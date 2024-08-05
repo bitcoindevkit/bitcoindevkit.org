@@ -913,7 +913,6 @@
 <a href="#913" id="913">913</a>
 <a href="#914" id="914">914</a>
 <a href="#915" id="915">915</a>
-<a href="#916" id="916">916</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -958,7 +957,6 @@
 <span class="kw">pub mod </span>template;
 
 <span class="kw">pub use </span><span class="self">self</span>::checksum::calc_checksum;
-<span class="kw">use </span><span class="self">self</span>::checksum::calc_checksum_bytes;
 <span class="kw">pub use </span><span class="self">self</span>::error::Error <span class="kw">as </span>DescriptorError;
 <span class="kw">pub use </span><span class="self">self</span>::policy::Policy;
 <span class="kw">use </span><span class="self">self</span>::template::DescriptorTemplateOut;
@@ -1004,8 +1002,8 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(ExtendedDescriptor, KeyMap), DescriptorError&gt; {
         <span class="kw">let </span>descriptor = <span class="kw">match </span><span class="self">self</span>.split_once(<span class="string">'#'</span>) {
             <span class="prelude-val">Some</span>((desc, original_checksum)) =&gt; {
-                <span class="kw">let </span>checksum = calc_checksum_bytes(desc)<span class="question-mark">?</span>;
-                <span class="kw">if </span>original_checksum.as_bytes() != checksum {
+                <span class="kw">let </span>checksum = calc_checksum(desc)<span class="question-mark">?</span>;
+                <span class="kw">if </span>original_checksum != checksum {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(DescriptorError::InvalidDescriptorChecksum);
                 }
                 desc

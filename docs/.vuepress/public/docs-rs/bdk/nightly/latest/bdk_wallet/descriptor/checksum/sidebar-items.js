@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["calc_checksum","calc_checksum_bytes"]};
+window.SIDEBAR_ITEMS = {"fn":["calc_checksum"]};
