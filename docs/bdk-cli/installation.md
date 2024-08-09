@@ -28,10 +28,14 @@ the GitHub repository, by running:
 ```bash
 # all features with the blocking esplora client 
 cargo install --git https://github.com/bitcoindevkit/bdk-cli --features=esplora-ureq,compiler
+```
 
+```bash
 # all features with the async esplora client 
 cargo install --git https://github.com/bitcoindevkit/bdk-cli --features=esplora-reqwest,compiler
+```
 
+```bash
 # minimal install (only repl feature is on by default)
 cargo install --git https://github.com/bitcoindevkit/bdk-cli
 ```
