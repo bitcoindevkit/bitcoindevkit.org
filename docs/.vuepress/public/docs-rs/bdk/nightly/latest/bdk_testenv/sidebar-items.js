@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["TestEnv"]};
+window.SIDEBAR_ITEMS = {"struct":["Config","TestEnv"]};
