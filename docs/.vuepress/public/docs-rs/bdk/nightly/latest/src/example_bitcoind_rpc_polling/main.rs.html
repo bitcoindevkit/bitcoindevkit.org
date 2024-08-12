@@ -369,30 +369,11 @@
 <a href="#369" id="369">369</a>
 <a href="#370" id="370">370</a>
 <a href="#371" id="371">371</a>
-<a href="#372" id="372">372</a>
-<a href="#373" id="373">373</a>
-<a href="#374" id="374">374</a>
-<a href="#375" id="375">375</a>
-<a href="#376" id="376">376</a>
-<a href="#377" id="377">377</a>
-<a href="#378" id="378">378</a>
-<a href="#379" id="379">379</a>
-<a href="#380" id="380">380</a>
-<a href="#381" id="381">381</a>
-<a href="#382" id="382">382</a>
-<a href="#383" id="383">383</a>
-<a href="#384" id="384">384</a>
-<a href="#385" id="385">385</a>
-<a href="#386" id="386">386</a>
-<a href="#387" id="387">387</a>
-<a href="#388" id="388">388</a>
-<a href="#389" id="389">389</a>
-<a href="#390" id="390">390</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{
     path::PathBuf,
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc, Mutex,
+        Arc,
     },
     time::{Duration, Instant},
 };
@@ -402,16 +383,13 @@
     Emitter,
 };
 <span class="kw">use </span>bdk_chain::{
-    bitcoin::{constants::genesis_block, Block, Transaction},
-    indexed_tx_graph,
-    indexer::keychain_txout,
-    local_chain::{<span class="self">self</span>, LocalChain},
-    ConfirmationBlockTime, IndexedTxGraph, Merge,
+    bitcoin::{Block, Transaction},
+    local_chain, Merge,
 };
 <span class="kw">use </span>example_cli::{
     anyhow,
     clap::{<span class="self">self</span>, Args, Subcommand},
-    Keychain,
+    ChangeSet, Keychain,
 };
 
 <span class="kw">const </span>DB_MAGIC: <span class="kw-2">&amp;</span>[u8] = <span class="string">b"bdk_example_rpc"</span>;
@@ -425,11 +403,6 @@
 </span><span class="kw">const </span>MEMPOOL_EMIT_DELAY: Duration = Duration::from_secs(<span class="number">30</span>);
 <span class="doccomment">/// Delay for committing to persistence.
 </span><span class="kw">const </span>DB_COMMIT_DELAY: Duration = Duration::from_secs(<span class="number">60</span>);
-
-<span class="kw">type </span>ChangeSet = (
-    local_chain::ChangeSet,
-    indexed_tx_graph::ChangeSet&lt;ConfirmationBlockTime, keychain_txout::ChangeSet&gt;,
-);
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">enum </span>Emission {
@@ -501,52 +474,26 @@
 
 <span class="kw">fn </span>main() -&gt; anyhow::Result&lt;()&gt; {
     <span class="kw">let </span>start = Instant::now();
+
     <span class="kw">let </span>example_cli::Init {
         args,
-        keymap,
-        index,
+        graph,
+        chain,
         db,
-        init_changeset,
-    } = example_cli::init::&lt;RpcCommands, RpcArgs, ChangeSet&gt;(DB_MAGIC, DB_PATH)<span class="question-mark">?</span>;
-    <span class="macro">println!</span>(
-        <span class="string">"[{:&gt;10}s] loaded initial changeset from db"</span>,
-        start.elapsed().as_secs_f32()
-    );
-    <span class="kw">let </span>(init_chain_changeset, init_graph_changeset) = init_changeset;
-
-    <span class="kw">let </span>graph = Mutex::new({
-        <span class="kw">let </span><span class="kw-2">mut </span>graph = IndexedTxGraph::new(index);
-        graph.apply_changeset(init_graph_changeset);
-        graph
-    });
-    <span class="macro">println!</span>(
-        <span class="string">"[{:&gt;10}s] loaded indexed tx graph from changeset"</span>,
-        start.elapsed().as_secs_f32()
-    );
-
-    <span class="kw">let </span>chain = Mutex::new(<span class="kw">if </span>init_chain_changeset.is_empty() {
-        <span class="kw">let </span>genesis_hash = genesis_block(args.network).block_hash();
-        <span class="kw">let </span>(chain, chain_changeset) = LocalChain::from_genesis_hash(genesis_hash);
-        <span class="kw">let </span><span class="kw-2">mut </span>db = db.lock().unwrap();
-        db.append_changeset(<span class="kw-2">&amp;</span>(chain_changeset, Default::default()))<span class="question-mark">?</span>;
-        chain
-    } <span class="kw">else </span>{
-        LocalChain::from_changeset(init_chain_changeset)<span class="question-mark">?
-    </span>});
-    <span class="macro">println!</span>(
-        <span class="string">"[{:&gt;10}s] loaded local chain from changeset"</span>,
-        start.elapsed().as_secs_f32()
-    );
+        network,
+    } = <span class="kw">match </span>example_cli::init_or_load::&lt;RpcCommands, RpcArgs&gt;(DB_MAGIC, DB_PATH)<span class="question-mark">? </span>{
+        <span class="prelude-val">Some</span>(init) =&gt; init,
+        <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
+    };
 
     <span class="kw">let </span>rpc_cmd = <span class="kw">match </span>args.command {
         example_cli::Commands::ChainSpecific(rpc_cmd) =&gt; rpc_cmd,
         general_cmd =&gt; {
             <span class="kw">return </span>example_cli::handle_commands(
                 <span class="kw-2">&amp;</span>graph,
-                <span class="kw-2">&amp;</span>db,
                 <span class="kw-2">&amp;</span>chain,
-                <span class="kw-2">&amp;</span>keymap,
-                args.network,
+                <span class="kw-2">&amp;</span>db,
+                network,
                 |rpc_args, tx| {
                     <span class="kw">let </span>client = rpc_args.new_client()<span class="question-mark">?</span>;
                     client.send_raw_transaction(tx)<span class="question-mark">?</span>;
@@ -581,7 +528,12 @@
                     .apply_update(emission.checkpoint)
                     .expect(<span class="string">"must always apply as we receive blocks in order from emitter"</span>);
                 <span class="kw">let </span>graph_changeset = graph.apply_block_relevant(<span class="kw-2">&amp;</span>emission.block, height);
-                db_stage.merge((chain_changeset, graph_changeset));
+                db_stage.merge(ChangeSet {
+                    local_chain: chain_changeset,
+                    tx_graph: graph_changeset.tx_graph,
+                    indexer: graph_changeset.indexer,
+                    ..Default::default()
+                });
 
                 <span class="comment">// commit staged db changes in intervals
                 </span><span class="kw">if </span>last_db_commit.elapsed() &gt;= DB_COMMIT_DELAY {
@@ -610,7 +562,7 @@
                         )
                     };
                     <span class="macro">println!</span>(
-                        <span class="string">"[{:&gt;10}s] synced to {} @ {} | total: {} sats"</span>,
+                        <span class="string">"[{:&gt;10}s] synced to {} @ {} | total: {}"</span>,
                         start.elapsed().as_secs_f32(),
                         synced_to.hash(),
                         synced_to.height(),
@@ -625,7 +577,11 @@
             );
             {
                 <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
-                db_stage.merge((local_chain::ChangeSet::default(), graph_changeset));
+                db_stage.merge(ChangeSet {
+                    tx_graph: graph_changeset.tx_graph,
+                    indexer: graph_changeset.indexer,
+                    ..Default::default()
+                });
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = db_stage.take() {
                     db.append_changeset(<span class="kw-2">&amp;</span>changeset)<span class="question-mark">?</span>;
                 }
@@ -690,7 +646,7 @@
                 <span class="kw">let </span><span class="kw-2">mut </span>graph = graph.lock().unwrap();
                 <span class="kw">let </span><span class="kw-2">mut </span>chain = chain.lock().unwrap();
 
-                <span class="kw">let </span>changeset = <span class="kw">match </span>emission {
+                <span class="kw">let </span>(chain_changeset, graph_changeset) = <span class="kw">match </span>emission {
                     Emission::Block(block_emission) =&gt; {
                         <span class="kw">let </span>height = block_emission.block_height();
                         <span class="kw">let </span>chain_changeset = chain
@@ -711,7 +667,13 @@
                         <span class="kw">continue</span>;
                     }
                 };
-                db_stage.merge(changeset);
+
+                db_stage.merge(ChangeSet {
+                    local_chain: chain_changeset,
+                    tx_graph: graph_changeset.tx_graph,
+                    indexer: graph_changeset.indexer,
+                    ..Default::default()
+                });
 
                 <span class="kw">if </span>last_db_commit.elapsed() &gt;= DB_COMMIT_DELAY {
                     <span class="kw">let </span>db = <span class="kw-2">&amp;mut *</span>db.lock().unwrap();
@@ -738,7 +700,7 @@
                         )
                     };
                     <span class="macro">println!</span>(
-                        <span class="string">"[{:&gt;10}s] synced to {} @ {} / {} | total: {} sats"</span>,
+                        <span class="string">"[{:&gt;10}s] synced to {} @ {} / {} | total: {}"</span>,
                         start.elapsed().as_secs_f32(),
                         synced_to.hash(),
                         synced_to.height(),

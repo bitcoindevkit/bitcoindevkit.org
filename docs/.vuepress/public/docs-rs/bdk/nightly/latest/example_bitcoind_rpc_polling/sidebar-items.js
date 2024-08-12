@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["CHANNEL_BOUND","DB_COMMIT_DELAY","DB_MAGIC","DB_PATH","MEMPOOL_EMIT_DELAY","STDOUT_PRINT_DELAY"],"enum":["Emission","RpcCommands"],"fn":["await_flag","main","start_ctrlc_handler"],"struct":["RpcArgs"],"type":["ChangeSet"]};
+window.SIDEBAR_ITEMS = {"constant":["CHANNEL_BOUND","DB_COMMIT_DELAY","DB_MAGIC","DB_PATH","MEMPOOL_EMIT_DELAY","STDOUT_PRINT_DELAY"],"enum":["Emission","RpcCommands"],"fn":["await_flag","main","start_ctrlc_handler"],"struct":["RpcArgs"]};
