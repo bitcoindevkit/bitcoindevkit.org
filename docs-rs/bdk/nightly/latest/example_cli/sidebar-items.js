@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["AddressCmd","CoinSelectionAlgo","Commands","Keychain","TxOutCmd"],"fn":["create_tx","handle_commands","init","planned_utxos"],"struct":["Args","CreateTxChange","Init"],"type":["KeychainChangeSet","KeychainTxGraph","PlannedUtxo"]};
+window.SIDEBAR_ITEMS = {"enum":["AddressCmd","CoinSelectionAlgo","Commands","Keychain","PsbtCmd","TxOutCmd"],"fn":["create_tx","handle_commands","init_or_load","planned_utxos"],"struct":["Args","ChangeInfo","ChangeSet","Init"],"type":["KeychainTxGraph","PlanUtxo"]};
