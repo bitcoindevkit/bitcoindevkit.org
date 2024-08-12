@@ -321,6 +321,33 @@
 <a href="#321" id="321">321</a>
 <a href="#322" id="322">322</a>
 <a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_chain::{
     bitcoin::{
         address::NetworkChecked, block::Header, hash_types::TxMerkleNode, hashes::Hash,
@@ -510,22 +537,48 @@
     }
 
     <span class="doccomment">/// This method waits for the Electrum notification indicating that a new block has been mined.
-    </span><span class="kw">pub fn </span>wait_until_electrum_sees_block(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; anyhow::Result&lt;()&gt; {
+    /// `timeout` is the maximum [`Duration`] we want to wait for a response from Electrsd.
+    </span><span class="kw">pub fn </span>wait_until_electrum_sees_block(<span class="kw-2">&amp;</span><span class="self">self</span>, timeout: Duration) -&gt; anyhow::Result&lt;()&gt; {
         <span class="self">self</span>.electrsd.client.block_headers_subscribe()<span class="question-mark">?</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>delay = Duration::from_millis(<span class="number">64</span>);
+        <span class="kw">let </span>delay = Duration::from_millis(<span class="number">200</span>);
+        <span class="kw">let </span>start = std::time::Instant::now();
 
-        <span class="kw">loop </span>{
+        <span class="kw">while </span>start.elapsed() &lt; timeout {
             <span class="self">self</span>.electrsd.trigger()<span class="question-mark">?</span>;
             <span class="self">self</span>.electrsd.client.ping()<span class="question-mark">?</span>;
             <span class="kw">if </span><span class="self">self</span>.electrsd.client.block_headers_pop()<span class="question-mark">?</span>.is_some() {
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(());
             }
 
-            <span class="kw">if </span>delay.as_millis() &lt; <span class="number">512 </span>{
-                delay = delay.mul_f32(<span class="number">2.0</span>);
-            }
             std::thread::sleep(delay);
         }
+
+        <span class="prelude-val">Err</span>(anyhow::Error::msg(
+            <span class="string">"Timed out waiting for Electrsd to get block header"</span>,
+        ))
+    }
+
+    <span class="doccomment">/// This method waits for Electrsd to see a transaction with given `txid`. `timeout` is the
+    /// maximum [`Duration`] we want to wait for a response from Electrsd.
+    </span><span class="kw">pub fn </span>wait_until_electrum_sees_txid(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        txid: Txid,
+        timeout: Duration,
+    ) -&gt; anyhow::Result&lt;()&gt; {
+        <span class="kw">let </span>delay = Duration::from_millis(<span class="number">200</span>);
+        <span class="kw">let </span>start = std::time::Instant::now();
+
+        <span class="kw">while </span>start.elapsed() &lt; timeout {
+            <span class="kw">if </span><span class="self">self</span>.electrsd.client.transaction_get(<span class="kw-2">&amp;</span>txid).is_ok() {
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(());
+            }
+
+            std::thread::sleep(delay);
+        }
+
+        <span class="prelude-val">Err</span>(anyhow::Error::msg(
+            <span class="string">"Timed out waiting for Electrsd to get transaction"</span>,
+        ))
     }
 
     <span class="doccomment">/// Invalidate a number of blocks of a given size `count`.
@@ -608,6 +661,7 @@
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>test {
     <span class="kw">use </span><span class="kw">crate</span>::TestEnv;
+    <span class="kw">use </span>core::time::Duration;
     <span class="kw">use </span>electrsd::bitcoind::{anyhow::Result, bitcoincore_rpc::RpcApi};
 
     <span class="doccomment">/// This checks that reorgs initiated by `bitcoind` is detected by our `electrsd` instance.
@@ -617,7 +671,7 @@
 
         <span class="comment">// Mine some blocks.
         </span>env.mine_blocks(<span class="number">101</span>, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
-        env.wait_until_electrum_sees_block()<span class="question-mark">?</span>;
+        env.wait_until_electrum_sees_block(Duration::from_secs(<span class="number">6</span>))<span class="question-mark">?</span>;
         <span class="kw">let </span>height = env.bitcoind.client.get_block_count()<span class="question-mark">?</span>;
         <span class="kw">let </span>blocks = (<span class="number">0</span>..=height)
             .map(|i| env.bitcoind.client.get_block_hash(i))
@@ -625,7 +679,7 @@
 
         <span class="comment">// Perform reorg on six blocks.
         </span>env.reorg(<span class="number">6</span>)<span class="question-mark">?</span>;
-        env.wait_until_electrum_sees_block()<span class="question-mark">?</span>;
+        env.wait_until_electrum_sees_block(Duration::from_secs(<span class="number">6</span>))<span class="question-mark">?</span>;
         <span class="kw">let </span>reorged_height = env.bitcoind.client.get_block_count()<span class="question-mark">?</span>;
         <span class="kw">let </span>reorged_blocks = (<span class="number">0</span>..=height)
             .map(|i| env.bitcoind.client.get_block_hash(i))
