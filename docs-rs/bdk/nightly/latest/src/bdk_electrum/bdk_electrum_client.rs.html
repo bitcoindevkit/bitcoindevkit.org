@@ -489,6 +489,24 @@
 <a href="#489" id="489">489</a>
 <a href="#490" id="490">490</a>
 <a href="#491" id="491">491</a>
+<a href="#492" id="492">492</a>
+<a href="#493" id="493">493</a>
+<a href="#494" id="494">494</a>
+<a href="#495" id="495">495</a>
+<a href="#496" id="496">496</a>
+<a href="#497" id="497">497</a>
+<a href="#498" id="498">498</a>
+<a href="#499" id="499">499</a>
+<a href="#500" id="500">500</a>
+<a href="#501" id="501">501</a>
+<a href="#502" id="502">502</a>
+<a href="#503" id="503">503</a>
+<a href="#504" id="504">504</a>
+<a href="#505" id="505">505</a>
+<a href="#506" id="506">506</a>
+<a href="#507" id="507">507</a>
+<a href="#508" id="508">508</a>
+<a href="#509" id="509">509</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_chain::{
     bitcoin::{block::Header, BlockHash, OutPoint, ScriptBuf, Transaction, Txid},
     collections::{BTreeMap, HashMap},
@@ -599,12 +617,22 @@
     /// returns updates for [`bdk_chain`] data structures.
     ///
     /// - `request`: struct with data required to perform a spk-based blockchain client full scan,
-    ///              see [`FullScanRequest`]
+    ///              see [`FullScanRequest`].
     /// - `stop_gap`: the full scan for each keychain stops after a gap of script pubkeys with no
-    ///              associated transactions
+    ///               associated transactions.
     /// - `batch_size`: specifies the max number of script pubkeys to request for in a single batch
-    ///              request
-    /// - `fetch_prev_txouts`: specifies whether or not we want previous `TxOut`s for fee
+    ///                 request.
+    /// - `fetch_prev_txouts`: specifies whether we want previous `TxOut`s for fee calculation.
+    ///                        Note that this requires additional calls to the Electrum server, but
+    ///                        is necessary for calculating the fee on a transaction if your wallet
+    ///                        does not own the inputs. Methods like [`Wallet.calculate_fee`] and
+    ///                        [`Wallet.calculate_fee_rate`] will return a
+    ///                        [`CalculateFeeError::MissingTxOut`] error if those `TxOut`s are not
+    ///                        present in the transaction graph.
+    ///
+    /// [`CalculateFeeError::MissingTxOut`]: bdk_chain::tx_graph::CalculateFeeError::MissingTxOut
+    /// [`Wallet.calculate_fee`]: https://docs.rs/bdk_wallet/latest/bdk_wallet/struct.Wallet.html#method.calculate_fee
+    /// [`Wallet.calculate_fee_rate`]: https://docs.rs/bdk_wallet/latest/bdk_wallet/struct.Wallet.html#method.calculate_fee_rate
     </span><span class="kw">pub fn </span>full_scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         request: FullScanRequest&lt;K&gt;,
@@ -645,14 +673,22 @@
     /// - `request`: struct with data required to perform a spk-based blockchain client sync,
     ///              see [`SyncRequest`]
     /// - `batch_size`: specifies the max number of script pubkeys to request for in a single batch
-    ///              request
-    /// - `fetch_prev_txouts`: specifies whether or not we want previous `TxOut`s for fee
-    ///              calculation
+    ///                 request
+    /// - `fetch_prev_txouts`: specifies whether we want previous `TxOut`s for fee calculation.
+    ///                        Note that this requires additional calls to the Electrum server, but
+    ///                        is necessary for calculating the fee on a transaction if your wallet
+    ///                        does not own the inputs. Methods like [`Wallet.calculate_fee`] and
+    ///                        [`Wallet.calculate_fee_rate`] will return a
+    ///                        [`CalculateFeeError::MissingTxOut`] error if those `TxOut`s are not
+    ///                        present in the transaction graph.
     ///
     /// If the scripts to sync are unknown, such as when restoring or importing a keychain that
     /// may include scripts that have been used, use [`full_scan`] with the keychain.
     ///
     /// [`full_scan`]: Self::full_scan
+    /// [`CalculateFeeError::MissingTxOut`]: bdk_chain::tx_graph::CalculateFeeError::MissingTxOut
+    /// [`Wallet.calculate_fee`]: https://docs.rs/bdk_wallet/latest/bdk_wallet/struct.Wallet.html#method.calculate_fee
+    /// [`Wallet.calculate_fee_rate`]: https://docs.rs/bdk_wallet/latest/bdk_wallet/struct.Wallet.html#method.calculate_fee_rate
     </span><span class="kw">pub fn </span>sync(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         request: SyncRequest,
