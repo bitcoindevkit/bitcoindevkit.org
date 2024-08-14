@@ -783,92 +783,163 @@
 <a href="#783" id="783">783</a>
 <a href="#784" id="784">784</a>
 <a href="#785" id="785">785</a>
+<a href="#786" id="786">786</a>
+<a href="#787" id="787">787</a>
+<a href="#788" id="788">788</a>
+<a href="#789" id="789">789</a>
+<a href="#790" id="790">790</a>
+<a href="#791" id="791">791</a>
+<a href="#792" id="792">792</a>
+<a href="#793" id="793">793</a>
+<a href="#794" id="794">794</a>
+<a href="#795" id="795">795</a>
+<a href="#796" id="796">796</a>
+<a href="#797" id="797">797</a>
+<a href="#798" id="798">798</a>
+<a href="#799" id="799">799</a>
+<a href="#800" id="800">800</a>
+<a href="#801" id="801">801</a>
+<a href="#802" id="802">802</a>
+<a href="#803" id="803">803</a>
+<a href="#804" id="804">804</a>
+<a href="#805" id="805">805</a>
+<a href="#806" id="806">806</a>
+<a href="#807" id="807">807</a>
+<a href="#808" id="808">808</a>
+<a href="#809" id="809">809</a>
+<a href="#810" id="810">810</a>
+<a href="#811" id="811">811</a>
+<a href="#812" id="812">812</a>
+<a href="#813" id="813">813</a>
+<a href="#814" id="814">814</a>
+<a href="#815" id="815">815</a>
+<a href="#816" id="816">816</a>
+<a href="#817" id="817">817</a>
+<a href="#818" id="818">818</a>
+<a href="#819" id="819">819</a>
+<a href="#820" id="820">820</a>
+<a href="#821" id="821">821</a>
+<a href="#822" id="822">822</a>
+<a href="#823" id="823">823</a>
+<a href="#824" id="824">824</a>
+<a href="#825" id="825">825</a>
+<a href="#826" id="826">826</a>
+<a href="#827" id="827">827</a>
+<a href="#828" id="828">828</a>
+<a href="#829" id="829">829</a>
+<a href="#830" id="830">830</a>
+<a href="#831" id="831">831</a>
+<a href="#832" id="832">832</a>
+<a href="#833" id="833">833</a>
+<a href="#834" id="834">834</a>
+<a href="#835" id="835">835</a>
+<a href="#836" id="836">836</a>
+<a href="#837" id="837">837</a>
+<a href="#838" id="838">838</a>
+<a href="#839" id="839">839</a>
+<a href="#840" id="840">840</a>
+<a href="#841" id="841">841</a>
+<a href="#842" id="842">842</a>
+<a href="#843" id="843">843</a>
+<a href="#844" id="844">844</a>
+<a href="#845" id="845">845</a>
+<a href="#846" id="846">846</a>
+<a href="#847" id="847">847</a>
+<a href="#848" id="848">848</a>
+<a href="#849" id="849">849</a>
+<a href="#850" id="850">850</a>
+<a href="#851" id="851">851</a>
+<a href="#852" id="852">852</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeSet;
 <span class="kw">use </span>std::thread::JoinHandle;
 
 <span class="kw">use </span>bdk_chain::collections::BTreeMap;
 <span class="kw">use </span>bdk_chain::spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult};
 <span class="kw">use </span>bdk_chain::{
-    bitcoin::{Amount, BlockHash, OutPoint, ScriptBuf, TxOut, Txid},
+    bitcoin::{BlockHash, OutPoint, ScriptBuf, Txid},
     local_chain::CheckPoint,
     BlockId, ConfirmationBlockTime, TxGraph,
 };
 <span class="kw">use </span>bdk_chain::{Anchor, Indexed};
-<span class="kw">use </span>esplora_client::TxStatus;
+<span class="kw">use </span>esplora_client::{OutputStatus, Tx, TxStatus};
 
-<span class="kw">use </span><span class="kw">crate</span>::anchor_from_status;
+<span class="kw">use crate</span>::{insert_anchor_from_status, insert_prevouts};
 
 <span class="doccomment">/// [`esplora_client::Error`]
 </span><span class="kw">pub type </span>Error = Box&lt;esplora_client::Error&gt;;
 
 <span class="doccomment">/// Trait to extend the functionality of [`esplora_client::BlockingClient`].
 ///
-/// Refer to [crate-level documentation] for more.
-///
-/// [crate-level documentation]: crate
+/// Refer to [crate-level documentation](crate) for more.
 </span><span class="kw">pub trait </span>EsploraExt {
     <span class="doccomment">/// Scan keychain scripts for transactions against Esplora, returning an update that can be
     /// applied to the receiving structures.
     ///
-    /// - `request`: struct with data required to perform a spk-based blockchain client full scan,
-    ///              see [`FullScanRequest`]
+    /// `request` provides the data required to perform a script-pubkey-based full scan
+    /// (see [`FullScanRequest`]). The full scan for each keychain (`K`) stops after a gap of
+    /// `stop_gap` script pubkeys with no associated transactions. `parallel_requests` specifies
+    /// the maximum number of HTTP requests to make in parallel.
     ///
-    /// The full scan for each keychain stops after a gap of `stop_gap` script pubkeys with no
-    /// associated transactions. `parallel_requests` specifies the max number of HTTP requests to
-    /// make in parallel.
-    ///
-    /// ## Note
-    ///
-    /// `stop_gap` is defined as "the maximum number of consecutive unused addresses".
-    /// For example, with a `stop_gap` of  3, `full_scan` will keep scanning
-    /// until it encounters 3 consecutive script pubkeys with no associated transactions.
-    ///
-    /// This follows the same approach as other Bitcoin-related software,
-    /// such as [Electrum](https://electrum.readthedocs.io/en/latest/faq.html#what-is-the-gap-limit),
-    /// [BTCPay Server](https://docs.btcpayserver.org/FAQ/Wallet/#the-gap-limit-problem),
-    /// and [Sparrow](https://www.sparrowwallet.com/docs/faq.html#ive-restored-my-wallet-but-some-of-my-funds-are-missing).
-    ///
-    /// A `stop_gap` of 0 will be treated as a `stop_gap` of 1.
-    </span><span class="kw">fn </span>full_scan&lt;K: Ord + Clone&gt;(
+    /// Refer to [crate-level docs](crate) for more.
+    </span><span class="kw">fn </span>full_scan&lt;K: Ord + Clone, R: Into&lt;FullScanRequest&lt;K&gt;&gt;&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        request: FullScanRequest&lt;K&gt;,
+        request: R,
         stop_gap: usize,
         parallel_requests: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanResult&lt;K&gt;, Error&gt;;
 
-    <span class="doccomment">/// Sync a set of scripts with the blockchain (via an Esplora client) for the data
-    /// specified and return a [`TxGraph`].
+    <span class="doccomment">/// Sync a set of scripts, txids, and/or outpoints against Esplora.
     ///
-    /// - `request`: struct with data required to perform a spk-based blockchain client sync, see
-    ///              [`SyncRequest`]
+    /// `request` provides the data required to perform a script-pubkey-based sync (see
+    /// [`SyncRequest`]). `parallel_requests` specifies the maximum number of HTTP requests to make
+    /// in parallel.
     ///
-    /// If the scripts to sync are unknown, such as when restoring or importing a keychain that
-    /// may include scripts that have been used, use [`full_scan`] with the keychain.
-    ///
-    /// [`full_scan`]: EsploraExt::full_scan
-    </span><span class="kw">fn </span>sync(<span class="kw-2">&amp;</span><span class="self">self</span>, request: SyncRequest, parallel_requests: usize) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResult, Error&gt;;
+    /// Refer to [crate-level docs](crate) for more.
+    </span><span class="kw">fn </span>sync&lt;I: <span class="lifetime">'static</span>, R: Into&lt;SyncRequest&lt;I&gt;&gt;&gt;(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        request: R,
+        parallel_requests: usize,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResult, Error&gt;;
 }
 
 <span class="kw">impl </span>EsploraExt <span class="kw">for </span>esplora_client::BlockingClient {
-    <span class="kw">fn </span>full_scan&lt;K: Ord + Clone&gt;(
+    <span class="kw">fn </span>full_scan&lt;K: Ord + Clone, R: Into&lt;FullScanRequest&lt;K&gt;&gt;&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        request: FullScanRequest&lt;K&gt;,
+        request: R,
         stop_gap: usize,
         parallel_requests: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanResult&lt;K&gt;, Error&gt; {
-        <span class="kw">let </span>latest_blocks = fetch_latest_blocks(<span class="self">self</span>)<span class="question-mark">?</span>;
-        <span class="kw">let </span>(graph_update, last_active_indices) = full_scan_for_index_and_graph_blocking(
-            <span class="self">self</span>,
-            request.spks_by_keychain,
-            stop_gap,
-            parallel_requests,
-        )<span class="question-mark">?</span>;
-        <span class="kw">let </span>chain_update = chain_update(
-            <span class="self">self</span>,
-            <span class="kw-2">&amp;</span>latest_blocks,
-            <span class="kw-2">&amp;</span>request.chain_tip,
-            graph_update.all_anchors(),
-        )<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>request = request.into();
+
+        <span class="kw">let </span>chain_tip = request.chain_tip();
+        <span class="kw">let </span>latest_blocks = <span class="kw">if </span>chain_tip.is_some() {
+            <span class="prelude-val">Some</span>(fetch_latest_blocks(<span class="self">self</span>)<span class="question-mark">?</span>)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
+
+        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = TxGraph::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>last_active_indices = BTreeMap::&lt;K, u32&gt;::new();
+        <span class="kw">for </span>keychain <span class="kw">in </span>request.keychains() {
+            <span class="kw">let </span>keychain_spks = request.iter_spks(keychain.clone());
+            <span class="kw">let </span>(tx_graph, last_active_index) =
+                fetch_txs_with_keychain_spks(<span class="self">self</span>, keychain_spks, stop_gap, parallel_requests)<span class="question-mark">?</span>;
+            <span class="kw">let _ </span>= graph_update.apply_update(tx_graph);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(last_active_index) = last_active_index {
+                last_active_indices.insert(keychain, last_active_index);
+            }
+        }
+
+        <span class="kw">let </span>chain_update = <span class="kw">match </span>(chain_tip, latest_blocks) {
+            (<span class="prelude-val">Some</span>(chain_tip), <span class="prelude-val">Some</span>(latest_blocks)) =&gt; <span class="prelude-val">Some</span>(chain_update(
+                <span class="self">self</span>,
+                <span class="kw-2">&amp;</span>latest_blocks,
+                <span class="kw-2">&amp;</span>chain_tip,
+                graph_update.all_anchors(),
+            )<span class="question-mark">?</span>),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+        };
+
         <span class="prelude-val">Ok</span>(FullScanResult {
             chain_update,
             graph_update,
@@ -876,21 +947,47 @@
         })
     }
 
-    <span class="kw">fn </span>sync(<span class="kw-2">&amp;</span><span class="self">self</span>, request: SyncRequest, parallel_requests: usize) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResult, Error&gt; {
-        <span class="kw">let </span>latest_blocks = fetch_latest_blocks(<span class="self">self</span>)<span class="question-mark">?</span>;
-        <span class="kw">let </span>graph_update = sync_for_index_and_graph_blocking(
+    <span class="kw">fn </span>sync&lt;I: <span class="lifetime">'static</span>, R: Into&lt;SyncRequest&lt;I&gt;&gt;&gt;(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        request: R,
+        parallel_requests: usize,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResult, Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>request: SyncRequest&lt;I&gt; = request.into();
+
+        <span class="kw">let </span>chain_tip = request.chain_tip();
+        <span class="kw">let </span>latest_blocks = <span class="kw">if </span>chain_tip.is_some() {
+            <span class="prelude-val">Some</span>(fetch_latest_blocks(<span class="self">self</span>)<span class="question-mark">?</span>)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
+
+        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = TxGraph::default();
+        <span class="kw">let _ </span>= graph_update.apply_update(fetch_txs_with_spks(
             <span class="self">self</span>,
-            request.spks,
-            request.txids,
-            request.outpoints,
+            request.iter_spks(),
             parallel_requests,
-        )<span class="question-mark">?</span>;
-        <span class="kw">let </span>chain_update = chain_update(
+        )<span class="question-mark">?</span>);
+        <span class="kw">let _ </span>= graph_update.apply_update(fetch_txs_with_txids(
             <span class="self">self</span>,
-            <span class="kw-2">&amp;</span>latest_blocks,
-            <span class="kw-2">&amp;</span>request.chain_tip,
-            graph_update.all_anchors(),
-        )<span class="question-mark">?</span>;
+            request.iter_txids(),
+            parallel_requests,
+        )<span class="question-mark">?</span>);
+        <span class="kw">let _ </span>= graph_update.apply_update(fetch_txs_with_outpoints(
+            <span class="self">self</span>,
+            request.iter_outpoints(),
+            parallel_requests,
+        )<span class="question-mark">?</span>);
+
+        <span class="kw">let </span>chain_update = <span class="kw">match </span>(chain_tip, latest_blocks) {
+            (<span class="prelude-val">Some</span>(chain_tip), <span class="prelude-val">Some</span>(latest_blocks)) =&gt; <span class="prelude-val">Some</span>(chain_update(
+                <span class="self">self</span>,
+                <span class="kw-2">&amp;</span>latest_blocks,
+                <span class="kw-2">&amp;</span>chain_tip,
+                graph_update.all_anchors(),
+            )<span class="question-mark">?</span>),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+        };
+
         <span class="prelude-val">Ok</span>(SyncResult {
             chain_update,
             graph_update,
@@ -997,184 +1094,221 @@
     <span class="prelude-val">Ok</span>(tip)
 }
 
-<span class="doccomment">/// This performs a full scan to get an update for the [`TxGraph`] and
-/// [`KeychainTxOutIndex`](bdk_chain::indexer::keychain_txout::KeychainTxOutIndex).
-</span><span class="kw">fn </span>full_scan_for_index_and_graph_blocking&lt;K: Ord + Clone&gt;(
+<span class="kw">fn </span>fetch_txs_with_keychain_spks&lt;I: Iterator&lt;Item = Indexed&lt;ScriptBuf&gt;&gt;&gt;(
     client: <span class="kw-2">&amp;</span>esplora_client::BlockingClient,
-    keychain_spks: BTreeMap&lt;K, <span class="kw">impl </span>IntoIterator&lt;Item = Indexed&lt;ScriptBuf&gt;&gt;&gt;,
+    <span class="kw-2">mut </span>keychain_spks: I,
     stop_gap: usize,
     parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationBlockTime&gt;, BTreeMap&lt;K, u32&gt;), Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationBlockTime&gt;, <span class="prelude-ty">Option</span>&lt;u32&gt;), Error&gt; {
     <span class="kw">type </span>TxsOfSpkIndex = (u32, Vec&lt;esplora_client::Tx&gt;);
-    <span class="kw">let </span>parallel_requests = Ord::max(parallel_requests, <span class="number">1</span>);
-    <span class="kw">let </span><span class="kw-2">mut </span>tx_graph = TxGraph::&lt;ConfirmationBlockTime&gt;::default();
-    <span class="kw">let </span><span class="kw-2">mut </span>last_active_indices = BTreeMap::&lt;K, u32&gt;::new();
 
-    <span class="kw">for </span>(keychain, spks) <span class="kw">in </span>keychain_spks {
-        <span class="kw">let </span><span class="kw-2">mut </span>spks = spks.into_iter();
-        <span class="kw">let </span><span class="kw-2">mut </span>last_index = <span class="prelude-ty">Option</span>::&lt;u32&gt;::None;
-        <span class="kw">let </span><span class="kw-2">mut </span>last_active_index = <span class="prelude-ty">Option</span>::&lt;u32&gt;::None;
+    <span class="kw">let </span><span class="kw-2">mut </span>tx_graph = TxGraph::default();
+    <span class="kw">let </span><span class="kw-2">mut </span>last_index = <span class="prelude-ty">Option</span>::&lt;u32&gt;::None;
+    <span class="kw">let </span><span class="kw-2">mut </span>last_active_index = <span class="prelude-ty">Option</span>::&lt;u32&gt;::None;
 
-        <span class="kw">loop </span>{
-            <span class="kw">let </span>handles = spks
-                .by_ref()
-                .take(parallel_requests)
-                .map(|(spk_index, spk)| {
-                    std::thread::spawn({
-                        <span class="kw">let </span>client = client.clone();
-                        <span class="kw">move </span>|| -&gt; <span class="prelude-ty">Result</span>&lt;TxsOfSpkIndex, Error&gt; {
-                            <span class="kw">let </span><span class="kw-2">mut </span>last_seen = <span class="prelude-val">None</span>;
-                            <span class="kw">let </span><span class="kw-2">mut </span>spk_txs = Vec::new();
-                            <span class="kw">loop </span>{
-                                <span class="kw">let </span>txs = client.scripthash_txs(<span class="kw-2">&amp;</span>spk, last_seen)<span class="question-mark">?</span>;
-                                <span class="kw">let </span>tx_count = txs.len();
-                                last_seen = txs.last().map(|tx| tx.txid);
-                                spk_txs.extend(txs);
-                                <span class="kw">if </span>tx_count &lt; <span class="number">25 </span>{
-                                    <span class="kw">break </span><span class="prelude-val">Ok</span>((spk_index, spk_txs));
-                                }
-                            }
-                        }
-                    })
-                })
-                .collect::&lt;Vec&lt;JoinHandle&lt;<span class="prelude-ty">Result</span>&lt;TxsOfSpkIndex, Error&gt;&gt;&gt;&gt;();
-
-            <span class="kw">if </span>handles.is_empty() {
-                <span class="kw">break</span>;
-            }
-
-            <span class="kw">for </span>handle <span class="kw">in </span>handles {
-                <span class="kw">let </span>(index, txs) = handle.join().expect(<span class="string">"thread must not panic"</span>)<span class="question-mark">?</span>;
-                last_index = <span class="prelude-val">Some</span>(index);
-                <span class="kw">if </span>!txs.is_empty() {
-                    last_active_index = <span class="prelude-val">Some</span>(index);
-                }
-                <span class="kw">for </span>tx <span class="kw">in </span>txs {
-                    <span class="kw">let _ </span>= tx_graph.insert_tx(tx.to_tx());
-                    <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor_from_status(<span class="kw-2">&amp;</span>tx.status) {
-                        <span class="kw">let _ </span>= tx_graph.insert_anchor(tx.txid, anchor);
-                    }
-
-                    <span class="kw">let </span>previous_outputs = tx.vin.iter().filter_map(|vin| {
-                        <span class="kw">let </span>prevout = vin.prevout.as_ref()<span class="question-mark">?</span>;
-                        <span class="prelude-val">Some</span>((
-                            OutPoint {
-                                txid: vin.txid,
-                                vout: vin.vout,
-                            },
-                            TxOut {
-                                script_pubkey: prevout.scriptpubkey.clone(),
-                                value: Amount::from_sat(prevout.value),
-                            },
-                        ))
-                    });
-
-                    <span class="kw">for </span>(outpoint, txout) <span class="kw">in </span>previous_outputs {
-                        <span class="kw">let _ </span>= tx_graph.insert_txout(outpoint, txout);
-                    }
-                }
-            }
-
-            <span class="kw">let </span>last_index = last_index.expect(<span class="string">"Must be set since handles wasn't empty."</span>);
-            <span class="kw">let </span>gap_limit_reached = <span class="kw">if let </span><span class="prelude-val">Some</span>(i) = last_active_index {
-                last_index &gt;= i.saturating_add(stop_gap <span class="kw">as </span>u32)
-            } <span class="kw">else </span>{
-                last_index + <span class="number">1 </span>&gt;= stop_gap <span class="kw">as </span>u32
-            };
-            <span class="kw">if </span>gap_limit_reached {
-                <span class="kw">break</span>;
-            }
-        }
-
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(last_active_index) = last_active_index {
-            last_active_indices.insert(keychain, last_active_index);
-        }
-    }
-
-    <span class="prelude-val">Ok</span>((tx_graph, last_active_indices))
-}
-
-<span class="kw">fn </span>sync_for_index_and_graph_blocking(
-    client: <span class="kw-2">&amp;</span>esplora_client::BlockingClient,
-    misc_spks: <span class="kw">impl </span>IntoIterator&lt;Item = ScriptBuf&gt;,
-    txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
-    outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
-    parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationBlockTime&gt;, Error&gt; {
-    <span class="kw">let </span>(<span class="kw-2">mut </span>tx_graph, <span class="kw">_</span>) = full_scan_for_index_and_graph_blocking(
-        client,
-        {
-            <span class="kw">let </span><span class="kw-2">mut </span>keychains = BTreeMap::new();
-            keychains.insert(
-                (),
-                misc_spks
-                    .into_iter()
-                    .enumerate()
-                    .map(|(i, spk)| (i <span class="kw">as </span>u32, spk)),
-            );
-            keychains
-        },
-        usize::MAX,
-        parallel_requests,
-    )<span class="question-mark">?</span>;
-
-    <span class="kw">let </span><span class="kw-2">mut </span>txids = txids.into_iter();
     <span class="kw">loop </span>{
-        <span class="kw">let </span>handles = txids
+        <span class="kw">let </span>handles = keychain_spks
             .by_ref()
             .take(parallel_requests)
-            .filter(|<span class="kw-2">&amp;</span>txid| tx_graph.get_tx(txid).is_none())
-            .map(|txid| {
+            .map(|(spk_index, spk)| {
                 std::thread::spawn({
                     <span class="kw">let </span>client = client.clone();
-                    <span class="kw">move </span>|| {
-                        client
-                            .get_tx_status(<span class="kw-2">&amp;</span>txid)
-                            .map_err(Box::new)
-                            .map(|s| (txid, s))
+                    <span class="kw">move </span>|| -&gt; <span class="prelude-ty">Result</span>&lt;TxsOfSpkIndex, Error&gt; {
+                        <span class="kw">let </span><span class="kw-2">mut </span>last_seen = <span class="prelude-val">None</span>;
+                        <span class="kw">let </span><span class="kw-2">mut </span>spk_txs = Vec::new();
+                        <span class="kw">loop </span>{
+                            <span class="kw">let </span>txs = client.scripthash_txs(<span class="kw-2">&amp;</span>spk, last_seen)<span class="question-mark">?</span>;
+                            <span class="kw">let </span>tx_count = txs.len();
+                            last_seen = txs.last().map(|tx| tx.txid);
+                            spk_txs.extend(txs);
+                            <span class="kw">if </span>tx_count &lt; <span class="number">25 </span>{
+                                <span class="kw">break </span><span class="prelude-val">Ok</span>((spk_index, spk_txs));
+                            }
+                        }
                     }
                 })
             })
-            .collect::&lt;Vec&lt;JoinHandle&lt;<span class="prelude-ty">Result</span>&lt;(Txid, TxStatus), Error&gt;&gt;&gt;&gt;();
+            .collect::&lt;Vec&lt;JoinHandle&lt;<span class="prelude-ty">Result</span>&lt;TxsOfSpkIndex, Error&gt;&gt;&gt;&gt;();
 
         <span class="kw">if </span>handles.is_empty() {
             <span class="kw">break</span>;
         }
 
         <span class="kw">for </span>handle <span class="kw">in </span>handles {
-            <span class="kw">let </span>(txid, status) = handle.join().expect(<span class="string">"thread must not panic"</span>)<span class="question-mark">?</span>;
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor_from_status(<span class="kw-2">&amp;</span>status) {
-                <span class="kw">let _ </span>= tx_graph.insert_anchor(txid, anchor);
+            <span class="kw">let </span>(index, txs) = handle.join().expect(<span class="string">"thread must not panic"</span>)<span class="question-mark">?</span>;
+            last_index = <span class="prelude-val">Some</span>(index);
+            <span class="kw">if </span>!txs.is_empty() {
+                last_active_index = <span class="prelude-val">Some</span>(index);
             }
+            <span class="kw">for </span>tx <span class="kw">in </span>txs {
+                <span class="kw">let _ </span>= tx_graph.insert_tx(tx.to_tx());
+                insert_anchor_from_status(<span class="kw-2">&amp;mut </span>tx_graph, tx.txid, tx.status);
+                insert_prevouts(<span class="kw-2">&amp;mut </span>tx_graph, tx.vin);
+            }
+        }
+
+        <span class="kw">let </span>last_index = last_index.expect(<span class="string">"Must be set since handles wasn't empty."</span>);
+        <span class="kw">let </span>gap_limit_reached = <span class="kw">if let </span><span class="prelude-val">Some</span>(i) = last_active_index {
+            last_index &gt;= i.saturating_add(stop_gap <span class="kw">as </span>u32)
+        } <span class="kw">else </span>{
+            last_index + <span class="number">1 </span>&gt;= stop_gap <span class="kw">as </span>u32
+        };
+        <span class="kw">if </span>gap_limit_reached {
+            <span class="kw">break</span>;
         }
     }
 
-    <span class="kw">for </span>op <span class="kw">in </span>outpoints {
-        <span class="kw">if </span>tx_graph.get_tx(op.txid).is_none() {
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(tx) = client.get_tx(<span class="kw-2">&amp;</span>op.txid)<span class="question-mark">? </span>{
-                <span class="kw">let _ </span>= tx_graph.insert_tx(tx);
-            }
-            <span class="kw">let </span>status = client.get_tx_status(<span class="kw-2">&amp;</span>op.txid)<span class="question-mark">?</span>;
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor_from_status(<span class="kw-2">&amp;</span>status) {
-                <span class="kw">let _ </span>= tx_graph.insert_anchor(op.txid, anchor);
-            }
+    <span class="prelude-val">Ok</span>((tx_graph, last_active_index))
+}
+
+<span class="doccomment">/// Fetch transactions and associated [`ConfirmationBlockTime`]s by scanning `spks`
+/// against Esplora.
+///
+/// Unlike with [`EsploraExt::fetch_txs_with_keychain_spks`], `spks` must be *bounded* as all
+/// contained scripts will be scanned. `parallel_requests` specifies the maximum number of HTTP
+/// requests to make in parallel.
+///
+/// Refer to [crate-level docs](crate) for more.
+</span><span class="kw">fn </span>fetch_txs_with_spks&lt;I: IntoIterator&lt;Item = ScriptBuf&gt;&gt;(
+    client: <span class="kw-2">&amp;</span>esplora_client::BlockingClient,
+    spks: I,
+    parallel_requests: usize,
+) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationBlockTime&gt;, Error&gt; {
+    fetch_txs_with_keychain_spks(
+        client,
+        spks.into_iter().enumerate().map(|(i, spk)| (i <span class="kw">as </span>u32, spk)),
+        usize::MAX,
+        parallel_requests,
+    )
+    .map(|(tx_graph, <span class="kw">_</span>)| tx_graph)
+}
+
+<span class="doccomment">/// Fetch transactions and associated [`ConfirmationBlockTime`]s by scanning `txids`
+/// against Esplora.
+///
+/// `parallel_requests` specifies the maximum number of HTTP requests to make in parallel.
+///
+/// Refer to [crate-level docs](crate) for more.
+</span><span class="kw">fn </span>fetch_txs_with_txids&lt;I: IntoIterator&lt;Item = Txid&gt;&gt;(
+    client: <span class="kw-2">&amp;</span>esplora_client::BlockingClient,
+    txids: I,
+    parallel_requests: usize,
+) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationBlockTime&gt;, Error&gt; {
+    <span class="kw">enum </span>EsploraResp {
+        TxStatus(TxStatus),
+        Tx(<span class="prelude-ty">Option</span>&lt;Tx&gt;),
+    }
+
+    <span class="kw">let </span><span class="kw-2">mut </span>tx_graph = TxGraph::default();
+    <span class="kw">let </span><span class="kw-2">mut </span>txids = txids.into_iter();
+    <span class="kw">loop </span>{
+        <span class="kw">let </span>handles = txids
+            .by_ref()
+            .take(parallel_requests)
+            .map(|txid| {
+                <span class="kw">let </span>client = client.clone();
+                <span class="kw">let </span>tx_already_exists = tx_graph.get_tx(txid).is_some();
+                std::thread::spawn(<span class="kw">move </span>|| {
+                    <span class="kw">if </span>tx_already_exists {
+                        client
+                            .get_tx_status(<span class="kw-2">&amp;</span>txid)
+                            .map_err(Box::new)
+                            .map(|s| (txid, EsploraResp::TxStatus(s)))
+                    } <span class="kw">else </span>{
+                        client
+                            .get_tx_info(<span class="kw-2">&amp;</span>txid)
+                            .map_err(Box::new)
+                            .map(|t| (txid, EsploraResp::Tx(t)))
+                    }
+                })
+            })
+            .collect::&lt;Vec&lt;JoinHandle&lt;<span class="prelude-ty">Result</span>&lt;(Txid, EsploraResp), Error&gt;&gt;&gt;&gt;();
+
+        <span class="kw">if </span>handles.is_empty() {
+            <span class="kw">break</span>;
         }
 
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(op_status) = client.get_output_status(<span class="kw-2">&amp;</span>op.txid, op.vout <span class="kw">as _</span>)<span class="question-mark">? </span>{
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(txid) = op_status.txid {
-                <span class="kw">if </span>tx_graph.get_tx(txid).is_none() {
-                    <span class="kw">if let </span><span class="prelude-val">Some</span>(tx) = client.get_tx(<span class="kw-2">&amp;</span>txid)<span class="question-mark">? </span>{
-                        <span class="kw">let _ </span>= tx_graph.insert_tx(tx);
-                    }
-                    <span class="kw">let </span>status = client.get_tx_status(<span class="kw-2">&amp;</span>txid)<span class="question-mark">?</span>;
-                    <span class="kw">if let </span><span class="prelude-val">Some</span>(anchor) = anchor_from_status(<span class="kw-2">&amp;</span>status) {
-                        <span class="kw">let _ </span>= tx_graph.insert_anchor(txid, anchor);
-                    }
+        <span class="kw">for </span>handle <span class="kw">in </span>handles {
+            <span class="kw">let </span>(txid, resp) = handle.join().expect(<span class="string">"thread must not panic"</span>)<span class="question-mark">?</span>;
+            <span class="kw">match </span>resp {
+                EsploraResp::TxStatus(status) =&gt; {
+                    insert_anchor_from_status(<span class="kw-2">&amp;mut </span>tx_graph, txid, status);
+                }
+                EsploraResp::Tx(<span class="prelude-val">Some</span>(tx_info)) =&gt; {
+                    <span class="kw">let _ </span>= tx_graph.insert_tx(tx_info.to_tx());
+                    insert_anchor_from_status(<span class="kw-2">&amp;mut </span>tx_graph, txid, tx_info.status);
+                    insert_prevouts(<span class="kw-2">&amp;mut </span>tx_graph, tx_info.vin);
+                }
+                <span class="kw">_ </span>=&gt; <span class="kw">continue</span>,
+            }
+        }
+    }
+    <span class="prelude-val">Ok</span>(tx_graph)
+}
+
+<span class="doccomment">/// Fetch transactions and [`ConfirmationBlockTime`]s that contain and spend the provided
+/// `outpoints`.
+///
+/// `parallel_requests` specifies the maximum number of HTTP requests to make in parallel.
+///
+/// Refer to [crate-level docs](crate) for more.
+</span><span class="kw">fn </span>fetch_txs_with_outpoints&lt;I: IntoIterator&lt;Item = OutPoint&gt;&gt;(
+    client: <span class="kw-2">&amp;</span>esplora_client::BlockingClient,
+    outpoints: I,
+    parallel_requests: usize,
+) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationBlockTime&gt;, Error&gt; {
+    <span class="kw">let </span>outpoints = outpoints.into_iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+
+    <span class="comment">// make sure txs exists in graph and tx statuses are updated
+    // TODO: We should maintain a tx cache (like we do with Electrum).
+    </span><span class="kw">let </span><span class="kw-2">mut </span>tx_graph = fetch_txs_with_txids(
+        client,
+        outpoints.iter().map(|op| op.txid),
+        parallel_requests,
+    )<span class="question-mark">?</span>;
+
+    <span class="comment">// get outpoint spend-statuses
+    </span><span class="kw">let </span><span class="kw-2">mut </span>outpoints = outpoints.into_iter();
+    <span class="kw">let </span><span class="kw-2">mut </span>missing_txs = Vec::&lt;Txid&gt;::with_capacity(outpoints.len());
+    <span class="kw">loop </span>{
+        <span class="kw">let </span>handles = outpoints
+            .by_ref()
+            .take(parallel_requests)
+            .map(|op| {
+                <span class="kw">let </span>client = client.clone();
+                std::thread::spawn(<span class="kw">move </span>|| {
+                    client
+                        .get_output_status(<span class="kw-2">&amp;</span>op.txid, op.vout <span class="kw">as _</span>)
+                        .map_err(Box::new)
+                })
+            })
+            .collect::&lt;Vec&lt;JoinHandle&lt;<span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;OutputStatus&gt;, Error&gt;&gt;&gt;&gt;();
+
+        <span class="kw">if </span>handles.is_empty() {
+            <span class="kw">break</span>;
+        }
+
+        <span class="kw">for </span>handle <span class="kw">in </span>handles {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(op_status) = handle.join().expect(<span class="string">"thread must not panic"</span>)<span class="question-mark">? </span>{
+                <span class="kw">let </span>spend_txid = <span class="kw">match </span>op_status.txid {
+                    <span class="prelude-val">Some</span>(txid) =&gt; txid,
+                    <span class="prelude-val">None </span>=&gt; <span class="kw">continue</span>,
+                };
+                <span class="kw">if </span>tx_graph.get_tx(spend_txid).is_none() {
+                    missing_txs.push(spend_txid);
+                }
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(spend_status) = op_status.status {
+                    insert_anchor_from_status(<span class="kw-2">&amp;mut </span>tx_graph, spend_txid, spend_status);
                 }
             }
         }
     }
 
+    <span class="kw">let _ </span>= tx_graph.apply_update(fetch_txs_with_txids(
+        client,
+        missing_txs,
+        parallel_requests,
+    )<span class="question-mark">?</span>);
     <span class="prelude-val">Ok</span>(tx_graph)
 }
 

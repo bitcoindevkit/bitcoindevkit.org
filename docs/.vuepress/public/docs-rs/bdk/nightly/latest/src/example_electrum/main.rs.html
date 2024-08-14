@@ -280,65 +280,10 @@
 <a href="#280" id="280">280</a>
 <a href="#281" id="281">281</a>
 <a href="#282" id="282">282</a>
-<a href="#283" id="283">283</a>
-<a href="#284" id="284">284</a>
-<a href="#285" id="285">285</a>
-<a href="#286" id="286">286</a>
-<a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
-<a href="#307" id="307">307</a>
-<a href="#308" id="308">308</a>
-<a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
-<a href="#312" id="312">312</a>
-<a href="#313" id="313">313</a>
-<a href="#314" id="314">314</a>
-<a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
-<a href="#320" id="320">320</a>
-<a href="#321" id="321">321</a>
-<a href="#322" id="322">322</a>
-<a href="#323" id="323">323</a>
-<a href="#324" id="324">324</a>
-<a href="#325" id="325">325</a>
-<a href="#326" id="326">326</a>
-<a href="#327" id="327">327</a>
-<a href="#328" id="328">328</a>
-<a href="#329" id="329">329</a>
-<a href="#330" id="330">330</a>
-<a href="#331" id="331">331</a>
-<a href="#332" id="332">332</a>
-<a href="#333" id="333">333</a>
-<a href="#334" id="334">334</a>
-<a href="#335" id="335">335</a>
-<a href="#336" id="336">336</a>
-<a href="#337" id="337">337</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::io::{<span class="self">self</span>, Write};
 
 <span class="kw">use </span>bdk_chain::{
-    bitcoin::{Address, Network, Txid},
+    bitcoin::Network,
     collections::BTreeSet,
     indexed_tx_graph,
     spk_client::{FullScanRequest, SyncRequest},
@@ -476,8 +421,9 @@
                 <span class="kw">let </span>graph = <span class="kw-2">&amp;*</span>graph.lock().unwrap();
                 <span class="kw">let </span>chain = <span class="kw-2">&amp;*</span>chain.lock().unwrap();
 
-                FullScanRequest::from_chain_tip(chain.tip())
-                    .set_spks_for_keychain(
+                FullScanRequest::builder()
+                    .chain_tip(chain.tip())
+                    .spks_for_keychain(
                         Keychain::External,
                         graph
                             .index
@@ -485,7 +431,7 @@
                             .into_iter()
                             .flatten(),
                     )
-                    .set_spks_for_keychain(
+                    .spks_for_keychain(
                         Keychain::Internal,
                         graph
                             .index
@@ -493,7 +439,7 @@
                             .into_iter()
                             .flatten(),
                     )
-                    .inspect_spks_for_all_keychains({
+                    .inspect({
                         <span class="kw">let </span><span class="kw-2">mut </span>once = BTreeSet::new();
                         <span class="kw">move </span>|k, spk_i, <span class="kw">_</span>| {
                             <span class="kw">if </span>once.insert(k) {
@@ -536,98 +482,42 @@
             }
 
             <span class="kw">let </span>chain_tip = chain.tip();
-            <span class="kw">let </span><span class="kw-2">mut </span>request = SyncRequest::from_chain_tip(chain_tip.clone());
+            <span class="kw">let </span><span class="kw-2">mut </span>request =
+                SyncRequest::builder()
+                    .chain_tip(chain_tip.clone())
+                    .inspect(|item, progress| {
+                        <span class="kw">let </span>pc = (<span class="number">100 </span>* progress.consumed()) <span class="kw">as </span>f32 / progress.total() <span class="kw">as </span>f32;
+                        <span class="macro">eprintln!</span>(<span class="string">"[ SCANNING {:03.0}% ] {}"</span>, pc, item);
+                    });
 
             <span class="kw">if </span>all_spks {
-                <span class="kw">let </span>all_spks = graph
-                    .index
-                    .revealed_spks(..)
-                    .map(|(index, spk)| (index, spk.to_owned()))
-                    .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-                request = request.chain_spks(all_spks.into_iter().map(|((k, spk_i), spk)| {
-                    <span class="macro">eprint!</span>(<span class="string">"Scanning {}: {}"</span>, k, spk_i);
-                    spk
-                }));
+                request = request.spks_with_indexes(graph.index.revealed_spks(..));
             }
             <span class="kw">if </span>unused_spks {
-                <span class="kw">let </span>unused_spks = graph
-                    .index
-                    .unused_spks()
-                    .map(|(index, spk)| (index, spk.to_owned()))
-                    .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-                request =
-                    request.chain_spks(unused_spks.into_iter().map(<span class="kw">move </span>|((k, spk_i), spk)| {
-                        <span class="macro">eprint!</span>(
-                            <span class="string">"Checking if address {} {}:{} has been used"</span>,
-                            Address::from_script(<span class="kw-2">&amp;</span>spk, network).unwrap(),
-                            k,
-                            spk_i,
-                        );
-                        spk
-                    }));
+                request = request.spks_with_indexes(graph.index.unused_spks());
             }
-
             <span class="kw">if </span>utxos {
                 <span class="kw">let </span>init_outpoints = graph.index.outpoints();
-
-                <span class="kw">let </span>utxos = graph
-                    .graph()
-                    .filter_chain_unspents(
-                        <span class="kw-2">&amp;*</span>chain,
-                        chain_tip.block_id(),
-                        init_outpoints.iter().cloned(),
-                    )
-                    .map(|(<span class="kw">_</span>, utxo)| utxo)
-                    .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-                request = request.chain_outpoints(utxos.into_iter().map(|utxo| {
-                    <span class="macro">eprint!</span>(
-                        <span class="string">"Checking if outpoint {} (value: {}) has been spent"</span>,
-                        utxo.outpoint, utxo.txout.value
-                    );
-                    utxo.outpoint
-                }));
+                request = request.outpoints(
+                    graph
+                        .graph()
+                        .filter_chain_unspents(
+                            <span class="kw-2">&amp;*</span>chain,
+                            chain_tip.block_id(),
+                            init_outpoints.iter().cloned(),
+                        )
+                        .map(|(<span class="kw">_</span>, utxo)| utxo.outpoint),
+                );
             };
-
             <span class="kw">if </span>unconfirmed {
-                <span class="kw">let </span>unconfirmed_txids = graph
-                    .graph()
-                    .list_canonical_txs(<span class="kw-2">&amp;*</span>chain, chain_tip.block_id())
-                    .filter(|canonical_tx| !canonical_tx.chain_position.is_confirmed())
-                    .map(|canonical_tx| canonical_tx.tx_node.txid)
-                    .collect::&lt;Vec&lt;Txid&gt;&gt;();
-
-                request = request.chain_txids(
-                    unconfirmed_txids
-                        .into_iter()
-                        .inspect(|txid| <span class="macro">eprint!</span>(<span class="string">"Checking if {} is confirmed yet"</span>, txid)),
+                request = request.txids(
+                    graph
+                        .graph()
+                        .list_canonical_txs(<span class="kw-2">&amp;*</span>chain, chain_tip.block_id())
+                        .filter(|canonical_tx| !canonical_tx.chain_position.is_confirmed())
+                        .map(|canonical_tx| canonical_tx.tx_node.txid),
                 );
             }
-
-            <span class="kw">let </span>total_spks = request.spks.len();
-            <span class="kw">let </span>total_txids = request.txids.len();
-            <span class="kw">let </span>total_ops = request.outpoints.len();
-            request = request
-                .inspect_spks({
-                    <span class="kw">let </span><span class="kw-2">mut </span>visited = <span class="number">0</span>;
-                    <span class="kw">move </span>|<span class="kw">_</span>| {
-                        visited += <span class="number">1</span>;
-                        <span class="macro">eprintln!</span>(<span class="string">" [ {:&gt;6.2}% ]"</span>, (visited * <span class="number">100</span>) <span class="kw">as </span>f32 / total_spks <span class="kw">as </span>f32)
-                    }
-                })
-                .inspect_txids({
-                    <span class="kw">let </span><span class="kw-2">mut </span>visited = <span class="number">0</span>;
-                    <span class="kw">move </span>|<span class="kw">_</span>| {
-                        visited += <span class="number">1</span>;
-                        <span class="macro">eprintln!</span>(<span class="string">" [ {:&gt;6.2}% ]"</span>, (visited * <span class="number">100</span>) <span class="kw">as </span>f32 / total_txids <span class="kw">as </span>f32)
-                    }
-                })
-                .inspect_outpoints({
-                    <span class="kw">let </span><span class="kw-2">mut </span>visited = <span class="number">0</span>;
-                    <span class="kw">move </span>|<span class="kw">_</span>| {
-                        visited += <span class="number">1</span>;
-                        <span class="macro">eprintln!</span>(<span class="string">" [ {:&gt;6.2}% ]"</span>, (visited * <span class="number">100</span>) <span class="kw">as </span>f32 / total_ops <span class="kw">as </span>f32)
-                    }
-                });
 
             <span class="kw">let </span>res = client
                 .sync(request, scan_options.batch_size, <span class="bool-val">false</span>)
@@ -650,7 +540,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>chain = chain.lock().unwrap();
         <span class="kw">let </span><span class="kw-2">mut </span>graph = graph.lock().unwrap();
 
-        <span class="kw">let </span>chain_changeset = chain.apply_update(chain_update)<span class="question-mark">?</span>;
+        <span class="kw">let </span>chain_changeset = chain.apply_update(chain_update.expect(<span class="string">"request has chain tip"</span>))<span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>indexed_tx_graph_changeset =
             indexed_tx_graph::ChangeSet::&lt;ConfirmationBlockTime, <span class="kw">_</span>&gt;::default();

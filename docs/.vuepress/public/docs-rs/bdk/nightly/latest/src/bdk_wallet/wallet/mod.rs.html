@@ -2591,6 +2591,12 @@
 <a href="#2591" id="2591">2591</a>
 <a href="#2592" id="2592">2592</a>
 <a href="#2593" id="2593">2593</a>
+<a href="#2594" id="2594">2594</a>
+<a href="#2595" id="2595">2595</a>
+<a href="#2596" id="2596">2596</a>
+<a href="#2597" id="2597">2597</a>
+<a href="#2598" id="2598">2598</a>
+<a href="#2599" id="2599">2599</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2622,7 +2628,10 @@
     local_chain::{
         <span class="self">self</span>, ApplyHeaderError, CannotConnectError, CheckPoint, CheckPointIter, LocalChain,
     },
-    spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult},
+    spk_client::{
+        FullScanRequest, FullScanRequestBuilder, FullScanResult, SyncRequest, SyncRequestBuilder,
+        SyncResult,
+    },
     tx_graph::{CanonicalTx, TxGraph, TxNode},
     BlockId, ChainPosition, ConfirmationBlockTime, ConfirmationTime, DescriptorExt, FullTxOut,
     Indexed, IndexedTxGraph, Merge,
@@ -2744,7 +2753,7 @@
         <span class="self">Self </span>{
             last_active_indices: value.last_active_indices,
             graph: value.graph_update,
-            chain: <span class="prelude-val">Some</span>(value.chain_update),
+            chain: value.chain_update,
         }
     }
 }
@@ -2754,7 +2763,7 @@
         <span class="self">Self </span>{
             last_active_indices: BTreeMap::new(),
             graph: value.graph_update,
-            chain: <span class="prelude-val">Some</span>(value.chain_update),
+            chain: value.chain_update,
         }
     }
 }
@@ -5030,9 +5039,10 @@
     /// This is the first step when performing a spk-based wallet partial sync, the returned
     /// [`SyncRequest`] collects all revealed script pubkeys from the wallet keychain needed to
     /// start a blockchain sync with a spk based blockchain client.
-    </span><span class="kw">pub fn </span>start_sync_with_revealed_spks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SyncRequest {
-        SyncRequest::from_chain_tip(<span class="self">self</span>.chain.tip())
-            .populate_with_revealed_spks(<span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index, ..)
+    </span><span class="kw">pub fn </span>start_sync_with_revealed_spks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SyncRequestBuilder&lt;(KeychainKind, u32)&gt; {
+        SyncRequest::builder()
+            .chain_tip(<span class="self">self</span>.chain.tip())
+            .revealed_spks_from_indexer(<span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index, ..)
     }
 
     <span class="doccomment">/// Create a [`FullScanRequest] for this wallet.
@@ -5043,8 +5053,10 @@
     ///
     /// This operation is generally only used when importing or restoring a previously used wallet
     /// in which the list of used scripts is not known.
-    </span><span class="kw">pub fn </span>start_full_scan(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FullScanRequest&lt;KeychainKind&gt; {
-        FullScanRequest::from_keychain_txout_index(<span class="self">self</span>.chain.tip(), <span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index)
+    </span><span class="kw">pub fn </span>start_full_scan(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FullScanRequestBuilder&lt;KeychainKind&gt; {
+        FullScanRequest::builder()
+            .chain_tip(<span class="self">self</span>.chain.tip())
+            .spks_from_indexer(<span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index)
     }
 }
 

@@ -507,6 +507,32 @@
 <a href="#507" id="507">507</a>
 <a href="#508" id="508">508</a>
 <a href="#509" id="509">509</a>
+<a href="#510" id="510">510</a>
+<a href="#511" id="511">511</a>
+<a href="#512" id="512">512</a>
+<a href="#513" id="513">513</a>
+<a href="#514" id="514">514</a>
+<a href="#515" id="515">515</a>
+<a href="#516" id="516">516</a>
+<a href="#517" id="517">517</a>
+<a href="#518" id="518">518</a>
+<a href="#519" id="519">519</a>
+<a href="#520" id="520">520</a>
+<a href="#521" id="521">521</a>
+<a href="#522" id="522">522</a>
+<a href="#523" id="523">523</a>
+<a href="#524" id="524">524</a>
+<a href="#525" id="525">525</a>
+<a href="#526" id="526">526</a>
+<a href="#527" id="527">527</a>
+<a href="#528" id="528">528</a>
+<a href="#529" id="529">529</a>
+<a href="#530" id="530">530</a>
+<a href="#531" id="531">531</a>
+<a href="#532" id="532">532</a>
+<a href="#533" id="533">533</a>
+<a href="#534" id="534">534</a>
+<a href="#535" id="535">535</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_chain::{
     bitcoin::{block::Header, BlockHash, OutPoint, ScriptBuf, Transaction, Txid},
     collections::{BTreeMap, HashMap},
@@ -635,17 +661,22 @@
     /// [`Wallet.calculate_fee_rate`]: https://docs.rs/bdk_wallet/latest/bdk_wallet/struct.Wallet.html#method.calculate_fee_rate
     </span><span class="kw">pub fn </span>full_scan&lt;K: Ord + Clone&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        request: FullScanRequest&lt;K&gt;,
+        request: <span class="kw">impl </span>Into&lt;FullScanRequest&lt;K&gt;&gt;,
         stop_gap: usize,
         batch_size: usize,
         fetch_prev_txouts: bool,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanResult&lt;K&gt;, Error&gt; {
-        <span class="kw">let </span>(tip, latest_blocks) =
-            fetch_tip_and_latest_blocks(<span class="kw-2">&amp;</span><span class="self">self</span>.inner, request.chain_tip.clone())<span class="question-mark">?</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = TxGraph::&lt;ConfirmationBlockTime&gt;::default();
-        <span class="kw">let </span><span class="kw-2">mut </span>last_active_indices = BTreeMap::&lt;K, u32&gt;::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>request: FullScanRequest&lt;K&gt; = request.into();
 
-        <span class="kw">for </span>(keychain, spks) <span class="kw">in </span>request.spks_by_keychain {
+        <span class="kw">let </span>tip_and_latest_blocks = <span class="kw">match </span>request.chain_tip() {
+            <span class="prelude-val">Some</span>(chain_tip) =&gt; <span class="prelude-val">Some</span>(fetch_tip_and_latest_blocks(<span class="kw-2">&amp;</span><span class="self">self</span>.inner, chain_tip)<span class="question-mark">?</span>),
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+        };
+
+        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = TxGraph::&lt;ConfirmationBlockTime&gt;::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>last_active_indices = BTreeMap::&lt;K, u32&gt;::default();
+        <span class="kw">for </span>keychain <span class="kw">in </span>request.keychains() {
+            <span class="kw">let </span>spks = request.iter_spks(keychain.clone());
             <span class="kw">if let </span><span class="prelude-val">Some</span>(last_active_index) =
                 <span class="self">self</span>.populate_with_spks(<span class="kw-2">&amp;mut </span>graph_update, spks, stop_gap, batch_size)<span class="question-mark">?
             </span>{
@@ -653,12 +684,19 @@
             }
         }
 
-        <span class="kw">let </span>chain_update = chain_update(tip, <span class="kw-2">&amp;</span>latest_blocks, graph_update.all_anchors())<span class="question-mark">?</span>;
-
         <span class="comment">// Fetch previous `TxOut`s for fee calculation if flag is enabled.
         </span><span class="kw">if </span>fetch_prev_txouts {
             <span class="self">self</span>.fetch_prev_txout(<span class="kw-2">&amp;mut </span>graph_update)<span class="question-mark">?</span>;
         }
+
+        <span class="kw">let </span>chain_update = <span class="kw">match </span>tip_and_latest_blocks {
+            <span class="prelude-val">Some</span>((chain_tip, latest_blocks)) =&gt; <span class="prelude-val">Some</span>(chain_update(
+                chain_tip,
+                <span class="kw-2">&amp;</span>latest_blocks,
+                graph_update.all_anchors(),
+            )<span class="question-mark">?</span>),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+        };
 
         <span class="prelude-val">Ok</span>(FullScanResult {
             graph_update,
@@ -689,35 +727,49 @@
     /// [`CalculateFeeError::MissingTxOut`]: bdk_chain::tx_graph::CalculateFeeError::MissingTxOut
     /// [`Wallet.calculate_fee`]: https://docs.rs/bdk_wallet/latest/bdk_wallet/struct.Wallet.html#method.calculate_fee
     /// [`Wallet.calculate_fee_rate`]: https://docs.rs/bdk_wallet/latest/bdk_wallet/struct.Wallet.html#method.calculate_fee_rate
-    </span><span class="kw">pub fn </span>sync(
+    </span><span class="kw">pub fn </span>sync&lt;I: <span class="lifetime">'static</span>&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        request: SyncRequest,
+        request: <span class="kw">impl </span>Into&lt;SyncRequest&lt;I&gt;&gt;,
         batch_size: usize,
         fetch_prev_txouts: bool,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResult, Error&gt; {
-        <span class="kw">let </span>full_scan_req = FullScanRequest::from_chain_tip(request.chain_tip.clone())
-            .set_spks_for_keychain((), request.spks.enumerate().map(|(i, spk)| (i <span class="kw">as </span>u32, spk)));
-        <span class="kw">let </span><span class="kw-2">mut </span>full_scan_res = <span class="self">self</span>.full_scan(full_scan_req, usize::MAX, batch_size, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
-        <span class="kw">let </span>(tip, latest_blocks) =
-            fetch_tip_and_latest_blocks(<span class="kw-2">&amp;</span><span class="self">self</span>.inner, request.chain_tip.clone())<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>request: SyncRequest&lt;I&gt; = request.into();
 
-        <span class="self">self</span>.populate_with_txids(<span class="kw-2">&amp;mut </span>full_scan_res.graph_update, request.txids)<span class="question-mark">?</span>;
-        <span class="self">self</span>.populate_with_outpoints(<span class="kw-2">&amp;mut </span>full_scan_res.graph_update, request.outpoints)<span class="question-mark">?</span>;
+        <span class="kw">let </span>tip_and_latest_blocks = <span class="kw">match </span>request.chain_tip() {
+            <span class="prelude-val">Some</span>(chain_tip) =&gt; <span class="prelude-val">Some</span>(fetch_tip_and_latest_blocks(<span class="kw-2">&amp;</span><span class="self">self</span>.inner, chain_tip)<span class="question-mark">?</span>),
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+        };
 
-        <span class="kw">let </span>chain_update = chain_update(
-            tip,
-            <span class="kw-2">&amp;</span>latest_blocks,
-            full_scan_res.graph_update.all_anchors(),
+        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = TxGraph::&lt;ConfirmationBlockTime&gt;::default();
+        <span class="self">self</span>.populate_with_spks(
+            <span class="kw-2">&amp;mut </span>graph_update,
+            request
+                .iter_spks()
+                .enumerate()
+                .map(|(i, spk)| (i <span class="kw">as </span>u32, spk)),
+            usize::MAX,
+            batch_size,
         )<span class="question-mark">?</span>;
+        <span class="self">self</span>.populate_with_txids(<span class="kw-2">&amp;mut </span>graph_update, request.iter_txids())<span class="question-mark">?</span>;
+        <span class="self">self</span>.populate_with_outpoints(<span class="kw-2">&amp;mut </span>graph_update, request.iter_outpoints())<span class="question-mark">?</span>;
 
         <span class="comment">// Fetch previous `TxOut`s for fee calculation if flag is enabled.
         </span><span class="kw">if </span>fetch_prev_txouts {
-            <span class="self">self</span>.fetch_prev_txout(<span class="kw-2">&amp;mut </span>full_scan_res.graph_update)<span class="question-mark">?</span>;
+            <span class="self">self</span>.fetch_prev_txout(<span class="kw-2">&amp;mut </span>graph_update)<span class="question-mark">?</span>;
         }
 
+        <span class="kw">let </span>chain_update = <span class="kw">match </span>tip_and_latest_blocks {
+            <span class="prelude-val">Some</span>((chain_tip, latest_blocks)) =&gt; <span class="prelude-val">Some</span>(chain_update(
+                chain_tip,
+                <span class="kw-2">&amp;</span>latest_blocks,
+                graph_update.all_anchors(),
+            )<span class="question-mark">?</span>),
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+        };
+
         <span class="prelude-val">Ok</span>(SyncResult {
+            graph_update,
             chain_update,
-            graph_update: full_scan_res.graph_update,
         })
     }
 

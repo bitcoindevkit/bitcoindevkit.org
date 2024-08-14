@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["FullScanRequest","FullScanResult","SyncRequest","SyncResult"]};
+window.SIDEBAR_ITEMS = {"enum":["SyncItem"],"struct":["FullScanRequest","FullScanRequestBuilder","FullScanResult","SyncProgress","SyncRequest","SyncRequestBuilder","SyncResult"]};

@@ -94,6 +94,7 @@
 <a href="#94" id="94">94</a>
 <a href="#95" id="95">95</a>
 <a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{collections::BTreeSet, io::Write};
 
 <span class="kw">use </span>bdk_esplora::{esplora_client, EsploraExt};
@@ -143,14 +144,15 @@
     <span class="macro">print!</span>(<span class="string">"Syncing..."</span>);
     <span class="kw">let </span>client = esplora_client::Builder::new(ESPLORA_URL).build_blocking();
 
-    <span class="kw">let </span>request = wallet.start_full_scan().inspect_spks_for_all_keychains({
+    <span class="kw">let </span>request = wallet.start_full_scan().inspect({
+        <span class="kw">let </span><span class="kw-2">mut </span>stdout = std::io::stdout();
         <span class="kw">let </span><span class="kw-2">mut </span>once = BTreeSet::&lt;KeychainKind&gt;::new();
         <span class="kw">move </span>|keychain, spk_i, <span class="kw">_</span>| {
             <span class="kw">if </span>once.insert(keychain) {
                 <span class="macro">print!</span>(<span class="string">"\nScanning keychain [{:?}] "</span>, keychain);
             }
             <span class="macro">print!</span>(<span class="string">" {:&lt;3}"</span>, spk_i);
-            std::io::stdout().flush().expect(<span class="string">"must flush"</span>)
+            stdout.flush().expect(<span class="string">"must flush"</span>)
         }
     });
 
