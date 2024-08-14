@@ -948,10 +948,6 @@
 <a href="#948" id="948">948</a>
 <a href="#949" id="949">949</a>
 <a href="#950" id="950">950</a>
-<a href="#951" id="951">951</a>
-<a href="#952" id="952">952</a>
-<a href="#953" id="953">953</a>
-<a href="#954" id="954">954</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_chain::ConfirmationBlockTime;
 <span class="kw">use </span>serde_json::json;
 <span class="kw">use </span>std::cmp;
@@ -964,14 +960,9 @@
 <span class="kw">use </span>anyhow::bail;
 <span class="kw">use </span>anyhow::Context;
 <span class="kw">use </span>bdk_chain::bitcoin::{
-    absolute,
-    address::NetworkUnchecked,
-    bip32, consensus, constants,
-    hex::DisplayHex,
-    relative,
-    secp256k1::{rand::prelude::<span class="kw-2">*</span>, Secp256k1},
-    transaction, Address, Amount, Network, NetworkKind, PrivateKey, Psbt, PublicKey, Sequence,
-    Transaction, TxIn, TxOut,
+    absolute, address::NetworkUnchecked, bip32, consensus, constants, hex::DisplayHex, relative,
+    secp256k1::Secp256k1, transaction, Address, Amount, Network, NetworkKind, PrivateKey, Psbt,
+    PublicKey, Sequence, Transaction, TxIn, TxOut,
 };
 <span class="kw">use </span>bdk_chain::miniscript::{
     descriptor::{DescriptorSecretKey, SinglePubKey},
@@ -991,6 +982,7 @@
 };
 <span class="kw">use </span>bdk_file_store::Store;
 <span class="kw">use </span>clap::{Parser, Subcommand};
+<span class="kw">use </span>rand::prelude::<span class="kw-2">*</span>;
 
 <span class="kw">pub use </span>anyhow;
 <span class="kw">pub use </span>clap;
@@ -1629,7 +1621,7 @@
                 <span class="prelude-val">Ok</span>(())
             }
             PsbtCmd::Sign { psbt, descriptor } =&gt; {
-                <span class="kw">let </span><span class="kw-2">mut </span>psbt = Psbt::from_str(<span class="kw-2">&amp;</span>psbt.unwrap_or_default())<span class="question-mark">?</span>;
+                <span class="kw">let </span><span class="kw-2">mut </span>psbt = Psbt::from_str(psbt.unwrap_or_default().as_str())<span class="question-mark">?</span>;
 
                 <span class="kw">let </span>desc_str = <span class="kw">match </span>descriptor {
                     <span class="prelude-val">Some</span>(s) =&gt; s,
@@ -1671,7 +1663,7 @@
                 chain_specific,
                 psbt,
             } =&gt; {
-                <span class="kw">let </span><span class="kw-2">mut </span>psbt = Psbt::from_str(<span class="kw-2">&amp;</span>psbt)<span class="question-mark">?</span>;
+                <span class="kw">let </span><span class="kw-2">mut </span>psbt = Psbt::from_str(psbt.as_str())<span class="question-mark">?</span>;
                 psbt.finalize_mut(<span class="kw-2">&amp;</span>Secp256k1::new())
                     .map_err(|errors| <span class="macro">anyhow::anyhow!</span>(<span class="string">"failed to finalize PSBT {errors:?}"</span>))<span class="question-mark">?</span>;
 
