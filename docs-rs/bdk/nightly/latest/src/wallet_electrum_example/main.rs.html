@@ -103,8 +103,6 @@
 <a href="#103" id="103">103</a>
 <a href="#104" id="104">104</a>
 <a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-<a href="#107" id="107">107</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_wallet::file_store::Store;
 <span class="kw">use </span>bdk_wallet::Wallet;
 <span class="kw">use </span>std::io::Write;
@@ -159,19 +157,17 @@
     // already have.
     </span>client.populate_tx_cache(wallet.tx_graph());
 
-    <span class="kw">let </span>request = wallet
-        .start_full_scan()
-        .inspect_spks_for_all_keychains({
-            <span class="kw">let </span><span class="kw-2">mut </span>once = HashSet::&lt;KeychainKind&gt;::new();
-            <span class="kw">move </span>|k, spk_i, <span class="kw">_</span>| {
-                <span class="kw">if </span>once.insert(k) {
-                    <span class="macro">print!</span>(<span class="string">"\nScanning keychain [{:?}]"</span>, k)
-                } <span class="kw">else </span>{
-                    <span class="macro">print!</span>(<span class="string">" {:&lt;3}"</span>, spk_i)
-                }
+    <span class="kw">let </span>request = wallet.start_full_scan().inspect({
+        <span class="kw">let </span><span class="kw-2">mut </span>stdout = std::io::stdout();
+        <span class="kw">let </span><span class="kw-2">mut </span>once = HashSet::&lt;KeychainKind&gt;::new();
+        <span class="kw">move </span>|k, spk_i, <span class="kw">_</span>| {
+            <span class="kw">if </span>once.insert(k) {
+                <span class="macro">print!</span>(<span class="string">"\nScanning keychain [{:?}]"</span>, k);
             }
-        })
-        .inspect_spks_for_all_keychains(|<span class="kw">_</span>, <span class="kw">_</span>, <span class="kw">_</span>| std::io::stdout().flush().expect(<span class="string">"must flush"</span>));
+            <span class="macro">print!</span>(<span class="string">" {:&lt;3}"</span>, spk_i);
+            stdout.flush().expect(<span class="string">"must flush"</span>);
+        }
+    });
 
     <span class="kw">let </span><span class="kw-2">mut </span>update = client.full_scan(request, STOP_GAP, BATCH_SIZE, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
 
