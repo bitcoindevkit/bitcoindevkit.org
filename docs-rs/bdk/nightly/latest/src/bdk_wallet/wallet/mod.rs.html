@@ -2644,7 +2644,6 @@
 <span class="kw">use </span>bitcoin::{consensus::encode::serialize, transaction, BlockHash, Psbt};
 <span class="kw">use </span>bitcoin::{constants::genesis_block, Amount};
 <span class="kw">use </span>bitcoin::{secp256k1::Secp256k1, Weight};
-<span class="kw">use </span>chain::Staged;
 <span class="kw">use </span>core::fmt;
 <span class="kw">use </span>core::mem;
 <span class="kw">use </span>core::ops::Deref;
@@ -2720,14 +2719,6 @@
     stage: ChangeSet,
     network: Network,
     secp: SecpCtx,
-}
-
-<span class="kw">impl </span>Staged <span class="kw">for </span>Wallet {
-    <span class="kw">type </span>ChangeSet = ChangeSet;
-
-    <span class="kw">fn </span>staged(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self</span>::ChangeSet {
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>.stage
-    }
 }
 
 <span class="doccomment">/// An update to [`Wallet`].
@@ -4902,12 +4893,21 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Get a reference of the staged [`ChangeSet`] that are yet to be committed (if any).
+    <span class="doccomment">/// Get a reference of the staged [`ChangeSet`] that is yet to be committed (if any).
     </span><span class="kw">pub fn </span>staged(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>ChangeSet&gt; {
         <span class="kw">if </span><span class="self">self</span>.stage.is_empty() {
             <span class="prelude-val">None
         </span>} <span class="kw">else </span>{
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.stage)
+        }
+    }
+
+    <span class="doccomment">/// Get a mutable reference of the staged [`ChangeSet`] that is yet to be commited (if any).
+    </span><span class="kw">pub fn </span>staged_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>ChangeSet&gt; {
+        <span class="kw">if </span><span class="self">self</span>.stage.is_empty() {
+            <span class="prelude-val">None
+        </span>} <span class="kw">else </span>{
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;mut </span><span class="self">self</span>.stage)
         }
     }
 

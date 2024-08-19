@@ -252,15 +252,17 @@
 <a href="#252" id="252">252</a>
 <a href="#253" id="253">253</a>
 <a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>alloc::boxed::Box;
-<span class="kw">use </span>bdk_chain::{keychain_txout::DEFAULT_LOOKAHEAD, PersistAsyncWith, PersistWith};
+<span class="kw">use </span>bdk_chain::keychain_txout::DEFAULT_LOOKAHEAD;
 <span class="kw">use </span>bitcoin::{BlockHash, Network};
 <span class="kw">use </span>miniscript::descriptor::KeyMap;
 
 <span class="kw">use crate</span>::{
     descriptor::{DescriptorError, ExtendedDescriptor, IntoWalletDescriptor},
     utils::SecpCtx,
-    KeychainKind, Wallet,
+    AsyncWalletPersister, CreateWithPersistError, KeychainKind, LoadWithPersistError, Wallet,
+    WalletPersister,
 };
 
 <span class="kw">use super</span>::{ChangeSet, LoadError, PersistedWallet};
@@ -362,26 +364,26 @@
         <span class="self">self
     </span>}
 
-    <span class="doccomment">/// Create [`PersistedWallet`] with the given `Db`.
-    </span><span class="kw">pub fn </span>create_wallet&lt;Db&gt;(
+    <span class="doccomment">/// Create [`PersistedWallet`] with the given [`WalletPersister`].
+    </span><span class="kw">pub fn </span>create_wallet&lt;P&gt;(
         <span class="self">self</span>,
-        db: <span class="kw-2">&amp;mut </span>Db,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;PersistedWallet, &lt;Wallet <span class="kw">as </span>PersistWith&lt;Db&gt;&gt;::CreateError&gt;
+        persister: <span class="kw-2">&amp;mut </span>P,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;PersistedWallet&lt;P&gt;, CreateWithPersistError&lt;P::Error&gt;&gt;
     <span class="kw">where
-        </span>Wallet: PersistWith&lt;Db, CreateParams = <span class="self">Self</span>&gt;,
+        </span>P: WalletPersister,
     {
-        PersistedWallet::create(db, <span class="self">self</span>)
+        PersistedWallet::create(persister, <span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Create [`PersistedWallet`] with the given async `Db`.
-    </span><span class="kw">pub async fn </span>create_wallet_async&lt;Db&gt;(
+    <span class="doccomment">/// Create [`PersistedWallet`] with the given [`AsyncWalletPersister`].
+    </span><span class="kw">pub async fn </span>create_wallet_async&lt;P&gt;(
         <span class="self">self</span>,
-        db: <span class="kw-2">&amp;mut </span>Db,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;PersistedWallet, &lt;Wallet <span class="kw">as </span>PersistAsyncWith&lt;Db&gt;&gt;::CreateError&gt;
+        persister: <span class="kw-2">&amp;mut </span>P,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;PersistedWallet&lt;P&gt;, CreateWithPersistError&lt;P::Error&gt;&gt;
     <span class="kw">where
-        </span>Wallet: PersistAsyncWith&lt;Db, CreateParams = <span class="self">Self</span>&gt;,
+        </span>P: AsyncWalletPersister,
     {
-        PersistedWallet::create_async(db, <span class="self">self</span>).<span class="kw">await
+        PersistedWallet::create_async(persister, <span class="self">self</span>).<span class="kw">await
     </span>}
 
     <span class="doccomment">/// Create [`Wallet`] without persistence.
@@ -473,26 +475,26 @@
         <span class="self">self
     </span>}
 
-    <span class="doccomment">/// Load [`PersistedWallet`] with the given `Db`.
-    </span><span class="kw">pub fn </span>load_wallet&lt;Db&gt;(
+    <span class="doccomment">/// Load [`PersistedWallet`] with the given [`WalletPersister`].
+    </span><span class="kw">pub fn </span>load_wallet&lt;P&gt;(
         <span class="self">self</span>,
-        db: <span class="kw-2">&amp;mut </span>Db,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;PersistedWallet&gt;, &lt;Wallet <span class="kw">as </span>PersistWith&lt;Db&gt;&gt;::LoadError&gt;
+        persister: <span class="kw-2">&amp;mut </span>P,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;PersistedWallet&lt;P&gt;&gt;, LoadWithPersistError&lt;P::Error&gt;&gt;
     <span class="kw">where
-        </span>Wallet: PersistWith&lt;Db, LoadParams = <span class="self">Self</span>&gt;,
+        </span>P: WalletPersister,
     {
-        PersistedWallet::load(db, <span class="self">self</span>)
+        PersistedWallet::load(persister, <span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Load [`PersistedWallet`] with the given async `Db`.
-    </span><span class="kw">pub async fn </span>load_wallet_async&lt;Db&gt;(
+    <span class="doccomment">/// Load [`PersistedWallet`] with the given [`AsyncWalletPersister`].
+    </span><span class="kw">pub async fn </span>load_wallet_async&lt;P&gt;(
         <span class="self">self</span>,
-        db: <span class="kw-2">&amp;mut </span>Db,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;PersistedWallet&gt;, &lt;Wallet <span class="kw">as </span>PersistAsyncWith&lt;Db&gt;&gt;::LoadError&gt;
+        persister: <span class="kw-2">&amp;mut </span>P,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;PersistedWallet&lt;P&gt;&gt;, LoadWithPersistError&lt;P::Error&gt;&gt;
     <span class="kw">where
-        </span>Wallet: PersistAsyncWith&lt;Db, LoadParams = <span class="self">Self</span>&gt;,
+        </span>P: AsyncWalletPersister,
     {
-        PersistedWallet::load_async(db, <span class="self">self</span>).<span class="kw">await
+        PersistedWallet::load_async(persister, <span class="self">self</span>).<span class="kw">await
     </span>}
 
     <span class="doccomment">/// Load [`Wallet`] without persistence.
