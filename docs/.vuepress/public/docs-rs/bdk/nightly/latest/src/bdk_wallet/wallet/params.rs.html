@@ -253,6 +253,10 @@
 <a href="#253" id="253">253</a>
 <a href="#254" id="254">254</a>
 <a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>alloc::boxed::Box;
 <span class="kw">use </span>bdk_chain::keychain_txout::DEFAULT_LOOKAHEAD;
 <span class="kw">use </span>bitcoin::{BlockHash, Network};
@@ -273,12 +277,13 @@
 /// [object safety rules](https://doc.rust-lang.org/reference/items/traits.html#object-safety).
 </span><span class="kw">type </span>DescriptorToExtract = Box&lt;
     <span class="kw">dyn </span>FnOnce(<span class="kw-2">&amp;</span>SecpCtx, Network) -&gt; <span class="prelude-ty">Result</span>&lt;(ExtendedDescriptor, KeyMap), DescriptorError&gt;
+        + Send
         + <span class="lifetime">'static</span>,
 &gt;;
 
 <span class="kw">fn </span>make_descriptor_to_extract&lt;D&gt;(descriptor: D) -&gt; DescriptorToExtract
 <span class="kw">where
-    </span>D: IntoWalletDescriptor + <span class="lifetime">'static</span>,
+    </span>D: IntoWalletDescriptor + Send + <span class="lifetime">'static</span>,
 {
     Box::new(|secp, network| descriptor.into_wallet_descriptor(secp, network))
 }
@@ -306,7 +311,7 @@
     ///
     /// Use this method only when building a wallet with a single descriptor. See
     /// also [`Wallet::create_single`].
-    </span><span class="kw">pub fn </span>new_single&lt;D: IntoWalletDescriptor + <span class="lifetime">'static</span>&gt;(descriptor: D) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new_single&lt;D: IntoWalletDescriptor + Send + <span class="lifetime">'static</span>&gt;(descriptor: D) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             descriptor: make_descriptor_to_extract(descriptor),
             descriptor_keymap: KeyMap::default(),
@@ -324,7 +329,10 @@
     /// * `network` = [`Network::Bitcoin`]
     /// * `genesis_hash` = `None`
     /// * `lookahead` = [`DEFAULT_LOOKAHEAD`]
-    </span><span class="kw">pub fn </span>new&lt;D: IntoWalletDescriptor + <span class="lifetime">'static</span>&gt;(descriptor: D, change_descriptor: D) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new&lt;D: IntoWalletDescriptor + Send + <span class="lifetime">'static</span>&gt;(
+        descriptor: D,
+        change_descriptor: D,
+    ) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             descriptor: make_descriptor_to_extract(descriptor),
             descriptor_keymap: KeyMap::default(),
@@ -440,7 +448,7 @@
     /// for an expected descriptor containing secrets.
     </span><span class="kw">pub fn </span>descriptor&lt;D&gt;(<span class="kw-2">mut </span><span class="self">self</span>, keychain: KeychainKind, expected_descriptor: <span class="prelude-ty">Option</span>&lt;D&gt;) -&gt; <span class="self">Self
     </span><span class="kw">where
-        </span>D: IntoWalletDescriptor + <span class="lifetime">'static</span>,
+        </span>D: IntoWalletDescriptor + Send + <span class="lifetime">'static</span>,
     {
         <span class="kw">let </span>expected = expected_descriptor.map(|d| make_descriptor_to_extract(d));
         <span class="kw">match </span>keychain {
