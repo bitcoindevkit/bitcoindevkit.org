@@ -285,14 +285,6 @@
 <a href="#285" id="285">285</a>
 <a href="#286" id="286">286</a>
 <a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>core::f32;
 <span class="kw">use </span>std::{
     collections::BTreeSet,
@@ -461,13 +453,9 @@
             // is reached. It returns a `TxGraph` update (`graph_update`) and a structure that
             // represents the last active spk derivation indices of keychains
             // (`keychain_indices_update`).
-            </span><span class="kw">let </span><span class="kw-2">mut </span>update = client
+            </span><span class="kw">let </span>update = client
                 .full_scan(request, <span class="kw-2">*</span>stop_gap, scan_options.parallel_requests)
                 .context(<span class="string">"scanning for transactions"</span>)<span class="question-mark">?</span>;
-
-            <span class="comment">// We want to keep track of the latest time a transaction was seen unconfirmed.
-            </span><span class="kw">let </span>now = std::time::UNIX_EPOCH.elapsed().unwrap().as_secs();
-            <span class="kw">let _ </span>= update.graph_update.update_last_seen_unconfirmed(now);
 
             <span class="kw">let </span><span class="kw-2">mut </span>graph = graph.lock().expect(<span class="string">"mutex must not be poisoned"</span>);
             <span class="kw">let </span><span class="kw-2">mut </span>chain = chain.lock().expect(<span class="string">"mutex must not be poisoned"</span>);
@@ -560,11 +548,7 @@
                 }
             }
 
-            <span class="kw">let </span><span class="kw-2">mut </span>update = client.sync(request, scan_options.parallel_requests)<span class="question-mark">?</span>;
-
-            <span class="comment">// Update last seen unconfirmed
-            </span><span class="kw">let </span>now = std::time::UNIX_EPOCH.elapsed().unwrap().as_secs();
-            <span class="kw">let _ </span>= update.graph_update.update_last_seen_unconfirmed(now);
+            <span class="kw">let </span>update = client.sync(request, scan_options.parallel_requests)<span class="question-mark">?</span>;
 
             (
                 chain

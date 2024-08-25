@@ -2597,6 +2597,41 @@
 <a href="#2597" id="2597">2597</a>
 <a href="#2598" id="2598">2598</a>
 <a href="#2599" id="2599">2599</a>
+<a href="#2600" id="2600">2600</a>
+<a href="#2601" id="2601">2601</a>
+<a href="#2602" id="2602">2602</a>
+<a href="#2603" id="2603">2603</a>
+<a href="#2604" id="2604">2604</a>
+<a href="#2605" id="2605">2605</a>
+<a href="#2606" id="2606">2606</a>
+<a href="#2607" id="2607">2607</a>
+<a href="#2608" id="2608">2608</a>
+<a href="#2609" id="2609">2609</a>
+<a href="#2610" id="2610">2610</a>
+<a href="#2611" id="2611">2611</a>
+<a href="#2612" id="2612">2612</a>
+<a href="#2613" id="2613">2613</a>
+<a href="#2614" id="2614">2614</a>
+<a href="#2615" id="2615">2615</a>
+<a href="#2616" id="2616">2616</a>
+<a href="#2617" id="2617">2617</a>
+<a href="#2618" id="2618">2618</a>
+<a href="#2619" id="2619">2619</a>
+<a href="#2620" id="2620">2620</a>
+<a href="#2621" id="2621">2621</a>
+<a href="#2622" id="2622">2622</a>
+<a href="#2623" id="2623">2623</a>
+<a href="#2624" id="2624">2624</a>
+<a href="#2625" id="2625">2625</a>
+<a href="#2626" id="2626">2626</a>
+<a href="#2627" id="2627">2627</a>
+<a href="#2628" id="2628">2628</a>
+<a href="#2629" id="2629">2629</a>
+<a href="#2630" id="2630">2630</a>
+<a href="#2631" id="2631">2631</a>
+<a href="#2632" id="2632">2632</a>
+<a href="#2633" id="2633">2633</a>
+<a href="#2634" id="2634">2634</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2731,7 +2766,7 @@
     </span><span class="kw">pub </span>last_active_indices: BTreeMap&lt;KeychainKind, u32&gt;,
 
     <span class="doccomment">/// Update for the wallet's internal [`TxGraph`].
-    </span><span class="kw">pub </span>graph: TxGraph&lt;ConfirmationBlockTime&gt;,
+    </span><span class="kw">pub </span>graph: chain::tx_graph::Update&lt;ConfirmationBlockTime&gt;,
 
     <span class="doccomment">/// Update for the wallet's internal [`LocalChain`].
     ///
@@ -4876,7 +4911,34 @@
     /// to persist staged wallet changes see [`Wallet::reveal_next_address`]. `
     ///
     /// [`commit`]: Self::commit
+    </span><span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">"std"</span>)))]
     </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: <span class="kw">impl </span>Into&lt;Update&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), CannotConnectError&gt; {
+        <span class="kw">use </span>std::time::<span class="kw-2">*</span>;
+        <span class="kw">let </span>now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect(<span class="string">"time now must surpass epoch anchor"</span>);
+        <span class="self">self</span>.apply_update_at(update, <span class="prelude-val">Some</span>(now.as_secs()))
+    }
+
+    <span class="doccomment">/// Applies an `update` alongside an optional `seen_at` timestamp and stages the changes.
+    ///
+    /// `seen_at` represents when the update is seen (in unix seconds). It is used to determine the
+    /// `last_seen`s for all transactions in the update which have no corresponding anchor(s). The
+    /// `last_seen` value is used internally to determine precedence of conflicting unconfirmed
+    /// transactions (where the transaction with the lower `last_seen` value is omitted from the
+    /// canonical history).
+    ///
+    /// Not setting a `seen_at` value means unconfirmed transactions introduced by this update will
+    /// not be part of the canonical history of transactions.
+    ///
+    /// Use [`apply_update`](Wallet::apply_update) to have the `seen_at` value automatically set to
+    /// the current time.
+    </span><span class="kw">pub fn </span>apply_update_at(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        update: <span class="kw">impl </span>Into&lt;Update&gt;,
+        seen_at: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), CannotConnectError&gt; {
         <span class="kw">let </span>update = update.into();
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = <span class="kw">match </span>update.chain {
             <span class="prelude-val">Some</span>(chain_update) =&gt; ChangeSet::from(<span class="self">self</span>.chain.apply_update(chain_update)<span class="question-mark">?</span>),
@@ -4888,7 +4950,11 @@
             .index
             .reveal_to_target_multi(<span class="kw-2">&amp;</span>update.last_active_indices);
         changeset.merge(index_changeset.into());
-        changeset.merge(<span class="self">self</span>.indexed_graph.apply_update(update.graph).into());
+        changeset.merge(
+            <span class="self">self</span>.indexed_graph
+                .apply_update_at(update.graph, seen_at)
+                .into(),
+        );
         <span class="self">self</span>.stage.merge(changeset);
         <span class="prelude-val">Ok</span>(())
     }
@@ -5161,7 +5227,7 @@
 </span><span class="macro">macro_rules!</span> doctest_wallet {
     () =&gt; {{
         <span class="kw">use </span><span class="macro-nonterminal">$crate::bitcoin</span>::{BlockHash, Transaction, absolute, TxOut, Network, hashes::Hash};
-        <span class="kw">use </span><span class="macro-nonterminal">$crate::chain</span>::{ConfirmationBlockTime, BlockId, TxGraph};
+        <span class="kw">use </span><span class="macro-nonterminal">$crate::chain</span>::{ConfirmationBlockTime, BlockId, TxGraph, tx_graph};
         <span class="kw">use </span><span class="macro-nonterminal">$</span><span class="kw">crate</span>::{<span class="macro-nonterminal">Update</span>, KeychainKind, Wallet};
         <span class="kw">let </span>descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/0/*)"</span>;
         <span class="kw">let </span>change_descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/1/*)"</span>;
@@ -5189,9 +5255,13 @@
             confirmation_time: <span class="number">50_000</span>,
             block_id,
         };
-        <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::default();
-        <span class="kw">let _ </span>= graph.insert_anchor(txid, anchor);
-        <span class="kw">let </span>update = Update { graph, ..Default::default() };
+        <span class="kw">let </span>update = Update {
+            graph: tx_graph::Update {
+                anchors: [(anchor, txid)].into_iter().collect(),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
         wallet.apply_update(update).unwrap();
         wallet
     }}

@@ -364,6 +364,7 @@
 <a href="#364" id="364">364</a>
 <a href="#365" id="365">365</a>
 <a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -585,13 +586,13 @@
     <span class="kw">use </span>bdk_chain::{BlockId, ConfirmationBlockTime};
     <span class="kw">use </span>bitcoin::hashes::Hash;
     <span class="kw">use </span>bitcoin::{transaction, BlockHash, Network, Transaction};
+    <span class="kw">use </span>chain::tx_graph;
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::Wallet;
 
     <span class="kw">fn </span>get_test_wallet(descriptor: <span class="kw-2">&amp;</span>str, change_descriptor: <span class="kw-2">&amp;</span>str, network: Network) -&gt; Wallet {
         <span class="kw">use </span><span class="kw">crate</span>::wallet::Update;
-        <span class="kw">use </span>bdk_chain::TxGraph;
         <span class="kw">let </span><span class="kw-2">mut </span>wallet = Wallet::create(descriptor.to_string(), change_descriptor.to_string())
             .network(network)
             .create_wallet_no_persist()
@@ -619,11 +620,12 @@
             confirmation_time: <span class="number">0</span>,
             block_id,
         };
-        <span class="kw">let </span><span class="kw-2">mut </span>graph = TxGraph::default();
-        <span class="kw">let _ </span>= graph.insert_anchor(txid, anchor);
         wallet
             .apply_update(Update {
-                graph,
+                graph: tx_graph::Update {
+                    anchors: [(anchor, txid)].into_iter().collect(),
+                    ..Default::default()
+                },
                 ..Default::default()
             })
             .unwrap();

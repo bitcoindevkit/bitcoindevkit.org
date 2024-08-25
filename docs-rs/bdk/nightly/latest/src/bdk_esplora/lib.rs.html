@@ -108,7 +108,7 @@
 //! [`example_esplora`]: https://github.com/bitcoindevkit/bdk/tree/master/example-crates/example_esplora
 
 </span><span class="kw">use </span>bdk_chain::bitcoin::{Amount, OutPoint, TxOut, Txid};
-<span class="kw">use </span>bdk_chain::{BlockId, ConfirmationBlockTime, TxGraph};
+<span class="kw">use </span>bdk_chain::{tx_graph, BlockId, ConfirmationBlockTime};
 <span class="kw">use </span>esplora_client::TxStatus;
 
 <span class="kw">pub use </span>esplora_client;
@@ -124,7 +124,7 @@
 </span><span class="kw">pub use </span>async_ext::<span class="kw-2">*</span>;
 
 <span class="kw">fn </span>insert_anchor_from_status(
-    tx_graph: <span class="kw-2">&amp;mut </span>TxGraph&lt;ConfirmationBlockTime&gt;,
+    update: <span class="kw-2">&amp;mut </span>tx_graph::Update&lt;ConfirmationBlockTime&gt;,
     txid: Txid,
     status: TxStatus,
 ) {
@@ -139,21 +139,21 @@
             block_id: BlockId { height, hash },
             confirmation_time: time,
         };
-        <span class="kw">let _ </span>= tx_graph.insert_anchor(txid, anchor);
+        update.anchors.insert((anchor, txid));
     }
 }
 
 <span class="doccomment">/// Inserts floating txouts into `tx_graph` using [`Vin`](esplora_client::api::Vin)s returned by
 /// Esplora.
 </span><span class="kw">fn </span>insert_prevouts(
-    tx_graph: <span class="kw-2">&amp;mut </span>TxGraph&lt;ConfirmationBlockTime&gt;,
+    update: <span class="kw-2">&amp;mut </span>tx_graph::Update&lt;ConfirmationBlockTime&gt;,
     esplora_inputs: <span class="kw">impl </span>IntoIterator&lt;Item = esplora_client::api::Vin&gt;,
 ) {
     <span class="kw">let </span>prevouts = esplora_inputs
         .into_iter()
         .filter_map(|vin| <span class="prelude-val">Some</span>((vin.txid, vin.vout, vin.prevout<span class="question-mark">?</span>)));
     <span class="kw">for </span>(prev_txid, prev_vout, prev_txout) <span class="kw">in </span>prevouts {
-        <span class="kw">let _ </span>= tx_graph.insert_txout(
+        update.txouts.insert(
             OutPoint::new(prev_txid, prev_vout),
             TxOut {
                 script_pubkey: prev_txout.scriptpubkey,

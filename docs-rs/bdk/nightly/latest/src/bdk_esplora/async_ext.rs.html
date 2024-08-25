@@ -652,7 +652,26 @@
 <a href="#652" id="652">652</a>
 <a href="#653" id="653">653</a>
 <a href="#654" id="654">654</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeSet;
+<a href="#655" id="655">655</a>
+<a href="#656" id="656">656</a>
+<a href="#657" id="657">657</a>
+<a href="#658" id="658">658</a>
+<a href="#659" id="659">659</a>
+<a href="#660" id="660">660</a>
+<a href="#661" id="661">661</a>
+<a href="#662" id="662">662</a>
+<a href="#663" id="663">663</a>
+<a href="#664" id="664">664</a>
+<a href="#665" id="665">665</a>
+<a href="#666" id="666">666</a>
+<a href="#667" id="667">667</a>
+<a href="#668" id="668">668</a>
+<a href="#669" id="669">669</a>
+<a href="#670" id="670">670</a>
+<a href="#671" id="671">671</a>
+<a href="#672" id="672">672</a>
+<a href="#673" id="673">673</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::{BTreeSet, HashSet};
 
 <span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>bdk_chain::spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult};
@@ -660,10 +679,9 @@
     bitcoin::{BlockHash, OutPoint, ScriptBuf, Txid},
     collections::BTreeMap,
     local_chain::CheckPoint,
-    BlockId, ConfirmationBlockTime, TxGraph,
+    BlockId, ConfirmationBlockTime,
 };
-<span class="kw">use </span>bdk_chain::{Anchor, Indexed};
-<span class="kw">use </span>esplora_client::{Tx, TxStatus};
+<span class="kw">use </span>bdk_chain::{tx_graph, Anchor, Indexed};
 <span class="kw">use </span>futures::{stream::FuturesOrdered, TryStreamExt};
 
 <span class="kw">use crate</span>::{insert_anchor_from_status, insert_prevouts};
@@ -726,23 +744,29 @@
             <span class="prelude-val">None
         </span>};
 
-        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = TxGraph::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = tx_graph::Update::&lt;ConfirmationBlockTime&gt;::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>inserted_txs = HashSet::&lt;Txid&gt;::new();
         <span class="kw">let </span><span class="kw-2">mut </span>last_active_indices = BTreeMap::&lt;K, u32&gt;::new();
         <span class="kw">for </span>keychain <span class="kw">in </span>keychains {
             <span class="kw">let </span>keychain_spks = request.iter_spks(keychain.clone());
-            <span class="kw">let </span>(tx_graph, last_active_index) =
-                fetch_txs_with_keychain_spks(<span class="self">self</span>, keychain_spks, stop_gap, parallel_requests)
-                    .<span class="kw">await</span><span class="question-mark">?</span>;
-            <span class="kw">let _ </span>= graph_update.apply_update(tx_graph);
+            <span class="kw">let </span>(update, last_active_index) = fetch_txs_with_keychain_spks(
+                <span class="self">self</span>,
+                <span class="kw-2">&amp;mut </span>inserted_txs,
+                keychain_spks,
+                stop_gap,
+                parallel_requests,
+            )
+            .<span class="kw">await</span><span class="question-mark">?</span>;
+            graph_update.extend(update);
             <span class="kw">if let </span><span class="prelude-val">Some</span>(last_active_index) = last_active_index {
                 last_active_indices.insert(keychain, last_active_index);
             }
         }
 
         <span class="kw">let </span>chain_update = <span class="kw">match </span>(chain_tip, latest_blocks) {
-            (<span class="prelude-val">Some</span>(chain_tip), <span class="prelude-val">Some</span>(latest_blocks)) =&gt; <span class="prelude-val">Some</span>(
-                chain_update(<span class="self">self</span>, <span class="kw-2">&amp;</span>latest_blocks, <span class="kw-2">&amp;</span>chain_tip, graph_update.all_anchors()).<span class="kw">await</span><span class="question-mark">?</span>,
-            ),
+            (<span class="prelude-val">Some</span>(chain_tip), <span class="prelude-val">Some</span>(latest_blocks)) =&gt; {
+                <span class="prelude-val">Some</span>(chain_update(<span class="self">self</span>, <span class="kw-2">&amp;</span>latest_blocks, <span class="kw-2">&amp;</span>chain_tip, <span class="kw-2">&amp;</span>graph_update.anchors).<span class="kw">await</span><span class="question-mark">?</span>)
+            }
             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         };
 
@@ -767,20 +791,40 @@
             <span class="prelude-val">None
         </span>};
 
-        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = TxGraph::&lt;ConfirmationBlockTime&gt;::default();
-        <span class="kw">let _ </span>= graph_update
-            .apply_update(fetch_txs_with_spks(<span class="self">self</span>, request.iter_spks(), parallel_requests).<span class="kw">await</span><span class="question-mark">?</span>);
-        <span class="kw">let _ </span>= graph_update.apply_update(
-            fetch_txs_with_txids(<span class="self">self</span>, request.iter_txids(), parallel_requests).<span class="kw">await</span><span class="question-mark">?</span>,
+        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = tx_graph::Update::&lt;ConfirmationBlockTime&gt;::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>inserted_txs = HashSet::&lt;Txid&gt;::new();
+        graph_update.extend(
+            fetch_txs_with_spks(
+                <span class="self">self</span>,
+                <span class="kw-2">&amp;mut </span>inserted_txs,
+                request.iter_spks(),
+                parallel_requests,
+            )
+            .<span class="kw">await</span><span class="question-mark">?</span>,
         );
-        <span class="kw">let _ </span>= graph_update.apply_update(
-            fetch_txs_with_outpoints(<span class="self">self</span>, request.iter_outpoints(), parallel_requests).<span class="kw">await</span><span class="question-mark">?</span>,
+        graph_update.extend(
+            fetch_txs_with_txids(
+                <span class="self">self</span>,
+                <span class="kw-2">&amp;mut </span>inserted_txs,
+                request.iter_txids(),
+                parallel_requests,
+            )
+            .<span class="kw">await</span><span class="question-mark">?</span>,
+        );
+        graph_update.extend(
+            fetch_txs_with_outpoints(
+                <span class="self">self</span>,
+                <span class="kw-2">&amp;mut </span>inserted_txs,
+                request.iter_outpoints(),
+                parallel_requests,
+            )
+            .<span class="kw">await</span><span class="question-mark">?</span>,
         );
 
         <span class="kw">let </span>chain_update = <span class="kw">match </span>(chain_tip, latest_blocks) {
-            (<span class="prelude-val">Some</span>(chain_tip), <span class="prelude-val">Some</span>(latest_blocks)) =&gt; <span class="prelude-val">Some</span>(
-                chain_update(<span class="self">self</span>, <span class="kw-2">&amp;</span>latest_blocks, <span class="kw-2">&amp;</span>chain_tip, graph_update.all_anchors()).<span class="kw">await</span><span class="question-mark">?</span>,
-            ),
+            (<span class="prelude-val">Some</span>(chain_tip), <span class="prelude-val">Some</span>(latest_blocks)) =&gt; {
+                <span class="prelude-val">Some</span>(chain_update(<span class="self">self</span>, <span class="kw-2">&amp;</span>latest_blocks, <span class="kw-2">&amp;</span>chain_tip, <span class="kw-2">&amp;</span>graph_update.anchors).<span class="kw">await</span><span class="question-mark">?</span>)
+            }
             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         };
 
@@ -906,13 +950,14 @@
 /// Refer to [crate-level docs](crate) for more.
 </span><span class="kw">async fn </span>fetch_txs_with_keychain_spks&lt;I: Iterator&lt;Item = Indexed&lt;ScriptBuf&gt;&gt; + Send&gt;(
     client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient,
+    inserted_txs: <span class="kw-2">&amp;mut </span>HashSet&lt;Txid&gt;,
     <span class="kw-2">mut </span>keychain_spks: I,
     stop_gap: usize,
     parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(TxGraph&lt;ConfirmationBlockTime&gt;, <span class="prelude-ty">Option</span>&lt;u32&gt;), Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;(tx_graph::Update&lt;ConfirmationBlockTime&gt;, <span class="prelude-ty">Option</span>&lt;u32&gt;), Error&gt; {
     <span class="kw">type </span>TxsOfSpkIndex = (u32, Vec&lt;esplora_client::Tx&gt;);
 
-    <span class="kw">let </span><span class="kw-2">mut </span>tx_graph = TxGraph::default();
+    <span class="kw">let </span><span class="kw-2">mut </span>update = tx_graph::Update::&lt;ConfirmationBlockTime&gt;::default();
     <span class="kw">let </span><span class="kw-2">mut </span>last_index = <span class="prelude-ty">Option</span>::&lt;u32&gt;::None;
     <span class="kw">let </span><span class="kw-2">mut </span>last_active_index = <span class="prelude-ty">Option</span>::&lt;u32&gt;::None;
 
@@ -948,9 +993,11 @@
                 last_active_index = <span class="prelude-val">Some</span>(index);
             }
             <span class="kw">for </span>tx <span class="kw">in </span>txs {
-                <span class="kw">let _ </span>= tx_graph.insert_tx(tx.to_tx());
-                insert_anchor_from_status(<span class="kw-2">&amp;mut </span>tx_graph, tx.txid, tx.status);
-                insert_prevouts(<span class="kw-2">&amp;mut </span>tx_graph, tx.vin);
+                <span class="kw">if </span>inserted_txs.insert(tx.txid) {
+                    update.txs.push(tx.to_tx().into());
+                }
+                insert_anchor_from_status(<span class="kw-2">&amp;mut </span>update, tx.txid, tx.status);
+                insert_prevouts(<span class="kw-2">&amp;mut </span>update, tx.vin);
             }
         }
 
@@ -965,7 +1012,7 @@
         }
     }
 
-    <span class="prelude-val">Ok</span>((tx_graph, last_active_index))
+    <span class="prelude-val">Ok</span>((update, last_active_index))
 }
 
 <span class="doccomment">/// Fetch transactions and associated [`ConfirmationBlockTime`]s by scanning `spks`
@@ -978,20 +1025,22 @@
 /// Refer to [crate-level docs](crate) for more.
 </span><span class="kw">async fn </span>fetch_txs_with_spks&lt;I: IntoIterator&lt;Item = ScriptBuf&gt; + Send&gt;(
     client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient,
+    inserted_txs: <span class="kw-2">&amp;mut </span>HashSet&lt;Txid&gt;,
     spks: I,
     parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationBlockTime&gt;, Error&gt;
+) -&gt; <span class="prelude-ty">Result</span>&lt;tx_graph::Update&lt;ConfirmationBlockTime&gt;, Error&gt;
 <span class="kw">where
     </span>I::IntoIter: Send,
 {
     fetch_txs_with_keychain_spks(
         client,
+        inserted_txs,
         spks.into_iter().enumerate().map(|(i, spk)| (i <span class="kw">as </span>u32, spk)),
         usize::MAX,
         parallel_requests,
     )
     .<span class="kw">await
-    </span>.map(|(tx_graph, <span class="kw">_</span>)| tx_graph)
+    </span>.map(|(update, <span class="kw">_</span>)| update)
 }
 
 <span class="doccomment">/// Fetch transactions and associated [`ConfirmationBlockTime`]s by scanning `txids`
@@ -1002,39 +1051,27 @@
 /// Refer to [crate-level docs](crate) for more.
 </span><span class="kw">async fn </span>fetch_txs_with_txids&lt;I: IntoIterator&lt;Item = Txid&gt; + Send&gt;(
     client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient,
+    inserted_txs: <span class="kw-2">&amp;mut </span>HashSet&lt;Txid&gt;,
     txids: I,
     parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationBlockTime&gt;, Error&gt;
+) -&gt; <span class="prelude-ty">Result</span>&lt;tx_graph::Update&lt;ConfirmationBlockTime&gt;, Error&gt;
 <span class="kw">where
     </span>I::IntoIter: Send,
 {
-    <span class="kw">enum </span>EsploraResp {
-        TxStatus(TxStatus),
-        Tx(<span class="prelude-ty">Option</span>&lt;Tx&gt;),
-    }
-
-    <span class="kw">let </span><span class="kw-2">mut </span>tx_graph = TxGraph::default();
-    <span class="kw">let </span><span class="kw-2">mut </span>txids = txids.into_iter();
+    <span class="kw">let </span><span class="kw-2">mut </span>update = tx_graph::Update::&lt;ConfirmationBlockTime&gt;::default();
+    <span class="comment">// Only fetch for non-inserted txs.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>txids = txids
+        .into_iter()
+        .filter(|txid| !inserted_txs.contains(txid))
+        .collect::&lt;Vec&lt;Txid&gt;&gt;()
+        .into_iter();
     <span class="kw">loop </span>{
         <span class="kw">let </span>handles = txids
             .by_ref()
             .take(parallel_requests)
             .map(|txid| {
                 <span class="kw">let </span>client = client.clone();
-                <span class="kw">let </span>tx_already_exists = tx_graph.get_tx(txid).is_some();
-                <span class="kw">async move </span>{
-                    <span class="kw">if </span>tx_already_exists {
-                        client
-                            .get_tx_status(<span class="kw-2">&amp;</span>txid)
-                            .<span class="kw">await
-                            </span>.map(|s| (txid, EsploraResp::TxStatus(s)))
-                    } <span class="kw">else </span>{
-                        client
-                            .get_tx_info(<span class="kw-2">&amp;</span>txid)
-                            .<span class="kw">await
-                            </span>.map(|t| (txid, EsploraResp::Tx(t)))
-                    }
-                }
+                <span class="kw">async move </span>{ client.get_tx_info(<span class="kw-2">&amp;</span>txid).<span class="kw">await</span>.map(|t| (txid, t)) }
             })
             .collect::&lt;FuturesOrdered&lt;<span class="kw">_</span>&gt;&gt;();
 
@@ -1042,21 +1079,17 @@
             <span class="kw">break</span>;
         }
 
-        <span class="kw">for </span>(txid, resp) <span class="kw">in </span>handles.try_collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;().<span class="kw">await</span><span class="question-mark">? </span>{
-            <span class="kw">match </span>resp {
-                EsploraResp::TxStatus(status) =&gt; {
-                    insert_anchor_from_status(<span class="kw-2">&amp;mut </span>tx_graph, txid, status);
+        <span class="kw">for </span>(txid, tx_info) <span class="kw">in </span>handles.try_collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;().<span class="kw">await</span><span class="question-mark">? </span>{
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(tx_info) = tx_info {
+                <span class="kw">if </span>inserted_txs.insert(txid) {
+                    update.txs.push(tx_info.to_tx().into());
                 }
-                EsploraResp::Tx(<span class="prelude-val">Some</span>(tx_info)) =&gt; {
-                    <span class="kw">let _ </span>= tx_graph.insert_tx(tx_info.to_tx());
-                    insert_anchor_from_status(<span class="kw-2">&amp;mut </span>tx_graph, txid, tx_info.status);
-                    insert_prevouts(<span class="kw-2">&amp;mut </span>tx_graph, tx_info.vin);
-                }
-                <span class="kw">_ </span>=&gt; <span class="kw">continue</span>,
+                insert_anchor_from_status(<span class="kw-2">&amp;mut </span>update, txid, tx_info.status);
+                insert_prevouts(<span class="kw-2">&amp;mut </span>update, tx_info.vin);
             }
         }
     }
-    <span class="prelude-val">Ok</span>(tx_graph)
+    <span class="prelude-val">Ok</span>(update)
 }
 
 <span class="doccomment">/// Fetch transactions and [`ConfirmationBlockTime`]s that contain and spend the provided
@@ -1067,22 +1100,27 @@
 /// Refer to [crate-level docs](crate) for more.
 </span><span class="kw">async fn </span>fetch_txs_with_outpoints&lt;I: IntoIterator&lt;Item = OutPoint&gt; + Send&gt;(
     client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient,
+    inserted_txs: <span class="kw-2">&amp;mut </span>HashSet&lt;Txid&gt;,
     outpoints: I,
     parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;TxGraph&lt;ConfirmationBlockTime&gt;, Error&gt;
+) -&gt; <span class="prelude-ty">Result</span>&lt;tx_graph::Update&lt;ConfirmationBlockTime&gt;, Error&gt;
 <span class="kw">where
     </span>I::IntoIter: Send,
 {
     <span class="kw">let </span>outpoints = outpoints.into_iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+    <span class="kw">let </span><span class="kw-2">mut </span>update = tx_graph::Update::&lt;ConfirmationBlockTime&gt;::default();
 
     <span class="comment">// make sure txs exists in graph and tx statuses are updated
     // TODO: We should maintain a tx cache (like we do with Electrum).
-    </span><span class="kw">let </span><span class="kw-2">mut </span>tx_graph = fetch_txs_with_txids(
-        client,
-        outpoints.iter().copied().map(|op| op.txid),
-        parallel_requests,
-    )
-    .<span class="kw">await</span><span class="question-mark">?</span>;
+    </span>update.extend(
+        fetch_txs_with_txids(
+            client,
+            inserted_txs,
+            outpoints.iter().copied().map(|op| op.txid),
+            parallel_requests,
+        )
+        .<span class="kw">await</span><span class="question-mark">?</span>,
+    );
 
     <span class="comment">// get outpoint spend-statuses
     </span><span class="kw">let </span><span class="kw-2">mut </span>outpoints = outpoints.into_iter();
@@ -1106,18 +1144,18 @@
                 <span class="prelude-val">Some</span>(txid) =&gt; txid,
                 <span class="prelude-val">None </span>=&gt; <span class="kw">continue</span>,
             };
-            <span class="kw">if </span>tx_graph.get_tx(spend_txid).is_none() {
+            <span class="kw">if </span>!inserted_txs.contains(<span class="kw-2">&amp;</span>spend_txid) {
                 missing_txs.push(spend_txid);
             }
             <span class="kw">if let </span><span class="prelude-val">Some</span>(spend_status) = op_status.status {
-                insert_anchor_from_status(<span class="kw-2">&amp;mut </span>tx_graph, spend_txid, spend_status);
+                insert_anchor_from_status(<span class="kw-2">&amp;mut </span>update, spend_txid, spend_status);
             }
         }
     }
 
-    <span class="kw">let _ </span>=
-        tx_graph.apply_update(fetch_txs_with_txids(client, missing_txs, parallel_requests).<span class="kw">await</span><span class="question-mark">?</span>);
-    <span class="prelude-val">Ok</span>(tx_graph)
+    update
+        .extend(fetch_txs_with_txids(client, inserted_txs, missing_txs, parallel_requests).<span class="kw">await</span><span class="question-mark">?</span>);
+    <span class="prelude-val">Ok</span>(update)
 }
 
 <span class="attr">#[cfg(test)]
