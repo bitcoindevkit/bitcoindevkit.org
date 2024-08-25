@@ -533,17 +533,18 @@
 <a href="#533" id="533">533</a>
 <a href="#534" id="534">534</a>
 <a href="#535" id="535">535</a>
+<a href="#536" id="536">536</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_chain::{
     bitcoin::{block::Header, BlockHash, OutPoint, ScriptBuf, Transaction, Txid},
     collections::{BTreeMap, HashMap},
     local_chain::CheckPoint,
     spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult},
-    tx_graph::TxGraph,
+    tx_graph::{<span class="self">self</span>, TxGraph},
     Anchor, BlockId, ConfirmationBlockTime,
 };
 <span class="kw">use </span>electrum_client::{ElectrumApi, Error, HeaderNotification};
 <span class="kw">use </span>std::{
-    collections::BTreeSet,
+    collections::HashSet,
     sync::{Arc, Mutex},
 };
 
@@ -673,7 +674,7 @@
             <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
         };
 
-        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = TxGraph::&lt;ConfirmationBlockTime&gt;::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = tx_graph::Update::&lt;ConfirmationBlockTime&gt;::default();
         <span class="kw">let </span><span class="kw-2">mut </span>last_active_indices = BTreeMap::&lt;K, u32&gt;::default();
         <span class="kw">for </span>keychain <span class="kw">in </span>request.keychains() {
             <span class="kw">let </span>spks = request.iter_spks(keychain.clone());
@@ -693,7 +694,7 @@
             <span class="prelude-val">Some</span>((chain_tip, latest_blocks)) =&gt; <span class="prelude-val">Some</span>(chain_update(
                 chain_tip,
                 <span class="kw-2">&amp;</span>latest_blocks,
-                graph_update.all_anchors(),
+                graph_update.anchors.iter().cloned(),
             )<span class="question-mark">?</span>),
             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         };
@@ -740,7 +741,7 @@
             <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
         };
 
-        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = TxGraph::&lt;ConfirmationBlockTime&gt;::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = tx_graph::Update::&lt;ConfirmationBlockTime&gt;::default();
         <span class="self">self</span>.populate_with_spks(
             <span class="kw-2">&amp;mut </span>graph_update,
             request
@@ -762,7 +763,7 @@
             <span class="prelude-val">Some</span>((chain_tip, latest_blocks)) =&gt; <span class="prelude-val">Some</span>(chain_update(
                 chain_tip,
                 <span class="kw-2">&amp;</span>latest_blocks,
-                graph_update.all_anchors(),
+                graph_update.anchors.iter().cloned(),
             )<span class="question-mark">?</span>),
             <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
         };
@@ -780,7 +781,7 @@
     /// also included.
     </span><span class="kw">fn </span>populate_with_spks(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        graph_update: <span class="kw-2">&amp;mut </span>TxGraph&lt;ConfirmationBlockTime&gt;,
+        graph_update: <span class="kw-2">&amp;mut </span>tx_graph::Update&lt;ConfirmationBlockTime&gt;,
         <span class="kw-2">mut </span>spks: <span class="kw">impl </span>Iterator&lt;Item = (u32, ScriptBuf)&gt;,
         stop_gap: usize,
         batch_size: usize,
@@ -813,7 +814,7 @@
                 }
 
                 <span class="kw">for </span>tx_res <span class="kw">in </span>spk_history {
-                    <span class="kw">let _ </span>= graph_update.insert_tx(<span class="self">self</span>.fetch_tx(tx_res.tx_hash)<span class="question-mark">?</span>);
+                    graph_update.txs.push(<span class="self">self</span>.fetch_tx(tx_res.tx_hash)<span class="question-mark">?</span>);
                     <span class="self">self</span>.validate_merkle_for_anchor(graph_update, tx_res.tx_hash, tx_res.height)<span class="question-mark">?</span>;
                 }
             }
@@ -826,7 +827,7 @@
     /// included. Anchors of the aforementioned transactions are included.
     </span><span class="kw">fn </span>populate_with_outpoints(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        graph_update: <span class="kw-2">&amp;mut </span>TxGraph&lt;ConfirmationBlockTime&gt;,
+        graph_update: <span class="kw-2">&amp;mut </span>tx_graph::Update&lt;ConfirmationBlockTime&gt;,
         outpoints: <span class="kw">impl </span>IntoIterator&lt;Item = OutPoint&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">for </span>outpoint <span class="kw">in </span>outpoints {
@@ -849,7 +850,7 @@
 
                 <span class="kw">if </span>!has_residing &amp;&amp; res.tx_hash == op_txid {
                     has_residing = <span class="bool-val">true</span>;
-                    <span class="kw">let _ </span>= graph_update.insert_tx(Arc::clone(<span class="kw-2">&amp;</span>op_tx));
+                    graph_update.txs.push(Arc::clone(<span class="kw-2">&amp;</span>op_tx));
                     <span class="self">self</span>.validate_merkle_for_anchor(graph_update, res.tx_hash, res.height)<span class="question-mark">?</span>;
                 }
 
@@ -863,7 +864,7 @@
                     <span class="kw">if </span>!has_spending {
                         <span class="kw">continue</span>;
                     }
-                    <span class="kw">let _ </span>= graph_update.insert_tx(Arc::clone(<span class="kw-2">&amp;</span>res_tx));
+                    graph_update.txs.push(Arc::clone(<span class="kw-2">&amp;</span>res_tx));
                     <span class="self">self</span>.validate_merkle_for_anchor(graph_update, res.tx_hash, res.height)<span class="question-mark">?</span>;
                 }
             }
@@ -874,7 +875,7 @@
     <span class="doccomment">/// Populate the `graph_update` with transactions/anchors of the provided `txids`.
     </span><span class="kw">fn </span>populate_with_txids(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        graph_update: <span class="kw-2">&amp;mut </span>TxGraph&lt;ConfirmationBlockTime&gt;,
+        graph_update: <span class="kw-2">&amp;mut </span>tx_graph::Update&lt;ConfirmationBlockTime&gt;,
         txids: <span class="kw">impl </span>IntoIterator&lt;Item = Txid&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">for </span>txid <span class="kw">in </span>txids {
@@ -901,7 +902,7 @@
                 <span class="self">self</span>.validate_merkle_for_anchor(graph_update, txid, r.height)<span class="question-mark">?</span>;
             }
 
-            <span class="kw">let _ </span>= graph_update.insert_tx(tx);
+            graph_update.txs.push(tx);
         }
         <span class="prelude-val">Ok</span>(())
     }
@@ -910,7 +911,7 @@
     // An anchor is inserted if the transaction is validated to be in a confirmed block.
     </span><span class="kw">fn </span>validate_merkle_for_anchor(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        graph_update: <span class="kw-2">&amp;mut </span>TxGraph&lt;ConfirmationBlockTime&gt;,
+        graph_update: <span class="kw-2">&amp;mut </span>tx_graph::Update&lt;ConfirmationBlockTime&gt;,
         txid: Txid,
         confirmation_height: i32,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
@@ -937,8 +938,7 @@
             }
 
             <span class="kw">if </span>is_confirmed_tx {
-                <span class="kw">let _ </span>= graph_update.insert_anchor(
-                    txid,
+                graph_update.anchors.insert((
                     ConfirmationBlockTime {
                         confirmation_time: header.time <span class="kw">as </span>u64,
                         block_id: BlockId {
@@ -946,7 +946,8 @@
                             hash: header.block_hash(),
                         },
                     },
-                );
+                    txid,
+                ));
             }
         }
         <span class="prelude-val">Ok</span>(())
@@ -956,17 +957,18 @@
     // which we do not have by default. This data is needed to calculate the transaction fee.
     </span><span class="kw">fn </span>fetch_prev_txout(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        graph_update: <span class="kw-2">&amp;mut </span>TxGraph&lt;ConfirmationBlockTime&gt;,
+        graph_update: <span class="kw-2">&amp;mut </span>tx_graph::Update&lt;ConfirmationBlockTime&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="kw">let </span>full_txs: Vec&lt;Arc&lt;Transaction&gt;&gt; =
-            graph_update.full_txs().map(|tx_node| tx_node.tx).collect();
-        <span class="kw">for </span>tx <span class="kw">in </span>full_txs {
-            <span class="kw">for </span>vin <span class="kw">in </span><span class="kw-2">&amp;</span>tx.input {
-                <span class="kw">let </span>outpoint = vin.previous_output;
-                <span class="kw">let </span>vout = outpoint.vout;
-                <span class="kw">let </span>prev_tx = <span class="self">self</span>.fetch_tx(outpoint.txid)<span class="question-mark">?</span>;
-                <span class="kw">let </span>txout = prev_tx.output[vout <span class="kw">as </span>usize].clone();
-                <span class="kw">let _ </span>= graph_update.insert_txout(outpoint, txout);
+        <span class="kw">let </span><span class="kw-2">mut </span>no_dup = HashSet::&lt;Txid&gt;::new();
+        <span class="kw">for </span>tx <span class="kw">in </span><span class="kw-2">&amp;</span>graph_update.txs {
+            <span class="kw">if </span>no_dup.insert(tx.compute_txid()) {
+                <span class="kw">for </span>vin <span class="kw">in </span><span class="kw-2">&amp;</span>tx.input {
+                    <span class="kw">let </span>outpoint = vin.previous_output;
+                    <span class="kw">let </span>vout = outpoint.vout;
+                    <span class="kw">let </span>prev_tx = <span class="self">self</span>.fetch_tx(outpoint.txid)<span class="question-mark">?</span>;
+                    <span class="kw">let </span>txout = prev_tx.output[vout <span class="kw">as </span>usize].clone();
+                    <span class="kw">let _ </span>= graph_update.txouts.insert(outpoint, txout);
+                }
             }
         }
         <span class="prelude-val">Ok</span>(())
@@ -1051,7 +1053,7 @@
 </span><span class="kw">fn </span>chain_update&lt;A: Anchor&gt;(
     <span class="kw-2">mut </span>tip: CheckPoint,
     latest_blocks: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, BlockHash&gt;,
-    anchors: <span class="kw-2">&amp;</span>BTreeSet&lt;(A, Txid)&gt;,
+    anchors: <span class="kw">impl </span>Iterator&lt;Item = (A, Txid)&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;CheckPoint, Error&gt; {
     <span class="kw">for </span>anchor <span class="kw">in </span>anchors {
         <span class="kw">let </span>height = anchor.<span class="number">0</span>.anchor_block().height;

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["CalculateFeeError"],"struct":["CanonicalTx","ChangeSet","TxAncestors","TxDescendants","TxGraph","TxNode"]};
+window.SIDEBAR_ITEMS = {"enum":["CalculateFeeError"],"struct":["CanonicalTx","ChangeSet","TxAncestors","TxDescendants","TxGraph","TxNode","Update"]};

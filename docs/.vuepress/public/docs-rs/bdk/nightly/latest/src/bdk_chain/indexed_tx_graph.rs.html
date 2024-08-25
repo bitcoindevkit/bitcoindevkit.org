@@ -357,6 +357,28 @@
 <a href="#357" id="357">357</a>
 <a href="#358" id="358">358</a>
 <a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Contains the [`IndexedTxGraph`] and associated types. Refer to the
 //! [`IndexedTxGraph`] documentation for more.
 </span><span class="kw">use </span>core::fmt::Debug;
@@ -449,14 +471,36 @@
 
     <span class="doccomment">/// Apply an `update` directly.
     ///
-    /// `update` is a [`TxGraph&lt;A&gt;`] and the resultant changes is returned as [`ChangeSet`].
-    </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: TxGraph&lt;A&gt;) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
-        <span class="kw">let </span>graph = <span class="self">self</span>.graph.apply_update(update);
-        <span class="kw">let </span>indexer = <span class="self">self</span>.index_tx_graph_changeset(<span class="kw-2">&amp;</span>graph);
-        ChangeSet {
-            tx_graph: graph,
-            indexer,
-        }
+    /// `update` is a [`tx_graph::Update&lt;A&gt;`] and the resultant changes is returned as [`ChangeSet`].
+    </span><span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">"std"</span>)))]
+    </span><span class="kw">pub fn </span>apply_update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, update: tx_graph::Update&lt;A&gt;) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
+        <span class="kw">let </span>tx_graph = <span class="self">self</span>.graph.apply_update(update);
+        <span class="kw">let </span>indexer = <span class="self">self</span>.index_tx_graph_changeset(<span class="kw-2">&amp;</span>tx_graph);
+        ChangeSet { tx_graph, indexer }
+    }
+
+    <span class="doccomment">/// Apply the given `update` with an optional `seen_at` timestamp.
+    ///
+    /// `seen_at` represents when the update is seen (in unix seconds). It is used to determine the
+    /// `last_seen`s for all transactions in the update which have no corresponding anchor(s). The
+    /// `last_seen` value is used internally to determine precedence of conflicting unconfirmed
+    /// transactions (where the transaction with the lower `last_seen` value is omitted from the
+    /// canonical history).
+    ///
+    /// Not setting a `seen_at` value means unconfirmed transactions introduced by this update will
+    /// not be part of the canonical history of transactions.
+    ///
+    /// Use [`apply_update`](IndexedTxGraph::apply_update) to have the `seen_at` value automatically
+    /// set to the current time.
+    </span><span class="kw">pub fn </span>apply_update_at(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        update: tx_graph::Update&lt;A&gt;,
+        seen_at: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+    ) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
+        <span class="kw">let </span>tx_graph = <span class="self">self</span>.graph.apply_update_at(update, seen_at);
+        <span class="kw">let </span>indexer = <span class="self">self</span>.index_tx_graph_changeset(<span class="kw-2">&amp;</span>tx_graph);
+        ChangeSet { tx_graph, indexer }
     }
 
     <span class="doccomment">/// Insert a floating `txout` of given `outpoint`.
