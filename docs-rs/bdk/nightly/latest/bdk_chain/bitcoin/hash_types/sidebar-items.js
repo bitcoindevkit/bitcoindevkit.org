@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["BlockHash","FilterHash","FilterHeader","TxMerkleNode","Txid","WitnessCommitment","WitnessMerkleNode","Wtxid"]};
