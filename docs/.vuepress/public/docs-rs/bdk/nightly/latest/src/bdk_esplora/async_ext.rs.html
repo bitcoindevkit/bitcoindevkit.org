@@ -671,17 +671,16 @@
 <a href="#671" id="671">671</a>
 <a href="#672" id="672">672</a>
 <a href="#673" id="673">673</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::collections::{BTreeSet, HashSet};
-
-<span class="kw">use </span>async_trait::async_trait;
-<span class="kw">use </span>bdk_chain::spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult};
-<span class="kw">use </span>bdk_chain::{
+<a href="#674" id="674">674</a>
+<a href="#675" id="675">675</a>
+<a href="#676" id="676">676</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>async_trait::async_trait;
+<span class="kw">use </span>bdk_core::collections::{BTreeMap, BTreeSet, HashSet};
+<span class="kw">use </span>bdk_core::spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult};
+<span class="kw">use </span>bdk_core::{
     bitcoin::{BlockHash, OutPoint, ScriptBuf, Txid},
-    collections::BTreeMap,
-    local_chain::CheckPoint,
-    BlockId, ConfirmationBlockTime,
+    BlockId, CheckPoint, ConfirmationBlockTime, Indexed, TxUpdate,
 };
-<span class="kw">use </span>bdk_chain::{tx_graph, Anchor, Indexed};
 <span class="kw">use </span>futures::{stream::FuturesOrdered, TryStreamExt};
 
 <span class="kw">use crate</span>::{insert_anchor_from_status, insert_prevouts};
@@ -744,7 +743,7 @@
             <span class="prelude-val">None
         </span>};
 
-        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = tx_graph::Update::&lt;ConfirmationBlockTime&gt;::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>tx_update = TxUpdate::&lt;ConfirmationBlockTime&gt;::default();
         <span class="kw">let </span><span class="kw-2">mut </span>inserted_txs = HashSet::&lt;Txid&gt;::new();
         <span class="kw">let </span><span class="kw-2">mut </span>last_active_indices = BTreeMap::&lt;K, u32&gt;::new();
         <span class="kw">for </span>keychain <span class="kw">in </span>keychains {
@@ -757,7 +756,7 @@
                 parallel_requests,
             )
             .<span class="kw">await</span><span class="question-mark">?</span>;
-            graph_update.extend(update);
+            tx_update.extend(update);
             <span class="kw">if let </span><span class="prelude-val">Some</span>(last_active_index) = last_active_index {
                 last_active_indices.insert(keychain, last_active_index);
             }
@@ -765,14 +764,14 @@
 
         <span class="kw">let </span>chain_update = <span class="kw">match </span>(chain_tip, latest_blocks) {
             (<span class="prelude-val">Some</span>(chain_tip), <span class="prelude-val">Some</span>(latest_blocks)) =&gt; {
-                <span class="prelude-val">Some</span>(chain_update(<span class="self">self</span>, <span class="kw-2">&amp;</span>latest_blocks, <span class="kw-2">&amp;</span>chain_tip, <span class="kw-2">&amp;</span>graph_update.anchors).<span class="kw">await</span><span class="question-mark">?</span>)
+                <span class="prelude-val">Some</span>(chain_update(<span class="self">self</span>, <span class="kw-2">&amp;</span>latest_blocks, <span class="kw-2">&amp;</span>chain_tip, <span class="kw-2">&amp;</span>tx_update.anchors).<span class="kw">await</span><span class="question-mark">?</span>)
             }
             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         };
 
         <span class="prelude-val">Ok</span>(FullScanResult {
             chain_update,
-            graph_update,
+            tx_update,
             last_active_indices,
         })
     }
@@ -791,9 +790,9 @@
             <span class="prelude-val">None
         </span>};
 
-        <span class="kw">let </span><span class="kw-2">mut </span>graph_update = tx_graph::Update::&lt;ConfirmationBlockTime&gt;::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>tx_update = TxUpdate::&lt;ConfirmationBlockTime&gt;::default();
         <span class="kw">let </span><span class="kw-2">mut </span>inserted_txs = HashSet::&lt;Txid&gt;::new();
-        graph_update.extend(
+        tx_update.extend(
             fetch_txs_with_spks(
                 <span class="self">self</span>,
                 <span class="kw-2">&amp;mut </span>inserted_txs,
@@ -802,7 +801,7 @@
             )
             .<span class="kw">await</span><span class="question-mark">?</span>,
         );
-        graph_update.extend(
+        tx_update.extend(
             fetch_txs_with_txids(
                 <span class="self">self</span>,
                 <span class="kw-2">&amp;mut </span>inserted_txs,
@@ -811,7 +810,7 @@
             )
             .<span class="kw">await</span><span class="question-mark">?</span>,
         );
-        graph_update.extend(
+        tx_update.extend(
             fetch_txs_with_outpoints(
                 <span class="self">self</span>,
                 <span class="kw-2">&amp;mut </span>inserted_txs,
@@ -823,14 +822,14 @@
 
         <span class="kw">let </span>chain_update = <span class="kw">match </span>(chain_tip, latest_blocks) {
             (<span class="prelude-val">Some</span>(chain_tip), <span class="prelude-val">Some</span>(latest_blocks)) =&gt; {
-                <span class="prelude-val">Some</span>(chain_update(<span class="self">self</span>, <span class="kw-2">&amp;</span>latest_blocks, <span class="kw-2">&amp;</span>chain_tip, <span class="kw-2">&amp;</span>graph_update.anchors).<span class="kw">await</span><span class="question-mark">?</span>)
+                <span class="prelude-val">Some</span>(chain_update(<span class="self">self</span>, <span class="kw-2">&amp;</span>latest_blocks, <span class="kw-2">&amp;</span>chain_tip, <span class="kw-2">&amp;</span>tx_update.anchors).<span class="kw">await</span><span class="question-mark">?</span>)
             }
             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         };
 
         <span class="prelude-val">Ok</span>(SyncResult {
             chain_update,
-            graph_update,
+            tx_update,
         })
     }
 }
@@ -882,11 +881,11 @@
 ///
 /// We want to have a corresponding checkpoint per anchor height. However, checkpoints fetched
 /// should not surpass `latest_blocks`.
-</span><span class="kw">async fn </span>chain_update&lt;A: Anchor&gt;(
+</span><span class="kw">async fn </span>chain_update(
     client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient,
     latest_blocks: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, BlockHash&gt;,
     local_tip: <span class="kw-2">&amp;</span>CheckPoint,
-    anchors: <span class="kw-2">&amp;</span>BTreeSet&lt;(A, Txid)&gt;,
+    anchors: <span class="kw-2">&amp;</span>BTreeSet&lt;(ConfirmationBlockTime, Txid)&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;CheckPoint, Error&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>point_of_agreement = <span class="prelude-val">None</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>conflicts = <span class="macro">vec!</span>[];
@@ -915,8 +914,8 @@
         .extend(conflicts.into_iter().rev())
         .expect(<span class="string">"evicted are in order"</span>);
 
-    <span class="kw">for </span>anchor <span class="kw">in </span>anchors {
-        <span class="kw">let </span>height = anchor.<span class="number">0</span>.anchor_block().height;
+    <span class="kw">for </span>(anchor, _txid) <span class="kw">in </span>anchors {
+        <span class="kw">let </span>height = anchor.block_id.height;
         <span class="kw">if </span>tip.get(height).is_none() {
             <span class="kw">let </span>hash = <span class="kw">match </span>fetch_block(client, latest_blocks, height).<span class="kw">await</span><span class="question-mark">? </span>{
                 <span class="prelude-val">Some</span>(hash) =&gt; hash,
@@ -954,10 +953,10 @@
     <span class="kw-2">mut </span>keychain_spks: I,
     stop_gap: usize,
     parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(tx_graph::Update&lt;ConfirmationBlockTime&gt;, <span class="prelude-ty">Option</span>&lt;u32&gt;), Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;(TxUpdate&lt;ConfirmationBlockTime&gt;, <span class="prelude-ty">Option</span>&lt;u32&gt;), Error&gt; {
     <span class="kw">type </span>TxsOfSpkIndex = (u32, Vec&lt;esplora_client::Tx&gt;);
 
-    <span class="kw">let </span><span class="kw-2">mut </span>update = tx_graph::Update::&lt;ConfirmationBlockTime&gt;::default();
+    <span class="kw">let </span><span class="kw-2">mut </span>update = TxUpdate::&lt;ConfirmationBlockTime&gt;::default();
     <span class="kw">let </span><span class="kw-2">mut </span>last_index = <span class="prelude-ty">Option</span>::&lt;u32&gt;::None;
     <span class="kw">let </span><span class="kw-2">mut </span>last_active_index = <span class="prelude-ty">Option</span>::&lt;u32&gt;::None;
 
@@ -1028,7 +1027,7 @@
     inserted_txs: <span class="kw-2">&amp;mut </span>HashSet&lt;Txid&gt;,
     spks: I,
     parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;tx_graph::Update&lt;ConfirmationBlockTime&gt;, Error&gt;
+) -&gt; <span class="prelude-ty">Result</span>&lt;TxUpdate&lt;ConfirmationBlockTime&gt;, Error&gt;
 <span class="kw">where
     </span>I::IntoIter: Send,
 {
@@ -1054,11 +1053,11 @@
     inserted_txs: <span class="kw-2">&amp;mut </span>HashSet&lt;Txid&gt;,
     txids: I,
     parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;tx_graph::Update&lt;ConfirmationBlockTime&gt;, Error&gt;
+) -&gt; <span class="prelude-ty">Result</span>&lt;TxUpdate&lt;ConfirmationBlockTime&gt;, Error&gt;
 <span class="kw">where
     </span>I::IntoIter: Send,
 {
-    <span class="kw">let </span><span class="kw-2">mut </span>update = tx_graph::Update::&lt;ConfirmationBlockTime&gt;::default();
+    <span class="kw">let </span><span class="kw-2">mut </span>update = TxUpdate::&lt;ConfirmationBlockTime&gt;::default();
     <span class="comment">// Only fetch for non-inserted txs.
     </span><span class="kw">let </span><span class="kw-2">mut </span>txids = txids
         .into_iter()
@@ -1103,12 +1102,12 @@
     inserted_txs: <span class="kw-2">&amp;mut </span>HashSet&lt;Txid&gt;,
     outpoints: I,
     parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;tx_graph::Update&lt;ConfirmationBlockTime&gt;, Error&gt;
+) -&gt; <span class="prelude-ty">Result</span>&lt;TxUpdate&lt;ConfirmationBlockTime&gt;, Error&gt;
 <span class="kw">where
     </span>I::IntoIter: Send,
 {
     <span class="kw">let </span>outpoints = outpoints.into_iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-    <span class="kw">let </span><span class="kw-2">mut </span>update = tx_graph::Update::&lt;ConfirmationBlockTime&gt;::default();
+    <span class="kw">let </span><span class="kw-2">mut </span>update = TxUpdate::&lt;ConfirmationBlockTime&gt;::default();
 
     <span class="comment">// make sure txs exists in graph and tx statuses are updated
     // TODO: We should maintain a tx cache (like we do with Electrum).
@@ -1167,6 +1166,7 @@
         local_chain::LocalChain,
         BlockId,
     };
+    <span class="kw">use </span>bdk_core::ConfirmationBlockTime;
     <span class="kw">use </span>bdk_testenv::{anyhow, bitcoincore_rpc::RpcApi, TestEnv};
     <span class="kw">use </span>esplora_client::Builder;
 
@@ -1245,9 +1245,12 @@
                     .iter()
                     .map(|<span class="kw-2">&amp;</span>height| -&gt; anyhow::Result&lt;<span class="kw">_</span>&gt; {
                         <span class="prelude-val">Ok</span>((
-                            BlockId {
-                                height,
-                                hash: env.bitcoind.client.get_block_hash(height <span class="kw">as _</span>)<span class="question-mark">?</span>,
+                            ConfirmationBlockTime {
+                                block_id: BlockId {
+                                    height,
+                                    hash: env.bitcoind.client.get_block_hash(height <span class="kw">as _</span>)<span class="question-mark">?</span>,
+                                },
+                                confirmation_time: height <span class="kw">as _</span>,
                             },
                             Txid::all_zeros(),
                         ))
@@ -1283,9 +1286,12 @@
                     .iter()
                     .map(|<span class="kw-2">&amp;</span>(height, txid)| -&gt; anyhow::Result&lt;<span class="kw">_</span>&gt; {
                         <span class="prelude-val">Ok</span>((
-                            BlockId {
-                                height,
-                                hash: env.bitcoind.client.get_block_hash(height <span class="kw">as _</span>)<span class="question-mark">?</span>,
+                            ConfirmationBlockTime {
+                                block_id: BlockId {
+                                    height,
+                                    hash: env.bitcoind.client.get_block_hash(height <span class="kw">as _</span>)<span class="question-mark">?</span>,
+                                },
+                                confirmation_time: height <span class="kw">as _</span>,
                             },
                             txid,
                         ))

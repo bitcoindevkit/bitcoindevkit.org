@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["as_btc","as_sat"],"trait":["SerdeAmount","SerdeAmountForOpt"]};

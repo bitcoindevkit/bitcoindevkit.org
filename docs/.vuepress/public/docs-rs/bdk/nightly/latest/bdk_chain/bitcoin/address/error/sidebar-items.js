@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["FromScriptError","P2shError","ParseError"],"struct":["InvalidBase58PayloadLengthError","InvalidLegacyPrefixError","LegacyAddressTooLongError","NetworkValidationError","UnknownAddressTypeError","UnknownHrpError"]};

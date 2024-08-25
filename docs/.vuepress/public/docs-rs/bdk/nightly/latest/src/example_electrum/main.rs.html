@@ -274,6 +274,13 @@
 <a href="#274" id="274">274</a>
 <a href="#275" id="275">275</a>
 <a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::io::{<span class="self">self</span>, Write};
 
 <span class="kw">use </span>bdk_chain::{
@@ -403,9 +410,16 @@
     <span class="kw">let </span>client = BdkElectrumClient::new(electrum_cmd.electrum_args().client(network)<span class="question-mark">?</span>);
 
     <span class="comment">// Tell the electrum client about the txs we've already got locally so it doesn't re-download them
-    </span>client.populate_tx_cache(<span class="kw-2">&amp;*</span>graph.lock().unwrap());
+    </span>client.populate_tx_cache(
+        graph
+            .lock()
+            .unwrap()
+            .graph()
+            .full_txs()
+            .map(|tx_node| tx_node.tx),
+    );
 
-    <span class="kw">let </span>(chain_update, graph_update, keychain_update) = <span class="kw">match </span>electrum_cmd.clone() {
+    <span class="kw">let </span>(chain_update, tx_update, keychain_update) = <span class="kw">match </span>electrum_cmd.clone() {
         ElectrumCommands::Scan {
             stop_gap,
             scan_options,
@@ -451,7 +465,7 @@
                 .context(<span class="string">"scanning the blockchain"</span>)<span class="question-mark">?</span>;
             (
                 res.chain_update,
-                res.graph_update,
+                res.tx_update,
                 <span class="prelude-val">Some</span>(res.last_active_indices),
             )
         }
@@ -520,7 +534,7 @@
             <span class="comment">// drop lock on graph and chain
             </span>drop((graph, chain));
 
-            (res.chain_update, res.graph_update, <span class="prelude-val">None</span>)
+            (res.chain_update, res.tx_update, <span class="prelude-val">None</span>)
         }
     };
 
@@ -536,7 +550,7 @@
             <span class="kw">let </span>keychain_changeset = graph.index.reveal_to_target_multi(<span class="kw-2">&amp;</span>keychain_update);
             indexed_tx_graph_changeset.merge(keychain_changeset.into());
         }
-        indexed_tx_graph_changeset.merge(graph.apply_update(graph_update));
+        indexed_tx_graph_changeset.merge(graph.apply_update(tx_update));
 
         ChangeSet {
             local_chain: chain_changeset,

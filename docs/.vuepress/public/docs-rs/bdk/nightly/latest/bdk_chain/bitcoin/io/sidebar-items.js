@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ErrorKind"],"fn":["sink"],"macro":["impl_write"],"struct":["Cursor","Error","Sink","Take"],"trait":["BufRead","Read","Write"],"type":["Result"]};

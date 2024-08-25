@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_INV_SIZE","MAX_MSG_SIZE"],"enum":["NetworkMessage"],"struct":["CommandString","CommandStringError","RawNetworkMessage"]};

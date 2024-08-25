@@ -1,6 +1,7 @@
 var srcIndex = new Map(JSON.parse('[\
 ["bdk_bitcoind_rpc",["",[],["lib.rs"]]],\
-["bdk_chain",["",[["indexer",[],["keychain_txout.rs","spk_txout.rs"]]],["balance.rs","chain_data.rs","chain_oracle.rs","descriptor_ext.rs","example_utils.rs","indexed_tx_graph.rs","indexer.rs","lib.rs","local_chain.rs","rusqlite_impl.rs","spk_client.rs","spk_iter.rs","tx_data_traits.rs","tx_graph.rs"]]],\
+["bdk_chain",["",[["indexer",[],["keychain_txout.rs","spk_txout.rs"]]],["balance.rs","chain_data.rs","chain_oracle.rs","descriptor_ext.rs","example_utils.rs","indexed_tx_graph.rs","indexer.rs","lib.rs","local_chain.rs","rusqlite_impl.rs","spk_iter.rs","tx_data_traits.rs","tx_graph.rs"]]],\
+["bdk_core",["",[],["block_id.rs","checkpoint.rs","lib.rs","spk_client.rs","tx_update.rs"]]],\
 ["bdk_electrum",["",[],["bdk_electrum_client.rs","lib.rs"]]],\
 ["bdk_esplora",["",[],["async_ext.rs","blocking_ext.rs","lib.rs"]]],\
 ["bdk_file_store",["",[],["entry_iter.rs","lib.rs","store.rs"]]],\

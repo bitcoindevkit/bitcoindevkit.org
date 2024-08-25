@@ -687,15 +687,15 @@
     }
 }
 
-<span class="kw">impl</span>&lt;A: Anchor + serde::de::DeserializeOwned&gt; FromSql <span class="kw">for </span>Impl&lt;A&gt; {
+<span class="kw">impl</span>&lt;A: Anchor + serde::de::DeserializeOwned&gt; FromSql <span class="kw">for </span>AnchorImpl&lt;A&gt; {
     <span class="kw">fn </span>column_result(value: ValueRef&lt;<span class="lifetime">'_</span>&gt;) -&gt; FromSqlResult&lt;<span class="self">Self</span>&gt; {
         serde_json::from_str(value.as_str()<span class="question-mark">?</span>)
-            .map(Impl)
+            .map(AnchorImpl)
             .map_err(from_sql_error)
     }
 }
 
-<span class="kw">impl</span>&lt;A: Anchor + serde::Serialize&gt; ToSql <span class="kw">for </span>Impl&lt;A&gt; {
+<span class="kw">impl</span>&lt;A: Anchor + serde::Serialize&gt; ToSql <span class="kw">for </span>AnchorImpl&lt;A&gt; {
     <span class="kw">fn </span>to_sql(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; rusqlite::Result&lt;ToSqlOutput&lt;<span class="lifetime">'_</span>&gt;&gt; {
         serde_json::to_string(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>)
             .map(Into::into)
@@ -849,12 +849,12 @@
         ))<span class="question-mark">?</span>;
         <span class="kw">let </span>row_iter = statement.query_map([], |row| {
             <span class="prelude-val">Ok</span>((
-                row.get::&lt;<span class="kw">_</span>, Impl&lt;A&gt;&gt;(<span class="string">"json(anchor)"</span>)<span class="question-mark">?</span>,
+                row.get::&lt;<span class="kw">_</span>, AnchorImpl&lt;A&gt;&gt;(<span class="string">"json(anchor)"</span>)<span class="question-mark">?</span>,
                 row.get::&lt;<span class="kw">_</span>, Impl&lt;bitcoin::Txid&gt;&gt;(<span class="string">"txid"</span>)<span class="question-mark">?</span>,
             ))
         })<span class="question-mark">?</span>;
         <span class="kw">for </span>row <span class="kw">in </span>row_iter {
-            <span class="kw">let </span>(Impl(anchor), Impl(txid)) = row<span class="question-mark">?</span>;
+            <span class="kw">let </span>(AnchorImpl(anchor), Impl(txid)) = row<span class="question-mark">?</span>;
             changeset.anchors.insert((anchor, txid));
         }
 
@@ -911,7 +911,7 @@
                 <span class="string">":txid"</span>: Impl(<span class="kw-2">*</span>txid),
                 <span class="string">":block_height"</span>: anchor_block.height,
                 <span class="string">":block_hash"</span>: Impl(anchor_block.hash),
-                <span class="string">":anchor"</span>: Impl(anchor.clone()),
+                <span class="string">":anchor"</span>: AnchorImpl(anchor.clone()),
             })<span class="question-mark">?</span>;
         }
 

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Case","HexToArrayError","HexToBytesError"],"macro":["fmt_hex_exact","impl_fmt_traits","test_hex_unwrap","write_err"],"mod":["buf_encoder","display","error","parse","prelude"],"struct":["BytesToHexIter","HexToBytesIter","InvalidCharError","OddLengthStringError"],"trait":["DisplayHex","FromHex"],"type":["HexSliceToBytesIter"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_SIZE","MIN_SIZE"],"enum":["Error"],"struct":["WitnessProgram"]};

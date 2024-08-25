@@ -2632,6 +2632,8 @@
 <a href="#2632" id="2632">2632</a>
 <a href="#2633" id="2633">2633</a>
 <a href="#2634" id="2634">2634</a>
+<a href="#2635" id="2635">2635</a>
+<a href="#2636" id="2636">2636</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2667,7 +2669,7 @@
         FullScanRequest, FullScanRequestBuilder, FullScanResult, SyncRequest, SyncRequestBuilder,
         SyncResult,
     },
-    tx_graph::{CanonicalTx, TxGraph, TxNode},
+    tx_graph::{CanonicalTx, TxGraph, TxNode, TxUpdate},
     BlockId, ChainPosition, ConfirmationBlockTime, ConfirmationTime, DescriptorExt, FullTxOut,
     Indexed, IndexedTxGraph, Merge,
 };
@@ -2766,7 +2768,7 @@
     </span><span class="kw">pub </span>last_active_indices: BTreeMap&lt;KeychainKind, u32&gt;,
 
     <span class="doccomment">/// Update for the wallet's internal [`TxGraph`].
-    </span><span class="kw">pub </span>graph: chain::tx_graph::Update&lt;ConfirmationBlockTime&gt;,
+    </span><span class="kw">pub </span>tx_update: TxUpdate&lt;ConfirmationBlockTime&gt;,
 
     <span class="doccomment">/// Update for the wallet's internal [`LocalChain`].
     ///
@@ -2778,7 +2780,7 @@
     <span class="kw">fn </span>from(value: FullScanResult&lt;KeychainKind&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             last_active_indices: value.last_active_indices,
-            graph: value.graph_update,
+            tx_update: value.tx_update,
             chain: value.chain_update,
         }
     }
@@ -2788,7 +2790,7 @@
     <span class="kw">fn </span>from(value: SyncResult) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             last_active_indices: BTreeMap::new(),
-            graph: value.graph_update,
+            tx_update: value.tx_update,
             chain: value.chain_update,
         }
     }
@@ -4952,7 +4954,7 @@
         changeset.merge(index_changeset.into());
         changeset.merge(
             <span class="self">self</span>.indexed_graph
-                .apply_update_at(update.graph, seen_at)
+                .apply_update_at(update.tx_update, seen_at)
                 .into(),
         );
         <span class="self">self</span>.stage.merge(changeset);
@@ -5106,6 +5108,7 @@
     /// [`SyncRequest`] collects all revealed script pubkeys from the wallet keychain needed to
     /// start a blockchain sync with a spk based blockchain client.
     </span><span class="kw">pub fn </span>start_sync_with_revealed_spks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SyncRequestBuilder&lt;(KeychainKind, u32)&gt; {
+        <span class="kw">use </span>bdk_chain::keychain_txout::SyncRequestBuilderExt;
         SyncRequest::builder()
             .chain_tip(<span class="self">self</span>.chain.tip())
             .revealed_spks_from_indexer(<span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index, ..)
@@ -5120,6 +5123,7 @@
     /// This operation is generally only used when importing or restoring a previously used wallet
     /// in which the list of used scripts is not known.
     </span><span class="kw">pub fn </span>start_full_scan(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FullScanRequestBuilder&lt;KeychainKind&gt; {
+        <span class="kw">use </span>bdk_chain::keychain_txout::FullScanRequestBuilderExt;
         FullScanRequest::builder()
             .chain_tip(<span class="self">self</span>.chain.tip())
             .spks_from_indexer(<span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index)
@@ -5256,7 +5260,7 @@
             block_id,
         };
         <span class="kw">let </span>update = Update {
-            graph: tx_graph::Update {
+            tx_update: tx_graph::TxUpdate {
                 anchors: [(anchor, txid)].into_iter().collect(),
                 ..Default::default()
             },
