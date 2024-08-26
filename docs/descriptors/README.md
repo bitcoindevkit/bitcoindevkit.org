@@ -32,6 +32,7 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 | `pk()` | ✓ | ✓ | ✓ |
 | `pkh()` | ✓ | ✓ | ✓ |
 | `wpkh()` | ✓ | ✓ | ✓ |
+| `tr()` |  |  | ✓ |
 | `sh(wpkh())` | ✓ | ✓ | ✓ |
 | `sh()` | ✓ | ✓ | ✓ |
 | `wsh()` | ✓ | ✓ | ✓ |
