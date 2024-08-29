@@ -668,12 +668,6 @@
 <a href="#668" id="668">668</a>
 <a href="#669" id="669">669</a>
 <a href="#670" id="670">670</a>
-<a href="#671" id="671">671</a>
-<a href="#672" id="672">672</a>
-<a href="#673" id="673">673</a>
-<a href="#674" id="674">674</a>
-<a href="#675" id="675">675</a>
-<a href="#676" id="676">676</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>bdk_core::collections::{BTreeMap, BTreeSet, HashSet};
 <span class="kw">use </span>bdk_core::spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult};
@@ -1182,7 +1176,8 @@
     </span><span class="attr">#[tokio::test]
     </span><span class="kw">pub async fn </span>test_finalize_chain_update() -&gt; anyhow::Result&lt;()&gt; {
         <span class="kw">struct </span>TestCase&lt;<span class="lifetime">'a</span>&gt; {
-            name: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+            <span class="attr">#[allow(dead_code)]
+            </span>name: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
             <span class="doccomment">/// Initial blockchain height to start the env with.
             </span>initial_env_height: u32,
             <span class="doccomment">/// Initial checkpoint heights to start with.
@@ -1218,9 +1213,7 @@
             },
         ];
 
-        <span class="kw">for </span>(i, t) <span class="kw">in </span>test_cases.into_iter().enumerate() {
-            <span class="macro">println!</span>(<span class="string">"[{}] running test case: {}"</span>, i, t.name);
-
+        <span class="kw">for </span>t <span class="kw">in </span>test_cases.into_iter() {
             <span class="kw">let </span>env = TestEnv::new()<span class="question-mark">?</span>;
             <span class="kw">let </span>base_url = <span class="macro">format!</span>(<span class="string">"http://{}"</span>, <span class="kw-2">&amp;</span>env.electrsd.esplora_url.clone().unwrap());
             <span class="kw">let </span>client = Builder::new(base_url.as_str()).build_async()<span class="question-mark">?</span>;
@@ -1266,7 +1259,6 @@
                 chain.apply_update(update)<span class="question-mark">?</span>;
                 chain
             };
-            <span class="macro">println!</span>(<span class="string">"local chain height: {}"</span>, local_chain.tip().height());
 
             <span class="comment">// extend env chain
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(to_mine) = t
@@ -1309,10 +1301,6 @@
             <span class="comment">// apply update
             </span><span class="kw">let </span><span class="kw-2">mut </span>updated_local_chain = local_chain.clone();
             updated_local_chain.apply_update(update)<span class="question-mark">?</span>;
-            <span class="macro">println!</span>(
-                <span class="string">"updated local chain height: {}"</span>,
-                updated_local_chain.tip().height()
-            );
 
             <span class="macro">assert!</span>(
                 {

@@ -857,13 +857,6 @@
 <a href="#857" id="857">857</a>
 <a href="#858" id="858">858</a>
 <a href="#859" id="859">859</a>
-<a href="#860" id="860">860</a>
-<a href="#861" id="861">861</a>
-<a href="#862" id="862">862</a>
-<a href="#863" id="863">863</a>
-<a href="#864" id="864">864</a>
-<a href="#865" id="865">865</a>
-<a href="#866" id="866">866</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_core::collections::{BTreeMap, BTreeSet, HashSet};
 <span class="kw">use </span>bdk_core::spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult};
 <span class="kw">use </span>bdk_core::{
@@ -1361,7 +1354,8 @@
     </span><span class="attr">#[test]
     </span><span class="kw">pub fn </span>test_finalize_chain_update() -&gt; anyhow::Result&lt;()&gt; {
         <span class="kw">struct </span>TestCase&lt;<span class="lifetime">'a</span>&gt; {
-            name: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+            <span class="attr">#[allow(dead_code)]
+            </span>name: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
             <span class="doccomment">/// Initial blockchain height to start the env with.
             </span>initial_env_height: u32,
             <span class="doccomment">/// Initial checkpoint heights to start with in the local chain.
@@ -1397,9 +1391,7 @@
             },
         ];
 
-        <span class="kw">for </span>(i, t) <span class="kw">in </span>test_cases.into_iter().enumerate() {
-            <span class="macro">println!</span>(<span class="string">"[{}] running test case: {}"</span>, i, t.name);
-
+        <span class="kw">for </span>t <span class="kw">in </span>test_cases.into_iter() {
             <span class="kw">let </span>env = TestEnv::new()<span class="question-mark">?</span>;
             <span class="kw">let </span>base_url = <span class="macro">format!</span>(<span class="string">"http://{}"</span>, <span class="kw-2">&amp;</span>env.electrsd.esplora_url.clone().unwrap());
             <span class="kw">let </span>client = Builder::new(base_url.as_str()).build_blocking();
@@ -1444,7 +1436,6 @@
                 chain.apply_update(update)<span class="question-mark">?</span>;
                 chain
             };
-            <span class="macro">println!</span>(<span class="string">"local chain height: {}"</span>, local_chain.tip().height());
 
             <span class="comment">// extend env chain
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(to_mine) = t
@@ -1486,10 +1477,6 @@
             <span class="comment">// apply update
             </span><span class="kw">let </span><span class="kw-2">mut </span>updated_local_chain = local_chain.clone();
             updated_local_chain.apply_update(update)<span class="question-mark">?</span>;
-            <span class="macro">println!</span>(
-                <span class="string">"updated local chain height: {}"</span>,
-                updated_local_chain.tip().height()
-            );
 
             <span class="macro">assert!</span>(
                 {
@@ -1650,7 +1637,6 @@
         ];
 
         <span class="kw">for </span>(i, t) <span class="kw">in </span>test_cases.into_iter().enumerate() {
-            <span class="macro">println!</span>(<span class="string">"Case {}: {}"</span>, i, t.name);
             <span class="kw">let </span><span class="kw-2">mut </span>chain = t.chain;
 
             <span class="kw">let </span>mock_anchors = t
