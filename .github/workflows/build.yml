@@ -3,6 +3,9 @@ name: Build
 on:
   # Run the build for pushes and pull requests targeting master
   push:
+    tags:
+      - '**[0-9]+.[0-9]+.[0-9]+*'
+      - '**'
     branches:
       - master
   pull_request:
@@ -14,6 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    strategy:
+      matrix:
+        node-version: ['16.x']
     steps:
       # Checkout and setup
       - name: Checkout
@@ -21,7 +27,7 @@ jobs:
       - name: Setup
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: ${{ matrix.node-version }}
       # Install and build
       - name: Install
         run: npm ci
