@@ -2634,6 +2634,26 @@
 <a href="#2634" id="2634">2634</a>
 <a href="#2635" id="2635">2635</a>
 <a href="#2636" id="2636">2636</a>
+<a href="#2637" id="2637">2637</a>
+<a href="#2638" id="2638">2638</a>
+<a href="#2639" id="2639">2639</a>
+<a href="#2640" id="2640">2640</a>
+<a href="#2641" id="2641">2641</a>
+<a href="#2642" id="2642">2642</a>
+<a href="#2643" id="2643">2643</a>
+<a href="#2644" id="2644">2644</a>
+<a href="#2645" id="2645">2645</a>
+<a href="#2646" id="2646">2646</a>
+<a href="#2647" id="2647">2647</a>
+<a href="#2648" id="2648">2648</a>
+<a href="#2649" id="2649">2649</a>
+<a href="#2650" id="2650">2650</a>
+<a href="#2651" id="2651">2651</a>
+<a href="#2652" id="2652">2652</a>
+<a href="#2653" id="2653">2653</a>
+<a href="#2654" id="2654">2654</a>
+<a href="#2655" id="2655">2655</a>
+<a href="#2656" id="2656">2656</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2681,6 +2701,7 @@
 <span class="kw">use </span>bitcoin::{consensus::encode::serialize, transaction, BlockHash, Psbt};
 <span class="kw">use </span>bitcoin::{constants::genesis_block, Amount};
 <span class="kw">use </span>bitcoin::{secp256k1::Secp256k1, Weight};
+<span class="kw">use </span>core::cmp::Ordering;
 <span class="kw">use </span>core::fmt;
 <span class="kw">use </span>core::mem;
 <span class="kw">use </span>core::ops::Deref;
@@ -2926,6 +2947,9 @@
 
 <span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>ApplyBlockError {}
+
+<span class="doccomment">/// A `CanonicalTx` managed by a `Wallet`.
+</span><span class="kw">pub type </span>WalletTx&lt;<span class="lifetime">'a</span>&gt; = CanonicalTx&lt;<span class="lifetime">'a</span>, Arc&lt;Transaction&gt;, ConfirmationBlockTime&gt;;
 
 <span class="kw">impl </span>Wallet {
     <span class="doccomment">/// Build a new single descriptor [`Wallet`].
@@ -3638,9 +3662,9 @@
         <span class="self">self</span>.indexed_graph.index.sent_and_received(tx, ..)
     }
 
-    <span class="doccomment">/// Get a single transaction from the wallet as a [`CanonicalTx`] (if the transaction exists).
+    <span class="doccomment">/// Get a single transaction from the wallet as a [`WalletTx`] (if the transaction exists).
     ///
-    /// `CanonicalTx` contains the full transaction alongside meta-data such as:
+    /// `WalletTx` contains the full transaction alongside meta-data such as:
     /// * Blocks that the transaction is [`Anchor`]ed in. These may or may not be blocks that exist
     ///   in the best chain.
     /// * The [`ChainPosition`] of the transaction in the best chain - whether the transaction is
@@ -3654,13 +3678,13 @@
     /// # let wallet: Wallet = todo!();
     /// # let my_txid: bitcoin::Txid = todo!();
     ///
-    /// let canonical_tx = wallet.get_tx(my_txid).expect("panic if tx does not exist");
+    /// let wallet_tx = wallet.get_tx(my_txid).expect("panic if tx does not exist");
     ///
     /// // get reference to full transaction
-    /// println!("my tx: {:#?}", canonical_tx.tx_node.tx);
+    /// println!("my tx: {:#?}", wallet_tx.tx_node.tx);
     ///
     /// // list all transaction anchors
-    /// for anchor in canonical_tx.tx_node.anchors {
+    /// for anchor in wallet_tx.tx_node.anchors {
     ///     println!(
     ///         "tx is anchored by block of hash {}",
     ///         anchor.anchor_block().hash
@@ -3668,7 +3692,7 @@
     /// }
     ///
     /// // get confirmation status of transaction
-    /// match canonical_tx.chain_position {
+    /// match wallet_tx.chain_position {
     ///     ChainPosition::Confirmed(anchor) =&gt; println!(
     ///         "tx is confirmed at height {}, we know this since {}:{} is in the best chain",
     ///         anchor.block_id.height, anchor.block_id.height, anchor.block_id.hash,
@@ -3681,13 +3705,10 @@
     /// ```
     ///
     /// [`Anchor`]: bdk_chain::Anchor
-    </span><span class="kw">pub fn </span>get_tx(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        txid: Txid,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;CanonicalTx&lt;<span class="lifetime">'_</span>, Arc&lt;Transaction&gt;, ConfirmationBlockTime&gt;&gt; {
+    </span><span class="kw">pub fn </span>get_tx(<span class="kw-2">&amp;</span><span class="self">self</span>, txid: Txid) -&gt; <span class="prelude-ty">Option</span>&lt;WalletTx&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.indexed_graph.graph();
 
-        <span class="prelude-val">Some</span>(CanonicalTx {
+        <span class="prelude-val">Some</span>(WalletTx {
             chain_position: graph.get_chain_position(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
                 <span class="self">self</span>.chain.tip().block_id(),
@@ -3738,12 +3759,31 @@
     }
 
     <span class="doccomment">/// Iterate over the transactions in the wallet.
-    </span><span class="kw">pub fn </span>transactions(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = CanonicalTx&lt;<span class="lifetime">'_</span>, Arc&lt;Transaction&gt;, ConfirmationBlockTime&gt;&gt; + <span class="lifetime">'_ </span>{
+    </span><span class="kw">pub fn </span>transactions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = WalletTx&gt; + <span class="lifetime">'_ </span>{
         <span class="self">self</span>.indexed_graph
             .graph()
             .list_canonical_txs(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, <span class="self">self</span>.chain.tip().block_id())
+    }
+
+    <span class="doccomment">/// Array of transactions in the wallet sorted with a comparator function.
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use bdk_wallet::{LoadParams, Wallet, WalletTx};
+    /// # let mut wallet:Wallet = todo!();
+    /// // Transactions by chain position: first unconfirmed then descending by confirmed height.
+    /// let sorted_txs: Vec&lt;WalletTx&gt; =
+    ///     wallet.transactions_sort_by(|tx1, tx2| tx2.chain_position.cmp(&amp;tx1.chain_position));
+    /// # Ok::&lt;(), anyhow::Error&gt;(())
+    /// ```
+    </span><span class="kw">pub fn </span>transactions_sort_by&lt;F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, compare: F) -&gt; Vec&lt;WalletTx&gt;
+    <span class="kw">where
+        </span>F: FnMut(<span class="kw-2">&amp;</span>WalletTx, <span class="kw-2">&amp;</span>WalletTx) -&gt; Ordering,
+    {
+        <span class="kw">let </span><span class="kw-2">mut </span>txs: Vec&lt;WalletTx&gt; = <span class="self">self</span>.transactions().collect();
+        txs.sort_unstable_by(compare);
+        txs
     }
 
     <span class="doccomment">/// Return the balance, separated into available, trusted-pending, untrusted-pending and immature
