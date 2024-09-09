@@ -1111,11 +1111,6 @@
 <a href="#1111" id="1111">1111</a>
 <a href="#1112" id="1112">1112</a>
 <a href="#1113" id="1113">1113</a>
-<a href="#1114" id="1114">1114</a>
-<a href="#1115" id="1115">1115</a>
-<a href="#1116" id="1116">1116</a>
-<a href="#1117" id="1117">1117</a>
-<a href="#1118" id="1118">1118</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1240,7 +1235,7 @@
 </span><span class="comment">//TODO: TxParams should eventually be exposed publicly.
 </span><span class="attr">#[derive(Default, Debug, Clone)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>TxParams {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) recipients: Vec&lt;(ScriptBuf, u64)&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) recipients: Vec&lt;(ScriptBuf, Amount)&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) drain_wallet: bool,
     <span class="kw">pub</span>(<span class="kw">crate</span>) drain_to: <span class="prelude-ty">Option</span>&lt;ScriptBuf&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) fee_policy: <span class="prelude-ty">Option</span>&lt;FeePolicy&gt;,
@@ -1265,14 +1260,14 @@
 
 <span class="attr">#[derive(Clone, Copy, Debug)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>PreviousFee {
-    <span class="kw">pub </span>absolute: u64,
+    <span class="kw">pub </span>absolute: Amount,
     <span class="kw">pub </span>rate: FeeRate,
 }
 
 <span class="attr">#[derive(Debug, Clone, Copy)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>FeePolicy {
     FeeRate(FeeRate),
-    FeeAmount(u64),
+    FeeAmount(Amount),
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>FeePolicy {
@@ -1318,7 +1313,7 @@
     /// overshoot it slightly since adding a change output to drain the remaining
     /// excess might not be viable.
     </span><span class="kw">pub fn </span>fee_absolute(<span class="kw-2">&amp;mut </span><span class="self">self</span>, fee_amount: Amount) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
-        <span class="self">self</span>.params.fee_policy = <span class="prelude-val">Some</span>(FeePolicy::FeeAmount(fee_amount.to_sat()));
+        <span class="self">self</span>.params.fee_policy = <span class="prelude-val">Some</span>(FeePolicy::FeeAmount(fee_amount));
         <span class="self">self
     </span>}
 
@@ -1719,18 +1714,13 @@
 
     <span class="doccomment">/// Replace the recipients already added with a new list
     </span><span class="kw">pub fn </span>set_recipients(<span class="kw-2">&amp;mut </span><span class="self">self</span>, recipients: Vec&lt;(ScriptBuf, Amount)&gt;) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
-        <span class="self">self</span>.params.recipients = recipients
-            .into_iter()
-            .map(|(script, amount)| (script, amount.to_sat()))
-            .collect();
+        <span class="self">self</span>.params.recipients = recipients;
         <span class="self">self
     </span>}
 
     <span class="doccomment">/// Add a recipient to the internal list
     </span><span class="kw">pub fn </span>add_recipient(<span class="kw-2">&amp;mut </span><span class="self">self</span>, script_pubkey: ScriptBuf, amount: Amount) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
-        <span class="self">self</span>.params
-            .recipients
-            .push((script_pubkey, amount.to_sat()));
+        <span class="self">self</span>.params.recipients.push((script_pubkey, amount));
         <span class="self">self
     </span>}
 
