@@ -4084,7 +4084,7 @@
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(previous_fee) = params.bumping_fee {
                     <span class="kw">if </span>fee &lt; previous_fee.absolute {
                         <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::FeeTooLow {
-                            required: Amount::from_sat(previous_fee.absolute),
+                            required: previous_fee.absolute,
                         });
                     }
                 }
@@ -4102,7 +4102,7 @@
                         });
                     }
                 }
-                (rate, <span class="number">0</span>)
+                (rate, Amount::ZERO)
             }
         };
 
@@ -4128,20 +4128,20 @@
             }
 
             <span class="kw">if </span><span class="self">self</span>.is_mine(script_pubkey.clone()) {
-                received += Amount::from_sat(value);
+                received += value;
             }
 
             <span class="kw">let </span>new_out = TxOut {
                 script_pubkey: script_pubkey.clone(),
-                value: Amount::from_sat(value),
+                value,
             };
 
             tx.output.push(new_out);
 
-            outgoing += Amount::from_sat(value);
+            outgoing += value;
         }
 
-        fee_amount += (fee_rate * tx.weight()).to_sat();
+        fee_amount += fee_rate * tx.weight();
 
         <span class="kw">let </span>(required_utxos, optional_utxos) =
             <span class="self">self</span>.preselect_utxos(<span class="kw-2">&amp;</span>params, <span class="prelude-val">Some</span>(current_height.to_consensus_u32()));
@@ -4180,7 +4180,7 @@
             required_utxos.clone(),
             optional_utxos.clone(),
             fee_rate,
-            outgoing.to_sat() + fee_amount,
+            outgoing.to_sat() + fee_amount.to_sat(),
             <span class="kw-2">&amp;</span>drain_script,
         ) {
             <span class="prelude-val">Ok</span>(res) =&gt; res,
@@ -4193,7 +4193,7 @@
                     coin_selection::single_random_draw(
                         required_utxos,
                         optional_utxos,
-                        outgoing.to_sat() + fee_amount,
+                        outgoing.to_sat() + fee_amount.to_sat(),
                         <span class="kw-2">&amp;</span>drain_script,
                         fee_rate,
                         rng,
@@ -4201,7 +4201,7 @@
                 }
             },
         };
-        fee_amount += coin_selection.fee_amount;
+        fee_amount += Amount::from_sat(coin_selection.fee_amount);
         <span class="kw">let </span>excess = <span class="kw-2">&amp;</span>coin_selection.excess;
 
         tx.input = coin_selection
@@ -4243,12 +4243,12 @@
         <span class="kw">match </span>excess {
             NoChange {
                 remaining_amount, ..
-            } =&gt; fee_amount += remaining_amount,
+            } =&gt; fee_amount += Amount::from_sat(<span class="kw-2">*</span>remaining_amount),
             Change { amount, fee } =&gt; {
                 <span class="kw">if </span><span class="self">self</span>.is_mine(drain_script.clone()) {
                     received += Amount::from_sat(<span class="kw-2">*</span>amount);
                 }
-                fee_amount += fee;
+                fee_amount += Amount::from_sat(<span class="kw-2">*</span>fee);
 
                 <span class="comment">// create drain output
                 </span><span class="kw">let </span>drain_output = TxOut {
@@ -4442,11 +4442,11 @@
             recipients: tx
                 .output
                 .into_iter()
-                .map(|txout| (txout.script_pubkey, txout.value.to_sat()))
+                .map(|txout| (txout.script_pubkey, txout.value))
                 .collect(),
             utxos: original_utxos,
             bumping_fee: <span class="prelude-val">Some</span>(tx_builder::PreviousFee {
-                absolute: fee.to_sat(),
+                absolute: fee,
                 rate: fee_rate,
             }),
             ..Default::default()

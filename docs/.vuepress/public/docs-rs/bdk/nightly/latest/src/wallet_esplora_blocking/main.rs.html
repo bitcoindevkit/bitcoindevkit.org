@@ -91,8 +91,6 @@
 <a href="#91" id="91">91</a>
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{collections::BTreeSet, io::Write};
 
 <span class="kw">use </span>bdk_esplora::{esplora_client, EsploraExt};
@@ -137,7 +135,7 @@
     );
 
     <span class="kw">let </span>balance = wallet.balance();
-    <span class="macro">println!</span>(<span class="string">"Wallet balance before syncing: {} sats"</span>, balance.total());
+    <span class="macro">println!</span>(<span class="string">"Wallet balance before syncing: {}"</span>, balance.total());
 
     <span class="macro">print!</span>(<span class="string">"Syncing..."</span>);
     <span class="kw">let </span>client = esplora_client::Builder::new(ESPLORA_URL).build_blocking();
@@ -157,17 +155,15 @@
     <span class="kw">let </span>update = client.full_scan(request, STOP_GAP, PARALLEL_REQUESTS)<span class="question-mark">?</span>;
 
     wallet.apply_update(update)<span class="question-mark">?</span>;
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(changeset) = wallet.take_staged() {
-        db.append_changeset(<span class="kw-2">&amp;</span>changeset)<span class="question-mark">?</span>;
-    }
+    wallet.persist(<span class="kw-2">&amp;mut </span>db)<span class="question-mark">?</span>;
     <span class="macro">println!</span>();
 
     <span class="kw">let </span>balance = wallet.balance();
-    <span class="macro">println!</span>(<span class="string">"Wallet balance after syncing: {} sats"</span>, balance.total());
+    <span class="macro">println!</span>(<span class="string">"Wallet balance after syncing: {}"</span>, balance.total());
 
     <span class="kw">if </span>balance.total() &lt; SEND_AMOUNT {
         <span class="macro">println!</span>(
-            <span class="string">"Please send at least {} sats to the receiving address"</span>,
+            <span class="string">"Please send at least {} to the receiving address"</span>,
             SEND_AMOUNT
         );
         std::process::exit(<span class="number">0</span>);
