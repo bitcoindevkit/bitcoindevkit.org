@@ -383,7 +383,7 @@
 //! [`IndexedTxGraph`] documentation for more.
 </span><span class="kw">use </span>core::fmt::Debug;
 
-<span class="kw">use </span>alloc::vec::Vec;
+<span class="kw">use </span>alloc::{sync::Arc, vec::Vec};
 <span class="kw">use </span>bitcoin::{Block, OutPoint, Transaction, TxOut, Txid};
 
 <span class="kw">use crate</span>::{
@@ -514,13 +514,10 @@
     }
 
     <span class="doccomment">/// Insert and index a transaction into the graph.
-    </span><span class="kw">pub fn </span>insert_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: Transaction) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
-        <span class="kw">let </span>graph = <span class="self">self</span>.graph.insert_tx(tx);
-        <span class="kw">let </span>indexer = <span class="self">self</span>.index_tx_graph_changeset(<span class="kw-2">&amp;</span>graph);
-        ChangeSet {
-            tx_graph: graph,
-            indexer,
-        }
+    </span><span class="kw">pub fn </span>insert_tx&lt;T: Into&lt;Arc&lt;Transaction&gt;&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: T) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
+        <span class="kw">let </span>tx_graph = <span class="self">self</span>.graph.insert_tx(tx);
+        <span class="kw">let </span>indexer = <span class="self">self</span>.index_tx_graph_changeset(<span class="kw-2">&amp;</span>tx_graph);
+        ChangeSet { tx_graph, indexer }
     }
 
     <span class="doccomment">/// Insert an `anchor` for a given transaction.
@@ -540,9 +537,9 @@
     ///
     /// Relevancy is determined by the [`Indexer::is_tx_relevant`] implementation of `I`. Irrelevant
     /// transactions in `txs` will be ignored. `txs` do not need to be in topological order.
-    </span><span class="kw">pub fn </span>batch_insert_relevant&lt;<span class="lifetime">'t</span>&gt;(
+    </span><span class="kw">pub fn </span>batch_insert_relevant&lt;T: Into&lt;Arc&lt;Transaction&gt;&gt;&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        txs: <span class="kw">impl </span>IntoIterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">'t </span>Transaction, <span class="kw">impl </span>IntoIterator&lt;Item = A&gt;)&gt;,
+        txs: <span class="kw">impl </span>IntoIterator&lt;Item = (T, <span class="kw">impl </span>IntoIterator&lt;Item = A&gt;)&gt;,
     ) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
         <span class="comment">// The algorithm below allows for non-topologically ordered transactions by using two loops.
         // This is achieved by:
@@ -550,28 +547,28 @@
         //    not store anything about them.
         // 2. decide whether to insert them into the graph depending on whether `is_tx_relevant`
         //    returns true or not. (in a second loop).
-        </span><span class="kw">let </span>txs = txs.into_iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+        </span><span class="kw">let </span>txs = txs
+            .into_iter()
+            .map(|(tx, anchors)| (&lt;T <span class="kw">as </span>Into&lt;Arc&lt;Transaction&gt;&gt;&gt;::into(tx), anchors))
+            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
         <span class="kw">let </span><span class="kw-2">mut </span>indexer = I::ChangeSet::default();
         <span class="kw">for </span>(tx, <span class="kw">_</span>) <span class="kw">in </span><span class="kw-2">&amp;</span>txs {
             indexer.merge(<span class="self">self</span>.index.index_tx(tx));
         }
 
-        <span class="kw">let </span><span class="kw-2">mut </span>graph = tx_graph::ChangeSet::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>tx_graph = tx_graph::ChangeSet::default();
         <span class="kw">for </span>(tx, anchors) <span class="kw">in </span>txs {
-            <span class="kw">if </span><span class="self">self</span>.index.is_tx_relevant(tx) {
+            <span class="kw">if </span><span class="self">self</span>.index.is_tx_relevant(<span class="kw-2">&amp;</span>tx) {
                 <span class="kw">let </span>txid = tx.compute_txid();
-                graph.merge(<span class="self">self</span>.graph.insert_tx(tx.clone()));
+                tx_graph.merge(<span class="self">self</span>.graph.insert_tx(tx.clone()));
                 <span class="kw">for </span>anchor <span class="kw">in </span>anchors {
-                    graph.merge(<span class="self">self</span>.graph.insert_anchor(txid, anchor));
+                    tx_graph.merge(<span class="self">self</span>.graph.insert_anchor(txid, anchor));
                 }
             }
         }
 
-        ChangeSet {
-            tx_graph: graph,
-            indexer,
-        }
+        ChangeSet { tx_graph, indexer }
     }
 
     <span class="doccomment">/// Batch insert unconfirmed transactions, filtering out those that are irrelevant.
@@ -582,9 +579,9 @@
     /// Items of `txs` are tuples containing the transaction and a *last seen* timestamp. The
     /// *last seen* communicates when the transaction is last seen in the mempool which is used for
     /// conflict-resolution in [`TxGraph`] (refer to [`TxGraph::insert_seen_at`] for details).
-    </span><span class="kw">pub fn </span>batch_insert_relevant_unconfirmed&lt;<span class="lifetime">'t</span>&gt;(
+    </span><span class="kw">pub fn </span>batch_insert_relevant_unconfirmed&lt;T: Into&lt;Arc&lt;Transaction&gt;&gt;&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        unconfirmed_txs: <span class="kw">impl </span>IntoIterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">'t </span>Transaction, u64)&gt;,
+        unconfirmed_txs: <span class="kw">impl </span>IntoIterator&lt;Item = (T, u64)&gt;,
     ) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
         <span class="comment">// The algorithm below allows for non-topologically ordered transactions by using two loops.
         // This is achieved by:
@@ -592,7 +589,10 @@
         //    not store anything about them.
         // 2. decide whether to insert them into the graph depending on whether `is_tx_relevant`
         //    returns true or not. (in a second loop).
-        </span><span class="kw">let </span>txs = unconfirmed_txs.into_iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+        </span><span class="kw">let </span>txs = unconfirmed_txs
+            .into_iter()
+            .map(|(tx, last_seen)| (&lt;T <span class="kw">as </span>Into&lt;Arc&lt;Transaction&gt;&gt;&gt;::into(tx), last_seen))
+            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
         <span class="kw">let </span><span class="kw-2">mut </span>indexer = I::ChangeSet::default();
         <span class="kw">for </span>(tx, <span class="kw">_</span>) <span class="kw">in </span><span class="kw-2">&amp;</span>txs {
@@ -620,9 +620,9 @@
     /// To filter out irrelevant transactions, use [`batch_insert_relevant_unconfirmed`] instead.
     ///
     /// [`batch_insert_relevant_unconfirmed`]: IndexedTxGraph::batch_insert_relevant_unconfirmed
-    </span><span class="kw">pub fn </span>batch_insert_unconfirmed(
+    </span><span class="kw">pub fn </span>batch_insert_unconfirmed&lt;T: Into&lt;Arc&lt;Transaction&gt;&gt;&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        txs: <span class="kw">impl </span>IntoIterator&lt;Item = (Transaction, u64)&gt;,
+        txs: <span class="kw">impl </span>IntoIterator&lt;Item = (T, u64)&gt;,
     ) -&gt; ChangeSet&lt;A, I::ChangeSet&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.graph.batch_insert_unconfirmed(txs);
         <span class="kw">let </span>indexer = <span class="self">self</span>.index_tx_graph_changeset(<span class="kw-2">&amp;</span>graph);

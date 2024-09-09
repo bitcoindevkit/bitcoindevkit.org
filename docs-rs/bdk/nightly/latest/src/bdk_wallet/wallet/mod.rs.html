@@ -3773,7 +3773,7 @@
     /// By default the inserted `tx` won't be considered "canonical" because it's not known
     /// whether the transaction exists in the best chain. To know whether it exists, the tx
     /// must be broadcast to the network and the wallet synced via a chain source.
-    </span><span class="kw">pub fn </span>insert_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: Transaction) -&gt; bool {
+    </span><span class="kw">pub fn </span>insert_tx&lt;T: Into&lt;Arc&lt;Transaction&gt;&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: T) -&gt; bool {
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
         changeset.merge(<span class="self">self</span>.indexed_graph.insert_tx(tx).into());
         <span class="kw">let </span>ret = !changeset.is_empty();
@@ -5163,9 +5163,9 @@
     /// **WARNING**: You must persist the changes resulting from one or more calls to this method
     /// if you need the applied unconfirmed transactions to be reloaded after closing the wallet.
     /// See [`Wallet::reveal_next_address`].
-    </span><span class="kw">pub fn </span>apply_unconfirmed_txs&lt;<span class="lifetime">'t</span>&gt;(
+    </span><span class="kw">pub fn </span>apply_unconfirmed_txs&lt;T: Into&lt;Arc&lt;Transaction&gt;&gt;&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        unconfirmed_txs: <span class="kw">impl </span>IntoIterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">'t </span>Transaction, u64)&gt;,
+        unconfirmed_txs: <span class="kw">impl </span>IntoIterator&lt;Item = (T, u64)&gt;,
     ) {
         <span class="kw">let </span>indexed_graph_changeset = <span class="self">self
             </span>.indexed_graph
