@@ -2677,6 +2677,9 @@
 <a href="#2677" id="2677">2677</a>
 <a href="#2678" id="2678">2678</a>
 <a href="#2679" id="2679">2679</a>
+<a href="#2680" id="2680">2680</a>
+<a href="#2681" id="2681">2681</a>
+<a href="#2682" id="2682">2682</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -3069,6 +3072,7 @@
         <span class="kw">let </span>(chain, chain_changeset) = LocalChain::from_genesis_hash(genesis_hash);
 
         <span class="kw">let </span>(descriptor, <span class="kw-2">mut </span>descriptor_keymap) = (params.descriptor)(<span class="kw-2">&amp;</span>secp, network)<span class="question-mark">?</span>;
+        check_wallet_descriptor(<span class="kw-2">&amp;</span>descriptor)<span class="question-mark">?</span>;
         descriptor_keymap.extend(params.descriptor_keymap);
 
         <span class="kw">let </span>signers = Arc::new(SignersContainer::build(
@@ -3080,6 +3084,7 @@
         <span class="kw">let </span>(change_descriptor, change_signers) = <span class="kw">match </span>params.change_descriptor {
             <span class="prelude-val">Some</span>(make_desc) =&gt; {
                 <span class="kw">let </span>(change_descriptor, <span class="kw-2">mut </span>internal_keymap) = make_desc(<span class="kw-2">&amp;</span>secp, network)<span class="question-mark">?</span>;
+                check_wallet_descriptor(<span class="kw-2">&amp;</span>change_descriptor)<span class="question-mark">?</span>;
                 internal_keymap.extend(params.change_descriptor_keymap);
                 <span class="kw">let </span>change_signers = Arc::new(SignersContainer::build(
                     internal_keymap,
@@ -3261,6 +3266,7 @@
                 }
                 <span class="comment">// parameters must match
                 </span><span class="prelude-val">Some</span>(make_desc) =&gt; {
+                    check_wallet_descriptor(<span class="kw-2">&amp;</span>desc).map_err(LoadError::Descriptor)<span class="question-mark">?</span>;
                     <span class="kw">let </span>(exp_desc, keymap) =
                         make_desc(<span class="kw-2">&amp;</span>secp, network).map_err(LoadError::Descriptor)<span class="question-mark">?</span>;
                     <span class="kw">if </span>desc.descriptor_id() != exp_desc.descriptor_id() {
