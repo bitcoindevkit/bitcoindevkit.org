@@ -1757,37 +1757,6 @@
 <a href="#1757" id="1757">1757</a>
 <a href="#1758" id="1758">1758</a>
 <a href="#1759" id="1759">1759</a>
-<a href="#1760" id="1760">1760</a>
-<a href="#1761" id="1761">1761</a>
-<a href="#1762" id="1762">1762</a>
-<a href="#1763" id="1763">1763</a>
-<a href="#1764" id="1764">1764</a>
-<a href="#1765" id="1765">1765</a>
-<a href="#1766" id="1766">1766</a>
-<a href="#1767" id="1767">1767</a>
-<a href="#1768" id="1768">1768</a>
-<a href="#1769" id="1769">1769</a>
-<a href="#1770" id="1770">1770</a>
-<a href="#1771" id="1771">1771</a>
-<a href="#1772" id="1772">1772</a>
-<a href="#1773" id="1773">1773</a>
-<a href="#1774" id="1774">1774</a>
-<a href="#1775" id="1775">1775</a>
-<a href="#1776" id="1776">1776</a>
-<a href="#1777" id="1777">1777</a>
-<a href="#1778" id="1778">1778</a>
-<a href="#1779" id="1779">1779</a>
-<a href="#1780" id="1780">1780</a>
-<a href="#1781" id="1781">1781</a>
-<a href="#1782" id="1782">1782</a>
-<a href="#1783" id="1783">1783</a>
-<a href="#1784" id="1784">1784</a>
-<a href="#1785" id="1785">1785</a>
-<a href="#1786" id="1786">1786</a>
-<a href="#1787" id="1787">1787</a>
-<a href="#1788" id="1788">1788</a>
-<a href="#1789" id="1789">1789</a>
-<a href="#1790" id="1790">1790</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2192,7 +2161,7 @@
     fallback_algorithm: Cs,
 }
 
-<span class="doccomment">/// Error returned by branch and bond coin selection.
+<span class="doccomment">/// Error returned by branch and bound coin selection.
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">enum </span>BnbError {
     <span class="doccomment">/// Branch and bound coin selection tries to avoid needing a change by finding the right inputs for
@@ -2311,8 +2280,8 @@
         }
 
         <span class="kw">match </span><span class="self">self</span>.bnb(
-            required_ogs.clone(),
-            optional_ogs.clone(),
+            required_ogs,
+            optional_ogs,
             curr_value,
             curr_available_value,
             signed_target_amount,
@@ -2461,73 +2430,25 @@
     <span class="kw">fn </span>coin_select&lt;R: RngCore&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         required_utxos: Vec&lt;WeightedUtxo&gt;,
-        optional_utxos: Vec&lt;WeightedUtxo&gt;,
+        <span class="kw-2">mut </span>optional_utxos: Vec&lt;WeightedUtxo&gt;,
         fee_rate: FeeRate,
         target_amount: u64,
         drain_script: <span class="kw-2">&amp;</span>Script,
         rand: <span class="kw-2">&amp;mut </span>R,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;CoinSelectionResult, InsufficientFunds&gt; {
-        <span class="prelude-val">Ok</span>(single_random_draw(
-            required_utxos,
-            optional_utxos,
-            target_amount,
-            drain_script,
-            fee_rate,
-            rand,
-        ))
+        <span class="comment">// We put the required UTXOs first and then the randomize optional UTXOs to take as needed
+        </span><span class="kw">let </span>utxos = {
+            shuffle_slice(<span class="kw-2">&amp;mut </span>optional_utxos, rand);
+
+            required_utxos
+                .into_iter()
+                .map(|utxo| (<span class="bool-val">true</span>, utxo))
+                .chain(optional_utxos.into_iter().map(|utxo| (<span class="bool-val">false</span>, utxo)))
+        };
+
+        <span class="comment">// select required UTXOs and then random optional UTXOs.
+        </span>select_sorted_utxos(utxos, fee_rate, target_amount, drain_script)
     }
-}
-
-<span class="comment">// Pull UTXOs at random until we have enough to meet the target
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>single_random_draw(
-    required_utxos: Vec&lt;WeightedUtxo&gt;,
-    optional_utxos: Vec&lt;WeightedUtxo&gt;,
-    target_amount: u64,
-    drain_script: <span class="kw-2">&amp;</span>Script,
-    fee_rate: FeeRate,
-    rng: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>RngCore,
-) -&gt; CoinSelectionResult {
-    <span class="kw">let </span>target_amount = target_amount
-        .try_into()
-        .expect(<span class="string">"Bitcoin amount to fit into i64"</span>);
-
-    <span class="kw">let </span>required_utxos: Vec&lt;OutputGroup&gt; = required_utxos
-        .into_iter()
-        .map(|u| OutputGroup::new(u, fee_rate))
-        .collect();
-
-    <span class="kw">let </span><span class="kw-2">mut </span>optional_utxos: Vec&lt;OutputGroup&gt; = optional_utxos
-        .into_iter()
-        .map(|u| OutputGroup::new(u, fee_rate))
-        .collect();
-
-    <span class="kw">let </span>curr_value = required_utxos
-        .iter()
-        .fold(<span class="number">0</span>, |acc, x| acc + x.effective_value);
-
-    shuffle_slice(<span class="kw-2">&amp;mut </span>optional_utxos, rng);
-
-    <span class="kw">let </span>selected_utxos =
-        optional_utxos
-            .into_iter()
-            .fold((curr_value, <span class="macro">vec!</span>[]), |(<span class="kw-2">mut </span>amount, <span class="kw-2">mut </span>utxos), utxo| {
-                <span class="kw">if </span>amount &gt;= target_amount {
-                    (amount, utxos)
-                } <span class="kw">else </span>{
-                    amount += utxo.effective_value;
-                    utxos.push(utxo);
-                    (amount, utxos)
-                }
-            });
-
-    <span class="comment">// remaining_amount can't be negative as that would mean the
-    // selection wasn't successful
-    // target_amount = amount_needed + (fee_amount - vin_fees)
-    </span><span class="kw">let </span>remaining_amount = (selected_utxos.<span class="number">0 </span>- target_amount) <span class="kw">as </span>u64;
-
-    <span class="kw">let </span>excess = decide_change(remaining_amount, fee_rate, drain_script);
-
-    calculate_cs_result(selected_utxos.<span class="number">1</span>, required_utxos, excess)
 }
 
 <span class="kw">fn </span>calculate_cs_result(
@@ -2793,41 +2714,37 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">"InsufficientFunds"</span>)]
     </span><span class="kw">fn </span>test_largest_first_coin_selection_insufficient_funds() {
         <span class="kw">let </span>utxos = get_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">500_000 </span>+ FEE_AMOUNT;
 
-        LargestFirstCoinSelection
-            .coin_select(
-                <span class="macro">vec!</span>[],
-                utxos,
-                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
-                target_amount,
-                <span class="kw-2">&amp;</span>drain_script,
-                <span class="kw-2">&amp;mut </span>thread_rng(),
-            )
-            .unwrap();
+        <span class="kw">let </span>result = LargestFirstCoinSelection.coin_select(
+            <span class="macro">vec!</span>[],
+            utxos,
+            FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
+            target_amount,
+            <span class="kw-2">&amp;</span>drain_script,
+            <span class="kw-2">&amp;mut </span>thread_rng(),
+        );
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(result, <span class="prelude-val">Err</span>(InsufficientFunds { .. })));
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">"InsufficientFunds"</span>)]
     </span><span class="kw">fn </span>test_largest_first_coin_selection_insufficient_funds_high_fees() {
         <span class="kw">let </span>utxos = get_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">250_000 </span>+ FEE_AMOUNT;
 
-        LargestFirstCoinSelection
-            .coin_select(
-                <span class="macro">vec!</span>[],
-                utxos,
-                FeeRate::from_sat_per_vb_unchecked(<span class="number">1000</span>),
-                target_amount,
-                <span class="kw-2">&amp;</span>drain_script,
-                <span class="kw-2">&amp;mut </span>thread_rng(),
-            )
-            .unwrap();
+        <span class="kw">let </span>result = LargestFirstCoinSelection.coin_select(
+            <span class="macro">vec!</span>[],
+            utxos,
+            FeeRate::from_sat_per_vb_unchecked(<span class="number">1000</span>),
+            target_amount,
+            <span class="kw-2">&amp;</span>drain_script,
+            <span class="kw-2">&amp;mut </span>thread_rng(),
+        );
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(result, <span class="prelude-val">Err</span>(InsufficientFunds { .. })));
     }
 
     <span class="attr">#[test]
@@ -2897,26 +2814,23 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">"InsufficientFunds"</span>)]
     </span><span class="kw">fn </span>test_oldest_first_coin_selection_insufficient_funds() {
         <span class="kw">let </span>utxos = get_oldest_first_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">600_000 </span>+ FEE_AMOUNT;
 
-        OldestFirstCoinSelection
-            .coin_select(
-                <span class="macro">vec!</span>[],
-                utxos,
-                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
-                target_amount,
-                <span class="kw-2">&amp;</span>drain_script,
-                <span class="kw-2">&amp;mut </span>thread_rng(),
-            )
-            .unwrap();
+        <span class="kw">let </span>result = OldestFirstCoinSelection.coin_select(
+            <span class="macro">vec!</span>[],
+            utxos,
+            FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
+            target_amount,
+            <span class="kw-2">&amp;</span>drain_script,
+            <span class="kw-2">&amp;mut </span>thread_rng(),
+        );
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(result, <span class="prelude-val">Err</span>(InsufficientFunds { .. })));
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">"InsufficientFunds"</span>)]
     </span><span class="kw">fn </span>test_oldest_first_coin_selection_insufficient_funds_high_fees() {
         <span class="kw">let </span>utxos = get_oldest_first_test_utxos();
 
@@ -2927,16 +2841,15 @@
             - <span class="number">50</span>;
         <span class="kw">let </span>drain_script = ScriptBuf::default();
 
-        OldestFirstCoinSelection
-            .coin_select(
-                <span class="macro">vec!</span>[],
-                utxos,
-                FeeRate::from_sat_per_vb_unchecked(<span class="number">1000</span>),
-                target_amount,
-                <span class="kw-2">&amp;</span>drain_script,
-                <span class="kw-2">&amp;mut </span>thread_rng(),
-            )
-            .unwrap();
+        <span class="kw">let </span>result = OldestFirstCoinSelection.coin_select(
+            <span class="macro">vec!</span>[],
+            utxos,
+            FeeRate::from_sat_per_vb_unchecked(<span class="number">1000</span>),
+            target_amount,
+            <span class="kw-2">&amp;</span>drain_script,
+            <span class="kw-2">&amp;mut </span>thread_rng(),
+        );
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(result, <span class="prelude-val">Err</span>(InsufficientFunds { .. })));
     }
 
     <span class="attr">#[test]
@@ -3017,16 +2930,46 @@
         <span class="kw">let </span>target_amount = sum_random_utxos(<span class="kw-2">&amp;mut </span>rng, <span class="kw-2">&amp;mut </span>utxos) + FEE_AMOUNT;
         <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>);
         <span class="kw">let </span>drain_script = ScriptBuf::default();
-        <span class="kw">let </span>result = single_random_draw(
+
+        <span class="kw">let </span>result = SingleRandomDraw.coin_select(
             <span class="macro">vec!</span>[],
             utxos,
+            fee_rate,
             target_amount,
             <span class="kw-2">&amp;</span>drain_script,
+            <span class="kw-2">&amp;mut </span>thread_rng(),
+        );
+
+        <span class="macro">assert!</span>(
+            <span class="macro">matches!</span>(result, <span class="prelude-val">Ok</span>(CoinSelectionResult {selected, fee_amount, ..})
+                <span class="kw">if </span>selected.iter().map(|u| u.txout().value.to_sat()).sum::&lt;u64&gt;() &gt; target_amount
+                &amp;&amp; fee_amount == ((selected.len() * <span class="number">68</span>) <span class="kw">as </span>u64)
+            )
+        );
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_single_random_draw_function_error() {
+        <span class="kw">let </span>seed = [<span class="number">0</span>; <span class="number">32</span>];
+        <span class="kw">let </span><span class="kw-2">mut </span>rng: StdRng = SeedableRng::from_seed(seed);
+
+        <span class="comment">// 100_000, 10, 200_000
+        </span><span class="kw">let </span>utxos = get_test_utxos();
+        <span class="kw">let </span>target_amount = <span class="number">300_000 </span>+ FEE_AMOUNT;
+        <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>);
+        <span class="kw">let </span>drain_script = ScriptBuf::default();
+
+        <span class="kw">let </span>result = SingleRandomDraw.coin_select(
+            <span class="macro">vec!</span>[],
+            utxos,
             fee_rate,
+            target_amount,
+            <span class="kw-2">&amp;</span>drain_script,
             <span class="kw-2">&amp;mut </span>rng,
         );
-        <span class="macro">assert!</span>(result.selected_amount() &gt; target_amount);
-        <span class="macro">assert_eq!</span>(result.fee_amount, (result.selected.len() * <span class="number">68</span>) <span class="kw">as </span>u64);
+
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(result, <span class="prelude-val">Err</span>(InsufficientFunds {needed, available})
+                <span class="kw">if </span>needed == <span class="number">300_254 </span>&amp;&amp; available == <span class="number">300_010</span>));
     }
 
     <span class="attr">#[test]
@@ -3069,41 +3012,38 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">"InsufficientFunds"</span>)]
     </span><span class="kw">fn </span>test_bnb_coin_selection_insufficient_funds() {
         <span class="kw">let </span>utxos = get_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">500_000 </span>+ FEE_AMOUNT;
 
-        BranchAndBoundCoinSelection::&lt;SingleRandomDraw&gt;::default()
-            .coin_select(
-                <span class="macro">vec!</span>[],
-                utxos,
-                FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
-                target_amount,
-                <span class="kw-2">&amp;</span>drain_script,
-                <span class="kw-2">&amp;mut </span>thread_rng(),
-            )
-            .unwrap();
+        <span class="kw">let </span>result = BranchAndBoundCoinSelection::&lt;SingleRandomDraw&gt;::default().coin_select(
+            <span class="macro">vec!</span>[],
+            utxos,
+            FeeRate::from_sat_per_vb_unchecked(<span class="number">1</span>),
+            target_amount,
+            <span class="kw-2">&amp;</span>drain_script,
+            <span class="kw-2">&amp;mut </span>thread_rng(),
+        );
+
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(result, <span class="prelude-val">Err</span>(InsufficientFunds { .. })));
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">"InsufficientFunds"</span>)]
     </span><span class="kw">fn </span>test_bnb_coin_selection_insufficient_funds_high_fees() {
         <span class="kw">let </span>utxos = get_test_utxos();
         <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">250_000 </span>+ FEE_AMOUNT;
 
-        BranchAndBoundCoinSelection::&lt;SingleRandomDraw&gt;::default()
-            .coin_select(
-                <span class="macro">vec!</span>[],
-                utxos,
-                FeeRate::from_sat_per_vb_unchecked(<span class="number">1000</span>),
-                target_amount,
-                <span class="kw-2">&amp;</span>drain_script,
-                <span class="kw-2">&amp;mut </span>thread_rng(),
-            )
-            .unwrap();
+        <span class="kw">let </span>result = BranchAndBoundCoinSelection::&lt;SingleRandomDraw&gt;::default().coin_select(
+            <span class="macro">vec!</span>[],
+            utxos,
+            FeeRate::from_sat_per_vb_unchecked(<span class="number">1000</span>),
+            target_amount,
+            <span class="kw-2">&amp;</span>drain_script,
+            <span class="kw-2">&amp;mut </span>thread_rng(),
+        );
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(result, <span class="prelude-val">Err</span>(InsufficientFunds { .. })));
     }
 
     <span class="attr">#[test]
@@ -3158,7 +3098,6 @@
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">"NoExactMatch"</span>)]
     </span><span class="kw">fn </span>test_bnb_function_no_exact_match() {
         <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb_unchecked(<span class="number">10</span>);
         <span class="kw">let </span>utxos: Vec&lt;OutputGroup&gt; = get_test_utxos()
@@ -3173,22 +3112,20 @@
 
         <span class="kw">let </span>drain_script = ScriptBuf::default();
         <span class="kw">let </span>target_amount = <span class="number">20_000 </span>+ FEE_AMOUNT;
-        BranchAndBoundCoinSelection::&lt;SingleRandomDraw&gt;::default()
-            .bnb(
-                <span class="macro">vec!</span>[],
-                utxos,
-                <span class="number">0</span>,
-                curr_available_value,
-                target_amount <span class="kw">as </span>i64,
-                cost_of_change,
-                <span class="kw-2">&amp;</span>drain_script,
-                fee_rate,
-            )
-            .unwrap();
+        <span class="kw">let </span>result = BranchAndBoundCoinSelection::new(size_of_change, SingleRandomDraw).bnb(
+            <span class="macro">vec!</span>[],
+            utxos,
+            <span class="number">0</span>,
+            curr_available_value,
+            target_amount <span class="kw">as </span>i64,
+            cost_of_change,
+            <span class="kw-2">&amp;</span>drain_script,
+            fee_rate,
+        );
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(result, <span class="prelude-val">Err</span>(BnbError::NoExactMatch)));
     }
 
     <span class="attr">#[test]
-    #[should_panic(expected = <span class="string">"TotalTriesExceeded"</span>)]
     </span><span class="kw">fn </span>test_bnb_function_tries_exceeded() {
         <span class="kw">let </span>fee_rate = FeeRate::from_sat_per_vb_unchecked(<span class="number">10</span>);
         <span class="kw">let </span>utxos: Vec&lt;OutputGroup&gt; = generate_same_value_utxos(<span class="number">100_000</span>, <span class="number">100_000</span>)
@@ -3204,18 +3141,17 @@
 
         <span class="kw">let </span>drain_script = ScriptBuf::default();
 
-        BranchAndBoundCoinSelection::&lt;SingleRandomDraw&gt;::default()
-            .bnb(
-                <span class="macro">vec!</span>[],
-                utxos,
-                <span class="number">0</span>,
-                curr_available_value,
-                target_amount <span class="kw">as </span>i64,
-                cost_of_change,
-                <span class="kw-2">&amp;</span>drain_script,
-                fee_rate,
-            )
-            .unwrap();
+        <span class="kw">let </span>result = BranchAndBoundCoinSelection::new(size_of_change, SingleRandomDraw).bnb(
+            <span class="macro">vec!</span>[],
+            utxos,
+            <span class="number">0</span>,
+            curr_available_value,
+            target_amount <span class="kw">as </span>i64,
+            cost_of_change,
+            <span class="kw-2">&amp;</span>drain_script,
+            fee_rate,
+        );
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(result, <span class="prelude-val">Err</span>(BnbError::TotalTriesExceeded)));
     }
 
     <span class="comment">// The match won't be exact but still in the range
@@ -3240,7 +3176,7 @@
 
         <span class="kw">let </span>drain_script = ScriptBuf::default();
 
-        <span class="kw">let </span>result = BranchAndBoundCoinSelection::&lt;SingleRandomDraw&gt;::default()
+        <span class="kw">let </span>result = BranchAndBoundCoinSelection::new(size_of_change, SingleRandomDraw)
             .bnb(
                 <span class="macro">vec!</span>[],
                 utxos,
@@ -3378,7 +3314,9 @@
         <span class="kw">let </span>target_amount = <span class="number">190_000</span>;
         <span class="kw">let </span>drain_script = ScriptBuf::new();
         <span class="comment">// bnb won't find exact match and should select oldest first
-        </span><span class="kw">let </span>res = BranchAndBoundCoinSelection::&lt;OldestFirstCoinSelection&gt;::default()
+        </span><span class="kw">let </span>bnb_with_oldest_first =
+            BranchAndBoundCoinSelection::new(<span class="number">8 </span>+ <span class="number">1 </span>+ <span class="number">22</span>, OldestFirstCoinSelection);
+        <span class="kw">let </span>res = bnb_with_oldest_first
             .coin_select(
                 <span class="macro">vec!</span>[],
                 optional_utxos,
