@@ -2663,23 +2663,6 @@
 <a href="#2663" id="2663">2663</a>
 <a href="#2664" id="2664">2664</a>
 <a href="#2665" id="2665">2665</a>
-<a href="#2666" id="2666">2666</a>
-<a href="#2667" id="2667">2667</a>
-<a href="#2668" id="2668">2668</a>
-<a href="#2669" id="2669">2669</a>
-<a href="#2670" id="2670">2670</a>
-<a href="#2671" id="2671">2671</a>
-<a href="#2672" id="2672">2672</a>
-<a href="#2673" id="2673">2673</a>
-<a href="#2674" id="2674">2674</a>
-<a href="#2675" id="2675">2675</a>
-<a href="#2676" id="2676">2676</a>
-<a href="#2677" id="2677">2677</a>
-<a href="#2678" id="2678">2678</a>
-<a href="#2679" id="2679">2679</a>
-<a href="#2680" id="2680">2680</a>
-<a href="#2681" id="2681">2681</a>
-<a href="#2682" id="2682">2682</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2757,7 +2740,7 @@
 
 <span class="kw">pub use </span>utils::IsDust;
 
-<span class="kw">use </span>coin_selection::DefaultCoinSelectionAlgorithm;
+<span class="kw">use </span>coin_selection::{DefaultCoinSelectionAlgorithm, InsufficientFunds};
 <span class="kw">use </span>signer::{SignOptions, SignerOrdering, SignersContainer, TransactionSigner};
 <span class="kw">use </span>tx_builder::{FeePolicy, TxBuilder, TxParams};
 <span class="kw">use </span>utils::{check_nsequence_rbf, After, Older, SecpCtx};
@@ -2772,8 +2755,6 @@
 <span class="kw">use </span><span class="kw">crate</span>::types::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">crate</span>::wallet::coin_selection::Excess::{<span class="self">self</span>, Change, NoChange};
 <span class="kw">use </span><span class="kw">crate</span>::wallet::error::{BuildFeeBumpError, CreateTxError, MiniscriptPsbtError};
-
-<span class="kw">use </span><span class="self">self</span>::coin_selection::Error;
 
 <span class="kw">const </span>COINBASE_MATURITY: u32 = <span class="number">100</span>;
 
@@ -4182,31 +4163,16 @@
         <span class="kw">let </span>(required_utxos, optional_utxos) =
             coin_selection::filter_duplicates(required_utxos, optional_utxos);
 
-        <span class="kw">let </span>coin_selection = <span class="kw">match </span>coin_selection.coin_select(
-            required_utxos.clone(),
-            optional_utxos.clone(),
-            fee_rate,
-            outgoing.to_sat() + fee_amount.to_sat(),
-            <span class="kw-2">&amp;</span>drain_script,
-        ) {
-            <span class="prelude-val">Ok</span>(res) =&gt; res,
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">match </span>e {
-                coin_selection::Error::InsufficientFunds { .. } =&gt; {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::CoinSelection(e));
-                }
-                coin_selection::Error::BnBNoExactMatch
-                | coin_selection::Error::BnBTotalTriesExceeded =&gt; {
-                    coin_selection::single_random_draw(
-                        required_utxos,
-                        optional_utxos,
-                        outgoing.to_sat() + fee_amount.to_sat(),
-                        <span class="kw-2">&amp;</span>drain_script,
-                        fee_rate,
-                        rng,
-                    )
-                }
-            },
-        };
+        <span class="kw">let </span>coin_selection = coin_selection
+            .coin_select(
+                required_utxos.clone(),
+                optional_utxos.clone(),
+                fee_rate,
+                outgoing.to_sat() + fee_amount.to_sat(),
+                <span class="kw-2">&amp;</span>drain_script,
+                rng,
+            )
+            .map_err(CreateTxError::CoinSelection)<span class="question-mark">?</span>;
         fee_amount += Amount::from_sat(coin_selection.fee_amount);
         <span class="kw">let </span>excess = <span class="kw-2">&amp;</span>coin_selection.excess;
 
@@ -4236,7 +4202,7 @@
                     change_fee,
                 } = excess
                 {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::CoinSelection(Error::InsufficientFunds {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::CoinSelection(InsufficientFunds {
                         needed: <span class="kw-2">*</span>dust_threshold,
                         available: remaining_amount.saturating_sub(<span class="kw-2">*</span>change_fee),
                     }));
@@ -5342,7 +5308,7 @@
                 script_pubkey: address.script_pubkey(),
             }],
         };
-        <span class="kw">let </span>txid = tx.txid();
+        <span class="kw">let </span>txid = tx.compute_txid();
         <span class="kw">let </span>block_id = BlockId { height: <span class="number">500</span>, hash: BlockHash::all_zeros() };
         <span class="kw">let _ </span>= wallet.insert_checkpoint(block_id);
         <span class="kw">let _ </span>= wallet.insert_checkpoint(BlockId { height: <span class="number">1_000</span>, hash: BlockHash::all_zeros() });
