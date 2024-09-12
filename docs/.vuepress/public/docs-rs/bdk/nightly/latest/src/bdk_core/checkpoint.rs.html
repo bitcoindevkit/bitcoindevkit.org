@@ -231,6 +231,9 @@
 <a href="#231" id="231">231</a>
 <a href="#232" id="232">232</a>
 <a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>core::ops::RangeBounds;
 
 <span class="kw">use </span>alloc::sync::Arc;
@@ -404,10 +407,12 @@
     /// it. If the height already existed and has a conflicting block hash then it will be purged
     /// along with all block following it. The returned chain will have a tip of the `block_id`
     /// passed in. Of course, if the `block_id` was already present then this just returns `self`.
+    ///
+    /// # Panics
+    ///
+    /// This panics if called with a genesis block that differs from that of `self`.
     </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>insert(<span class="self">self</span>, block_id: BlockId) -&gt; <span class="self">Self </span>{
-        <span class="macro">assert_ne!</span>(block_id.height, <span class="number">0</span>, <span class="string">"cannot insert the genesis block"</span>);
-
         <span class="kw">let </span><span class="kw-2">mut </span>cp = <span class="self">self</span>.clone();
         <span class="kw">let </span><span class="kw-2">mut </span>tail = <span class="macro">vec!</span>[];
         <span class="kw">let </span>base = <span class="kw">loop </span>{
@@ -415,6 +420,7 @@
                 <span class="kw">if </span>cp.hash() == block_id.hash {
                     <span class="kw">return </span><span class="self">self</span>;
                 }
+                <span class="macro">assert_ne!</span>(cp.height(), <span class="number">0</span>, <span class="string">"cannot replace genesis block"</span>);
                 <span class="comment">// if we have a conflict we just return the inserted block because the tail is by
                 // implication invalid.
                 </span>tail = <span class="macro">vec!</span>[];
