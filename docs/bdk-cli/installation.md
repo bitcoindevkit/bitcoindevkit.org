@@ -25,21 +25,29 @@ At the time of writing, the project requires cargo >= 1.56.0, which is our minim
 Once Cargo is installed, you can proceed to install the interactive `bdk-cli` tool directly from
 the GitHub repository, by running:
 
-```bash
-# all features with the blocking esplora client 
+All features with the blocking esplora client
+
+```sh
 cargo install --git https://github.com/bitcoindevkit/bdk-cli --features=esplora-ureq,compiler
+```
 
-# all features with the async esplora client 
+All features with the async esplora client
+
+```sh
 cargo install --git https://github.com/bitcoindevkit/bdk-cli --features=esplora-reqwest,compiler
+```
 
-# minimal install (only repl feature is on by default)
+Minimal install (only repl feature is on by default)
+
+```sh
 cargo install --git https://github.com/bitcoindevkit/bdk-cli
 ```
 
 For Windows users, the default SQLite database requires extensive configuration and `bdk-cli` will not build properly if SQLite is unconfigured. To proceed with the installation using `sled` instead, run:
 
-```bash
-# disable sqlite and use sled
+Disable sqlite and use sled
+
+```sh
 cargo install bdk-cli --no-default-features --features=key-value-db,esplora-ureq,compiler
 ```
 
@@ -86,6 +94,6 @@ SUBCOMMANDS:
 
 An example command to sync a testnet wallet to a default electrum server looks like this:
 
-```bash
+```sh
 bdk-cli wallet -w example --descriptor "wpkh(tprv8ZgxMBicQKsPexGYyaFwnAsCXCjmz2FaTm6LtesyyihjbQE3gRMfXqQBXKM43DvC1UgRVv1qom1qFxNMSqVAs88qx9PhgFnfGVUdiiDf6j4/0/*)" sync
 ```
