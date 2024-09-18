@@ -24,7 +24,7 @@ The current BDK Foundation board is made up of five directors. The board members
 ## Operations
 Our operations team handles the day-to-day operations of the Foundation and reports to the board of directors. Our officers are all also active contributors to the development of the software. The five current officers are:
 - Steve Myers, President
-- Daniela Brozzoni, Vice-President
+- thunderbiscuit, Vice-President
 - Joe Wood, Treasurer
-- thunderbiscuit, Secretary
+- Matthew Ramsden, Secretary
 - Evan Lin, Grants Program Lead
