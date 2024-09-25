@@ -8,7 +8,7 @@ lastUpdated: false
 
 # Supporters
 
-The Bitcoin Dev Kit project is proudly supported by a number of organizations. If you'd like to becoming a supporter
+The Bitcoin Dev Kit project is proudly supported by a number of organizations. If you'd like to become a supporter
 please reach out at: [hello@bitcoindevkit.org](mailto:hello@bitcoindevkit.org)
 
 # 2024
