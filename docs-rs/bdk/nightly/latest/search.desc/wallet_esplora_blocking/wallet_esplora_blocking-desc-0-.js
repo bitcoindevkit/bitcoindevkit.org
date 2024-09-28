@@ -1,1 +1,0 @@
-searchState.loadedDescShard("wallet_esplora_blocking", 0, "")

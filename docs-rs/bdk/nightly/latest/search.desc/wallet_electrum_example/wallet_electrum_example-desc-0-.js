@@ -1,1 +1,0 @@
-searchState.loadedDescShard("wallet_electrum_example", 0, "")
