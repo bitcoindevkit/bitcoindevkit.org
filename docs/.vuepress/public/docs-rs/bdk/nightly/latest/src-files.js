@@ -11,9 +11,9 @@ var srcIndex = new Map(JSON.parse('[\
 ["example_cli",["",[],["lib.rs"]]],\
 ["example_electrum",["",[],["main.rs"]]],\
 ["example_esplora",["",[],["main.rs"]]],\
-["wallet_electrum_example",["",[],["main.rs"]]],\
-["wallet_esplora_async",["",[],["main.rs"]]],\
-["wallet_esplora_blocking",["",[],["main.rs"]]],\
-["wallet_rpc",["",[],["main.rs"]]]\
+["example_wallet_electrum",["",[],["main.rs"]]],\
+["example_wallet_esplora_async",["",[],["main.rs"]]],\
+["example_wallet_esplora_blocking",["",[],["main.rs"]]],\
+["example_wallet_rpc",["",[],["main.rs"]]]\
 ]'));
 createSrcSidebar();
