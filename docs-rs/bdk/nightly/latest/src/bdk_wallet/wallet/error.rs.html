@@ -253,11 +253,6 @@
 <a href="#253" id="253">253</a>
 <a href="#254" id="254">254</a>
 <a href="#255" id="255">255</a>
-<a href="#256" id="256">256</a>
-<a href="#257" id="257">257</a>
-<a href="#258" id="258">258</a>
-<a href="#259" id="259">259</a>
-<a href="#260" id="260">260</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -325,12 +320,10 @@
         <span class="doccomment">/// Required `LockTime`
         </span>required: absolute::LockTime,
     },
-    <span class="doccomment">/// Cannot enable RBF with a `Sequence` &gt;= 0xFFFFFFFE
-    </span>RbfSequence,
     <span class="doccomment">/// Cannot enable RBF with `Sequence` given a required OP_CSV
     </span>RbfSequenceCsv {
         <span class="doccomment">/// Given RBF `Sequence`
-        </span>rbf: Sequence,
+        </span>sequence: Sequence,
         <span class="doccomment">/// Required OP_CSV `Sequence`
         </span>csv: Sequence,
     },
@@ -391,14 +384,11 @@
             } =&gt; {
                 <span class="macro">write!</span>(f, <span class="string">"TxBuilder requested timelock of `{:?}`, but at least `{:?}` is required to spend from this script"</span>, required, requested)
             }
-            CreateTxError::RbfSequence =&gt; {
-                <span class="macro">write!</span>(f, <span class="string">"Cannot enable RBF with a nSequence &gt;= 0xFFFFFFFE"</span>)
-            }
-            CreateTxError::RbfSequenceCsv { rbf, csv } =&gt; {
+            CreateTxError::RbfSequenceCsv { sequence, csv } =&gt; {
                 <span class="macro">write!</span>(
                     f,
                     <span class="string">"Cannot enable RBF with nSequence `{:?}` given a required OP_CSV of `{:?}`"</span>,
-                    rbf, csv
+                    sequence, csv
                 )
             }
             CreateTxError::FeeTooLow { required } =&gt; {
