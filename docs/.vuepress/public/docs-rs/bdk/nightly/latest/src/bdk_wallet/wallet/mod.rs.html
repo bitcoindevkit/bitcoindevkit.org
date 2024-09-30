@@ -2642,23 +2642,6 @@
 <a href="#2642" id="2642">2642</a>
 <a href="#2643" id="2643">2643</a>
 <a href="#2644" id="2644">2644</a>
-<a href="#2645" id="2645">2645</a>
-<a href="#2646" id="2646">2646</a>
-<a href="#2647" id="2647">2647</a>
-<a href="#2648" id="2648">2648</a>
-<a href="#2649" id="2649">2649</a>
-<a href="#2650" id="2650">2650</a>
-<a href="#2651" id="2651">2651</a>
-<a href="#2652" id="2652">2652</a>
-<a href="#2653" id="2653">2653</a>
-<a href="#2654" id="2654">2654</a>
-<a href="#2655" id="2655">2655</a>
-<a href="#2656" id="2656">2656</a>
-<a href="#2657" id="2657">2657</a>
-<a href="#2658" id="2658">2658</a>
-<a href="#2659" id="2659">2659</a>
-<a href="#2660" id="2660">2660</a>
-<a href="#2661" id="2661">2661</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -4027,36 +4010,20 @@
             }
         };
 
-        <span class="comment">// The nSequence to be by default for inputs unless an explicit sequence is specified.
-        </span><span class="kw">let </span>n_sequence = <span class="kw">match </span>(params.rbf, requirements.csv) {
-            <span class="comment">// No RBF or CSV but there's an nLockTime, so the nSequence cannot be final
-            </span>(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="kw">if </span>lock_time != absolute::LockTime::ZERO =&gt; {
-                Sequence::ENABLE_LOCKTIME_NO_RBF
-            }
-            <span class="comment">// No RBF, CSV or nLockTime, make the transaction final
-            </span>(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; Sequence::MAX,
-
-            <span class="comment">// No RBF requested, use the value from CSV. Note that this value is by definition
-            // non-final, so even if a timelock is enabled this nSequence is fine, hence why we
-            // don't bother checking for it here. The same is true for all the other branches below
+        <span class="comment">// nSequence value for inputs
+        // When not explicitly specified, defaults to 0xFFFFFFFD,
+        // meaning RBF signaling is enabled
+        </span><span class="kw">let </span>n_sequence = <span class="kw">match </span>(params.sequence, requirements.csv) {
+            <span class="comment">// Enable RBF by default
+            </span>(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; Sequence::ENABLE_RBF_NO_LOCKTIME,
+            <span class="comment">// None requested, use required
             </span>(<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(csv)) =&gt; csv,
-
-            <span class="comment">// RBF with a specific value but that value is too high
-            </span>(<span class="prelude-val">Some</span>(tx_builder::RbfValue::Value(rbf)), <span class="kw">_</span>) <span class="kw">if </span>!rbf.is_rbf() =&gt; {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::RbfSequence)
+            <span class="comment">// Requested sequence is incompatible with requirements
+            </span>(<span class="prelude-val">Some</span>(sequence), <span class="prelude-val">Some</span>(csv)) <span class="kw">if </span>!check_nsequence_rbf(sequence, csv) =&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::RbfSequenceCsv { sequence, csv })
             }
-            <span class="comment">// RBF with a specific value requested, but the value is incompatible with CSV
-            </span>(<span class="prelude-val">Some</span>(tx_builder::RbfValue::Value(rbf)), <span class="prelude-val">Some</span>(csv))
-                <span class="kw">if </span>!check_nsequence_rbf(rbf, csv) =&gt;
-            {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::RbfSequenceCsv { rbf, csv })
-            }
-
-            <span class="comment">// RBF enabled with the default value with CSV also enabled. CSV takes precedence
-            </span>(<span class="prelude-val">Some</span>(tx_builder::RbfValue::Default), <span class="prelude-val">Some</span>(csv)) =&gt; csv,
-            <span class="comment">// Valid RBF, either default or with a specific value. We ignore the `CSV` value
-            // because we've already checked it before
-            </span>(<span class="prelude-val">Some</span>(rbf), <span class="kw">_</span>) =&gt; rbf.get_value(),
+            <span class="comment">// Use requested nSequence value
+            </span>(<span class="prelude-val">Some</span>(sequence), <span class="kw">_</span>) =&gt; sequence,
         };
 
         <span class="kw">let </span>(fee_rate, <span class="kw-2">mut </span>fee_amount) = <span class="kw">match </span>params.fee_policy.unwrap_or_default() {
@@ -4270,8 +4237,7 @@
     /// let mut psbt = {
     ///     let mut builder = wallet.build_tx();
     ///     builder
-    ///         .add_recipient(to_address.script_pubkey(), Amount::from_sat(50_000))
-    ///         .enable_rbf();
+    ///         .add_recipient(to_address.script_pubkey(), Amount::from_sat(50_000));
     ///     builder.finish()?
     /// };
     /// let _ = wallet.sign(&amp;mut psbt, SignOptions::default())?;
