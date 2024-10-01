@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"externcrate":["serde"],"mod":["spk_client"],"struct":["BlockId","CheckPoint","CheckPointIter","ConfirmationBlockTime","TxUpdate"],"type":["Indexed","KeychainIndexed"]};
+window.SIDEBAR_ITEMS = {"externcrate":["serde"],"mod":["spk_client"],"struct":["BlockId","CheckPoint","CheckPointIter","ConfirmationBlockTime","TxUpdate"],"trait":["Merge"],"type":["Indexed","KeychainIndexed"]};
