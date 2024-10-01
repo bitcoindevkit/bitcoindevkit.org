@@ -379,6 +379,15 @@
 <a href="#379" id="379">379</a>
 <a href="#380" id="380">380</a>
 <a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Contains the [`IndexedTxGraph`] and associated types. Refer to the
 //! [`IndexedTxGraph`] documentation for more.
 </span><span class="kw">use </span>core::fmt::Debug;
@@ -388,7 +397,7 @@
 
 <span class="kw">use crate</span>::{
     tx_graph::{<span class="self">self</span>, TxGraph},
-    Anchor, AnchorFromBlockPosition, BlockId, Indexer, Merge,
+    Anchor, BlockId, Indexer, Merge, TxPosInBlock,
 };
 
 <span class="doccomment">/// The [`IndexedTxGraph`] combines a [`TxGraph`] and an [`Indexer`] implementation.
@@ -633,17 +642,17 @@
     }
 }
 
-<span class="doccomment">/// Methods are available if the anchor (`A`) implements [`AnchorFromBlockPosition`].
-</span><span class="kw">impl</span>&lt;A: Anchor, I: Indexer&gt; IndexedTxGraph&lt;A, I&gt;
+<span class="doccomment">/// Methods are available if the anchor (`A`) can be created from [`TxPosInBlock`].
+</span><span class="kw">impl</span>&lt;A, I&gt; IndexedTxGraph&lt;A, I&gt;
 <span class="kw">where
     </span>I::ChangeSet: Default + Merge,
-    A: AnchorFromBlockPosition,
+    <span class="kw">for</span>&lt;<span class="lifetime">'b</span>&gt; A: Anchor + From&lt;TxPosInBlock&lt;<span class="lifetime">'b</span>&gt;&gt;,
+    I: Indexer,
 {
     <span class="doccomment">/// Batch insert all transactions of the given `block` of `height`, filtering out those that are
     /// irrelevant.
     ///
-    /// Each inserted transaction's anchor will be constructed from
-    /// [`AnchorFromBlockPosition::from_block_position`].
+    /// Each inserted transaction's anchor will be constructed using [`TxPosInBlock`].
     ///
     /// Relevancy is determined by the internal [`Indexer::is_tx_relevant`] implementation of `I`.
     /// Irrelevant transactions in `txs` will be ignored.
@@ -661,7 +670,12 @@
             changeset.indexer.merge(<span class="self">self</span>.index.index_tx(tx));
             <span class="kw">if </span><span class="self">self</span>.index.is_tx_relevant(tx) {
                 <span class="kw">let </span>txid = tx.compute_txid();
-                <span class="kw">let </span>anchor = A::from_block_position(block, block_id, tx_pos);
+                <span class="kw">let </span>anchor = TxPosInBlock {
+                    block,
+                    block_id,
+                    tx_pos,
+                }
+                .into();
                 changeset.tx_graph.merge(<span class="self">self</span>.graph.insert_tx(tx.clone()));
                 changeset
                     .tx_graph
@@ -673,8 +687,7 @@
 
     <span class="doccomment">/// Batch insert all transactions of the given `block` of `height`.
     ///
-    /// Each inserted transaction's anchor will be constructed from
-    /// [`AnchorFromBlockPosition::from_block_position`].
+    /// Each inserted transaction's anchor will be constructed using [`TxPosInBlock`].
     ///
     /// To only insert relevant transactions, use [`apply_block_relevant`] instead.
     ///
@@ -686,7 +699,12 @@
         };
         <span class="kw">let </span><span class="kw-2">mut </span>graph = tx_graph::ChangeSet::default();
         <span class="kw">for </span>(tx_pos, tx) <span class="kw">in </span>block.txdata.iter().enumerate() {
-            <span class="kw">let </span>anchor = A::from_block_position(<span class="kw-2">&amp;</span>block, block_id, tx_pos);
+            <span class="kw">let </span>anchor = TxPosInBlock {
+                block: <span class="kw-2">&amp;</span>block,
+                block_id,
+                tx_pos,
+            }
+            .into();
             graph.merge(<span class="self">self</span>.graph.insert_anchor(tx.compute_txid(), anchor));
             graph.merge(<span class="self">self</span>.graph.insert_tx(tx.clone()));
         }
