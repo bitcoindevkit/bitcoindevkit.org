@@ -265,6 +265,21 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- Volt-->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://github.com/Zero-1729/volt" target="_blank">
+      <img src="/img/case-studies-logos/volt-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://github.com/Zero-1729/volt" target="_blank">Volt</a>
+    </h3>
+    <p>A modern descriptor-based Financial Freedom Bitcoin Wallet aimed at restoring sovereignty to Global Bitcoiners.</p>
+  </div>
+</div>
+
 <style>
 .project {
   display: flex;
