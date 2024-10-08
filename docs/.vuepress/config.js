@@ -71,6 +71,7 @@ const foundationSidebar = [
       ['/foundation/supporters.md', 'Supporters'],
       ['/foundation/grantees.md', 'Grantees'],
       ['/foundation/grants.md', 'Grants'],
+      ['/foundation/members.md', 'Members'],
     ]
   }
 ]
