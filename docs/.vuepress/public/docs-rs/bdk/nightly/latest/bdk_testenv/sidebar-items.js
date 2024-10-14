@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Config","TestEnv"]};
+window.SIDEBAR_ITEMS = {"macro":["block_id","chain_update","changeset","hash","local_chain"],"mod":["utils"],"struct":["Config","TestEnv"]};

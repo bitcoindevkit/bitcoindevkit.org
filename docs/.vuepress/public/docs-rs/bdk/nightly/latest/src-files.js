@@ -5,7 +5,7 @@ var srcIndex = new Map(JSON.parse('[\
 ["bdk_electrum",["",[],["bdk_electrum_client.rs","lib.rs"]]],\
 ["bdk_esplora",["",[],["async_ext.rs","blocking_ext.rs","lib.rs"]]],\
 ["bdk_file_store",["",[],["entry_iter.rs","lib.rs","store.rs"]]],\
-["bdk_testenv",["",[],["lib.rs"]]],\
+["bdk_testenv",["",[],["lib.rs","utils.rs"]]],\
 ["bdk_wallet",["",[["descriptor",[],["checksum.rs","dsl.rs","error.rs","mod.rs","policy.rs","template.rs"]],["keys",[],["mod.rs"]],["psbt",[],["mod.rs"]],["wallet",[],["changeset.rs","coin_selection.rs","error.rs","export.rs","mod.rs","params.rs","persisted.rs","signer.rs","tx_builder.rs","utils.rs"]]],["lib.rs","types.rs"]]],\
 ["example_bitcoind_rpc_polling",["",[],["main.rs"]]],\
 ["example_cli",["",[],["lib.rs"]]],\
