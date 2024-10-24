@@ -2641,7 +2641,6 @@
 <a href="#2641" id="2641">2641</a>
 <a href="#2642" id="2642">2642</a>
 <a href="#2643" id="2643">2643</a>
-<a href="#2644" id="2644">2644</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2678,8 +2677,8 @@
         SyncResult,
     },
     tx_graph::{CanonicalTx, TxGraph, TxNode, TxUpdate},
-    BlockId, ChainPosition, ConfirmationBlockTime, ConfirmationTime, DescriptorExt, FullTxOut,
-    Indexed, IndexedTxGraph, Merge,
+    BlockId, ChainPosition, ConfirmationBlockTime, DescriptorExt, FullTxOut, Indexed,
+    IndexedTxGraph, Merge,
 };
 <span class="kw">use </span>bitcoin::sighash::{EcdsaSighashType, TapSighashType};
 <span class="kw">use </span>bitcoin::{
@@ -4304,11 +4303,10 @@
                     .ok_or(BuildFeeBumpError::UnknownUtxo(txin.previous_output))<span class="question-mark">?</span>;
                 <span class="kw">let </span>txout = <span class="kw-2">&amp;</span>prev_tx.output[txin.previous_output.vout <span class="kw">as </span>usize];
 
-                <span class="kw">let </span>confirmation_time: ConfirmationTime = graph
+                <span class="kw">let </span>chain_position = graph
                     .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, txin.previous_output.txid)
                     .ok_or(BuildFeeBumpError::UnknownUtxo(txin.previous_output))<span class="question-mark">?
-                    </span>.cloned()
-                    .into();
+                    </span>.cloned();
 
                 <span class="kw">let </span>weighted_utxo = <span class="kw">match </span>txout_index.index_of_spk(txout.script_pubkey.clone()) {
                     <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(keychain, derivation_index)) =&gt; {
@@ -4323,7 +4321,7 @@
                                 keychain,
                                 is_spent: <span class="bool-val">true</span>,
                                 derivation_index,
-                                confirmation_time,
+                                chain_position,
                             }),
                             satisfaction_weight,
                         }
@@ -4695,33 +4693,33 @@
                     <span class="prelude-val">Some</span>(tx) =&gt; tx,
                     <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="bool-val">false</span>,
                 };
-                <span class="kw">let </span>confirmation_time: ConfirmationTime = <span class="kw">match </span><span class="self">self
-                    </span>.indexed_graph
-                    .graph()
-                    .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, txid)
-                {
-                    <span class="prelude-val">Some</span>(chain_position) =&gt; chain_position.cloned().into(),
+                <span class="kw">let </span>chain_position = <span class="kw">match </span><span class="self">self</span>.indexed_graph.graph().get_chain_position(
+                    <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
+                    chain_tip,
+                    txid,
+                ) {
+                    <span class="prelude-val">Some</span>(chain_position) =&gt; chain_position.cloned(),
                     <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="bool-val">false</span>,
                 };
 
                 <span class="comment">// Whether the UTXO is mature and, if needed, confirmed
                 </span><span class="kw">let </span><span class="kw-2">mut </span>spendable = <span class="bool-val">true</span>;
-                <span class="kw">if </span>must_only_use_confirmed_tx &amp;&amp; !confirmation_time.is_confirmed() {
+                <span class="kw">if </span>must_only_use_confirmed_tx &amp;&amp; !chain_position.is_confirmed() {
                     <span class="kw">return </span><span class="bool-val">false</span>;
                 }
                 <span class="kw">if </span>tx.is_coinbase() {
                     <span class="macro">debug_assert!</span>(
-                        confirmation_time.is_confirmed(),
+                        chain_position.is_confirmed(),
                         <span class="string">"coinbase must always be confirmed"
                     </span>);
                     <span class="kw">if let </span><span class="prelude-val">Some</span>(current_height) = current_height {
-                        <span class="kw">match </span>confirmation_time {
-                            ConfirmationTime::Confirmed { height, .. } =&gt; {
+                        <span class="kw">match </span>chain_position {
+                            ChainPosition::Confirmed(a) =&gt; {
                                 <span class="comment">// https://github.com/bitcoin/bitcoin/blob/c5e67be03bb06a5d7885c55db1f016fbf2333fe3/src/validation.cpp#L373-L375
-                                </span>spendable &amp;=
-                                    (current_height.saturating_sub(height)) &gt;= COINBASE_MATURITY;
+                                </span>spendable &amp;= (current_height.saturating_sub(a.block_id.height))
+                                    &gt;= COINBASE_MATURITY;
                             }
-                            ConfirmationTime::Unconfirmed { .. } =&gt; spendable = <span class="bool-val">false</span>,
+                            ChainPosition::Unconfirmed { .. } =&gt; spendable = <span class="bool-val">false</span>,
                         }
                     }
                 }
@@ -5190,7 +5188,7 @@
         outpoint: full_txo.outpoint,
         txout: full_txo.txout,
         is_spent: full_txo.spent_by.is_some(),
-        confirmation_time: full_txo.chain_position.into(),
+        chain_position: full_txo.chain_position,
         keychain,
         derivation_index,
     }

@@ -1757,6 +1757,15 @@
 <a href="#1757" id="1757">1757</a>
 <a href="#1758" id="1758">1758</a>
 <a href="#1759" id="1759">1759</a>
+<a href="#1760" id="1760">1760</a>
+<a href="#1761" id="1761">1761</a>
+<a href="#1762" id="1762">1762</a>
+<a href="#1763" id="1763">1763</a>
+<a href="#1764" id="1764">1764</a>
+<a href="#1765" id="1765">1765</a>
+<a href="#1766" id="1766">1766</a>
+<a href="#1767" id="1767">1767</a>
+<a href="#1768" id="1768">1768</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2037,7 +2046,7 @@
         // For utxo that doesn't exist in DB, they will have lowest priority to be selected
         </span><span class="kw">let </span>utxos = {
             optional_utxos.sort_unstable_by_key(|wu| <span class="kw">match </span><span class="kw-2">&amp;</span>wu.utxo {
-                Utxo::Local(local) =&gt; <span class="prelude-val">Some</span>(local.confirmation_time),
+                Utxo::Local(local) =&gt; <span class="prelude-val">Some</span>(local.chain_position),
                 Utxo::Foreign { .. } =&gt; <span class="prelude-val">None</span>,
             });
 
@@ -2492,11 +2501,12 @@
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>test {
     <span class="kw">use </span>assert_matches::assert_matches;
+    <span class="kw">use </span>bitcoin::hashes::Hash;
+    <span class="kw">use </span>chain::{BlockId, ChainPosition, ConfirmationBlockTime};
     <span class="kw">use </span>core::str::FromStr;
     <span class="kw">use </span>rand::rngs::StdRng;
 
-    <span class="kw">use </span>bdk_chain::ConfirmationTime;
-    <span class="kw">use </span>bitcoin::{Amount, ScriptBuf, TxIn, TxOut};
+    <span class="kw">use </span>bitcoin::{Amount, BlockHash, ScriptBuf, TxIn, TxOut};
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::types::<span class="kw-2">*</span>;
@@ -2511,7 +2521,34 @@
 
     <span class="kw">const </span>FEE_AMOUNT: u64 = <span class="number">50</span>;
 
-    <span class="kw">fn </span>utxo(value: u64, index: u32, confirmation_time: ConfirmationTime) -&gt; WeightedUtxo {
+    <span class="kw">fn </span>unconfirmed_utxo(value: u64, index: u32, last_seen: u64) -&gt; WeightedUtxo {
+        utxo(value, index, ChainPosition::Unconfirmed(last_seen))
+    }
+
+    <span class="kw">fn </span>confirmed_utxo(
+        value: u64,
+        index: u32,
+        confirmation_height: u32,
+        confirmation_time: u64,
+    ) -&gt; WeightedUtxo {
+        utxo(
+            value,
+            index,
+            ChainPosition::Confirmed(ConfirmationBlockTime {
+                block_id: chain::BlockId {
+                    height: confirmation_height,
+                    hash: bitcoin::BlockHash::all_zeros(),
+                },
+                confirmation_time,
+            }),
+        )
+    }
+
+    <span class="kw">fn </span>utxo(
+        value: u64,
+        index: u32,
+        chain_position: ChainPosition&lt;ConfirmationBlockTime&gt;,
+    ) -&gt; WeightedUtxo {
         <span class="macro">assert!</span>(index &lt; <span class="number">10</span>);
         <span class="kw">let </span>outpoint = OutPoint::from_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
             <span class="string">"000000000000000000000000000000000000000000000000000000000000000{}:0"</span>,
@@ -2529,49 +2566,24 @@
                 keychain: KeychainKind::External,
                 is_spent: <span class="bool-val">false</span>,
                 derivation_index: <span class="number">42</span>,
-                confirmation_time,
+                chain_position,
             }),
         }
     }
 
     <span class="kw">fn </span>get_test_utxos() -&gt; Vec&lt;WeightedUtxo&gt; {
         <span class="macro">vec!</span>[
-            utxo(<span class="number">100_000</span>, <span class="number">0</span>, ConfirmationTime::Unconfirmed { last_seen: <span class="number">0 </span>}),
-            utxo(
-                FEE_AMOUNT - <span class="number">40</span>,
-                <span class="number">1</span>,
-                ConfirmationTime::Unconfirmed { last_seen: <span class="number">0 </span>},
-            ),
-            utxo(<span class="number">200_000</span>, <span class="number">2</span>, ConfirmationTime::Unconfirmed { last_seen: <span class="number">0 </span>}),
+            unconfirmed_utxo(<span class="number">100_000</span>, <span class="number">0</span>, <span class="number">0</span>),
+            unconfirmed_utxo(FEE_AMOUNT - <span class="number">40</span>, <span class="number">1</span>, <span class="number">0</span>),
+            unconfirmed_utxo(<span class="number">200_000</span>, <span class="number">2</span>, <span class="number">0</span>),
         ]
     }
 
     <span class="kw">fn </span>get_oldest_first_test_utxos() -&gt; Vec&lt;WeightedUtxo&gt; {
         <span class="comment">// ensure utxos are from different tx
-        </span><span class="kw">let </span>utxo1 = utxo(
-            <span class="number">120_000</span>,
-            <span class="number">1</span>,
-            ConfirmationTime::Confirmed {
-                height: <span class="number">1</span>,
-                time: <span class="number">1231006505</span>,
-            },
-        );
-        <span class="kw">let </span>utxo2 = utxo(
-            <span class="number">80_000</span>,
-            <span class="number">2</span>,
-            ConfirmationTime::Confirmed {
-                height: <span class="number">2</span>,
-                time: <span class="number">1231006505</span>,
-            },
-        );
-        <span class="kw">let </span>utxo3 = utxo(
-            <span class="number">300_000</span>,
-            <span class="number">3</span>,
-            ConfirmationTime::Confirmed {
-                height: <span class="number">3</span>,
-                time: <span class="number">1231006505</span>,
-            },
-        );
+        </span><span class="kw">let </span>utxo1 = confirmed_utxo(<span class="number">120_000</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1231006505</span>);
+        <span class="kw">let </span>utxo2 = confirmed_utxo(<span class="number">80_000</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">1231006505</span>);
+        <span class="kw">let </span>utxo3 = confirmed_utxo(<span class="number">300_000</span>, <span class="number">3</span>, <span class="number">3</span>, <span class="number">1231006505</span>);
         <span class="macro">vec!</span>[utxo1, utxo2, utxo3]
     }
 
@@ -2593,13 +2605,16 @@
                     keychain: KeychainKind::External,
                     is_spent: <span class="bool-val">false</span>,
                     derivation_index: rng.next_u32(),
-                    confirmation_time: <span class="kw">if </span>rng.gen_bool(<span class="number">0.5</span>) {
-                        ConfirmationTime::Confirmed {
-                            height: rng.next_u32(),
-                            time: rng.next_u64(),
-                        }
+                    chain_position: <span class="kw">if </span>rng.gen_bool(<span class="number">0.5</span>) {
+                        ChainPosition::Confirmed(ConfirmationBlockTime {
+                            block_id: chain::BlockId {
+                                height: rng.next_u32(),
+                                hash: BlockHash::all_zeros(),
+                            },
+                            confirmation_time: rng.next_u64(),
+                        })
                     } <span class="kw">else </span>{
-                        ConfirmationTime::Unconfirmed { last_seen: <span class="number">0 </span>}
+                        ChainPosition::Unconfirmed(<span class="number">0</span>)
                     },
                 }),
             });
@@ -2624,7 +2639,7 @@
                     keychain: KeychainKind::External,
                     is_spent: <span class="bool-val">false</span>,
                     derivation_index: <span class="number">42</span>,
-                    confirmation_time: ConfirmationTime::Unconfirmed { last_seen: <span class="number">0 </span>},
+                    chain_position: ChainPosition::Unconfirmed(<span class="number">0</span>),
                 }),
             })
             .collect()
@@ -2981,7 +2996,7 @@
         optional.push(utxo(
             <span class="number">500_000</span>,
             <span class="number">3</span>,
-            ConfirmationTime::Unconfirmed { last_seen: <span class="number">0 </span>},
+            ChainPosition::&lt;ConfirmationBlockTime&gt;::Unconfirmed(<span class="number">0</span>),
         ));
 
         <span class="comment">// Defensive assertions, for sanity and in case someone changes the test utxos vector.
@@ -3343,10 +3358,13 @@
                     keychain: KeychainKind::External,
                     is_spent: <span class="bool-val">false</span>,
                     derivation_index: <span class="number">0</span>,
-                    confirmation_time: ConfirmationTime::Confirmed {
-                        height: <span class="number">12345</span>,
-                        time: <span class="number">12345</span>,
-                    },
+                    chain_position: ChainPosition::Confirmed(ConfirmationBlockTime {
+                        block_id: BlockId {
+                            height: <span class="number">12345</span>,
+                            hash: BlockHash::all_zeros(),
+                        },
+                        confirmation_time: <span class="number">12345</span>,
+                    }),
                 }),
             }
         }

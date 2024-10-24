@@ -1079,6 +1079,8 @@
 <a href="#1079" id="1079">1079</a>
 <a href="#1080" id="1080">1080</a>
 <a href="#1081" id="1081">1081</a>
+<a href="#1082" id="1082">1082</a>
+<a href="#1083" id="1083">1083</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1939,7 +1941,6 @@
         };
     }
 
-    <span class="kw">use </span>bdk_chain::ConfirmationTime;
     <span class="kw">use </span>bitcoin::consensus::deserialize;
     <span class="kw">use </span>bitcoin::hex::FromHex;
     <span class="kw">use </span>bitcoin::TxOut;
@@ -2099,7 +2100,7 @@
                 txout: TxOut::NULL,
                 keychain: KeychainKind::External,
                 is_spent: <span class="bool-val">false</span>,
-                confirmation_time: ConfirmationTime::Unconfirmed { last_seen: <span class="number">0 </span>},
+                chain_position: chain::ChainPosition::Unconfirmed(<span class="number">0</span>),
                 derivation_index: <span class="number">0</span>,
             },
             LocalOutput {
@@ -2110,10 +2111,13 @@
                 txout: TxOut::NULL,
                 keychain: KeychainKind::Internal,
                 is_spent: <span class="bool-val">false</span>,
-                confirmation_time: ConfirmationTime::Confirmed {
-                    height: <span class="number">32</span>,
-                    time: <span class="number">42</span>,
-                },
+                chain_position: chain::ChainPosition::Confirmed(chain::ConfirmationBlockTime {
+                    block_id: chain::BlockId {
+                        height: <span class="number">32</span>,
+                        hash: bitcoin::BlockHash::all_zeros(),
+                    },
+                    confirmation_time: <span class="number">42</span>,
+                }),
                 derivation_index: <span class="number">1</span>,
             },
         ]

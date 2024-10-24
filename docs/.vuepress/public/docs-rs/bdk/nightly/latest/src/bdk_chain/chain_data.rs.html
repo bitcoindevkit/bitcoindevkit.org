@@ -157,41 +157,7 @@
 <a href="#157" id="157">157</a>
 <a href="#158" id="158">158</a>
 <a href="#159" id="159">159</a>
-<a href="#160" id="160">160</a>
-<a href="#161" id="161">161</a>
-<a href="#162" id="162">162</a>
-<a href="#163" id="163">163</a>
-<a href="#164" id="164">164</a>
-<a href="#165" id="165">165</a>
-<a href="#166" id="166">166</a>
-<a href="#167" id="167">167</a>
-<a href="#168" id="168">168</a>
-<a href="#169" id="169">169</a>
-<a href="#170" id="170">170</a>
-<a href="#171" id="171">171</a>
-<a href="#172" id="172">172</a>
-<a href="#173" id="173">173</a>
-<a href="#174" id="174">174</a>
-<a href="#175" id="175">175</a>
-<a href="#176" id="176">176</a>
-<a href="#177" id="177">177</a>
-<a href="#178" id="178">178</a>
-<a href="#179" id="179">179</a>
-<a href="#180" id="180">180</a>
-<a href="#181" id="181">181</a>
-<a href="#182" id="182">182</a>
-<a href="#183" id="183">183</a>
-<a href="#184" id="184">184</a>
-<a href="#185" id="185">185</a>
-<a href="#186" id="186">186</a>
-<a href="#187" id="187">187</a>
-<a href="#188" id="188">188</a>
-<a href="#189" id="189">189</a>
-<a href="#190" id="190">190</a>
-<a href="#191" id="191">191</a>
-<a href="#192" id="192">192</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::ConfirmationBlockTime;
-<span class="kw">use </span>bitcoin::{OutPoint, TxOut, Txid};
+</pre></div><pre class="rust"><code><span class="kw">use </span>bitcoin::{OutPoint, TxOut, Txid};
 
 <span class="kw">use crate</span>::{Anchor, COINBASE_MATURITY};
 
@@ -199,6 +165,14 @@
 ///
 /// The generic `A` should be a [`Anchor`] implementation.
 </span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash)]
+#[cfg_attr(
+    feature = <span class="string">"serde"</span>,
+    derive(serde::Deserialize, serde::Serialize),
+    serde(bound(
+        deserialize = <span class="string">"A: Ord + serde::Deserialize&lt;'de&gt;"</span>,
+        serialize = <span class="string">"A: Ord + serde::Serialize"</span>,
+    ))
+)]
 </span><span class="kw">pub enum </span>ChainPosition&lt;A&gt; {
     <span class="doccomment">/// The chain data is seen as confirmed, and in anchored by `A`.
     </span>Confirmed(A),
@@ -229,48 +203,6 @@
         <span class="kw">match </span><span class="self">self </span>{
             ChainPosition::Confirmed(a) =&gt; <span class="prelude-val">Some</span>(a.confirmation_height_upper_bound()),
             ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
-        }
-    }
-}
-
-<span class="doccomment">/// Block height and timestamp at which a transaction is confirmed.
-</span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq, Copy, PartialOrd, Ord, core::hash::Hash)]
-#[cfg_attr(feature = <span class="string">"serde"</span>, derive(serde::Deserialize, serde::Serialize))]
-</span><span class="kw">pub enum </span>ConfirmationTime {
-    <span class="doccomment">/// The transaction is confirmed
-    </span>Confirmed {
-        <span class="doccomment">/// Confirmation height.
-        </span>height: u32,
-        <span class="doccomment">/// Confirmation time in unix seconds.
-        </span>time: u64,
-    },
-    <span class="doccomment">/// The transaction is unconfirmed
-    </span>Unconfirmed {
-        <span class="doccomment">/// The last-seen timestamp in unix seconds.
-        </span>last_seen: u64,
-    },
-}
-
-<span class="kw">impl </span>ConfirmationTime {
-    <span class="doccomment">/// Construct an unconfirmed variant using the given `last_seen` time in unix seconds.
-    </span><span class="kw">pub fn </span>unconfirmed(last_seen: u64) -&gt; <span class="self">Self </span>{
-        <span class="self">Self</span>::Unconfirmed { last_seen }
-    }
-
-    <span class="doccomment">/// Returns whether [`ConfirmationTime`] is the confirmed variant.
-    </span><span class="kw">pub fn </span>is_confirmed(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="macro">matches!</span>(<span class="self">self</span>, <span class="self">Self</span>::Confirmed { .. })
-    }
-}
-
-<span class="kw">impl </span>From&lt;ChainPosition&lt;ConfirmationBlockTime&gt;&gt; <span class="kw">for </span>ConfirmationTime {
-    <span class="kw">fn </span>from(observed_as: ChainPosition&lt;ConfirmationBlockTime&gt;) -&gt; <span class="self">Self </span>{
-        <span class="kw">match </span>observed_as {
-            ChainPosition::Confirmed(a) =&gt; <span class="self">Self</span>::Confirmed {
-                height: a.block_id.height,
-                time: a.confirmation_time,
-            },
-            ChainPosition::Unconfirmed(last_seen) =&gt; <span class="self">Self</span>::Unconfirmed { last_seen },
         }
     }
 }
@@ -351,6 +283,8 @@
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>test {
+    <span class="kw">use </span>bdk_core::ConfirmationBlockTime;
+
     <span class="kw">use </span><span class="kw">crate</span>::BlockId;
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
