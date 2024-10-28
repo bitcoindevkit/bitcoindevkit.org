@@ -280,6 +280,21 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- Satsails -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://www.satsails.com/" target="_blank">
+      <img src="/img/case-studies-logos/satsails-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://www.satsails.com/" target="_blank">Satsails</a>
+    </h3>
+    <p>Satsails is a self self custodial bitcoin wallet with fiat integration for selected countries.</p>
+  </div>
+</div>
+
 <style>
 .project {
   display: flex;
