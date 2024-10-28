@@ -83,6 +83,23 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- Bitcoin Safe -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://github.com/andreasgriffin/bitcoin-safe" target="_blank">
+      <img src="/img/case-studies-logos/bitcoin-safe-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://github.com/andreasgriffin/bitcoin-safe" target="_blank">Bitcoin Safe</a>
+    </h3>
+    <p>A Bitcoin wallet for the entire family.</p>
+  </div>
+</div>
+
+<br>
+
 <style>
 .project {
   display: flex;
