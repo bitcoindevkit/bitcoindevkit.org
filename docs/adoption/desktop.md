@@ -98,7 +98,20 @@ lastUpdated: false
   </div>
 </div>
 
-<br>
+<!-- Bark -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://codeberg.org/ark-bitcoin/bark/" target="_blank">
+      <img src="/img/case-studies-logos/bark-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://codeberg.org/ark-bitcoin/bark/" target="_blank">Bark</a>
+    </h3>
+    <p>A Rust implementation of the Ark protocol on bitcoin.</p>
+  </div>
+</div>
 
 <style>
 .project {

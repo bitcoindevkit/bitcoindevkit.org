@@ -433,6 +433,21 @@ Explore the ecosystem of projects that are built with the BDK family of librarie
   </div>
 </div>
 
+<!-- Bark -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://codeberg.org/ark-bitcoin/bark/" target="_blank">
+      <img src="/img/case-studies-logos/bark-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://codeberg.org/ark-bitcoin/bark/" target="_blank">Bark</a>
+    </h3>
+    <p>A Rust implementation of the Ark protocol on bitcoin.</p>
+  </div>
+</div>
+
 <br>
 
 <a href="https://github.com/orgs/bitcoindevkit/discussions/64" target="_blank" rel="noopener noreferrer" class="nav-link external action-button">
