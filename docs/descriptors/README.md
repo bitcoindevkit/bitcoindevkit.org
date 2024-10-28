@@ -17,9 +17,9 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 
 | Key Type | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
-| Hex PublicKey | ✓ | ✓ | ✓ |
-| WIF PrivateKey | ✓ | ✗ | ✓ |
-| Extended Keys (xpub/xprv) | ✓ | ✗ | ✓ |
+| Hex PublicKey | ✅ | ✅ | ✅ |
+| WIF PrivateKey | ✅ | ❌ | ✅ |
+| Extended Keys (xpub/xprv) | ✅ | ❌ | ✅ |
 
 </div>
 
@@ -29,18 +29,18 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 
 | Script Type | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
-| `pk()` | ✓ | ✓ | ✓ |
-| `pkh()` | ✓ | ✓ | ✓ |
-| `wpkh()` | ✓ | ✓ | ✓ |
-| `tr()` | ✓ | ✓ | ✓ |
-| `sh(wpkh())` | ✓ | ✓ | ✓ |
-| `sh()` | ✓ | ✓ | ✓ |
-| `wsh()` | ✓ | ✓ | ✓ |
-| `sh(wsh())` | ✓ | ✓ | ✓ |
-| `combo()` | ✗  | ✗  | ✓ |
-| `addr()` | ✗  | ✗  | ✓ |
-| `raw()` | ✗  | ✗  | ✓ |
-| Bare scripts | ✓ | ✓ | ✗ |
+| `pk()` | ✅ | ✅ | ✅ |
+| `pkh()` | ✅ | ✅ | ✅ |
+| `wpkh()` | ✅ | ✅ | ✅ |
+| `tr()` | ✅ | ✅ | ✅ |
+| `sh(wpkh())` | ✅ | ✅ | ✅ |
+| `sh()` | ✅ | ✅ | ✅ |
+| `wsh()` | ✅ | ✅ | ✅ |
+| `sh(wsh())` | ✅ | ✅ | ✅ |
+| `combo()` | ❌ | ❌ | ✅ |
+| `addr()` | ❌ | ❌ | ✅ |
+| `raw()` | ❌ | ❌ | ✅ |
+| Bare scripts | ✅ | ✅ | ❌ |
 
 </div>
 
@@ -50,20 +50,20 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 
 | Operator | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
-| `pk()` | ✓ | ✓ | ✓ |
-| `pkh()` | ✓ | ✓ | ✓ |
-| `older()` | ✓ | ✓ | ✓  |
-| `after()` | ✓ | ✓ | ✓  |
-| `sha256()` | ✓ | ✓ | ✓  |
-| `hash256()` | ✓ | ✓ | ✓  |
-| `ripemd160()` | ✓ | ✓ | ✓  |
-| `hash160()` | ✓ | ✓ | ✓  |
-| `andor()` | ✓ | ✓ | ✓  |
-| `and_{v,b,n}()` | ✓ | ✓ | ✓  |
-| `or_{b,c,d,i}()` | ✓ | ✓ | ✓  |
-| `multi()` | ✓ | ✓ | ✓  |
-| `thresh()` | ✓ | ✓ | ✓  |
-| `sortedmulti()` | ✓  | ✓  | ✓  |
+| `pk()` | ✅ | ✅ | ✅ |
+| `pkh()` | ✅ | ✅ | ✅ |
+| `older()` | ✅ | ✅ | ✅  |
+| `after()` | ✅ | ✅ | ✅  |
+| `sha256()` | ✅ | ✅ | ✅  |
+| `hash256()` | ✅ | ✅ | ✅  |
+| `ripemd160()` | ✅ | ✅ | ✅  |
+| `hash160()` | ✅ | ✅ | ✅  |
+| `andor()` | ✅ | ✅ | ✅  |
+| `and_{v,b,n}()` | ✅ | ✅ | ✅  |
+| `or_{b,c,d,i}()` | ✅ | ✅ | ✅  |
+| `multi()` | ✅ | ✅ | ✅  |
+| `thresh()` | ✅ | ✅ | ✅ |
+| `sortedmulti()` | ✅  | ✅  | ✅ |
 
 </div>
 
@@ -73,16 +73,16 @@ Below are some tables to highlight the differences between Bitcoin Core's descri
 
 | Script Type | BDK | rust-miniscript | Bitcoin Core |
 | -------- | --------------- | --------------- | ------------ |
-| `a:` | ✓ | ✓ | ✓ |
-| `s:` | ✓ | ✓ | ✓ |
-| `c:` | ✓ | ✓ | ✓ |
-| `t:` | ✓ | ✓ | ✓ |
-| `d:` | ✓ | ✓ | ✓ |
-| `v:` | ✓ | ✓ | ✓ |
-| `j:` | ✓ | ✓ | ✓ |
-| `n:` | ✓ | ✓ | ✓ |
-| `l:` | ✓ | ✓ | ✓ |
-| `u:` | ✓ | ✓ | ✓ |
+| `a:` | ✅ | ✅ | ✅ |
+| `s:` | ✅ | ✅ | ✅ |
+| `c:` | ✅ | ✅ | ✅ |
+| `t:` | ✅ | ✅ | ✅ |
+| `d:` | ✅ | ✅ | ✅ |
+| `v:` | ✅ | ✅ | ✅ |
+| `j:` | ✅ | ✅ | ✅ |
+| `n:` | ✅ | ✅ | ✅ |
+| `l:` | ✅ | ✅ | ✅ |
+| `u:` | ✅ | ✅ | ✅ |
 
 </div>
 
