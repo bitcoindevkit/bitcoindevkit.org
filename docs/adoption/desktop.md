@@ -68,6 +68,21 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- Strata-->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://www.stratabtc.org/" target="_blank">
+      <img src="/img/case-studies-logos/strata-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://www.stratabtc.org/" target="_blank">Strata</a>
+    </h3>
+    <p>A work-in-progress EVM-compatible validity rollup on bitcoin.</p>
+  </div>
+</div>
+
 <style>
 .project {
   display: flex;
