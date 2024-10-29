@@ -2641,6 +2641,14 @@
 <a href="#2641" id="2641">2641</a>
 <a href="#2642" id="2642">2642</a>
 <a href="#2643" id="2643">2643</a>
+<a href="#2644" id="2644">2644</a>
+<a href="#2645" id="2645">2645</a>
+<a href="#2646" id="2646">2646</a>
+<a href="#2647" id="2647">2647</a>
+<a href="#2648" id="2648">2648</a>
+<a href="#2649" id="2649">2649</a>
+<a href="#2650" id="2650">2650</a>
+<a href="#2651" id="2651">2651</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -3194,7 +3202,9 @@
         }
         <span class="kw">let </span>signers = Arc::new(SignersContainer::build(external_keymap, <span class="kw-2">&amp;</span>descriptor, <span class="kw-2">&amp;</span>secp));
 
-        <span class="kw">let </span>(<span class="kw-2">mut </span>change_descriptor, <span class="kw-2">mut </span>change_signers) = (<span class="prelude-val">None</span>, Arc::new(SignersContainer::new()));
+        <span class="kw">let </span><span class="kw-2">mut </span>change_descriptor = <span class="prelude-val">None</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>internal_keymap = params.change_descriptor_keymap;
+
         <span class="kw">match </span>(changeset.change_descriptor, params.check_change_descriptor) {
             <span class="comment">// empty signer
             </span>(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; {}
@@ -3235,16 +3245,22 @@
                             expected: <span class="prelude-val">Some</span>(exp_desc),
                         }));
                     }
-                    <span class="kw">let </span><span class="kw-2">mut </span>internal_keymap = params.change_descriptor_keymap;
                     <span class="kw">if </span>params.extract_keys {
                         internal_keymap.extend(keymap);
                     }
-                    change_signers =
-                        Arc::new(SignersContainer::build(internal_keymap, <span class="kw-2">&amp;</span>desc, <span class="kw-2">&amp;</span>secp));
                     change_descriptor = <span class="prelude-val">Some</span>(desc);
                 }
             },
         }
+
+        <span class="kw">let </span>change_signers = <span class="kw">match </span>change_descriptor {
+            <span class="prelude-val">Some</span>(<span class="kw-2">ref </span>change_descriptor) =&gt; Arc::new(SignersContainer::build(
+                internal_keymap,
+                change_descriptor,
+                <span class="kw-2">&amp;</span>secp,
+            )),
+            <span class="prelude-val">None </span>=&gt; Arc::new(SignersContainer::new()),
+        };
 
         <span class="kw">let </span>index = create_indexer(descriptor, change_descriptor, params.lookahead)
             .map_err(LoadError::Descriptor)<span class="question-mark">?</span>;
