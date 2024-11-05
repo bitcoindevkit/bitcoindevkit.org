@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["ErrorKind"],"fn":["sink"],"macro":["impl_write"],"struct":["Cursor","Error","Sink","Take"],"trait":["BufRead","Read","Write"],"type":["Result"]};
+window.SIDEBAR_ITEMS = {"enum":["ErrorKind"],"fn":["from_std","from_std_mut","sink"],"macro":["impl_write"],"struct":["Cursor","Error","FromStd","Sink","Take","ToStd"],"trait":["BufRead","Read","Write"],"type":["Result"]};
