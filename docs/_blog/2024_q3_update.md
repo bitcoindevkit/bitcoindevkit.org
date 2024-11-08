@@ -3,7 +3,7 @@ title: "2024 Q3 Update: What Have We Been Up To?"
 description: "2024 Q3 Update on the Bitcoin Dev Kit Project"
 authors:
     - thunderbiscuit
-date: "2024-11-01"
+date: "2024-11-07"
 tags: ["BDK", "project"]
 draft: false
 ---
