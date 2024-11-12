@@ -2587,68 +2587,6 @@
 <a href="#2587" id="2587">2587</a>
 <a href="#2588" id="2588">2588</a>
 <a href="#2589" id="2589">2589</a>
-<a href="#2590" id="2590">2590</a>
-<a href="#2591" id="2591">2591</a>
-<a href="#2592" id="2592">2592</a>
-<a href="#2593" id="2593">2593</a>
-<a href="#2594" id="2594">2594</a>
-<a href="#2595" id="2595">2595</a>
-<a href="#2596" id="2596">2596</a>
-<a href="#2597" id="2597">2597</a>
-<a href="#2598" id="2598">2598</a>
-<a href="#2599" id="2599">2599</a>
-<a href="#2600" id="2600">2600</a>
-<a href="#2601" id="2601">2601</a>
-<a href="#2602" id="2602">2602</a>
-<a href="#2603" id="2603">2603</a>
-<a href="#2604" id="2604">2604</a>
-<a href="#2605" id="2605">2605</a>
-<a href="#2606" id="2606">2606</a>
-<a href="#2607" id="2607">2607</a>
-<a href="#2608" id="2608">2608</a>
-<a href="#2609" id="2609">2609</a>
-<a href="#2610" id="2610">2610</a>
-<a href="#2611" id="2611">2611</a>
-<a href="#2612" id="2612">2612</a>
-<a href="#2613" id="2613">2613</a>
-<a href="#2614" id="2614">2614</a>
-<a href="#2615" id="2615">2615</a>
-<a href="#2616" id="2616">2616</a>
-<a href="#2617" id="2617">2617</a>
-<a href="#2618" id="2618">2618</a>
-<a href="#2619" id="2619">2619</a>
-<a href="#2620" id="2620">2620</a>
-<a href="#2621" id="2621">2621</a>
-<a href="#2622" id="2622">2622</a>
-<a href="#2623" id="2623">2623</a>
-<a href="#2624" id="2624">2624</a>
-<a href="#2625" id="2625">2625</a>
-<a href="#2626" id="2626">2626</a>
-<a href="#2627" id="2627">2627</a>
-<a href="#2628" id="2628">2628</a>
-<a href="#2629" id="2629">2629</a>
-<a href="#2630" id="2630">2630</a>
-<a href="#2631" id="2631">2631</a>
-<a href="#2632" id="2632">2632</a>
-<a href="#2633" id="2633">2633</a>
-<a href="#2634" id="2634">2634</a>
-<a href="#2635" id="2635">2635</a>
-<a href="#2636" id="2636">2636</a>
-<a href="#2637" id="2637">2637</a>
-<a href="#2638" id="2638">2638</a>
-<a href="#2639" id="2639">2639</a>
-<a href="#2640" id="2640">2640</a>
-<a href="#2641" id="2641">2641</a>
-<a href="#2642" id="2642">2642</a>
-<a href="#2643" id="2643">2643</a>
-<a href="#2644" id="2644">2644</a>
-<a href="#2645" id="2645">2645</a>
-<a href="#2646" id="2646">2646</a>
-<a href="#2647" id="2647">2647</a>
-<a href="#2648" id="2648">2648</a>
-<a href="#2649" id="2649">2649</a>
-<a href="#2650" id="2650">2650</a>
-<a href="#2651" id="2651">2651</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2663,84 +2601,79 @@
 </span><span class="doccomment">//! Wallet
 //!
 //! This module defines the [`Wallet`].
-</span><span class="kw">use crate</span>::{
-    collections::{BTreeMap, HashMap},
-    descriptor::check_wallet_descriptor,
-};
-<span class="kw">use </span>alloc::{
+
+</span><span class="kw">use </span>alloc::{
     boxed::Box,
     string::{String, ToString},
     sync::Arc,
     vec::Vec,
 };
-<span class="kw">pub use </span>bdk_chain::Balance;
+<span class="kw">use </span>core::{cmp::Ordering, fmt, mem, ops::Deref};
+
 <span class="kw">use </span>bdk_chain::{
     indexed_tx_graph,
     indexer::keychain_txout::KeychainTxOutIndex,
-    local_chain::{
-        <span class="self">self</span>, ApplyHeaderError, CannotConnectError, CheckPoint, CheckPointIter, LocalChain,
-    },
+    local_chain::{ApplyHeaderError, CannotConnectError, CheckPoint, CheckPointIter, LocalChain},
     spk_client::{
         FullScanRequest, FullScanRequestBuilder, FullScanResult, SyncRequest, SyncRequestBuilder,
         SyncResult,
     },
-    tx_graph::{CanonicalTx, TxGraph, TxNode, TxUpdate},
+    tx_graph::{CalculateFeeError, CanonicalTx, TxGraph, TxUpdate},
     BlockId, ChainPosition, ConfirmationBlockTime, DescriptorExt, FullTxOut, Indexed,
     IndexedTxGraph, Merge,
 };
-<span class="kw">use </span>bitcoin::sighash::{EcdsaSighashType, TapSighashType};
 <span class="kw">use </span>bitcoin::{
-    absolute, psbt, Address, Block, FeeRate, Network, OutPoint, ScriptBuf, Sequence, Transaction,
-    TxOut, Txid, Witness,
+    absolute,
+    consensus::encode::serialize,
+    constants::genesis_block,
+    psbt,
+    secp256k1::Secp256k1,
+    sighash::{EcdsaSighashType, TapSighashType},
+    transaction, Address, Amount, Block, BlockHash, FeeRate, Network, OutPoint, Psbt, ScriptBuf,
+    Sequence, Transaction, TxOut, Txid, Weight, Witness,
 };
-<span class="kw">use </span>bitcoin::{consensus::encode::serialize, transaction, BlockHash, Psbt};
-<span class="kw">use </span>bitcoin::{constants::genesis_block, Amount};
-<span class="kw">use </span>bitcoin::{secp256k1::Secp256k1, Weight};
-<span class="kw">use </span>core::cmp::Ordering;
-<span class="kw">use </span>core::fmt;
-<span class="kw">use </span>core::mem;
-<span class="kw">use </span>core::ops::Deref;
-<span class="kw">use </span>rand_core::RngCore;
-
-<span class="kw">use </span>descriptor::error::Error <span class="kw">as </span>DescriptorError;
 <span class="kw">use </span>miniscript::{
     descriptor::KeyMap,
     psbt::{PsbtExt, PsbtInputExt, PsbtInputSatisfier},
 };
-
-<span class="kw">use </span>bdk_chain::tx_graph::CalculateFeeError;
+<span class="kw">use </span>rand_core::RngCore;
 
 <span class="kw">mod </span>changeset;
 <span class="kw">pub mod </span>coin_selection;
+<span class="kw">pub mod </span>error;
 <span class="kw">pub mod </span>export;
 <span class="kw">mod </span>params;
+<span class="kw">mod </span>persisted;
 <span class="kw">pub mod </span>signer;
 <span class="kw">pub mod </span>tx_builder;
-<span class="kw">pub use </span>changeset::<span class="kw-2">*</span>;
-<span class="kw">pub use </span>params::<span class="kw-2">*</span>;
-<span class="kw">mod </span>persisted;
-<span class="kw">pub use </span>persisted::<span class="kw-2">*</span>;
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>utils;
 
-<span class="kw">pub mod </span>error;
-
-<span class="kw">pub use </span>utils::IsDust;
-
-<span class="kw">use </span>coin_selection::{DefaultCoinSelectionAlgorithm, InsufficientFunds};
-<span class="kw">use </span>signer::{SignOptions, SignerOrdering, SignersContainer, TransactionSigner};
-<span class="kw">use </span>tx_builder::{FeePolicy, TxBuilder, TxParams};
-<span class="kw">use </span>utils::{check_nsequence_rbf, After, Older, SecpCtx};
-
-<span class="kw">use </span><span class="kw">crate</span>::descriptor::policy::BuildSatisfaction;
+<span class="kw">use </span><span class="kw">crate</span>::collections::{BTreeMap, HashMap};
 <span class="kw">use </span><span class="kw">crate</span>::descriptor::{
-    <span class="self">self</span>, DerivedDescriptor, DescriptorMeta, ExtendedDescriptor, ExtractPolicy,
-    IntoWalletDescriptor, Policy, XKeyUtils,
+    check_wallet_descriptor, error::Error <span class="kw">as </span>DescriptorError, policy::BuildSatisfaction,
+    DerivedDescriptor, DescriptorMeta, ExtendedDescriptor, ExtractPolicy, IntoWalletDescriptor,
+    Policy, XKeyUtils,
 };
 <span class="kw">use </span><span class="kw">crate</span>::psbt::PsbtUtils;
-<span class="kw">use </span><span class="kw">crate</span>::signer::SignerError;
 <span class="kw">use </span><span class="kw">crate</span>::types::<span class="kw-2">*</span>;
-<span class="kw">use </span><span class="kw">crate</span>::wallet::coin_selection::Excess::{<span class="self">self</span>, Change, NoChange};
-<span class="kw">use </span><span class="kw">crate</span>::wallet::error::{BuildFeeBumpError, CreateTxError, MiniscriptPsbtError};
+<span class="kw">use </span><span class="kw">crate</span>::wallet::{
+    coin_selection::{
+        DefaultCoinSelectionAlgorithm,
+        Excess::{<span class="self">self</span>, Change, NoChange},
+        InsufficientFunds,
+    },
+    error::{BuildFeeBumpError, CreateTxError, MiniscriptPsbtError},
+    signer::{SignOptions, SignerError, SignerOrdering, SignersContainer, TransactionSigner},
+    tx_builder::{FeePolicy, TxBuilder, TxParams},
+    utils::{check_nsequence_rbf, After, Older, SecpCtx},
+};
+
+<span class="comment">// re-exports
+</span><span class="kw">pub use </span>bdk_chain::Balance;
+<span class="kw">pub use </span>changeset::ChangeSet;
+<span class="kw">pub use </span>params::<span class="kw-2">*</span>;
+<span class="kw">pub use </span>persisted::<span class="kw-2">*</span>;
+<span class="kw">pub use </span>utils::IsDust;
 
 <span class="kw">const </span>COINBASE_MATURITY: u32 = <span class="number">100</span>;
 
@@ -2774,7 +2707,7 @@
 
 <span class="doccomment">/// An update to [`Wallet`].
 ///
-/// It updates [`KeychainTxOutIndex`], [`bdk_chain::TxGraph`] and [`local_chain::LocalChain`] atomically.
+/// It updates [`KeychainTxOutIndex`], [`bdk_chain::TxGraph`] and [`LocalChain`] atomically.
 </span><span class="attr">#[derive(Debug, Clone, Default)]
 </span><span class="kw">pub struct </span>Update {
     <span class="doccomment">/// Contains the last active derivation indices per keychain (`K`), which is used to update the
@@ -2785,8 +2718,6 @@
     </span><span class="kw">pub </span>tx_update: TxUpdate&lt;ConfirmationBlockTime&gt;,
 
     <span class="doccomment">/// Update for the wallet's internal [`LocalChain`].
-    ///
-    /// [`LocalChain`]: local_chain::LocalChain
     </span><span class="kw">pub </span>chain: <span class="prelude-ty">Option</span>&lt;CheckPoint&gt;,
 }
 
@@ -3720,44 +3651,6 @@
             )<span class="question-mark">?</span>,
             tx_node: graph.get_tx_node(txid)<span class="question-mark">?</span>,
         })
-    }
-
-    <span class="doccomment">/// Add a new checkpoint to the wallet's internal view of the chain.
-    ///
-    /// Returns whether anything changed with the insertion (e.g. `false` if checkpoint was already
-    /// there).
-    ///
-    /// **WARNING**: You must persist the changes resulting from one or more calls to this method
-    /// if you need the inserted checkpoint data to be reloaded after closing the wallet.
-    /// See [`Wallet::reveal_next_address`].
-    </span><span class="kw">pub fn </span>insert_checkpoint(
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        block_id: BlockId,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, local_chain::AlterCheckPointError&gt; {
-        <span class="kw">let </span>changeset = <span class="self">self</span>.chain.insert_block(block_id)<span class="question-mark">?</span>;
-        <span class="kw">let </span>changed = !changeset.is_empty();
-        <span class="self">self</span>.stage.merge(changeset.into());
-        <span class="prelude-val">Ok</span>(changed)
-    }
-
-    <span class="doccomment">/// Add a transaction to the wallet's internal view of the chain. This stages the change,
-    /// you must persist it later.
-    ///
-    /// This method inserts the given `tx` and returns whether anything changed after insertion,
-    /// which will be false if the same transaction already exists in the wallet's transaction
-    /// graph. Any changes are staged but not committed.
-    ///
-    /// # Note
-    ///
-    /// By default the inserted `tx` won't be considered "canonical" because it's not known
-    /// whether the transaction exists in the best chain. To know whether it exists, the tx
-    /// must be broadcast to the network and the wallet synced via a chain source.
-    </span><span class="kw">pub fn </span>insert_tx&lt;T: Into&lt;Arc&lt;Transaction&gt;&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tx: T) -&gt; bool {
-        <span class="kw">let </span><span class="kw-2">mut </span>changeset = ChangeSet::default();
-        changeset.merge(<span class="self">self</span>.indexed_graph.insert_tx(tx).into());
-        <span class="kw">let </span>ret = !changeset.is_empty();
-        <span class="self">self</span>.stage.merge(changeset);
-        ret
     }
 
     <span class="doccomment">/// Iterate over the transactions in the wallet.
@@ -4950,10 +4843,10 @@
         <span class="kw">let </span>now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect(<span class="string">"time now must surpass epoch anchor"</span>);
-        <span class="self">self</span>.apply_update_at(update, <span class="prelude-val">Some</span>(now.as_secs()))
+        <span class="self">self</span>.apply_update_at(update, now.as_secs())
     }
 
-    <span class="doccomment">/// Applies an `update` alongside an optional `seen_at` timestamp and stages the changes.
+    <span class="doccomment">/// Applies an `update` alongside a `seen_at` timestamp and stages the changes.
     ///
     /// `seen_at` represents when the update is seen (in unix seconds). It is used to determine the
     /// `last_seen`s for all transactions in the update which have no corresponding anchor(s). The
@@ -4961,15 +4854,12 @@
     /// transactions (where the transaction with the lower `last_seen` value is omitted from the
     /// canonical history).
     ///
-    /// Not setting a `seen_at` value means unconfirmed transactions introduced by this update will
-    /// not be part of the canonical history of transactions.
-    ///
     /// Use [`apply_update`](Wallet::apply_update) to have the `seen_at` value automatically set to
     /// the current time.
     </span><span class="kw">pub fn </span>apply_update_at(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         update: <span class="kw">impl </span>Into&lt;Update&gt;,
-        seen_at: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+        seen_at: u64,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), CannotConnectError&gt; {
         <span class="kw">let </span>update = update.into();
         <span class="kw">let </span><span class="kw-2">mut </span>changeset = <span class="kw">match </span>update.chain {
@@ -4984,7 +4874,7 @@
         changeset.merge(index_changeset.into());
         changeset.merge(
             <span class="self">self</span>.indexed_graph
-                .apply_update_at(update.tx_update, seen_at)
+                .apply_update_at(update.tx_update, <span class="prelude-val">Some</span>(seen_at))
                 .into(),
         );
         <span class="self">self</span>.stage.merge(changeset);
@@ -5017,14 +4907,6 @@
     <span class="doccomment">/// Get a reference to the inner [`TxGraph`].
     </span><span class="kw">pub fn </span>tx_graph(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>TxGraph&lt;ConfirmationBlockTime&gt; {
         <span class="self">self</span>.indexed_graph.graph()
-    }
-
-    <span class="doccomment">/// Iterate over transactions in the wallet that are unseen and unanchored likely
-    /// because they haven't been broadcast.
-    </span><span class="kw">pub fn </span>unbroadcast_transactions(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = TxNode&lt;<span class="lifetime">'_</span>, Arc&lt;Transaction&gt;, ConfirmationBlockTime&gt;&gt; {
-        <span class="self">self</span>.tx_graph().txs_with_no_anchor_or_last_seen()
     }
 
     <span class="doccomment">/// Get a reference to the inner [`KeychainTxOutIndex`].
@@ -5263,6 +5145,7 @@
         <span class="kw">use </span><span class="macro-nonterminal">$crate::bitcoin</span>::{BlockHash, Transaction, absolute, TxOut, Network, hashes::Hash};
         <span class="kw">use </span><span class="macro-nonterminal">$crate::chain</span>::{ConfirmationBlockTime, BlockId, TxGraph, tx_graph};
         <span class="kw">use </span><span class="macro-nonterminal">$</span><span class="kw">crate</span>::{<span class="macro-nonterminal">Update</span>, KeychainKind, Wallet};
+        <span class="kw">use </span><span class="macro-nonterminal">$crate::test_utils</span>::<span class="kw-2">*</span>;
         <span class="kw">let </span>descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/0/*)"</span>;
         <span class="kw">let </span>change_descriptor = <span class="string">"tr([73c5da0a/86'/0'/0']tprv8fMn4hSKPRC1oaCPqxDb1JWtgkpeiQvZhsr8W2xuy3GEMkzoArcAWTfJxYb6Wj8XNNDWEjfYKK4wGQXh3ZUXhDF2NcnsALpWTeSwarJt7Vc/1/*)"</span>;
 
@@ -5282,21 +5165,14 @@
         };
         <span class="kw">let </span>txid = tx.compute_txid();
         <span class="kw">let </span>block_id = BlockId { height: <span class="number">500</span>, hash: BlockHash::all_zeros() };
-        <span class="kw">let _ </span>= wallet.insert_checkpoint(block_id);
-        <span class="kw">let _ </span>= wallet.insert_checkpoint(BlockId { height: <span class="number">1_000</span>, hash: BlockHash::all_zeros() });
-        <span class="kw">let _ </span>= wallet.insert_tx(tx);
+        insert_checkpoint(<span class="kw-2">&amp;mut </span>wallet, block_id);
+        insert_checkpoint(<span class="kw-2">&amp;mut </span>wallet, BlockId { height: <span class="number">1_000</span>, hash: BlockHash::all_zeros() });
+        insert_tx(<span class="kw-2">&amp;mut </span>wallet, tx);
         <span class="kw">let </span>anchor = ConfirmationBlockTime {
             confirmation_time: <span class="number">50_000</span>,
             block_id,
         };
-        <span class="kw">let </span>update = Update {
-            tx_update: tx_graph::TxUpdate {
-                anchors: [(anchor, txid)].into_iter().collect(),
-                ..Default::default()
-            },
-            ..Default::default()
-        };
-        wallet.apply_update(update).unwrap();
+        insert_anchor(<span class="kw-2">&amp;mut </span>wallet, txid, anchor);
         wallet
     }}
 }
