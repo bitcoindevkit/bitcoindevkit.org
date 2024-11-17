@@ -8,23 +8,6 @@ lastUpdated: false
 
 # Current Grantees (Full-Time)
 
-## Evan Lin
-
-Evan Lin (林志宇) is a Rust/Golang developer who has been contributing to BDK since 2022. Before working on bitcoin-related projects, his professional career started in 2017 where he led various umbrella projects for an altcoin. After discovering the importance of bitcoin, he started contributing to various projects (including BDK, Fedimint and Utreexo) and was eventually taken under the wing of and mentored by Lloyd Fournier.
-
-<div>
-  <a href="https://twitter.com/evanlinjin" target="_blank">
-    <img src="/img/twitter-icon.svg" style="width: 24px; margin: 0 12px 0 0">
-  </a>
-  <a href="https://github.com/evanlinjin" target="_blank">
-    <img src="/img/github-icon.svg" style="width: 24px; margin: 0 12px 0 0">
-  </a>
-  <a href="https://njump.me/npub1kysd8m44dhv7ywa75u5z7w2w0gs4t6qzhgvjp555gfknasy3krlqfxde60" target="_blank">
-    <img src="/img/nostr-icon.svg" style="width: 24px; margin: 0 12px 0 0">
-  </a>
-</div>
-<br>
-
 ## thunderbiscuit
 
 Thunderbiscuit is an Android engineer who's has been working on the project for over 3 years, leading the work on the language bindings for BDK. He's using BDK in production with [Padawan Wallet](https://padawanwallet.com/). He's also in charge of the [BDK Kotlin Example Wallet](https://github.com/bitcoindevkit/bdk-kotlin-example-wallet), the sample native Android wallet for BDK, and the [Book of BDK](https://bitcoindevkit.github.io/book-of-bdk/) project, working on building walkthrough documentation for the BDK ecosystem.
@@ -78,9 +61,8 @@ ValuedMammal is a Rust developer and node operator whose work includes research 
 </div>
 <br>
 
-# Current Grantees (Project Grants)
-
 ## Wei Chen
+
 Wei Chen has been contributing to BDK since late 2023 and was formerly a full stack Java developer based in Washington D.C. with ten years of experience. He was introduced to BDK as a result of Evan Lin, whom he met when taking Mandarin lessons in Taipei. The focus of his contributions will be towards assisting with the restructuring of the electrum crate, reengineering of the TxGraph data components to simplify the tracking of lineal conflicts, as well as focusing on performance optimization and the continued debugging of BDK, which includes the maintenance of the TestEnv crate. Outside of code contributions to the project, Wei Chen will be also assisting Evan Lin with various bitcoin events or workshops to improve understanding towards BDK.
 
 <div>
@@ -89,6 +71,40 @@ Wei Chen has been contributing to BDK since late 2023 and was formerly a full st
   </a>
 </div>
 <br>
+
+# Current Grantees (Part-Time)
+
+## Evan Lin
+
+Evan Lin (林志宇) is a Rust/Golang developer who has been contributing to BDK since 2022. Before working on bitcoin-related projects, his professional career started in 2017 where he led various umbrella projects for an altcoin. After discovering the importance of bitcoin, he started contributing to various projects (including BDK, Fedimint and Utreexo) and was eventually taken under the wing of and mentored by Lloyd Fournier.
+
+<div>
+  <a href="https://twitter.com/evanlinjin" target="_blank">
+    <img src="/img/twitter-icon.svg" style="width: 24px; margin: 0 12px 0 0">
+  </a>
+  <a href="https://github.com/evanlinjin" target="_blank">
+    <img src="/img/github-icon.svg" style="width: 24px; margin: 0 12px 0 0">
+  </a>
+  <a href="https://njump.me/npub1kysd8m44dhv7ywa75u5z7w2w0gs4t6qzhgvjp555gfknasy3krlqfxde60" target="_blank">
+    <img src="/img/nostr-icon.svg" style="width: 24px; margin: 0 12px 0 0">
+  </a>
+</div>
+<br>
+
+# Current Grantees (Project Grants)
+
+## Nymius
+
+Nymius is a software engineer who fell down the rabbit hole of bitcoin, privacy and open source. After contributing to other bitcoin related projects, he found BDK, where his interest for bitcoin and rust got aligned. Since then he has been contributing to the coin selection and the persistence testing module, and file store. His new challenge is implementing support for BIP 352 (Silent Payments) on BDK. At the same time he will continue his previous work and help with the maintenance of the project.
+
+<div>
+  <a href="https://github.com/nymius" target="_blank">
+    <img src="/img/github-icon.svg" style="width: 24px">
+  </a>
+</div>
+<br>
+
+# Past Grantees
 
 ## Manuel Gatti
 
@@ -104,6 +120,23 @@ He has been contributing to BDK since April 2023 mostly on the project managemen
     <img src="/img/github-icon.svg" style="width: 24px; margin: 0 12px 0 0">
   </a>
   <a href="https://njump.me/npub10znwkv69vus58rrqydwfzy3tuljhqn5plec84y0v2pa5n85xfwnqaft2sl" target="_blank">
+    <img src="/img/nostr-icon.svg" style="width: 24px; margin: 0 12px 0 0">
+  </a>
+</div>
+<br>
+
+## Leonardo Souza
+
+Leonardo is a Software Engineer based in Brazil, previously Clojure/Java developer in a real-estate tech startup, and Rust developer in a Bitcoin on-ramp/off-ramp startup. He started contributing to BDK and Bitcoin-related FOSS projects in 2022 through his participation in Summer of Bitcoin 2022, mentored by Lloyd Fournier his work focused on a real-time block events library on top of mempool.space API. He's continued his FOSS journey in Summer of Bitcoin 2023, contributing to Fedimint, mentored by Eric Sirion working on adding Tor support on the client level, using Arti, which he's contributing since. He's been continuing his contributions to BDK focusing on improvements, enhancements for BDK 1.0, and Fedimint with focus on adding/improving it's Tor support.
+
+<div>
+  <a href="https://twitter.com/oleonardolima" target="_blank">
+    <img src="/img/twitter-icon.svg" style="width: 24px; margin: 0 12px 0 0">
+  </a>
+  <a href="https://github.com/oleonardolima" target="_blank">
+    <img src="/img/github-icon.svg" style="width: 24px; margin: 0 12px 0 0">
+  </a>
+  <a href="https://njump.me/npub1ez8efu9rjxu64g0lalty2ffmr2tgkzjz92rkafyfyz5463wr8ars8zls5t" target="_blank">
     <img src="/img/nostr-icon.svg" style="width: 24px; margin: 0 12px 0 0">
   </a>
 </div>
