@@ -37,7 +37,7 @@ We've also been active at conferences!
 In Q3, a number of new projects have started using BDK:
 - The Protonmail team has released the latest tool in the Proton family: the [Proton Bitcoin Wallet App](https://proton.me/blog/proton-wallet-launch). The wallet is using the 1.0 beta version of the library. Welcome aboard Proton!
 - The [bark Ark implementation]() started using the BDK beta releases for its wallet implementation.
-- [Bitcoin Safe]() released its first beta release.
+- [Bitcoin Safe](https://bitcoin-safe.org/) released its first beta release.
 - [Satsails](https://www.satsails.com/) is now live on the Play Store!
 - [Strata](https://www.stratabtc.org/) has released a devnet version of their CLI wallet, which uses BDK.
 - Our BDK Swift Example Wallet is [now available on iOS Testflight](https://testflight.apple.com/join/A3nAuYvZ)!
