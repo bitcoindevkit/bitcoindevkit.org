@@ -534,7 +534,7 @@
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_core::{
     bitcoin::{block::Header, BlockHash, OutPoint, ScriptBuf, Transaction, Txid},
     collections::{BTreeMap, HashMap},
-    spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult},
+    spk_client::{FullScanRequest, FullScanResponse, SyncRequest, SyncResponse},
     BlockId, CheckPoint, ConfirmationBlockTime, TxUpdate,
 };
 <span class="kw">use </span>electrum_client::{ElectrumApi, Error, HeaderNotification};
@@ -659,7 +659,7 @@
         stop_gap: usize,
         batch_size: usize,
         fetch_prev_txouts: bool,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanResult&lt;K&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanResponse&lt;K&gt;, Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>request: FullScanRequest&lt;K&gt; = request.into();
 
         <span class="kw">let </span>tip_and_latest_blocks = <span class="kw">match </span>request.chain_tip() {
@@ -692,7 +692,7 @@
             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         };
 
-        <span class="prelude-val">Ok</span>(FullScanResult {
+        <span class="prelude-val">Ok</span>(FullScanResponse {
             tx_update,
             chain_update,
             last_active_indices,
@@ -727,7 +727,7 @@
         request: <span class="kw">impl </span>Into&lt;SyncRequest&lt;I&gt;&gt;,
         batch_size: usize,
         fetch_prev_txouts: bool,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResult, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResponse, Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>request: SyncRequest&lt;I&gt; = request.into();
 
         <span class="kw">let </span>tip_and_latest_blocks = <span class="kw">match </span>request.chain_tip() {
@@ -762,7 +762,7 @@
             <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
         };
 
-        <span class="prelude-val">Ok</span>(SyncResult {
+        <span class="prelude-val">Ok</span>(SyncResponse {
             tx_update,
             chain_update,
         })

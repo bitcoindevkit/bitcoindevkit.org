@@ -858,7 +858,7 @@
 <a href="#858" id="858">858</a>
 <a href="#859" id="859">859</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bdk_core::collections::{BTreeMap, BTreeSet, HashSet};
-<span class="kw">use </span>bdk_core::spk_client::{FullScanRequest, FullScanResult, SyncRequest, SyncResult};
+<span class="kw">use </span>bdk_core::spk_client::{FullScanRequest, FullScanResponse, SyncRequest, SyncResponse};
 <span class="kw">use </span>bdk_core::{
     bitcoin::{BlockHash, OutPoint, ScriptBuf, Txid},
     BlockId, CheckPoint, ConfirmationBlockTime, Indexed, TxUpdate,
@@ -889,7 +889,7 @@
         request: R,
         stop_gap: usize,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanResult&lt;K&gt;, Error&gt;;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanResponse&lt;K&gt;, Error&gt;;
 
     <span class="doccomment">/// Sync a set of scripts, txids, and/or outpoints against Esplora.
     ///
@@ -902,7 +902,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         request: R,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResult, Error&gt;;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResponse, Error&gt;;
 }
 
 <span class="kw">impl </span>EsploraExt <span class="kw">for </span>esplora_client::BlockingClient {
@@ -911,7 +911,7 @@
         request: R,
         stop_gap: usize,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanResult&lt;K&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;FullScanResponse&lt;K&gt;, Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>request = request.into();
 
         <span class="kw">let </span>chain_tip = request.chain_tip();
@@ -949,7 +949,7 @@
             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         };
 
-        <span class="prelude-val">Ok</span>(FullScanResult {
+        <span class="prelude-val">Ok</span>(FullScanResponse {
             chain_update,
             tx_update,
             last_active_indices,
@@ -960,7 +960,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         request: R,
         parallel_requests: usize,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResult, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;SyncResponse, Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>request: SyncRequest&lt;I&gt; = request.into();
 
         <span class="kw">let </span>chain_tip = request.chain_tip();
@@ -1001,7 +1001,7 @@
             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         };
 
-        <span class="prelude-val">Ok</span>(SyncResult {
+        <span class="prelude-val">Ok</span>(SyncResponse {
             chain_update,
             tx_update,
         })
