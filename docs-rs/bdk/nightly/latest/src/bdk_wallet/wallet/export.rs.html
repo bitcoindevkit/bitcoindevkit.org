@@ -469,10 +469,10 @@
 
         <span class="kw">let </span>blockheight = <span class="kw">if </span>include_blockheight {
             wallet.transactions().next().map_or(<span class="number">0</span>, |canonical_tx| {
-                <span class="kw">match </span>canonical_tx.chain_position {
-                    bdk_chain::ChainPosition::Confirmed(a) =&gt; a.block_id.height,
-                    bdk_chain::ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; <span class="number">0</span>,
-                }
+                canonical_tx
+                    .chain_position
+                    .confirmation_height_upper_bound()
+                    .unwrap_or(<span class="number">0</span>)
             })
         } <span class="kw">else </span>{
             <span class="number">0

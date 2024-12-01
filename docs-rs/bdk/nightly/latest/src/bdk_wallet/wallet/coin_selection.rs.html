@@ -1766,6 +1766,21 @@
 <a href="#1766" id="1766">1766</a>
 <a href="#1767" id="1767">1767</a>
 <a href="#1768" id="1768">1768</a>
+<a href="#1769" id="1769">1769</a>
+<a href="#1770" id="1770">1770</a>
+<a href="#1771" id="1771">1771</a>
+<a href="#1772" id="1772">1772</a>
+<a href="#1773" id="1773">1773</a>
+<a href="#1774" id="1774">1774</a>
+<a href="#1775" id="1775">1775</a>
+<a href="#1776" id="1776">1776</a>
+<a href="#1777" id="1777">1777</a>
+<a href="#1778" id="1778">1778</a>
+<a href="#1779" id="1779">1779</a>
+<a href="#1780" id="1780">1780</a>
+<a href="#1781" id="1781">1781</a>
+<a href="#1782" id="1782">1782</a>
+<a href="#1783" id="1783">1783</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2522,7 +2537,13 @@
     <span class="kw">const </span>FEE_AMOUNT: u64 = <span class="number">50</span>;
 
     <span class="kw">fn </span>unconfirmed_utxo(value: u64, index: u32, last_seen: u64) -&gt; WeightedUtxo {
-        utxo(value, index, ChainPosition::Unconfirmed(last_seen))
+        utxo(
+            value,
+            index,
+            ChainPosition::Unconfirmed {
+                last_seen: <span class="prelude-val">Some</span>(last_seen),
+            },
+        )
     }
 
     <span class="kw">fn </span>confirmed_utxo(
@@ -2534,13 +2555,16 @@
         utxo(
             value,
             index,
-            ChainPosition::Confirmed(ConfirmationBlockTime {
-                block_id: chain::BlockId {
-                    height: confirmation_height,
-                    hash: bitcoin::BlockHash::all_zeros(),
+            ChainPosition::Confirmed {
+                anchor: ConfirmationBlockTime {
+                    block_id: chain::BlockId {
+                        height: confirmation_height,
+                        hash: bitcoin::BlockHash::all_zeros(),
+                    },
+                    confirmation_time,
                 },
-                confirmation_time,
-            }),
+                transitively: <span class="prelude-val">None</span>,
+            },
         )
     }
 
@@ -2606,15 +2630,18 @@
                     is_spent: <span class="bool-val">false</span>,
                     derivation_index: rng.next_u32(),
                     chain_position: <span class="kw">if </span>rng.gen_bool(<span class="number">0.5</span>) {
-                        ChainPosition::Confirmed(ConfirmationBlockTime {
-                            block_id: chain::BlockId {
-                                height: rng.next_u32(),
-                                hash: BlockHash::all_zeros(),
+                        ChainPosition::Confirmed {
+                            anchor: ConfirmationBlockTime {
+                                block_id: chain::BlockId {
+                                    height: rng.next_u32(),
+                                    hash: BlockHash::all_zeros(),
+                                },
+                                confirmation_time: rng.next_u64(),
                             },
-                            confirmation_time: rng.next_u64(),
-                        })
+                            transitively: <span class="prelude-val">None</span>,
+                        }
                     } <span class="kw">else </span>{
-                        ChainPosition::Unconfirmed(<span class="number">0</span>)
+                        ChainPosition::Unconfirmed { last_seen: <span class="prelude-val">Some</span>(<span class="number">0</span>) }
                     },
                 }),
             });
@@ -2639,7 +2666,7 @@
                     keychain: KeychainKind::External,
                     is_spent: <span class="bool-val">false</span>,
                     derivation_index: <span class="number">42</span>,
-                    chain_position: ChainPosition::Unconfirmed(<span class="number">0</span>),
+                    chain_position: ChainPosition::Unconfirmed { last_seen: <span class="prelude-val">Some</span>(<span class="number">0</span>) },
                 }),
             })
             .collect()
@@ -2996,7 +3023,7 @@
         optional.push(utxo(
             <span class="number">500_000</span>,
             <span class="number">3</span>,
-            ChainPosition::&lt;ConfirmationBlockTime&gt;::Unconfirmed(<span class="number">0</span>),
+            ChainPosition::&lt;ConfirmationBlockTime&gt;::Unconfirmed { last_seen: <span class="prelude-val">Some</span>(<span class="number">0</span>) },
         ));
 
         <span class="comment">// Defensive assertions, for sanity and in case someone changes the test utxos vector.
@@ -3358,13 +3385,16 @@
                     keychain: KeychainKind::External,
                     is_spent: <span class="bool-val">false</span>,
                     derivation_index: <span class="number">0</span>,
-                    chain_position: ChainPosition::Confirmed(ConfirmationBlockTime {
-                        block_id: BlockId {
-                            height: <span class="number">12345</span>,
-                            hash: BlockHash::all_zeros(),
+                    chain_position: ChainPosition::Confirmed {
+                        anchor: ConfirmationBlockTime {
+                            block_id: BlockId {
+                                height: <span class="number">12345</span>,
+                                hash: BlockHash::all_zeros(),
+                            },
+                            confirmation_time: <span class="number">12345</span>,
                         },
-                        confirmation_time: <span class="number">12345</span>,
-                    }),
+                        transitively: <span class="prelude-val">None</span>,
+                    },
                 }),
             }
         }

@@ -2585,6 +2585,18 @@
 <a href="#2585" id="2585">2585</a>
 <a href="#2586" id="2586">2586</a>
 <a href="#2587" id="2587">2587</a>
+<a href="#2588" id="2588">2588</a>
+<a href="#2589" id="2589">2589</a>
+<a href="#2590" id="2590">2590</a>
+<a href="#2591" id="2591">2591</a>
+<a href="#2592" id="2592">2592</a>
+<a href="#2593" id="2593">2593</a>
+<a href="#2594" id="2594">2594</a>
+<a href="#2595" id="2595">2595</a>
+<a href="#2596" id="2596">2596</a>
+<a href="#2597" id="2597">2597</a>
+<a href="#2598" id="2598">2598</a>
+<a href="#2599" id="2599">2599</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -3624,12 +3636,22 @@
     ///
     /// // get confirmation status of transaction
     /// match wallet_tx.chain_position {
-    ///     ChainPosition::Confirmed(anchor) =&gt; println!(
+    ///     ChainPosition::Confirmed {
+    ///         anchor,
+    ///         transitively: None,
+    ///     } =&gt; println!(
     ///         "tx is confirmed at height {}, we know this since {}:{} is in the best chain",
     ///         anchor.block_id.height, anchor.block_id.height, anchor.block_id.hash,
     ///     ),
-    ///     ChainPosition::Unconfirmed(last_seen) =&gt; println!(
-    ///         "tx is last seen at {}, it is unconfirmed as it is not anchored in the best chain",
+    ///     ChainPosition::Confirmed {
+    ///         anchor,
+    ///         transitively: Some(_),
+    ///     } =&gt; println!(
+    ///         "tx is an ancestor of a tx anchored in {}:{}",
+    ///         anchor.block_id.height, anchor.block_id.hash,
+    ///     ),
+    ///     ChainPosition::Unconfirmed { last_seen } =&gt; println!(
+    ///         "tx is last seen at {:?}, it is unconfirmed as it is not anchored in the best chain",
     ///         last_seen,
     ///     ),
     /// }
@@ -4177,7 +4199,7 @@
         <span class="kw">let </span>pos = graph
             .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, txid)
             .ok_or(BuildFeeBumpError::TransactionNotFound(txid))<span class="question-mark">?</span>;
-        <span class="kw">if let </span>ChainPosition::Confirmed(<span class="kw">_</span>) = pos {
+        <span class="kw">if </span>pos.is_confirmed() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(BuildFeeBumpError::TransactionConfirmed(txid));
         }
 
@@ -4427,9 +4449,10 @@
                 </span>.indexed_graph
                 .graph()
                 .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, input.previous_output.txid)
-                .map(|chain_position| <span class="kw">match </span>chain_position {
-                    ChainPosition::Confirmed(a) =&gt; a.block_id.height,
-                    ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; u32::MAX,
+                .map(|chain_position| {
+                    chain_position
+                        .confirmation_height_upper_bound()
+                        .unwrap_or(u32::MAX)
                 });
             <span class="kw">let </span>current_height = sign_options
                 .assume_height
@@ -4619,9 +4642,10 @@
                     </span>);
                     <span class="kw">if let </span><span class="prelude-val">Some</span>(current_height) = current_height {
                         <span class="kw">match </span>chain_position {
-                            ChainPosition::Confirmed(a) =&gt; {
+                            ChainPosition::Confirmed { anchor, .. } =&gt; {
                                 <span class="comment">// https://github.com/bitcoin/bitcoin/blob/c5e67be03bb06a5d7885c55db1f016fbf2333fe3/src/validation.cpp#L373-L375
-                                </span>spendable &amp;= (current_height.saturating_sub(a.block_id.height))
+                                </span>spendable &amp;= (current_height
+                                    .saturating_sub(anchor.block_id.height))
                                     &gt;= COINBASE_MATURITY;
                             }
                             ChainPosition::Unconfirmed { .. } =&gt; spendable = <span class="bool-val">false</span>,

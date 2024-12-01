@@ -157,6 +157,42 @@
 <a href="#157" id="157">157</a>
 <a href="#158" id="158">158</a>
 <a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bitcoin::{constants::COINBASE_MATURITY, OutPoint, TxOut, Txid};
 
 <span class="kw">use </span><span class="kw">crate</span>::Anchor;
@@ -174,16 +210,30 @@
     ))
 )]
 </span><span class="kw">pub enum </span>ChainPosition&lt;A&gt; {
-    <span class="doccomment">/// The chain data is seen as confirmed, and in anchored by `A`.
-    </span>Confirmed(A),
-    <span class="doccomment">/// The chain data is not confirmed and last seen in the mempool at this timestamp.
-    </span>Unconfirmed(u64),
+    <span class="doccomment">/// The chain data is confirmed as it is anchored in the best chain by `A`.
+    </span>Confirmed {
+        <span class="doccomment">/// The [`Anchor`].
+        </span>anchor: A,
+        <span class="doccomment">/// Whether the chain data is anchored transitively by a child transaction.
+        ///
+        /// If the value is `Some`, it means we have incomplete data. We can only deduce that the
+        /// chain data is confirmed at a block equal to or lower than the block referenced by `A`.
+        </span>transitively: <span class="prelude-ty">Option</span>&lt;Txid&gt;,
+    },
+    <span class="doccomment">/// The chain data is not confirmed.
+    </span>Unconfirmed {
+        <span class="doccomment">/// When the chain data is last seen in the mempool.
+        ///
+        /// This value will be `None` if the chain data was never seen in the mempool and only seen
+        /// in a conflicting chain.
+        </span>last_seen: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+    },
 }
 
 <span class="kw">impl</span>&lt;A&gt; ChainPosition&lt;A&gt; {
     <span class="doccomment">/// Returns whether [`ChainPosition`] is confirmed or not.
     </span><span class="kw">pub fn </span>is_confirmed(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-        <span class="macro">matches!</span>(<span class="self">self</span>, <span class="self">Self</span>::Confirmed(<span class="kw">_</span>))
+        <span class="macro">matches!</span>(<span class="self">self</span>, <span class="self">Self</span>::Confirmed { .. })
     }
 }
 
@@ -191,8 +241,14 @@
     <span class="doccomment">/// Maps a [`ChainPosition&lt;&amp;A&gt;`] into a [`ChainPosition&lt;A&gt;`] by cloning the contents.
     </span><span class="kw">pub fn </span>cloned(<span class="self">self</span>) -&gt; ChainPosition&lt;A&gt; {
         <span class="kw">match </span><span class="self">self </span>{
-            ChainPosition::Confirmed(a) =&gt; ChainPosition::Confirmed(a.clone()),
-            ChainPosition::Unconfirmed(last_seen) =&gt; ChainPosition::Unconfirmed(last_seen),
+            ChainPosition::Confirmed {
+                anchor,
+                transitively,
+            } =&gt; ChainPosition::Confirmed {
+                anchor: anchor.clone(),
+                transitively,
+            },
+            ChainPosition::Unconfirmed { last_seen } =&gt; ChainPosition::Unconfirmed { last_seen },
         }
     }
 }
@@ -201,8 +257,10 @@
     <span class="doccomment">/// Determines the upper bound of the confirmation height.
     </span><span class="kw">pub fn </span>confirmation_height_upper_bound(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
         <span class="kw">match </span><span class="self">self </span>{
-            ChainPosition::Confirmed(a) =&gt; <span class="prelude-val">Some</span>(a.confirmation_height_upper_bound()),
-            ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
+            ChainPosition::Confirmed { anchor, .. } =&gt; {
+                <span class="prelude-val">Some</span>(anchor.confirmation_height_upper_bound())
+            }
+            ChainPosition::Unconfirmed { .. } =&gt; <span class="prelude-val">None</span>,
         }
     }
 }
@@ -232,14 +290,14 @@
     /// [`confirmation_height_upper_bound`]: Anchor::confirmation_height_upper_bound
     </span><span class="kw">pub fn </span>is_mature(<span class="kw-2">&amp;</span><span class="self">self</span>, tip: u32) -&gt; bool {
         <span class="kw">if </span><span class="self">self</span>.is_on_coinbase {
-            <span class="kw">let </span>tx_height = <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.chain_position {
-                ChainPosition::Confirmed(anchor) =&gt; anchor.confirmation_height_upper_bound(),
-                ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; {
+            <span class="kw">let </span>conf_height = <span class="kw">match </span><span class="self">self</span>.chain_position.confirmation_height_upper_bound() {
+                <span class="prelude-val">Some</span>(height) =&gt; height,
+                <span class="prelude-val">None </span>=&gt; {
                     <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">"coinbase tx can never be unconfirmed"</span>);
                     <span class="kw">return </span><span class="bool-val">false</span>;
                 }
             };
-            <span class="kw">let </span>age = tip.saturating_sub(tx_height);
+            <span class="kw">let </span>age = tip.saturating_sub(conf_height);
             <span class="kw">if </span>age + <span class="number">1 </span>&lt; COINBASE_MATURITY {
                 <span class="kw">return </span><span class="bool-val">false</span>;
             }
@@ -262,17 +320,21 @@
             <span class="kw">return </span><span class="bool-val">false</span>;
         }
 
-        <span class="kw">let </span>confirmation_height = <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.chain_position {
-            ChainPosition::Confirmed(anchor) =&gt; anchor.confirmation_height_upper_bound(),
-            ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="bool-val">false</span>,
+        <span class="kw">let </span>conf_height = <span class="kw">match </span><span class="self">self</span>.chain_position.confirmation_height_upper_bound() {
+            <span class="prelude-val">Some</span>(height) =&gt; height,
+            <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="bool-val">false</span>,
         };
-        <span class="kw">if </span>confirmation_height &gt; tip {
+        <span class="kw">if </span>conf_height &gt; tip {
             <span class="kw">return </span><span class="bool-val">false</span>;
         }
 
         <span class="comment">// if the spending tx is confirmed within tip height, the txout is no longer spendable
-        </span><span class="kw">if let </span><span class="prelude-val">Some</span>((ChainPosition::Confirmed(spending_anchor), <span class="kw">_</span>)) = <span class="kw-2">&amp;</span><span class="self">self</span>.spent_by {
-            <span class="kw">if </span>spending_anchor.anchor_block().height &lt;= tip {
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(spend_height) = <span class="self">self
+            </span>.spent_by
+            .as_ref()
+            .and_then(|(pos, <span class="kw">_</span>)| pos.confirmation_height_upper_bound())
+        {
+            <span class="kw">if </span>spend_height &lt;= tip {
                 <span class="kw">return </span><span class="bool-val">false</span>;
             }
         }
@@ -291,22 +353,32 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>chain_position_ord() {
-        <span class="kw">let </span>unconf1 = ChainPosition::&lt;ConfirmationBlockTime&gt;::Unconfirmed(<span class="number">10</span>);
-        <span class="kw">let </span>unconf2 = ChainPosition::&lt;ConfirmationBlockTime&gt;::Unconfirmed(<span class="number">20</span>);
-        <span class="kw">let </span>conf1 = ChainPosition::Confirmed(ConfirmationBlockTime {
-            confirmation_time: <span class="number">20</span>,
-            block_id: BlockId {
-                height: <span class="number">9</span>,
-                ..Default::default()
+        <span class="kw">let </span>unconf1 = ChainPosition::&lt;ConfirmationBlockTime&gt;::Unconfirmed {
+            last_seen: <span class="prelude-val">Some</span>(<span class="number">10</span>),
+        };
+        <span class="kw">let </span>unconf2 = ChainPosition::&lt;ConfirmationBlockTime&gt;::Unconfirmed {
+            last_seen: <span class="prelude-val">Some</span>(<span class="number">20</span>),
+        };
+        <span class="kw">let </span>conf1 = ChainPosition::Confirmed {
+            anchor: ConfirmationBlockTime {
+                confirmation_time: <span class="number">20</span>,
+                block_id: BlockId {
+                    height: <span class="number">9</span>,
+                    ..Default::default()
+                },
             },
-        });
-        <span class="kw">let </span>conf2 = ChainPosition::Confirmed(ConfirmationBlockTime {
-            confirmation_time: <span class="number">15</span>,
-            block_id: BlockId {
-                height: <span class="number">12</span>,
-                ..Default::default()
+            transitively: <span class="prelude-val">None</span>,
+        };
+        <span class="kw">let </span>conf2 = ChainPosition::Confirmed {
+            anchor: ConfirmationBlockTime {
+                confirmation_time: <span class="number">15</span>,
+                block_id: BlockId {
+                    height: <span class="number">12</span>,
+                    ..Default::default()
+                },
             },
-        });
+            transitively: <span class="prelude-val">None</span>,
+        };
 
         <span class="macro">assert!</span>(unconf2 &gt; unconf1, <span class="string">"higher last_seen means higher ord"</span>);
         <span class="macro">assert!</span>(unconf1 &gt; conf1, <span class="string">"unconfirmed is higher ord than confirmed"</span>);

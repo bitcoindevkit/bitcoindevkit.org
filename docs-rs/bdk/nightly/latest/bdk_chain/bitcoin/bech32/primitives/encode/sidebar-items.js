@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["ByteIter","CharIter","Encoder","Fe32Iter","WitnessVersionIter"]};
