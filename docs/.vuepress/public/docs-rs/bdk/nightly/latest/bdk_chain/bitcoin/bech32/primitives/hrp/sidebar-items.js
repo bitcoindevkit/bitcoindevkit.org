@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["BC","BCRT","TB"],"enum":["Error"],"struct":["ByteIter","CharIter","Hrp","LowercaseByteIter","LowercaseCharIter"]};

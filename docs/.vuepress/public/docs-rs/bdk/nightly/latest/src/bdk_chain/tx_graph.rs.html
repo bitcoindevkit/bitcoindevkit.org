@@ -1553,6 +1553,13 @@
 <a href="#1553" id="1553">1553</a>
 <a href="#1554" id="1554">1554</a>
 <a href="#1555" id="1555">1555</a>
+<a href="#1556" id="1556">1556</a>
+<a href="#1557" id="1557">1557</a>
+<a href="#1558" id="1558">1558</a>
+<a href="#1559" id="1559">1559</a>
+<a href="#1560" id="1560">1560</a>
+<a href="#1561" id="1561">1561</a>
+<a href="#1562" id="1562">1562</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
 //! [`TxGraph`] contains transactions and indexes them so you can easily traverse the graph of
@@ -2325,7 +2332,12 @@
 
         <span class="kw">for </span>anchor <span class="kw">in </span>anchors {
             <span class="kw">match </span>chain.is_block_in_chain(anchor.anchor_block(), chain_tip)<span class="question-mark">? </span>{
-                <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) =&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(ChainPosition::Confirmed(anchor))),
+                <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) =&gt; {
+                    <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(ChainPosition::Confirmed {
+                        anchor,
+                        transitively: <span class="prelude-val">None</span>,
+                    }))
+                }
                 <span class="kw">_ </span>=&gt; <span class="kw">continue</span>,
             }
         }
@@ -2432,7 +2444,9 @@
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(ChainPosition::Unconfirmed(last_seen)))
+        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(ChainPosition::Unconfirmed {
+            last_seen: <span class="prelude-val">Some</span>(last_seen),
+        }))
     }
 
     <span class="doccomment">/// Get the position of the transaction in `chain` with tip `chain_tip`.
@@ -2701,14 +2715,14 @@
             <span class="kw">let </span>(spk_i, txout) = res<span class="question-mark">?</span>;
 
             <span class="kw">match </span><span class="kw-2">&amp;</span>txout.chain_position {
-                ChainPosition::Confirmed(<span class="kw">_</span>) =&gt; {
+                ChainPosition::Confirmed { .. } =&gt; {
                     <span class="kw">if </span>txout.is_confirmed_and_spendable(chain_tip.height) {
                         confirmed += txout.txout.value;
                     } <span class="kw">else if </span>!txout.is_mature(chain_tip.height) {
                         immature += txout.txout.value;
                     }
                 }
-                ChainPosition::Unconfirmed(<span class="kw">_</span>) =&gt; {
+                ChainPosition::Unconfirmed { .. } =&gt; {
                     <span class="kw">if </span>trust_predicate(<span class="kw-2">&amp;</span>spk_i, txout.txout.script_pubkey) {
                         trusted_pending += txout.txout.value;
                     } <span class="kw">else </span>{

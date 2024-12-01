@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_STRING_LENGTH","VERSION_0","VERSION_1"],"enum":["WitnessLengthError"],"fn":["is_valid_witness_program_length","is_valid_witness_version","validate_witness_program_length","validate_witness_version"],"struct":["InvalidWitnessVersionError"]};
