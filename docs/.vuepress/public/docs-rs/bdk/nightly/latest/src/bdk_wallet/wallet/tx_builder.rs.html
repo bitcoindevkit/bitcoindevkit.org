@@ -1071,19 +1071,6 @@
 <a href="#1071" id="1071">1071</a>
 <a href="#1072" id="1072">1072</a>
 <a href="#1073" id="1073">1073</a>
-<a href="#1074" id="1074">1074</a>
-<a href="#1075" id="1075">1075</a>
-<a href="#1076" id="1076">1076</a>
-<a href="#1077" id="1077">1077</a>
-<a href="#1078" id="1078">1078</a>
-<a href="#1079" id="1079">1079</a>
-<a href="#1080" id="1080">1080</a>
-<a href="#1081" id="1081">1081</a>
-<a href="#1082" id="1082">1082</a>
-<a href="#1083" id="1083">1083</a>
-<a href="#1084" id="1084">1084</a>
-<a href="#1085" id="1085">1085</a>
-<a href="#1086" id="1086">1086</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -1122,8 +1109,7 @@
 //! # Ok::&lt;(), anyhow::Error&gt;(())
 //! ```
 
-</span><span class="kw">use </span>alloc::{boxed::Box, rc::Rc, string::String, vec::Vec};
-<span class="kw">use </span>core::cell::RefCell;
+</span><span class="kw">use </span>alloc::{boxed::Box, string::String, vec::Vec};
 <span class="kw">use </span>core::fmt;
 
 <span class="kw">use </span>alloc::sync::Arc;
@@ -1197,7 +1183,7 @@
 /// [`coin_selection`]: Self::coin_selection
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>TxBuilder&lt;<span class="lifetime">'a</span>, Cs&gt; {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) wallet: Rc&lt;RefCell&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>Wallet&gt;&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) wallet: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>Wallet,
     <span class="kw">pub</span>(<span class="kw">crate</span>) params: TxParams,
     <span class="kw">pub</span>(<span class="kw">crate</span>) coin_selection: Cs,
 }
@@ -1244,16 +1230,6 @@
 <span class="kw">impl </span>Default <span class="kw">for </span>FeePolicy {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         FeePolicy::FeeRate(FeeRate::BROADCAST_MIN)
-    }
-}
-
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, Cs: Clone&gt; Clone <span class="kw">for </span>TxBuilder&lt;<span class="lifetime">'a</span>, Cs&gt; {
-    <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
-        TxBuilder {
-            wallet: <span class="self">self</span>.wallet.clone(),
-            params: <span class="self">self</span>.params.clone(),
-            coin_selection: <span class="self">self</span>.coin_selection.clone(),
-        }
     }
 }
 
@@ -1372,7 +1348,7 @@
     /// the "utxos" and the "unspendable" list, it will be spent.
     </span><span class="kw">pub fn </span>add_utxos(<span class="kw-2">&amp;mut </span><span class="self">self</span>, outpoints: <span class="kw-2">&amp;</span>[OutPoint]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>, AddUtxoError&gt; {
         {
-            <span class="kw">let </span>wallet = <span class="self">self</span>.wallet.borrow();
+            <span class="kw">let </span>wallet = <span class="kw-2">&amp;mut </span><span class="self">self</span>.wallet;
             <span class="kw">let </span>utxos = outpoints
                 .iter()
                 .map(|outpoint| {
@@ -1768,9 +1744,7 @@
     /// **WARNING**: To avoid change address reuse you must persist the changes resulting from one
     /// or more calls to this method before closing the wallet. See [`Wallet::reveal_next_address`].
     </span><span class="kw">pub fn </span>finish_with_aux_rand(<span class="self">self</span>, rng: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>RngCore) -&gt; <span class="prelude-ty">Result</span>&lt;Psbt, CreateTxError&gt; {
-        <span class="self">self</span>.wallet
-            .borrow_mut()
-            .create_tx(<span class="self">self</span>.coin_selection, <span class="self">self</span>.params, rng)
+        <span class="self">self</span>.wallet.create_tx(<span class="self">self</span>.coin_selection, <span class="self">self</span>.params, rng)
     }
 }
 
@@ -1836,7 +1810,7 @@
 <span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
 </span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>AddForeignUtxoError {}
 
-<span class="kw">type </span>TxSort&lt;T&gt; = <span class="kw">dyn </span>Fn(<span class="kw-2">&amp;</span>T, <span class="kw-2">&amp;</span>T) -&gt; core::cmp::Ordering;
+<span class="kw">type </span>TxSort&lt;T&gt; = <span class="kw">dyn </span>(Fn(<span class="kw-2">&amp;</span>T, <span class="kw-2">&amp;</span>T) -&gt; core::cmp::Ordering) + Send + Sync;
 
 <span class="doccomment">/// Ordering of the transaction's inputs and outputs
 </span><span class="attr">#[derive(Clone, Default)]
