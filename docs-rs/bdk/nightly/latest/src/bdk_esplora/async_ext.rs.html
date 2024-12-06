@@ -668,6 +668,21 @@
 <a href="#668" id="668">668</a>
 <a href="#669" id="669">669</a>
 <a href="#670" id="670">670</a>
+<a href="#671" id="671">671</a>
+<a href="#672" id="672">672</a>
+<a href="#673" id="673">673</a>
+<a href="#674" id="674">674</a>
+<a href="#675" id="675">675</a>
+<a href="#676" id="676">676</a>
+<a href="#677" id="677">677</a>
+<a href="#678" id="678">678</a>
+<a href="#679" id="679">679</a>
+<a href="#680" id="680">680</a>
+<a href="#681" id="681">681</a>
+<a href="#682" id="682">682</a>
+<a href="#683" id="683">683</a>
+<a href="#684" id="684">684</a>
+<a href="#685" id="685">685</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>bdk_core::collections::{BTreeMap, BTreeSet, HashSet};
 <span class="kw">use </span>bdk_core::spk_client::{FullScanRequest, FullScanResponse, SyncRequest, SyncResponse};
@@ -675,6 +690,7 @@
     bitcoin::{BlockHash, OutPoint, ScriptBuf, Txid},
     BlockId, CheckPoint, ConfirmationBlockTime, Indexed, TxUpdate,
 };
+<span class="kw">use </span>esplora_client::Sleeper;
 <span class="kw">use </span>futures::{stream::FuturesOrdered, TryStreamExt};
 
 <span class="kw">use crate</span>::{insert_anchor_from_status, insert_prevouts};
@@ -720,7 +736,11 @@
 
 <span class="attr">#[cfg_attr(target_arch = <span class="string">"wasm32"</span>, async_trait(<span class="question-mark">?</span>Send))]
 #[cfg_attr(not(target_arch = <span class="string">"wasm32"</span>), async_trait)]
-</span><span class="kw">impl </span>EsploraAsyncExt <span class="kw">for </span>esplora_client::AsyncClient {
+</span><span class="kw">impl</span>&lt;S&gt; EsploraAsyncExt <span class="kw">for </span>esplora_client::AsyncClient&lt;S&gt;
+<span class="kw">where
+    </span>S: Sleeper + Clone + Send + Sync,
+    S::Sleep: Send,
+{
     <span class="kw">async fn </span>full_scan&lt;K: Ord + Clone + Send, R: Into&lt;FullScanRequest&lt;K&gt;&gt; + Send&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         request: R,
@@ -835,8 +855,8 @@
 /// block-based chain-sources). Therefore it's better to be conservative when setting the tip (use
 /// an earlier tip rather than a later tip) otherwise the caller may accidentally skip blocks when
 /// alternating between chain-sources.
-</span><span class="kw">async fn </span>fetch_latest_blocks(
-    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient,
+</span><span class="kw">async fn </span>fetch_latest_blocks&lt;S: Sleeper&gt;(
+    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient&lt;S&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;BTreeMap&lt;u32, BlockHash&gt;, Error&gt; {
     <span class="prelude-val">Ok</span>(client
         .get_blocks(<span class="prelude-val">None</span>)
@@ -849,8 +869,8 @@
 <span class="doccomment">/// Used instead of [`esplora_client::BlockingClient::get_block_hash`].
 ///
 /// This first checks the previously fetched `latest_blocks` before fetching from Esplora again.
-</span><span class="kw">async fn </span>fetch_block(
-    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient,
+</span><span class="kw">async fn </span>fetch_block&lt;S: Sleeper&gt;(
+    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient&lt;S&gt;,
     latest_blocks: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, BlockHash&gt;,
     height: u32,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;BlockHash&gt;, Error&gt; {
@@ -875,8 +895,8 @@
 ///
 /// We want to have a corresponding checkpoint per anchor height. However, checkpoints fetched
 /// should not surpass `latest_blocks`.
-</span><span class="kw">async fn </span>chain_update(
-    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient,
+</span><span class="kw">async fn </span>chain_update&lt;S: Sleeper&gt;(
+    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient&lt;S&gt;,
     latest_blocks: <span class="kw-2">&amp;</span>BTreeMap&lt;u32, BlockHash&gt;,
     local_tip: <span class="kw-2">&amp;</span>CheckPoint,
     anchors: <span class="kw-2">&amp;</span>BTreeSet&lt;(ConfirmationBlockTime, Txid)&gt;,
@@ -941,13 +961,17 @@
 /// script pubkey that contains a non-empty transaction history.
 ///
 /// Refer to [crate-level docs](crate) for more.
-</span><span class="kw">async fn </span>fetch_txs_with_keychain_spks&lt;I: Iterator&lt;Item = Indexed&lt;ScriptBuf&gt;&gt; + Send&gt;(
-    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient,
+</span><span class="kw">async fn </span>fetch_txs_with_keychain_spks&lt;I, S&gt;(
+    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient&lt;S&gt;,
     inserted_txs: <span class="kw-2">&amp;mut </span>HashSet&lt;Txid&gt;,
     <span class="kw-2">mut </span>keychain_spks: I,
     stop_gap: usize,
     parallel_requests: usize,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(TxUpdate&lt;ConfirmationBlockTime&gt;, <span class="prelude-ty">Option</span>&lt;u32&gt;), Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;(TxUpdate&lt;ConfirmationBlockTime&gt;, <span class="prelude-ty">Option</span>&lt;u32&gt;), Error&gt;
+<span class="kw">where
+    </span>I: Iterator&lt;Item = Indexed&lt;ScriptBuf&gt;&gt; + Send,
+    S: Sleeper + Clone + Send + Sync,
+{
     <span class="kw">type </span>TxsOfSpkIndex = (u32, Vec&lt;esplora_client::Tx&gt;);
 
     <span class="kw">let </span><span class="kw-2">mut </span>update = TxUpdate::&lt;ConfirmationBlockTime&gt;::default();
@@ -1016,14 +1040,16 @@
 /// HTTP requests to make in parallel.
 ///
 /// Refer to [crate-level docs](crate) for more.
-</span><span class="kw">async fn </span>fetch_txs_with_spks&lt;I: IntoIterator&lt;Item = ScriptBuf&gt; + Send&gt;(
-    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient,
+</span><span class="kw">async fn </span>fetch_txs_with_spks&lt;I, S&gt;(
+    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient&lt;S&gt;,
     inserted_txs: <span class="kw-2">&amp;mut </span>HashSet&lt;Txid&gt;,
     spks: I,
     parallel_requests: usize,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;TxUpdate&lt;ConfirmationBlockTime&gt;, Error&gt;
 <span class="kw">where
-    </span>I::IntoIter: Send,
+    </span>I: IntoIterator&lt;Item = ScriptBuf&gt; + Send,
+    I::IntoIter: Send,
+    S: Sleeper + Clone + Send + Sync,
 {
     fetch_txs_with_keychain_spks(
         client,
@@ -1042,14 +1068,16 @@
 /// `parallel_requests` specifies the maximum number of HTTP requests to make in parallel.
 ///
 /// Refer to [crate-level docs](crate) for more.
-</span><span class="kw">async fn </span>fetch_txs_with_txids&lt;I: IntoIterator&lt;Item = Txid&gt; + Send&gt;(
-    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient,
+</span><span class="kw">async fn </span>fetch_txs_with_txids&lt;I, S&gt;(
+    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient&lt;S&gt;,
     inserted_txs: <span class="kw-2">&amp;mut </span>HashSet&lt;Txid&gt;,
     txids: I,
     parallel_requests: usize,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;TxUpdate&lt;ConfirmationBlockTime&gt;, Error&gt;
 <span class="kw">where
-    </span>I::IntoIter: Send,
+    </span>I: IntoIterator&lt;Item = Txid&gt; + Send,
+    I::IntoIter: Send,
+    S: Sleeper + Clone + Send + Sync,
 {
     <span class="kw">let </span><span class="kw-2">mut </span>update = TxUpdate::&lt;ConfirmationBlockTime&gt;::default();
     <span class="comment">// Only fetch for non-inserted txs.
@@ -1091,14 +1119,16 @@
 /// `parallel_requests` specifies the maximum number of HTTP requests to make in parallel.
 ///
 /// Refer to [crate-level docs](crate) for more.
-</span><span class="kw">async fn </span>fetch_txs_with_outpoints&lt;I: IntoIterator&lt;Item = OutPoint&gt; + Send&gt;(
-    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient,
+</span><span class="kw">async fn </span>fetch_txs_with_outpoints&lt;I, S&gt;(
+    client: <span class="kw-2">&amp;</span>esplora_client::AsyncClient&lt;S&gt;,
     inserted_txs: <span class="kw-2">&amp;mut </span>HashSet&lt;Txid&gt;,
     outpoints: I,
     parallel_requests: usize,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;TxUpdate&lt;ConfirmationBlockTime&gt;, Error&gt;
 <span class="kw">where
-    </span>I::IntoIter: Send,
+    </span>I: IntoIterator&lt;Item = OutPoint&gt; + Send,
+    I::IntoIter: Send,
+    S: Sleeper + Clone + Send + Sync,
 {
     <span class="kw">let </span>outpoints = outpoints.into_iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
     <span class="kw">let </span><span class="kw-2">mut </span>update = TxUpdate::&lt;ConfirmationBlockTime&gt;::default();
