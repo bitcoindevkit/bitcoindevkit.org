@@ -210,7 +210,17 @@
 <a href="#210" id="210">210</a>
 <a href="#211" id="211">211</a>
 <a href="#212" id="212">212</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>bdk_chain::{
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>alloc::string::String;
+<span class="kw">use </span>bdk_chain::{
     indexed_tx_graph, keychain_txout, local_chain, tx_graph, ConfirmationBlockTime, Merge,
 };
 <span class="kw">use </span>miniscript::{Descriptor, DescriptorPublicKey};
@@ -283,9 +293,9 @@
     <span class="doccomment">/// Name of table to store wallet descriptors and network.
     </span><span class="kw">pub const </span>WALLET_TABLE_NAME: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str = <span class="string">"bdk_wallet"</span>;
 
-    <span class="doccomment">/// Initialize sqlite tables for wallet tables.
-    </span><span class="kw">pub fn </span>init_sqlite_tables(db_tx: <span class="kw-2">&amp;</span>chain::rusqlite::Transaction) -&gt; chain::rusqlite::Result&lt;()&gt; {
-        <span class="kw">let </span>schema_v0: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str] = <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+    <span class="doccomment">/// Get v0 sqlite [ChangeSet] schema
+    </span><span class="kw">pub fn </span>schema_v0() -&gt; String {
+        <span class="macro">format!</span>(
             <span class="string">"CREATE TABLE {} ( \
                 id INTEGER PRIMARY KEY NOT NULL CHECK (id = 0), \
                 descriptor TEXT, \
@@ -293,8 +303,16 @@
                 network TEXT \
                 ) STRICT;"</span>,
             <span class="self">Self</span>::WALLET_TABLE_NAME,
-        )];
-        <span class="kw">crate</span>::rusqlite_impl::migrate_schema(db_tx, <span class="self">Self</span>::WALLET_SCHEMA_NAME, <span class="kw-2">&amp;</span>[schema_v0])<span class="question-mark">?</span>;
+        )
+    }
+
+    <span class="doccomment">/// Initialize sqlite tables for wallet tables.
+    </span><span class="kw">pub fn </span>init_sqlite_tables(db_tx: <span class="kw-2">&amp;</span>chain::rusqlite::Transaction) -&gt; chain::rusqlite::Result&lt;()&gt; {
+        <span class="kw">crate</span>::rusqlite_impl::migrate_schema(
+            db_tx,
+            <span class="self">Self</span>::WALLET_SCHEMA_NAME,
+            <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="self">Self</span>::schema_v0()],
+        )<span class="question-mark">?</span>;
 
         bdk_chain::local_chain::ChangeSet::init_sqlite_tables(db_tx)<span class="question-mark">?</span>;
         bdk_chain::tx_graph::ChangeSet::&lt;ConfirmationBlockTime&gt;::init_sqlite_tables(db_tx)<span class="question-mark">?</span>;
