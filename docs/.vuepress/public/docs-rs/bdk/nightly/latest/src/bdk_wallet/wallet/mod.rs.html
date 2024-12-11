@@ -2597,6 +2597,13 @@
 <a href="#2597" id="2597">2597</a>
 <a href="#2598" id="2598">2598</a>
 <a href="#2599" id="2599">2599</a>
+<a href="#2600" id="2600">2600</a>
+<a href="#2601" id="2601">2601</a>
+<a href="#2602" id="2602">2602</a>
+<a href="#2603" id="2603">2603</a>
+<a href="#2604" id="2604">2604</a>
+<a href="#2605" id="2605">2605</a>
+<a href="#2606" id="2606">2606</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2658,7 +2665,7 @@
 <span class="kw">pub mod </span>tx_builder;
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>utils;
 
-<span class="kw">use </span><span class="kw">crate</span>::collections::{BTreeMap, HashMap};
+<span class="kw">use </span><span class="kw">crate</span>::collections::{BTreeMap, HashMap, HashSet};
 <span class="kw">use </span><span class="kw">crate</span>::descriptor::{
     check_wallet_descriptor, error::Error <span class="kw">as </span>DescriptorError, policy::BuildSatisfaction,
     DerivedDescriptor, DescriptorMeta, ExtendedDescriptor, ExtractPolicy, IntoWalletDescriptor,
@@ -3660,15 +3667,9 @@
     /// [`Anchor`]: bdk_chain::Anchor
     </span><span class="kw">pub fn </span>get_tx(<span class="kw-2">&amp;</span><span class="self">self</span>, txid: Txid) -&gt; <span class="prelude-ty">Option</span>&lt;WalletTx&gt; {
         <span class="kw">let </span>graph = <span class="self">self</span>.indexed_graph.graph();
-
-        <span class="prelude-val">Some</span>(WalletTx {
-            chain_position: graph.get_chain_position(
-                <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
-                <span class="self">self</span>.chain.tip().block_id(),
-                txid,
-            )<span class="question-mark">?</span>,
-            tx_node: graph.get_tx_node(txid)<span class="question-mark">?</span>,
-        })
+        graph
+            .list_canonical_txs(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, <span class="self">self</span>.chain.tip().block_id())
+            .find(|tx| tx.tx_node.txid == txid)
     }
 
     <span class="doccomment">/// Iterate over the transactions in the wallet.
@@ -4189,6 +4190,10 @@
         <span class="kw">let </span>graph = <span class="self">self</span>.indexed_graph.graph();
         <span class="kw">let </span>txout_index = <span class="kw-2">&amp;</span><span class="self">self</span>.indexed_graph.index;
         <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().block_id();
+        <span class="kw">let </span>chain_positions = graph
+            .list_canonical_txs(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip)
+            .map(|canon_tx| (canon_tx.tx_node.txid, canon_tx.chain_position))
+            .collect::&lt;HashMap&lt;Txid, <span class="kw">_</span>&gt;&gt;();
 
         <span class="kw">let </span><span class="kw-2">mut </span>tx = graph
             .get_tx(txid)
@@ -4196,10 +4201,11 @@
             </span>.as_ref()
             .clone();
 
-        <span class="kw">let </span>pos = graph
-            .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, txid)
-            .ok_or(BuildFeeBumpError::TransactionNotFound(txid))<span class="question-mark">?</span>;
-        <span class="kw">if </span>pos.is_confirmed() {
+        <span class="kw">if </span>chain_positions
+            .get(<span class="kw-2">&amp;</span>txid)
+            .ok_or(BuildFeeBumpError::TransactionNotFound(txid))<span class="question-mark">?
+            </span>.is_confirmed()
+        {
             <span class="kw">return </span><span class="prelude-val">Err</span>(BuildFeeBumpError::TransactionConfirmed(txid));
         }
 
@@ -4230,10 +4236,10 @@
                     .ok_or(BuildFeeBumpError::UnknownUtxo(txin.previous_output))<span class="question-mark">?</span>;
                 <span class="kw">let </span>txout = <span class="kw-2">&amp;</span>prev_tx.output[txin.previous_output.vout <span class="kw">as </span>usize];
 
-                <span class="kw">let </span>chain_position = graph
-                    .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, txin.previous_output.txid)
-                    .ok_or(BuildFeeBumpError::UnknownUtxo(txin.previous_output))<span class="question-mark">?
-                    </span>.cloned();
+                <span class="kw">let </span>chain_position = chain_positions
+                    .get(<span class="kw-2">&amp;</span>txin.previous_output.txid)
+                    .cloned()
+                    .ok_or(BuildFeeBumpError::UnknownUtxo(txin.previous_output))<span class="question-mark">?</span>;
 
                 <span class="kw">let </span>weighted_utxo = <span class="kw">match </span>txout_index.index_of_spk(txout.script_pubkey.clone()) {
                     <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(keychain, derivation_index)) =&gt; {
@@ -4432,9 +4438,31 @@
         psbt: <span class="kw-2">&amp;mut </span>Psbt,
         sign_options: SignOptions,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, SignerError&gt; {
-        <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().block_id();
-
         <span class="kw">let </span>tx = <span class="kw-2">&amp;</span>psbt.unsigned_tx;
+        <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().block_id();
+        <span class="kw">let </span>prev_txids = tx
+            .input
+            .iter()
+            .map(|txin| txin.previous_output.txid)
+            .collect::&lt;HashSet&lt;Txid&gt;&gt;();
+        <span class="kw">let </span>confirmation_heights = <span class="self">self
+            </span>.indexed_graph
+            .graph()
+            .list_canonical_txs(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip)
+            .filter(|canon_tx| prev_txids.contains(<span class="kw-2">&amp;</span>canon_tx.tx_node.txid))
+            <span class="comment">// This is for a small performance gain. Although `.filter` filters out excess txs, it
+            // will still consume the internal `CanonicalIter` entirely. Having a `.take` here
+            // allows us to stop further unnecessary canonicalization.
+            </span>.take(prev_txids.len())
+            .map(|canon_tx| {
+                <span class="kw">let </span>txid = canon_tx.tx_node.txid;
+                <span class="kw">match </span>canon_tx.chain_position {
+                    ChainPosition::Confirmed { anchor, .. } =&gt; (txid, anchor.block_id.height),
+                    ChainPosition::Unconfirmed { .. } =&gt; (txid, u32::MAX),
+                }
+            })
+            .collect::&lt;HashMap&lt;Txid, u32&gt;&gt;();
+
         <span class="kw">let </span><span class="kw-2">mut </span>finished = <span class="bool-val">true</span>;
 
         <span class="kw">for </span>(n, input) <span class="kw">in </span>tx.input.iter().enumerate() {
@@ -4445,15 +4473,9 @@
             <span class="kw">if </span>psbt_input.final_script_sig.is_some() || psbt_input.final_script_witness.is_some() {
                 <span class="kw">continue</span>;
             }
-            <span class="kw">let </span>confirmation_height = <span class="self">self
-                </span>.indexed_graph
-                .graph()
-                .get_chain_position(<span class="kw-2">&amp;</span><span class="self">self</span>.chain, chain_tip, input.previous_output.txid)
-                .map(|chain_position| {
-                    chain_position
-                        .confirmation_height_upper_bound()
-                        .unwrap_or(u32::MAX)
-                });
+            <span class="kw">let </span>confirmation_height = confirmation_heights
+                .get(<span class="kw-2">&amp;</span>input.previous_output.txid)
+                .copied();
             <span class="kw">let </span>current_height = sign_options
                 .assume_height
                 .unwrap_or_else(|| <span class="self">self</span>.chain.tip().height());
@@ -4595,7 +4617,6 @@
         </span><span class="kw">let </span>must_only_use_confirmed_tx = bumping_fee.is_some();
         <span class="kw">let </span>must_use_all_available = <span class="kw-2">*</span>drain_wallet;
 
-        <span class="kw">let </span>chain_tip = <span class="self">self</span>.chain.tip().block_id();
         <span class="comment">//    must_spend &lt;- manually selected utxos
         //    may_spend  &lt;- all other available utxos
         </span><span class="kw">let </span><span class="kw-2">mut </span>may_spend = <span class="self">self</span>.get_available_utxos();
@@ -4621,17 +4642,10 @@
                     <span class="prelude-val">Some</span>(tx) =&gt; tx,
                     <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="bool-val">false</span>,
                 };
-                <span class="kw">let </span>chain_position = <span class="kw">match </span><span class="self">self</span>.indexed_graph.graph().get_chain_position(
-                    <span class="kw-2">&amp;</span><span class="self">self</span>.chain,
-                    chain_tip,
-                    txid,
-                ) {
-                    <span class="prelude-val">Some</span>(chain_position) =&gt; chain_position.cloned(),
-                    <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="bool-val">false</span>,
-                };
 
                 <span class="comment">// Whether the UTXO is mature and, if needed, confirmed
                 </span><span class="kw">let </span><span class="kw-2">mut </span>spendable = <span class="bool-val">true</span>;
+                <span class="kw">let </span>chain_position = u.<span class="number">0</span>.chain_position;
                 <span class="kw">if </span>must_only_use_confirmed_tx &amp;&amp; !chain_position.is_confirmed() {
                     <span class="kw">return </span><span class="bool-val">false</span>;
                 }
