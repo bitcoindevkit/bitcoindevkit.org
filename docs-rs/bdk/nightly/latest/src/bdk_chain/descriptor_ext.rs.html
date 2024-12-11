@@ -38,6 +38,7 @@
 <a href="#38" id="38">38</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::miniscript::{Descriptor, DescriptorPublicKey};
 <span class="kw">use </span>bitcoin::hashes::{hash_newtype, sha256, Hash};
+<span class="kw">use </span>bitcoin::Amount;
 
 <span class="macro">hash_newtype!</span> {
     <span class="doccomment">/// Represents the unique ID of a descriptor.
@@ -51,9 +52,9 @@
 
 <span class="doccomment">/// A trait to extend the functionality of a miniscript descriptor.
 </span><span class="kw">pub trait </span>DescriptorExt {
-    <span class="doccomment">/// Returns the minimum value (in satoshis) at which an output is broadcastable.
+    <span class="doccomment">/// Returns the minimum [`Amount`] at which an output is broadcast-able.
     /// Panics if the descriptor wildcard is hardened.
-    </span><span class="kw">fn </span>dust_value(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64;
+    </span><span class="kw">fn </span>dust_value(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Amount;
 
     <span class="doccomment">/// Returns the descriptor ID, calculated as the sha256 hash of the spk derived from the
     /// descriptor at index 0.
@@ -61,12 +62,11 @@
 }
 
 <span class="kw">impl </span>DescriptorExt <span class="kw">for </span>Descriptor&lt;DescriptorPublicKey&gt; {
-    <span class="kw">fn </span>dust_value(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
+    <span class="kw">fn </span>dust_value(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Amount {
         <span class="self">self</span>.at_derivation_index(<span class="number">0</span>)
             .expect(<span class="string">"descriptor can't have hardened derivation"</span>)
             .script_pubkey()
             .minimal_non_dust()
-            .to_sat()
     }
 
     <span class="kw">fn </span>descriptor_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; DescriptorId {

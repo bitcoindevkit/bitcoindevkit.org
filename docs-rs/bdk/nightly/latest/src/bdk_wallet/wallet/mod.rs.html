@@ -2602,8 +2602,6 @@
 <a href="#2602" id="2602">2602</a>
 <a href="#2603" id="2603">2603</a>
 <a href="#2604" id="2604">2604</a>
-<a href="#2605" id="2605">2605</a>
-<a href="#2606" id="2606">2606</a>
 </pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
@@ -2674,11 +2672,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::psbt::PsbtUtils;
 <span class="kw">use </span><span class="kw">crate</span>::types::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">crate</span>::wallet::{
-    coin_selection::{
-        DefaultCoinSelectionAlgorithm,
-        Excess::{<span class="self">self</span>, Change, NoChange},
-        InsufficientFunds,
-    },
+    coin_selection::{DefaultCoinSelectionAlgorithm, Excess, InsufficientFunds},
     error::{BuildFeeBumpError, CreateTxError, MiniscriptPsbtError},
     signer::{SignOptions, SignerError, SignerOrdering, SignersContainer, TransactionSigner},
     tx_builder::{FeePolicy, TxBuilder, TxParams},
@@ -4053,15 +4047,15 @@
 
         <span class="kw">let </span>coin_selection = coin_selection
             .coin_select(
-                required_utxos.clone(),
-                optional_utxos.clone(),
+                required_utxos,
+                optional_utxos,
                 fee_rate,
-                outgoing.to_sat() + fee_amount.to_sat(),
+                outgoing + fee_amount,
                 <span class="kw-2">&amp;</span>drain_script,
                 rng,
             )
             .map_err(CreateTxError::CoinSelection)<span class="question-mark">?</span>;
-        fee_amount += Amount::from_sat(coin_selection.fee_amount);
+        fee_amount += coin_selection.fee_amount;
         <span class="kw">let </span>excess = <span class="kw-2">&amp;</span>coin_selection.excess;
 
         tx.input = coin_selection
@@ -4084,7 +4078,7 @@
             // Otherwise, we don't know who we should send the funds to, and how much
             // we should send!
             </span><span class="kw">if </span>params.drain_to.is_some() &amp;&amp; (params.drain_wallet || !params.utxos.is_empty()) {
-                <span class="kw">if let </span>NoChange {
+                <span class="kw">if let </span>Excess::NoChange {
                     dust_threshold,
                     remaining_amount,
                     change_fee,
@@ -4092,7 +4086,9 @@
                 {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::CoinSelection(InsufficientFunds {
                         needed: <span class="kw-2">*</span>dust_threshold,
-                        available: remaining_amount.saturating_sub(<span class="kw-2">*</span>change_fee),
+                        available: remaining_amount
+                            .checked_sub(<span class="kw-2">*</span>change_fee)
+                            .unwrap_or_default(),
                     }));
                 }
             } <span class="kw">else </span>{
@@ -4101,18 +4097,18 @@
         }
 
         <span class="kw">match </span>excess {
-            NoChange {
+            Excess::NoChange {
                 remaining_amount, ..
-            } =&gt; fee_amount += Amount::from_sat(<span class="kw-2">*</span>remaining_amount),
-            Change { amount, fee } =&gt; {
+            } =&gt; fee_amount += <span class="kw-2">*</span>remaining_amount,
+            Excess::Change { amount, fee } =&gt; {
                 <span class="kw">if </span><span class="self">self</span>.is_mine(drain_script.clone()) {
-                    received += Amount::from_sat(<span class="kw-2">*</span>amount);
+                    received += <span class="kw-2">*</span>amount;
                 }
-                fee_amount += Amount::from_sat(<span class="kw-2">*</span>fee);
+                fee_amount += <span class="kw-2">*</span>fee;
 
                 <span class="comment">// create drain output
                 </span><span class="kw">let </span>drain_output = TxOut {
-                    value: Amount::from_sat(<span class="kw-2">*</span>amount),
+                    value: <span class="kw-2">*</span>amount,
                     script_pubkey: drain_script,
                 };
 
