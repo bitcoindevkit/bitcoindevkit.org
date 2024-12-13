@@ -1493,6 +1493,10 @@
 <a href="#1493" id="1493">1493</a>
 <a href="#1494" id="1494">1494</a>
 <a href="#1495" id="1495">1495</a>
+<a href="#1496" id="1496">1496</a>
+<a href="#1497" id="1497">1497</a>
+<a href="#1498" id="1498">1498</a>
+<a href="#1499" id="1499">1499</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Module for structures that store and traverse transactions.
 //!
 //! [`TxGraph`] contains transactions and indexes them so you can easily traverse the graph of
@@ -1955,7 +1959,11 @@
     ///
     /// The supplied closure returns an `Option&lt;T&gt;`, allowing the caller to map each node it visits
     /// and decide whether to visit descendants.
-    </span><span class="kw">pub fn </span>walk_descendants&lt;<span class="lifetime">'g</span>, F, O&gt;(<span class="kw-2">&amp;</span><span class="lifetime">'g </span><span class="self">self</span>, txid: Txid, walk_map: F) -&gt; TxDescendants&lt;A, F, O&gt;
+    </span><span class="kw">pub fn </span>walk_descendants&lt;<span class="lifetime">'g</span>, F, O&gt;(
+        <span class="kw-2">&amp;</span><span class="lifetime">'g </span><span class="self">self</span>,
+        txid: Txid,
+        walk_map: F,
+    ) -&gt; TxDescendants&lt;<span class="lifetime">'g</span>, A, F, O&gt;
     <span class="kw">where
         </span>F: FnMut(usize, Txid) -&gt; <span class="prelude-ty">Option</span>&lt;O&gt; + <span class="lifetime">'g</span>,
     {
@@ -1972,7 +1980,7 @@
         <span class="kw-2">&amp;</span><span class="lifetime">'g </span><span class="self">self</span>,
         tx: <span class="kw-2">&amp;</span><span class="lifetime">'g </span>Transaction,
         walk_map: F,
-    ) -&gt; TxDescendants&lt;A, F, O&gt;
+    ) -&gt; TxDescendants&lt;<span class="lifetime">'g</span>, A, F, O&gt;
     <span class="kw">where
         </span>F: FnMut(usize, Txid) -&gt; <span class="prelude-ty">Option</span>&lt;O&gt; + <span class="lifetime">'g</span>,
     {
@@ -1990,7 +1998,7 @@
     </span><span class="kw">pub fn </span>direct_conflicts&lt;<span class="lifetime">'g</span>&gt;(
         <span class="kw-2">&amp;</span><span class="lifetime">'g </span><span class="self">self</span>,
         tx: <span class="kw-2">&amp;</span><span class="lifetime">'g </span>Transaction,
-    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (usize, Txid)&gt; + <span class="lifetime">'_ </span>{
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (usize, Txid)&gt; + <span class="lifetime">'g </span>{
         <span class="kw">let </span>txid = tx.compute_txid();
         tx.input
             .iter()
