@@ -2602,23 +2602,7 @@
 <a href="#2601" id="2601">2601</a>
 <a href="#2602" id="2602">2602</a>
 <a href="#2603" id="2603">2603</a>
-<a href="#2604" id="2604">2604</a>
-<a href="#2605" id="2605">2605</a>
-<a href="#2606" id="2606">2606</a>
-<a href="#2607" id="2607">2607</a>
-<a href="#2608" id="2608">2608</a>
-<a href="#2609" id="2609">2609</a>
-<a href="#2610" id="2610">2610</a>
-<a href="#2611" id="2611">2611</a>
-<a href="#2612" id="2612">2612</a>
-<a href="#2613" id="2613">2613</a>
-<a href="#2614" id="2614">2614</a>
-<a href="#2615" id="2615">2615</a>
-<a href="#2616" id="2616">2616</a>
-<a href="#2617" id="2617">2617</a>
-<a href="#2618" id="2618">2618</a>
-<a href="#2619" id="2619">2619</a>
-<a href="#2620" id="2620">2620</a></pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
+<a href="#2604" id="2604">2604</a></pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
 // Copyright (c) 2020-2021 Bitcoin Dev Kit Developers
@@ -4019,17 +4003,11 @@
         }
 
         <span class="kw">let </span><span class="kw-2">mut </span>outgoing = Amount::ZERO;
-        <span class="kw">let </span><span class="kw-2">mut </span>received = Amount::ZERO;
-
         <span class="kw">let </span>recipients = params.recipients.iter().map(|(r, v)| (r, <span class="kw-2">*</span>v));
 
         <span class="kw">for </span>(index, (script_pubkey, value)) <span class="kw">in </span>recipients.enumerate() {
             <span class="kw">if </span>!params.allow_dust &amp;&amp; value.is_dust(script_pubkey) &amp;&amp; !script_pubkey.is_op_return() {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::OutputBelowDustLimit(index));
-            }
-
-            <span class="kw">if </span><span class="self">self</span>.is_mine(script_pubkey.clone()) {
-                received += value;
             }
 
             <span class="kw">let </span>new_out = TxOut {
@@ -4087,9 +4065,8 @@
                 rng,
             )
             .map_err(CreateTxError::CoinSelection)<span class="question-mark">?</span>;
-        fee_amount += coin_selection.fee_amount;
-        <span class="kw">let </span>excess = <span class="kw-2">&amp;</span>coin_selection.excess;
 
+        <span class="kw">let </span>excess = <span class="kw-2">&amp;</span>coin_selection.excess;
         tx.input = coin_selection
             .selected
             .iter()
@@ -4128,28 +4105,19 @@
             }
         }
 
-        <span class="kw">match </span>excess {
-            Excess::NoChange {
-                remaining_amount, ..
-            } =&gt; fee_amount += <span class="kw-2">*</span>remaining_amount,
-            Excess::Change { amount, fee } =&gt; {
-                <span class="kw">if </span><span class="self">self</span>.is_mine(drain_script.clone()) {
-                    received += <span class="kw-2">*</span>amount;
-                }
-                fee_amount += <span class="kw-2">*</span>fee;
+        <span class="comment">// if there's change, create and add a change output
+        </span><span class="kw">if let </span>Excess::Change { amount, .. } = excess {
+            <span class="comment">// create drain output
+            </span><span class="kw">let </span>drain_output = TxOut {
+                value: <span class="kw-2">*</span>amount,
+                script_pubkey: drain_script,
+            };
 
-                <span class="comment">// create drain output
-                </span><span class="kw">let </span>drain_output = TxOut {
-                    value: <span class="kw-2">*</span>amount,
-                    script_pubkey: drain_script,
-                };
-
-                <span class="comment">// TODO: We should pay attention when adding a new output: this might increase
-                // the length of the "number of vouts" parameter by 2 bytes, potentially making
-                // our feerate too low
-                </span>tx.output.push(drain_output);
-            }
-        };
+            <span class="comment">// TODO: We should pay attention when adding a new output: this might increase
+            // the length of the "number of vouts" parameter by 2 bytes, potentially making
+            // our feerate too low
+            </span>tx.output.push(drain_output);
+        }
 
         <span class="comment">// sort input/outputs according to the chosen algorithm
         </span>params.ordering.sort_tx_with_aux_rand(<span class="kw-2">&amp;mut </span>tx, rng);
