@@ -2604,8 +2604,7 @@
 <a href="#2603" id="2603">2603</a>
 <a href="#2604" id="2604">2604</a>
 <a href="#2605" id="2605">2605</a>
-<a href="#2606" id="2606">2606</a>
-<a href="#2607" id="2607">2607</a></pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
+<a href="#2606" id="2606">2606</a></pre></div><pre class="rust"><code><span class="comment">// Bitcoin Dev Kit
 // Written in 2020 by Alekos Filini &lt;alekos.filini@gmail.com&gt;
 //
 // Copyright (c) 2020-2021 Bitcoin Dev Kit Developers
@@ -3891,13 +3890,12 @@
             external_requirements.merge(<span class="kw-2">&amp;</span>internal_requirements.unwrap_or_default())<span class="question-mark">?</span>;
 
         <span class="kw">let </span>version = <span class="kw">match </span>params.version {
-            <span class="prelude-val">Some</span>(tx_builder::Version(<span class="number">0</span>)) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::Version0),
-            <span class="prelude-val">Some</span>(tx_builder::Version(<span class="number">1</span>)) <span class="kw">if </span>requirements.csv.is_some() =&gt; {
+            <span class="prelude-val">Some</span>(transaction::Version(<span class="number">0</span>)) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::Version0),
+            <span class="prelude-val">Some</span>(transaction::Version::ONE) <span class="kw">if </span>requirements.csv.is_some() =&gt; {
                 <span class="kw">return </span><span class="prelude-val">Err</span>(CreateTxError::Version1Csv)
             }
-            <span class="prelude-val">Some</span>(tx_builder::Version(x)) =&gt; x,
-            <span class="prelude-val">None </span><span class="kw">if </span>requirements.csv.is_some() =&gt; <span class="number">2</span>,
-            <span class="prelude-val">None </span>=&gt; <span class="number">1</span>,
+            <span class="prelude-val">Some</span>(v) =&gt; v,
+            <span class="prelude-val">None </span>=&gt; transaction::Version::TWO,
         };
 
         <span class="comment">// We use a match here instead of a unwrap_or_else as it's way more readable :)
@@ -3995,7 +3993,7 @@
         };
 
         <span class="kw">let </span><span class="kw-2">mut </span>tx = Transaction {
-            version: transaction::Version::non_standard(version),
+            version,
             lock_time,
             input: <span class="macro">vec!</span>[],
             output: <span class="macro">vec!</span>[],
@@ -4300,7 +4298,7 @@
 
         <span class="kw">let </span>params = TxParams {
             <span class="comment">// TODO: figure out what rbf option should be?
-            </span>version: <span class="prelude-val">Some</span>(tx_builder::Version(tx.version.<span class="number">0</span>)),
+            </span>version: <span class="prelude-val">Some</span>(tx.version),
             recipients: tx
                 .output
                 .into_iter()
@@ -5191,7 +5189,7 @@
             .unwrap();
         <span class="kw">let </span>address = wallet.peek_address(KeychainKind::External, <span class="number">0</span>).address;
         <span class="kw">let </span>tx = Transaction {
-            version: transaction::Version::ONE,
+            version: transaction::Version::TWO,
             lock_time: absolute::LockTime::ZERO,
             input: <span class="macro">vec!</span>[],
             output: <span class="macro">vec!</span>[TxOut {
