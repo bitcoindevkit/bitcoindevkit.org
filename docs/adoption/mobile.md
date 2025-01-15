@@ -295,6 +295,21 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- TwentyTwo -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://twenty-two.xyz/" target="_blank">
+      <img src="/img/case-studies-logos/twentytwo-logo-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://twenty-two.xyz/" target="_blank">TwentyTwo</a>
+    </h3>
+    <p>The first 100% open source mobile-native hardware wallet: designed to keep your keys safe and seamlessly integrate into any mobile wallet app.</p>
+  </div>
+</div>
+
 <style>
 .project {
   display: flex;
