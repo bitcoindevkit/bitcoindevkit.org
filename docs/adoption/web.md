@@ -68,6 +68,21 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- Alby -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://getalby.com/" target="_blank">
+      <img src="/img/case-studies-logos/alby-logo-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://getalby.com/" target="_blank">Alby</a>
+    </h3>
+    <p>Alby develops open-source tools like Browser Extension and Alby Hub to make Lightning and Nostr easier to use and build on.</p>
+  </div>
+</div>
+
 <style>
 .project {
   display: flex;
