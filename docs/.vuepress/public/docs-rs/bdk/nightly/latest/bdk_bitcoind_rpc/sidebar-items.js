@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["BlockEvent","Emitter"],"trait":["BitcoindRpcErrorExt"]};
+window.SIDEBAR_ITEMS = {"mod":["bip158"],"struct":["BlockEvent","Emitter"],"trait":["BitcoindRpcErrorExt"]};
