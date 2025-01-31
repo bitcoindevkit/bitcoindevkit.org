@@ -9,42 +9,6 @@ const twitterUrl = 'https://twitter.com/intent/follow?screen_name=bitcoindevkit'
 const nostrUrl = 'nostr:npub13dk3dke4zm9vdkucm7f6vv7vhqgkevgg3gju9kr2wzumz7nrykdq0dgnvc'
 const themeColor = '#ffffff'
 
-const docsSidebar = [
-  {
-    title: 'Documentation',
-    collapsable: false,
-    children: [
-      ['/getting-started', 'Getting Started'],
-      {
-        title: "BDK-CLI",
-        collapsable: true,
-        children: [
-          '/bdk-cli/introduction',
-          '/bdk-cli/installation',
-          '/bdk-cli/concept',
-          '/bdk-cli/interface',
-          '/bdk-cli/regtest',
-          '/bdk-cli/compiler',
-          '/bdk-cli/playground'
-        ]
-      },
-      '/descriptors/',
-      '/examples/',
-    ]
-  },
-  {
-    title: 'API Reference',
-    collapsable: false,
-    children: [
-      ['https://docs.rs/bdk_wallet/', 'Rust Stable Docs'],
-      ['https://bitcoindevkit.org/docs-rs/bdk/nightly/latest/bdk_wallet/', 'Rust Nightly Docs'],
-      ['https://bitcoindevkit.org/android/', 'Android Docs'],
-      ['https://bitcoindevkit.org/jvm/', 'Kotlin/JVM Docs'],
-      ['https://bitcoindevkit.org/java/', 'Java Docs'],
-    ],
-  }
-]
-
 const builtWithBdkSidebar = [
   {
     title: 'Built With BDK',
@@ -108,8 +72,12 @@ module.exports = {
     sidebarDepth: 0,
     nav: [
       {
+        text: 'Github',
+        link: 'https://github.com/bitcoindevkit'
+      },
+      {
         text: 'Docs',
-        link: '/getting-started/'
+        link: '/docs/'
       },
       {
         text: 'Adoption',
@@ -129,7 +97,6 @@ module.exports = {
       '/_blog/': blogSidebar,
       '/blog/': blogSidebar,
       '/foundation/': foundationSidebar,
-      '/': docsSidebar,
     },
     footer: {
       links: [
@@ -137,16 +104,16 @@ module.exports = {
           title: 'Docs',
           children: [
             {
-              text: 'Getting Started',
-              link: '/getting-started/'
+              text: 'Book',
+              link: '/docs/#book'
             },
             {
-              text: 'BDK-CLI',
-              link: '/bdk-cli/installation/'
+              text: 'Rust APIs',
+              link: '/docs/#rust-apis'
             },
             {
-              text: 'Descriptors',
-              link: '/descriptors/'
+              text: 'Other APIs',
+              link: '/docs/#other-apis'
             }
           ]
         },
