@@ -55,6 +55,21 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- Frostsnap -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://frostsnap.com/" target="_blank">
+      <img src="/img/case-studies-logos/frostsnap.svg" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://frostsnap.com/" target="_blank">Frostsnap</a>
+    </h3>
+    <p>Next-generation Bitcoin security.</p>
+  </div>
+</div>
+
 <style>
 .project {
   display: flex;
