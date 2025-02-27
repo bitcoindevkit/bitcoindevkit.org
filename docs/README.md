@@ -3,7 +3,7 @@ home: true
 heroText: Bitcoin Dev Kit
 tagline: With BDK, you can seamlessly build cross platform mobile wallets
 actionText: Get started
-actionLink: /getting-started/
+actionLink: https://bookofbdk.com/
 features:
 - title: "Customizable"
   details: "Designed from the ground up to be easily customized to your application needs: blockchain backends, databases, signers, coin selection, key management and more."
