@@ -325,6 +325,21 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- Satoshi -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://satoshi.money/" target="_blank">
+      <img src="/img/case-studies-logos/satoshi-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://satoshi.money/" target="_blank">Satoshi</a>
+    </h3>
+    <p>Buy, pay, earn, learn, spend and borrow—all in one super app.</p>
+  </div>
+</div>
+
 <style>
 .project {
   display: flex;
