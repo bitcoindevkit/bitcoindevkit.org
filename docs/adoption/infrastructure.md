@@ -53,6 +53,21 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- Fedimint -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://fedimint.org/" target="_blank">
+      <img src="/img/case-studies-logos/fedimint-icon.png" style="max-height: 130px;" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://fedimint.org/" target="_blank">Fedimint</a>
+    </h3>
+    <p>A modular open source protocol to custody and transact bitcoin in a community context, built on a strong foundation of privacy.</p>
+  </div>
+</div>
+
 <style>
 .project {
   display: flex;
