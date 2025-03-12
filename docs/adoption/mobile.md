@@ -340,6 +340,23 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- Bitvault -->
+<div class="project">
+  <div class=project-logo>
+    <a href="https://www.bitvault.sv/" target="_blank">
+      <img src="/img/case-studies-logos/bitvault-logo.jpg" style="max-height: 130px;" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h2>
+      <a href="https://www.bitvault.sv/" target="_blank">Bitvault</a> 
+    </h2>
+    <p>
+      BitVault is your fortress against physical attacks and hacks, by employing time-delayed transactions and a multisig convenience service to shield your assets.
+    </p>
+  </div>
+</div>
+
 <style>
 .project {
   display: flex;
