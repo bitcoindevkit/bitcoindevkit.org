@@ -532,11 +532,28 @@ Explore the ecosystem of projects that are built with the BDK family of librarie
       <img src="/img/case-studies-logos/fedimint-icon.png" style="max-height: 130px;" />
     </a>
   </div>
+    <div class="tagline">
+        <h3>
+          <a href="https://fedimint.org/" target="_blank">Fedimint</a>
+        </h3>
+        <p>A modular open source protocol to custody and transact bitcoin in a community context, built on a strong foundation of privacy.</p>
+    </div>
+</div>
+
+<!-- Cove Wallet -->
+<div class="project">
+  <div class=project-logo>
+    <a href="https://covebitcoinwallet.com/" target="_blank">
+      <img src="/img/case-studies-logos/cove_wallet.png" style="max-height: 130px;" />
+    </a>
+  </div>
   <div class="tagline">
-    <h3>
-      <a href="https://fedimint.org/" target="_blank">Fedimint</a>
-    </h3>
-    <p>A modular open source protocol to custody and transact bitcoin in a community context, built on a strong foundation of privacy.</p>
+    <h2>
+      <a href="https://covebitcoinwallet.com/" target="_blank">Cove Wallet</a> 
+    </h2>
+    <p>
+      Cove is a simple yet powerful bitcoin mobile wallet. It’s intuitive and simple for newcomers while being powerful enough for experienced bitcoiners.
+    </p>
   </div>
 </div>
 

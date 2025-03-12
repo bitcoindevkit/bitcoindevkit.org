@@ -357,6 +357,23 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- Cove Wallet -->
+<div class="project">
+  <div class=project-logo>
+    <a href="https://covebitcoinwallet.com/" target="_blank">
+      <img src="/img/case-studies-logos/cove_wallet.png" style="max-height: 130px;" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h2>
+      <a href="https://covebitcoinwallet.com/" target="_blank">Cove Wallet</a> 
+    </h2>
+    <p>
+      Cove is a simple yet powerful bitcoin mobile wallet. It’s intuitive and simple for newcomers while being powerful enough for experienced bitcoiners.
+    </p>
+  </div>
+</div>
+
 <style>
 .project {
   display: flex;
