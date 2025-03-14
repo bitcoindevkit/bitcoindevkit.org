@@ -20,7 +20,7 @@ lastUpdated: false
       <a href="https://bitkey.build/" target="_blank">Bitkey</a> 
     </h2>
     <p>
-      Bitkey is the safe, easy way to own and manage bitcoin. It’s a mobile app, hardware device, and a set of recovery tools, for simple, secure self-custody.
+      Bitkey is the safe, easy way to own and manage bitcoin. It's a mobile app, hardware device, and a set of recovery tools, for simple, secure self-custody.
     </p>
   </div>
 </div>
@@ -40,21 +40,6 @@ lastUpdated: false
   </div>
 </div>
 
-<!-- TwentyTwo -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://twenty-two.xyz/" target="_blank">
-      <img src="/img/case-studies-logos/twentytwo-logo-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://twenty-two.xyz/" target="_blank">TwentyTwo</a>
-    </h3>
-    <p>The first 100% open source mobile-native hardware wallet: designed to keep your keys safe and seamlessly integrate into any mobile wallet app.</p>
-  </div>
-</div>
-
 <!-- Frostsnap -->
 <div class="project">
   <div class="project-logo">
@@ -67,6 +52,21 @@ lastUpdated: false
       <a href="https://frostsnap.com/" target="_blank">Frostsnap</a>
     </h3>
     <p>Next-generation Bitcoin security.</p>
+  </div>
+</div>
+
+<!-- TwentyTwo -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://twenty-two.xyz/" target="_blank">
+      <img src="/img/case-studies-logos/twentytwo-logo-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://twenty-two.xyz/" target="_blank">TwentyTwo</a>
+    </h3>
+    <p>The first 100% open source mobile-native hardware wallet: designed to keep your keys safe and seamlessly integrate into any mobile wallet app.</p>
   </div>
 </div>
 

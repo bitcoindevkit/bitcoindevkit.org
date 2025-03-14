@@ -8,21 +8,6 @@ lastUpdated: false
 
 # Desktop
 
-<!-- Caravan -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://www.caravanmultisig.com/" target="_blank">
-    <img src="/img/case-studies-logos/caravan-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://www.caravanmultisig.com/#/" target="_blank">Caravan</a>
-  </h3>
-  <p>Caravan is a multi-sig coordinator application, and an Unchained-sponsored open source project.</p>
-  </div>
-</div>
-
 <!-- AnchorWatch -->
 <div class="project">
   <div class="project-logo">
@@ -38,48 +23,18 @@ lastUpdated: false
   </div>
 </div>
 
-<!-- Liana -->
+<!-- Bark -->
 <div class="project">
   <div class="project-logo">
-    <a href="https://wizardsardine.com/liana/" target="_blank">
-      <img src="/img/case-studies-logos/liana-130.png" />
+    <a href="https://codeberg.org/ark-bitcoin/bark/" target="_blank">
+      <img src="/img/case-studies-logos/bark-130.png" />
     </a>
   </div>
   <div class="tagline">
     <h3>
-      <a href="https://wizardsardine.com/liana/" target="_blank">Liana</a>
+      <a href="https://codeberg.org/ark-bitcoin/bark/" target="_blank">Bark</a>
     </h3>
-    <p>Never lose your coins. Liana is a simple Bitcoin wallet with built-in loss protection and inheritance.</p>
-  </div>
-</div>
-
-<!-- utreexod -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://github.com/utreexo/utreexod" target="_blank">
-      <img src="/img/case-studies-logos/utreexod-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://github.com/utreexo/utreexod" target="_blank">utreexod</a>
-    </h3>
-    <p>A fully validating Bitcoin node with Utreexo support.</p>
-  </div>
-</div>
-
-<!-- Strata-->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://www.stratabtc.org/" target="_blank">
-      <img src="/img/case-studies-logos/strata-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://www.stratabtc.org/" target="_blank">Strata</a>
-    </h3>
-    <p>A work-in-progress EVM-compatible validity rollup on bitcoin.</p>
+    <p>A Rust implementation of the Ark protocol on bitcoin.</p>
   </div>
 </div>
 
@@ -98,18 +53,63 @@ lastUpdated: false
   </div>
 </div>
 
-<!-- Bark -->
+<!-- Caravan -->
 <div class="project">
   <div class="project-logo">
-    <a href="https://codeberg.org/ark-bitcoin/bark/" target="_blank">
-      <img src="/img/case-studies-logos/bark-130.png" />
+  <a href="https://www.caravanmultisig.com/" target="_blank">
+    <img src="/img/case-studies-logos/caravan-130.png" />
+  </a>
+  </div>
+  <div class="tagline">
+  <h3>
+    <a href="https://www.caravanmultisig.com/#/" target="_blank">Caravan</a>
+  </h3>
+  <p>Caravan is a multi-sig coordinator application, and an Unchained-sponsored open source project.</p>
+  </div>
+</div>
+
+<!-- Liana -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://wizardsardine.com/liana/" target="_blank">
+      <img src="/img/case-studies-logos/liana-130.png" />
     </a>
   </div>
   <div class="tagline">
     <h3>
-      <a href="https://codeberg.org/ark-bitcoin/bark/" target="_blank">Bark</a>
+      <a href="https://wizardsardine.com/liana/" target="_blank">Liana</a>
     </h3>
-    <p>A Rust implementation of the Ark protocol on bitcoin.</p>
+    <p>Never lose your coins. Liana is a simple Bitcoin wallet with built-in loss protection and inheritance.</p>
+  </div>
+</div>
+
+<!-- Strata-->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://www.stratabtc.org/" target="_blank">
+      <img src="/img/case-studies-logos/strata-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://www.stratabtc.org/" target="_blank">Strata</a>
+    </h3>
+    <p>A work-in-progress EVM-compatible validity rollup on bitcoin.</p>
+  </div>
+</div>
+
+<!-- utreexod -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://github.com/utreexo/utreexod" target="_blank">
+      <img src="/img/case-studies-logos/utreexod-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://github.com/utreexo/utreexod" target="_blank">utreexod</a>
+    </h3>
+    <p>A fully validating Bitcoin node with Utreexo support.</p>
   </div>
 </div>
 
