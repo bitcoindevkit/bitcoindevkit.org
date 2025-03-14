@@ -8,36 +8,6 @@ lastUpdated: false
 
 # Infrastructure
 
-<!-- Spotbit -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">
-      <img src="/img/case-studies-logos/spotbit-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">Spotbit</a>
-  </h3>
-  <p>Spotbit is a portable API for Bitcoin price data and candles.</p>
-  </div>
-</div>
-
-<!-- Galoy -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://galoy.io/" target="_blank">
-    <img src="/img/case-studies-logos/galoy-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://galoy.io/" target="_blank">Galoy</a>
-  </h3>
-  <p>Bitcoin-native banking infrastructure for organizations.</p>
-  </div>
-</div>
-
 <!-- Bark -->
 <div class="project">
   <div class="project-logo">
@@ -65,6 +35,36 @@ lastUpdated: false
       <a href="https://fedimint.org/" target="_blank">Fedimint</a>
     </h3>
     <p>A modular open source protocol to custody and transact bitcoin in a community context, built on a strong foundation of privacy.</p>
+  </div>
+</div>
+
+<!-- Galoy -->
+<div class="project">
+  <div class="project-logo">
+  <a href="https://galoy.io/" target="_blank">
+    <img src="/img/case-studies-logos/galoy-130.png" />
+  </a>
+  </div>
+  <div class="tagline">
+  <h3>
+    <a href="https://galoy.io/" target="_blank">Galoy</a>
+  </h3>
+  <p>Bitcoin-native banking infrastructure for organizations.</p>
+  </div>
+</div>
+
+<!-- Spotbit -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">
+      <img src="/img/case-studies-logos/spotbit-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+  <h3>
+    <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">Spotbit</a>
+  </h3>
+  <p>Spotbit is a portable API for Bitcoin price data and candles.</p>
   </div>
 </div>
 

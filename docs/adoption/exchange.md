@@ -8,6 +8,21 @@ lastUpdated: false
 
 # Exchange
 
+<!-- 10101 -->
+<div class="project">
+  <div class="project-logo">
+  <a href="https://10101.finance/" target="_blank">
+    <img src="/img/case-studies-logos/10101-130.png" />
+  </a>
+  </div>
+  <div class="tagline">
+  <h3>
+    <a href="https://10101.finance/" target="_blank">10101</a>
+  </h3>
+  <p>Decentralised finance. For real. BTC trading without counterparty risk in one easy and fast app.</p>
+  </div>
+</div>
+
 <!-- Bull Bitcoin -->
 <div class="project">
   <div class="project-logo">
@@ -35,21 +50,6 @@ lastUpdated: false
       <a href="https://satoshi.money/" target="_blank">Satoshi</a>
     </h3>
     <p>Buy, pay, earn, learn, spend and borrow—all in one super app.</p>
-  </div>
-</div>
-
-<!-- 10101 -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://10101.finance/" target="_blank">
-    <img src="/img/case-studies-logos/10101-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://10101.finance/" target="_blank">10101</a>
-  </h3>
-  <p>Decentralised finance. For real. BTC trading without counterparty risk in one easy and fast app.</p>
   </div>
 </div>
 
