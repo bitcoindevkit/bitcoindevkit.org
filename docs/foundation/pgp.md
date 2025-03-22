@@ -117,12 +117,7 @@ _Valuedmammal_
 ```txt
 Owner: valued mammal
 Email: valuedmammal@protonmail.com
-Fingerprint: 4838 7076 6AE5 5ED2 1A34 BF06 2CB5 5EE5 DB72 41BA
-```
-
-```shell
-# SSH Key
-valuedmammal@protonmail.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDHmqpstLIpa/tdqGiZ+bsOYpqKKx5C3A68TICP42jMN2B7+F9LRoTZR3KuA2HQDeSIixWGmDleu5vEOxy5SrdyQUJWfSvitx3tqnXrNwCdgP8IERb+Cl+hHDzIPL/Nj/iJzJZh6aTi+sS9xjyFMItnYQ6QImo5suFIL+wXA2vZoRApZIU1+wuC0Pvwk0dEYzF/kLQaLTIkNep2YFOjWEjolvBH396JHZDpJUxe97w74h4sBWVlzbez3hyyvkIRuDoSvlWlHNQVvzbxYgJo3Ox0UqCnH1ZnOA9KPFq94D6jc1vdJsyDIz6X2so+TmGlgRWl0zyiucsb/+LY3lpdJL3UrE3Hbn2iVNNnO9FS5fgG+ccHzJEM4VomzXMYmjx3LV3TjTLUwQ98ldA4gb2s4DOPSJvvm2A5dwF8Kf/ZxUKLyZgAPxvPN0NTy/0ITAGR/zE+XkBc6DWU0H44LbXtVopgSqlhilfHBqJffm9Rv/S7Of0fhBqwsOmcjtzEGQk/vhc= tjp@Airbro.local
+Fingerprint: DAFC 3CFD 2E3D AA51 CEF2  5AD0 A98E 0F00 93B8 0812
 ```
 
 _Matthew_
@@ -163,8 +158,7 @@ Fingerprint: 88AD 93AC 4589 FD09 0FF3 B8D1 2768 C43E 8803 C6A3
 [Download Key — Alekos (afilini.asc)](/pgp/afilini.asc)  
 [Download Key — Rustaceanrob (rustaceanrob.asc)](/pgp/rustaceanrob.asc)  
 [Download Key — nymius (nymius.asc)](/pgp/nymius.asc)  
-[Download Key — Valuedmammal (valuedmammal.asc)](/pgp/valuedmammal.asc)  
-[Download Key — ValuedMammal (SSH Key) (valuedmammal-ssh.txt)](/pgp/valuedmammal-ssh.txt)  
+[Download Key — ValuedMammal (valuedmammal.asc)](/pgp/valuedmammal.asc)  
 [Download Key — Matthew (reez.asc)](/pgp/reez.asc)  
 [Download Key — Steve (notmandatory.asc)](/pgp/notmandatory.asc)  
 [Download Key — Evan (evan.asc)](/pgp/evan.asc)  
