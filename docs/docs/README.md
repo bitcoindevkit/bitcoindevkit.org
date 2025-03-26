@@ -1,12 +1,12 @@
 # Documentation
 
-## Book
+## The Book of BDK
 
-The "Book of BDK" is a gentle introduction to using the BDK suite of libraries. It includes a "Getting Started" guide and "Cookbook" with example code in Rust, Kotlin and Swift. It is still a work in progress, contributions welcome.
+The "Book of BDK" is a gentle introduction to using the BDK suite of libraries. It includes a _Getting Started_ guide and _Cookbook_ section with example code in Rust, Kotlin and Swift. It is still a work in progress, contributions welcome.
 
-- [Book of BDK](https://bitcoindevkit.github.io/book-of-bdk/)
+- [Book of BDK](https://bookofbdk.com)
 
-## Rust APIs
+## Rust API Documentation
 
 - [bdk_wallet](https://docs.rs/bdk_wallet/)
 - [bdk_chain](https://docs.rs/bdk_chain/)
@@ -17,8 +17,8 @@ The "Book of BDK" is a gentle introduction to using the BDK suite of libraries. 
 - [esplora-client](https://docs.rs/esplora-client)
 - [electrum-client](https://docs.rs/electrum-client)
 
-## Other APIs
+## Language Bindings API Documentation
 
-- [Android Docs](https://bitcoindevkit.org/android/)
-- [Kotlin/JVM Docs](https://bitcoindevkit.org/jvm/)
-- [Java Docs](https://bitcoindevkit.org/java/)
+- <a href="/android/" target="_blank" rel="noopener noreferrer">bdk-android</a>
+- <a href="/jvm/" target="_blank" rel="noopener noreferrer">bdk-jvm</a>
+- <a href="/java/" target="_blank" rel="noopener noreferrer">bdk-jvm (JavaDoc)</a>
