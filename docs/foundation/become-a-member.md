@@ -8,11 +8,11 @@ lastUpdated: false
 
 # Become a Member
 
-The Bitcoin Dev Kit Foundation is a non-profit organization dedicated to supporting the development of Bitcoin infrastructure. We offer corporate membership tiers: Platinum, Gold, and Silver. We also provide an Associate Membership tier for non-profit organizations.
+The BDK Foundation is a US non-profit organization with the mission to promote the common business interests of the Bitcoin software development industry. Our corporate membership tiers are: Platinum, Gold, and Silver. All businesses big or small who support the BDK Foundation's mission are welcome to join.
 
-**We do not currently provide memberships for individuals.**
+We also offer Associate Membership to non-profit organizations and educational institutions who would like to partner with us. 
 
-Membership benefits include listing on the BDK Foundation members page and representation in the Foundation board of directors.
+Membership benefits include a listing on the BDK Foundation members page and varying levels of representation on the Foundation's board of directors.
 
 ## Membership Fee Information
 
@@ -33,12 +33,9 @@ Membership benefits include listing on the BDK Foundation members page and repre
 | 100-499             | 15,000 USD |
 | 0-99                | 5,000 USD  |
 
-_* Associate membership is available only to nonprofits & educational institutions, and not to individuals. Acceptance is subject to board approval._
 
-### Ready to apply?
+### Have Questions or Ready to apply?
 
 <div style="text-align: left; margin-top: 2rem; margin-bottom: 2rem;">
   <a href="mailto:hello@bitcoindevkit.org" style="display: inline-block; background-color: var(--docs-primary-dark); color: var(--docs-dark); padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Send us an email</a>
 </div>
-
-The Bitcoin Dev Kit project is made possible through the support of the BDK Foundation and its members. If you'd like to become a member please reach out at: [hello@bitcoindevkit.org](mailto:hello@bitcoindevkit.org)

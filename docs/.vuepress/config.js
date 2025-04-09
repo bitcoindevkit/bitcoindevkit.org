@@ -32,10 +32,9 @@ const foundationSidebar = [
     collapsable: false,
     children: [
       ['/foundation/about.md', 'About Us'],
-      ['/foundation/supporters.md', 'Supporters'],
+      ['/foundation/members.md', 'Members'],
       ['/foundation/grantees.md', 'Grantees'],
       ['/foundation/grants.md', 'Grants'],
-      ['/foundation/members.md', 'Members'],
       ['/foundation/pgp.md', 'PGP Keys'],
     ]
   }
@@ -86,7 +85,7 @@ module.exports = {
       },
       {
         text: 'Foundation',
-        link: '/foundation/'
+        link: '/foundation/about.md'
       },
       {
         text: 'Blog',

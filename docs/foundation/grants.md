@@ -8,7 +8,9 @@ lastUpdated: false
 
 # Grants Program
 
-One of the primary purposes of the BDK Foundation is to support the ongoing development and maintenance of the BDK suite of open source software. To this end the BDK Foundation funds open source developers working on BDK and related projects via full-time and project based grants.
+One primary activity of the Foundation is to promote and support research and the development of, public access to, and adoption of the suite of free and open source Bitcoin Dev Kit (“BDK”) library software. The Foundation independently raises money to operate a grant program to fund developers who conduct research, contribute to and maintain the BDK software libraries. 
+
+To this end the BDK Foundation funds open source developers working on BDK and related projects via full-time and project based grants.
 
 ## Grant Requirements
 
@@ -55,7 +57,7 @@ Additional traits that are a plus for full-time mobile/language bindings grants:
 
 ## Project grants
 
-Project grants are for contributors who are able to focus part-time for at least three months on a project to improve BDK or a supporting project.
+Project grants are for contributors who are able to focus part or full-time for at least three months on a project to improve BDK or a supporting project.
 
 Additional traits that are a plus for project grants:
 
