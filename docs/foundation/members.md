@@ -44,7 +44,7 @@ The Bitcoin Dev Kit project is proudly supported by the Bitcoin Dev Kit Foundati
     <h3>
       <a href="https://opensats.org/" target="_blank">OpenSats</a>
     </h3>
-    <p>OpenSats is a 501(c)(3) public charity that aims to support and maintain a sustainable ecosystem of funding for free and open-source projects and contributors, especially bitcoin-related projects and projects that help bitcoin flourish.</p>
+    <p>OpenSats is a 501(c )(3) public charity that aims to support and maintain a sustainable ecosystem of funding for free and open-source projects and contributors, especially bitcoin-related projects and projects that help bitcoin flourish.</p>
   </div>
 </div>
 
