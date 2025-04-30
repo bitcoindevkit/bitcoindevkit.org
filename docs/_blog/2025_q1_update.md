@@ -3,7 +3,7 @@ title: "2025 Q1 Update: What Have We Been Up To?"
 description: "2025 Q1 Update on the Bitcoin Dev Kit Project"
 authors:
     - thunderbiscuit
-date: "2025-04-01"
+date: "2025-04-02"
 tags: ["BDK", "project"]
 draft: false
 ---
