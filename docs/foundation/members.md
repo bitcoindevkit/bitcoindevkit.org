@@ -104,6 +104,38 @@ money, but in how we relate to each other.</p>
   </div>
 </div>
 
+# Associate
+
+<!-- Btrust -->
+<div class="members">
+  <div class="members-logo">
+    <a href="https://www.btrust.tech" target="_blank">
+      <img src="/img/member-logos/btrust-logo-white.svg" alt="Btrust" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://www.btrust.tech" target="_blank">Btrust</a>
+    </h3>
+    <p>A Decentralised Future for Bitcoin Software Development.</p>
+  </div>
+</div>
+
+<!-- Vinteum -->
+<div class="members">
+  <div class="members-logo">
+    <a href="https://vinteum.org" target="_blank">
+      <img src="/img/member-logos/vinteum.png" alt="Vinteum" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://vinteum.org" target="_blank">Vinteum</a>
+    </h3>
+    <p>Empowering open-source Bitcoin builders in Brazil.</p>
+  </div>
+</div>
+
 <style>
 .members {
   display: flex;
