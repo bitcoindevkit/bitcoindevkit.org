@@ -121,6 +121,21 @@ Nymius is a software engineer who fell down the rabbit hole of bitcoin, privacy 
 </div>
 <br>
 
+## Itoro Ukpong
+
+Itoro is a software engineer with over six years of experience building Java-based enterprise applications. In 2024, he was selected as a fellow in the Btrust Builders program, where he was introduced to Bitcoin and began contributing to the open source Bitcoin ecosystem. During the fellowship, he focused on learning the foundational principles of Bitcoin, its developer tooling, and how to contribute meaningfully to open source projects.
+
+Since then, he has been contributing to Bitcoin Dev Kit (BDK), specifically through the BDK-FFI project and BDK Kotlin Example Wallet, which enables BDK's powerful wallet functionality to be used in languages like Kotlin and Swift. His goal is to help make Bitcoin more accessible—particularly for mobile developers and users in regions where onboarding and usability are still major challenges. He's passionate about open source, developer tools, and expanding Bitcoin's reach through better infrastructure and tooling.
+
+Outside of Bitcoin, he loves to draw and explore creative expression through art.
+
+<div>
+  <a href="https://github.com/ItoroD" target="_blank">
+    <img src="/img/github-icon.svg" style="width: 24px">
+  </a>
+</div>
+<br>
+
 # Past Grantees
 
 ## Manuel Gatti
