@@ -72,6 +72,23 @@ Wei Chen has been contributing to BDK since late 2023 and was formerly a full st
 </div>
 <br>
 
+## Leonardo Souza
+
+Leonardo is a Software Engineer based in Brazil, previously Clojure/Java developer in a real-estate tech startup, and Rust developer in a Bitcoin on-ramp/off-ramp startup. He started contributing to BDK and Bitcoin-related FOSS projects in 2022 through his participation in Summer of Bitcoin 2022, mentored by Lloyd Fournier his work focused on a real-time block events library on top of mempool.space API. He's continued his FOSS journey in Summer of Bitcoin 2023, contributing to Fedimint, mentored by Eric Sirion working on adding Tor support on the client level, using Arti, which he's contributing since. He's been continuing his contributions to BDK focusing on improvements, enhancements for BDK 1.0, and Fedimint with focus on adding/improving it's Tor support.
+
+<div>
+  <a href="https://twitter.com/oleonardolima" target="_blank">
+    <img src="/img/twitter-icon.svg" style="width: 24px; margin: 0 12px 0 0">
+  </a>
+  <a href="https://github.com/oleonardolima" target="_blank">
+    <img src="/img/github-icon.svg" style="width: 24px; margin: 0 12px 0 0">
+  </a>
+  <a href="https://njump.me/npub1ez8efu9rjxu64g0lalty2ffmr2tgkzjz92rkafyfyz5463wr8ars8zls5t" target="_blank">
+    <img src="/img/nostr-icon.svg" style="width: 24px; margin: 0 12px 0 0">
+  </a>
+</div>
+<br>
+
 # Current Grantees (Part-Time)
 
 ## Evan Lin
@@ -120,23 +137,6 @@ He has been contributing to BDK since April 2023 mostly on the project managemen
     <img src="/img/github-icon.svg" style="width: 24px; margin: 0 12px 0 0">
   </a>
   <a href="https://njump.me/npub10znwkv69vus58rrqydwfzy3tuljhqn5plec84y0v2pa5n85xfwnqaft2sl" target="_blank">
-    <img src="/img/nostr-icon.svg" style="width: 24px; margin: 0 12px 0 0">
-  </a>
-</div>
-<br>
-
-## Leonardo Souza
-
-Leonardo is a Software Engineer based in Brazil, previously Clojure/Java developer in a real-estate tech startup, and Rust developer in a Bitcoin on-ramp/off-ramp startup. He started contributing to BDK and Bitcoin-related FOSS projects in 2022 through his participation in Summer of Bitcoin 2022, mentored by Lloyd Fournier his work focused on a real-time block events library on top of mempool.space API. He's continued his FOSS journey in Summer of Bitcoin 2023, contributing to Fedimint, mentored by Eric Sirion working on adding Tor support on the client level, using Arti, which he's contributing since. He's been continuing his contributions to BDK focusing on improvements, enhancements for BDK 1.0, and Fedimint with focus on adding/improving it's Tor support.
-
-<div>
-  <a href="https://twitter.com/oleonardolima" target="_blank">
-    <img src="/img/twitter-icon.svg" style="width: 24px; margin: 0 12px 0 0">
-  </a>
-  <a href="https://github.com/oleonardolima" target="_blank">
-    <img src="/img/github-icon.svg" style="width: 24px; margin: 0 12px 0 0">
-  </a>
-  <a href="https://njump.me/npub1ez8efu9rjxu64g0lalty2ffmr2tgkzjz92rkafyfyz5463wr8ars8zls5t" target="_blank">
     <img src="/img/nostr-icon.svg" style="width: 24px; margin: 0 12px 0 0">
   </a>
 </div>
