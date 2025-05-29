@@ -156,3 +156,16 @@ He has been contributing to BDK since April 2023 mostly on the project managemen
   </a>
 </div>
 <br>
+
+## Robert Netzke
+
+Robert was supported by the BDK Foundation to develop a compact block filter light client, [Kyoto](https://github.com/2140-dev/kyoto), from experimental to practical. He focused his time on molding the client API to work optimally with BDK, while pushing the light client performance and usability. Since the initial support from the foundation, Kyoto is incorporated in the BDK foreign language bindings, [integrates with BDK wallet](https://github.com/bitcoindevkit/bdk-kyoto), and may soon be available in the BDK Swift example app.
+
+After studying mathematics at the University of California - Berkeley, Robert began his career in FOSS though the [Chaincode BOSS program](https://learning.chaincode.com/), and now works at [2140](https://2140.dev/) to maintain a variety of projects. His primary interest in Bitcoin was the cryptography involved, and he maintains/co-authored [ChaCha20Poly1305](https://github.com/rust-bitcoin/rust-bitcoin/) and [BIP-324](https://github.com/rust-bitcoin/bip324). Since his initial contributions to the Rust ecosystem, Robert focuses on inclusive, private, and performant software that everyone can use.
+
+<div>
+  <a href="https://github.com/rustaceanrob" target="_blank">
+    <img src="/img/github-icon.svg" style="width: 24px; margin: 0 12px 0 0">
+  </a>
+</div>
+<br>
