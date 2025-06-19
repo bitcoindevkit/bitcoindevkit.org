@@ -117,7 +117,7 @@ money, but in how we relate to each other.</p>
     <h3>
       <a href="https://www.btrust.tech" target="_blank">Btrust</a>
     </h3>
-    <p>A Decentralised Future for Bitcoin Software Development.</p>
+    <p>Decentralizing Bitcoin Development in Africa and the Global South.</p>
   </div>
 </div>
 
