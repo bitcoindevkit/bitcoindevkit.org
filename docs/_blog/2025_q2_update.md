@@ -31,7 +31,8 @@ We're also excited to welcome new Associate members who are supporting the BDK F
 - [Btrust](https://www.btrust.tech)
 - [Vinteum](https://vinteum.org)
 
-- ** Grantees**
+**Grantees**
+
 BDK Project Maintainer
 - [Leonardo](https://github.com/oleonardolima), funded by Vinteum, continues his work on Tor integration for the Electrum and Esplora crates, enhancing privacy options for BDK users.
 
@@ -41,7 +42,7 @@ Btrust Starter Grantees
 
 Thunderbiscuit is taking a 2-month break from BDK using an HRF grant to create an iOS version of [Padawan Wallet](https://play.google.com/store/apps/details?id=com.coyotebitcoin.padawanwallet)
 
-- **BDK YouTube Channel.** We've launched our official [YouTube channel](https://www.youtube.com/@bitcoindevkit) featuring our [Technical Talks series of 6 videos](https://www.youtube.com/playlist?list=PLFQTgyPgNM1iP9vqO6-Oic02x-MhxrNQu), covering topics:
+We've launched our official [BDK YouTube channel](https://www.youtube.com/@bitcoindevkit) featuring our [Technical Talks series of 6 videos](https://www.youtube.com/playlist?list=PLFQTgyPgNM1iP9vqO6-Oic02x-MhxrNQu), covering topics:
 1. Language Bindings by [thunderbiscuit](https://github.com/thunderbiscuit)
 2. Silent Payments by [nymius](https://github.com/nymius)
 3. [Transaction Ordering](https://github.com/ValuedMammal/valuedmammal.github.io?tab=readme-ov-file#which-came-first) by [ValuedMammal](https://github.com/ValuedMammal)
