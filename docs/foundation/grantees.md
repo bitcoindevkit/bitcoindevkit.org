@@ -136,6 +136,19 @@ Outside of Bitcoin, he loves to draw and explore creative expression through art
 </div>
 <br>
 
+## Peter Tyonum
+
+Peter is a skilled software engineer based in Nigeria and a fellow of the Qala (now Btrust Builders) genesis cohort. With over five years of experience working with JavaScript, PHP, and Rust, Peter has made extensive contributions to the Bitcoin Dev Kit (BDK) ecosystem, developing features for bdk-cli, enhancing wallet APIs, improving documentation, and actively reviewing and testing code to raise the quality and reliability of BDK libraries.
+
+Peter will focus on simplifying and enhancing Bitcoin wallet development through his ongoing work with BDK libraries. His priorities include releasing bdk-cli version 1.0.0, integrating new features like hardware wallet interface support, adding advanced wallet templates, and improving compatibility with chain clients and RPC proxies. He also plans to contribute to key modules like bdk-wallet and bdk-bitcoind-rpc, expand documentation, and participate in code reviews across the ecosystem.
+
+<div>
+  <a href="https://github.com/tvpeter" target="_blank">
+    <img src="/img/github-icon.svg" style="width: 24px">
+  </a>
+</div>
+<br>
+
 # Past Grantees
 
 ## Manuel Gatti
