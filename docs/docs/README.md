@@ -1,10 +1,11 @@
 # Documentation
 
-## The Book of BDK
+## Guides
 
-The "Book of BDK" is a gentle introduction to using the BDK suite of libraries. It includes a _Getting Started_ guide and _Cookbook_ section with example code in Rust, Kotlin and Swift. It is still a work in progress, contributions welcome.
+The "Guides" section provides a gentle introduction to using the BDK suite of libraries, including a _Getting Started_ guide, _Cookbook_ examples in Rust, Kotlin, and Swift, and video content. Contributions welcome.
 
 - [Book of BDK](https://bookofbdk.com)
+- [BDK YouTube](https://www.youtube.com/@bitcoindevkit)
 
 ## Rust API Documentation
 
