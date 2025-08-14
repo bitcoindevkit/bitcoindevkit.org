@@ -117,7 +117,7 @@ money, but in how we relate to each other.</p>
     <h3>
       <a href="https://www.btrust.tech" target="_blank">Btrust</a>
     </h3>
-    <p>Decentralizing Bitcoin Development in Africa and the Global South.</p>
+    <p>Btrust is a non-profit organization with a dedicated mission to decentralize the development of Bitcoin software. Their focus is on fostering developer talent in the global south and supporting the free and open-source Bitcoin ecosystem.</p>
   </div>
 </div>
 
@@ -132,7 +132,7 @@ money, but in how we relate to each other.</p>
     <h3>
       <a href="https://vinteum.org" target="_blank">Vinteum</a>
     </h3>
-    <p>Empowering open-source Bitcoin builders in Brazil.</p>
+    <p>Vinteum is a non-profit Bitcoin research and development center dedicated to supporting Bitcoin developers in Brazil and the wider Latin America region.</p>
   </div>
 </div>
 
