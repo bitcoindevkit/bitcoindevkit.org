@@ -149,6 +149,19 @@ Peter will focus on simplifying and enhancing Bitcoin wallet development through
 </div>
 <br>
 
+## Luis Schwab
+
+Luis is a Computer Engineering student and Rust hacker based out of Brazil. He's interested in technology that transfers power from trusted third parties to the individual, such as permissionless money transmission and anonimous communications, as well as computer systems and networks, and economics. He is also co-founder of [ClubeBitcoinUnB](https://github.com/ClubeBitcoinUnB), a student club focused on Bitcoin-related Research, Development, and Education.
+
+He started contributing to BDK through [Summer of Bitcoin 2024](https://www.summerofbitcoin.org), and currently works on integrating [Floresta](https://github.com/vinteumorg/Floresta), a Utreexo-powered node implementation, with BDK, through the `bdk-floresta` crate.
+
+<div>
+  <a href="https://github.com/luisschwab" target="_blank">
+    <img src="/img/github-icon.svg" style="width: 24px">
+  </a>
+</div>
+<br>
+
 # Past Grantees
 
 ## Manuel Gatti
