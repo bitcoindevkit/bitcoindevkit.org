@@ -74,7 +74,9 @@ Wei Chen has been contributing to BDK since late 2023 and was formerly a full st
 
 ## Leonardo Souza
 
-Leonardo is a Software Engineer based in Brazil, previously Clojure/Java developer in a real-estate tech startup, and Rust developer in a Bitcoin on-ramp/off-ramp startup. He started contributing to BDK and Bitcoin-related FOSS projects in 2022 through his participation in Summer of Bitcoin 2022, mentored by Lloyd Fournier his work focused on a real-time block events library on top of mempool.space API. He's continued his FOSS journey in Summer of Bitcoin 2023, contributing to Fedimint, mentored by Eric Sirion working on adding Tor support on the client level, using Arti, which he's contributing since. He's been continuing his contributions to BDK focusing on improvements, enhancements for BDK 1.0, and Fedimint with focus on adding/improving it's Tor support.
+Leonardo is a Software Engineer based in Brazil, previously Clojure/Java developer in a real-estate tech startup, and Rust developer in a Bitcoin on-ramp/off-ramp startup. He started contributing to BDK and Bitcoin-related FOSS projects in 2022 through his participation in Summer of Bitcoin 2022, mentored by Lloyd Fournier his work focused on a real-time block events library on top of mempool.space API. He's continued his FOSS journey in Summer of Bitcoin 2023, contributing to Fedimint, mentored by Eric Sirion working on adding Tor support on the client level, using Arti, which he's contributing since. He's been continuing his contributions to BDK focusing on improvements, enhancements for BDK 1.0, and Fedimint with focus on adding/improving its Tor support.
+
+Leonardo's grant is [funded by Vinteum](https://medium.com/vinteum-org/leonardo-lima-named-bdk-maintainer-and-renews-his-vinteum-grant-65df014e9292). [Vinteum](https://vinteum.org) is a non-profit Bitcoin research and development center dedicated to supporting Bitcoin developers in Brazil and the wider Latin America region.
 
 <div>
   <a href="https://twitter.com/oleonardolima" target="_blank">
@@ -129,6 +131,8 @@ Since then, he has been contributing to Bitcoin Dev Kit (BDK), specifically thro
 
 Outside of Bitcoin, he loves to draw and explore creative expression through art.
 
+Itoro's grant is [funded by BTrust](https://blog.btrust.tech/announcing-q1-2025-btrust-grants/). [Btrust](https://www.btrust.tech) is a non-profit organization with a dedicated mission to decentralize the development of Bitcoin software. Their focus is on fostering developer talent in the global south and supporting the free and open-source Bitcoin ecosystem. 
+
 <div>
   <a href="https://github.com/ItoroD" target="_blank">
     <img src="/img/github-icon.svg" style="width: 24px">
@@ -141,6 +145,8 @@ Outside of Bitcoin, he loves to draw and explore creative expression through art
 Peter is a skilled software engineer based in Nigeria and a fellow of the Qala (now Btrust Builders) genesis cohort. With over five years of experience working with JavaScript, PHP, and Rust, Peter has made extensive contributions to the Bitcoin Dev Kit (BDK) ecosystem, developing features for bdk-cli, enhancing wallet APIs, improving documentation, and actively reviewing and testing code to raise the quality and reliability of BDK libraries.
 
 Peter will focus on simplifying and enhancing Bitcoin wallet development through his ongoing work with BDK libraries. His priorities include releasing bdk-cli version 1.0.0, integrating new features like hardware wallet interface support, adding advanced wallet templates, and improving compatibility with chain clients and RPC proxies. He also plans to contribute to key modules like bdk-wallet and bdk-bitcoind-rpc, expand documentation, and participate in code reviews across the ecosystem.
+
+Peter's grant is [funded by BTrust](https://blog.btrust.tech/announcing-q2-2025-btrust-developer-grant-recipients/). [Btrust](https://www.btrust.tech) is a non-profit organization with a dedicated mission to decentralize the development of Bitcoin software. Their focus is on fostering developer talent in the global south and supporting the free and open-source Bitcoin ecosystem.
 
 <div>
   <a href="https://github.com/tvpeter" target="_blank">
