@@ -225,6 +225,21 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- MetaMask -->
+<div class="project">
+  <div class="project-logo">
+  <a href="https://metamask.io/news/bitcoin-on-metamask-btc-wallet" target="_blank">
+    <img src="/img/case-studies-logos/metamask-130.png" />
+  </a>
+  </div>
+  <div class="tagline">
+  <h3>
+    <a href="https://metamask.io/news/bitcoin-on-metamask-btc-wallet" target="_blank">MetaMask</a>
+  </h3>
+  <p>Full self-custody and native Bitcoin support in MetaMask for Extension and Mobile.</p>
+  </div>
+</div>
+
 <!-- Mutiny Wallet -->
 <div class="project">
   <div class="project-logo">

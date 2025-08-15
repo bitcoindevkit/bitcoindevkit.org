@@ -84,6 +84,36 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- MetaMask -->
+<div class="project">
+  <div class="project-logo">
+  <a href="https://metamask.io/news/bitcoin-on-metamask-btc-wallet" target="_blank">
+    <img src="/img/case-studies-logos/metamask-130.png" />
+  </a>
+  </div>
+  <div class="tagline">
+  <h3>
+    <a href="https://metamask.io/news/bitcoin-on-metamask-btc-wallet" target="_blank">MetaMask</a>
+  </h3>
+  <p>Full self-custody and native Bitcoin support in MetaMask for Extension and Mobile.</p>
+  </div>
+</div>
+
+<!-- Proton Wallet -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://proton.me/wallet" target="_blank">
+      <img src="/img/case-studies-logos/protonwallet-logo-transparent-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://proton.me/wallet" target="_blank">Proton Wallet</a>
+    </h3>
+    <p>A self-custodial Bitcoin wallet from the makers of Proton Mail.</p>
+  </div>
+</div>
+
 <style>
 .project {
   display: flex;
