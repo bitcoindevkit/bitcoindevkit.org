@@ -11,6 +11,38 @@ lastUpdated: false
 
 Explore the ecosystem of projects that are built with the BDK family of libraries.
 
+<!-- AnchorWatch -->
+<div class="project">
+  <div class="project-logo">
+  <a href="https://www.anchorwatch.com/" target="_blank">
+    <img src="/img/case-studies-logos/anchorwatch-130.png" />
+  </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://www.anchorwatch.com/" target="_blank">AnchorWatch</a>
+      <span class="foundation-member-badge">Foundation Member</span>
+    </h3>
+    <p>Protect your bitcoin with regulated insurance and enterprise-grade multi-institutional custody.</p>
+  </div>
+</div>
+
+<!-- Proton Wallet -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://proton.me/wallet" target="_blank">
+      <img src="/img/case-studies-logos/protonwallet-logo-transparent-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://proton.me/wallet" target="_blank">Proton Wallet</a>
+      <span class="foundation-member-badge">Foundation Member</span>
+    </h3>
+    <p>A self-custodial Bitcoin wallet from the makers of Proton Mail.</p>
+  </div>
+</div>
+
 <!-- 10101 -->
 <div class="project">
   <div class="project-logo">
@@ -38,22 +70,6 @@ Explore the ecosystem of projects that are built with the BDK family of librarie
       <a href="https://getalby.com/" target="_blank">Alby</a>
     </h3>
     <p>Alby develops open-source tools like Browser Extension and Alby Hub to make Lightning and Nostr easier to use and build on.</p>
-  </div>
-</div>
-
-<!-- AnchorWatch -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://www.anchorwatch.com/" target="_blank">
-    <img src="/img/case-studies-logos/anchorwatch-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://www.anchorwatch.com/" target="_blank">AnchorWatch</a>
-      <span class="foundation-member-badge">Foundation Member</span>
-    </h3>
-    <p>Protect your bitcoin with regulated insurance and enterprise-grade multi-institutional custody.</p>
   </div>
 </div>
 
@@ -393,22 +409,6 @@ Explore the ecosystem of projects that are built with the BDK family of librarie
     </div>
 </div>
 
-<!-- Proton Wallet -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://proton.me/wallet" target="_blank">
-      <img src="/img/case-studies-logos/protonwallet-logo-transparent-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://proton.me/wallet" target="_blank">Proton Wallet</a>
-      <span class="foundation-member-badge">Foundation Member</span>
-    </h3>
-    <p>A self-custodial Bitcoin wallet from the makers of Proton Mail.</p>
-  </div>
-</div>
-
 <!-- Satoshi -->
 <div class="project">
   <div class="project-logo">
@@ -580,20 +580,6 @@ Explore the ecosystem of projects that are built with the BDK family of librarie
 
 .tagline {
   flex-basis: 70%
-}
-
-.foundation-member-badge {
-  display: inline-block;
-  margin-left: 0.5rem;
-  padding: 0.1rem 0.6rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  border-radius: 999px;
-  background-color: var(--docs-primary-dark);
-  color: var(--docs-dark);
-  vertical-align: middle;
 }
 
 @media screen and (max-width: 700px) {

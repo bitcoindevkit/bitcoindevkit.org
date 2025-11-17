@@ -18,6 +18,7 @@ lastUpdated: false
   <div class="tagline">
   <h3>
     <a href="https://www.anchorwatch.com/" target="_blank">AnchorWatch</a>
+    <span class="foundation-member-badge">Foundation Member</span>
   </h3>
   <p>Protect your bitcoin with regulated insurance and enterprise-grade multi-institutional custody.</p>
   </div>
