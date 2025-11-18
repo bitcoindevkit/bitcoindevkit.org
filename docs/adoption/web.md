@@ -8,6 +8,22 @@ lastUpdated: false
 
 # Web
 
+<!-- Proton Wallet -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://proton.me/wallet" target="_blank">
+      <img src="/img/case-studies-logos/protonwallet-logo-transparent-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://proton.me/wallet" target="_blank">Proton Wallet</a>
+      <a class="foundation-member-badge" href="/foundation/members">Foundation Member</a>
+    </h3>
+    <p>A self-custodial Bitcoin wallet from the makers of Proton Mail.</p>
+  </div>
+</div>
+
 <!-- Alby -->
 <div class="project">
   <div class="project-logo">
@@ -65,21 +81,6 @@ lastUpdated: false
       <a href="https://mempool.space/" target="_blank">mempool.space</a>
     </h3>
     <p>Explore the full Bitcoin ecosystem.</p>
-  </div>
-</div>
-
-<!-- Proton Wallet -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://proton.me/wallet" target="_blank">
-      <img src="/img/case-studies-logos/protonwallet-logo-transparent-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://proton.me/wallet" target="_blank">Proton Wallet</a>
-    </h3>
-    <p>A self-custodial Bitcoin wallet from the makers of Proton Mail.</p>
   </div>
 </div>
 
