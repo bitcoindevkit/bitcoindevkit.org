@@ -21,7 +21,7 @@ Explore the ecosystem of projects that are built with the BDK family of librarie
   <div class="tagline">
     <h3>
       <a href="https://www.anchorwatch.com/" target="_blank">AnchorWatch</a>
-      <span class="foundation-member-badge">Foundation Member</span>
+      <a class="foundation-member-badge" href="/foundation/members">Foundation Member</a>
     </h3>
     <p>Protect your bitcoin with regulated insurance and enterprise-grade multi-institutional custody.</p>
   </div>
@@ -37,7 +37,7 @@ Explore the ecosystem of projects that are built with the BDK family of librarie
   <div class="tagline">
     <h3>
       <a href="https://proton.me/wallet" target="_blank">Proton Wallet</a>
-      <span class="foundation-member-badge">Foundation Member</span>
+      <a class="foundation-member-badge" href="/foundation/members">Foundation Member</a>
     </h3>
     <p>A self-custodial Bitcoin wallet from the makers of Proton Mail.</p>
   </div>
