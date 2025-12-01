@@ -92,7 +92,7 @@ Explore the ecosystem of projects that are built with the BDK family of librarie
 <div class="project">
   <div class="project-logo">
     <a href="https://github.com/andreasgriffin/bitcoin-safe" target="_blank">
-      <img src="https://github.com/andreasgriffin/andreasgriffin.github.io/blob/main/static/images/logo/icon-big.png?raw=true" />
+      <img src="https://github.com/andreasgriffin/andreasgriffin.github.io/blob/main/static/images/logo/icon-big.png?raw=true" width="130" height="130" alt="Bitcoin-Safe logo"/>
     </a>
   </div>
   <div class="tagline">
