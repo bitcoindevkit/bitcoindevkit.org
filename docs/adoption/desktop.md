@@ -43,14 +43,14 @@ lastUpdated: false
 <div class="project">
   <div class="project-logo">
     <a href="https://github.com/andreasgriffin/bitcoin-safe" target="_blank">
-      <img src="/img/case-studies-logos/bitcoin-safe-130.png" />
+      <img src="https://github.com/andreasgriffin/andreasgriffin.github.io/blob/main/static/images/logo/icon-big.png?raw=true" width="130" height="130" alt="Bitcoin-Safe logo"/>
     </a>
   </div>
   <div class="tagline">
     <h3>
-      <a href="https://github.com/andreasgriffin/bitcoin-safe" target="_blank">Bitcoin Safe</a>
+      <a href="https://github.com/andreasgriffin/bitcoin-safe" target="_blank">Bitcoin-Safe</a>
     </h3>
-    <p>A Bitcoin wallet for the entire family.</p>
+    <p>A desktop software for managing your cold storage wallets.</p>
   </div>
 </div>
 
