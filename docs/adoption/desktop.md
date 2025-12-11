@@ -69,6 +69,21 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- Eigenwallet -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://eigenwallet.org/" target="_blank">
+      <img src="/img/case-studies-logos/eigenwallet-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://eigenwallet.org/" target="_blank">Eigenwallet</a>
+    </h3>
+    <p>Eigenwallet is an ambitious community effort to build the Monero wallet for the future. It's a self-custody Monero and Bitcoin wallet with a built-in atomic swap protocol.</p>
+  </div>
+</div>
+
 <!-- Liana -->
 <div class="project">
   <div class="project-logo">
