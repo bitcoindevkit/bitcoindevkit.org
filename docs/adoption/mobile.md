@@ -315,6 +315,21 @@ lastUpdated: false
   </div>
 </div>
 
+<!-- Satsigner -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://satsigner.com/" target="_blank">
+      <img src="/img/case-studies-logos/satsigner-130.png" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://satsigner.com/" target="_blank">Satsigner</a>
+    </h3>
+    <p>A pouch for your sats.</p>
+  </div>
+</div>
+
 <!-- Smart Vaults -->
 <div class="project">
   <div class="project-logo">
