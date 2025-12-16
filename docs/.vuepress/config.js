@@ -33,6 +33,7 @@ const foundationSidebar = [
     children: [
       ['/foundation/about.md', 'About Us'],
       ['/foundation/members.md', 'Members'],
+      ['/foundation/libraries.md', 'Our Libraries'],
       ['/foundation/grantees.md', 'Grantees'],
       ['/foundation/grants.md', 'Grants'],
       ['/foundation/pgp.md', 'PGP Keys'],
