@@ -104,6 +104,21 @@ money, but in how we relate to each other.</p>
   </div>
 </div>
 
+  <!-- Satoshi Pacioli Accounting -->
+<div class="members">
+  <div class="members-logo">
+    <a href="https://satoshipacioli.com" target="_blank">
+      <img src="/img/member-logos/satoshipacioli-clear.jpeg" alt="Satoshi Pacioli Accounting" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://satoshipacioli.com" target="_blank">Satoshi Pacioli Accounting</a>
+    </h3>
+    <p>Satoshi Pacioli Accounting bridges traditional & bitcoin-specific accounting, providing expert help for tax compliance, financial ops & complex processes.</p>
+  </div>
+</div>
+
 # Associate
 
 <!-- Btrust -->
