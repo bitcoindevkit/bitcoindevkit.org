@@ -32,5 +32,5 @@ of directors.
 
 - Steve Myers, President
 - thunderbiscuit, Vice-President
-- Joe Wood, Treasurer
+- Seth Baylis, CPA, Treasurer
 - Matthew Ramsden, Secretary
