@@ -142,6 +142,13 @@ _LagginTimes (SSH Key)_
 wzc110@gmail.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINJ2p5obcLTamFNtWXG22esq1/upNQ7HZz+PPnxdS9p1 wzc110@gmail.com
 ```
 
+_Luis Schwab_
+```txt
+Owner: Luis Schwab
+Email: luisschwab@protonmail.com
+Fingerprint: 5B80 DDCD 9A41 2144 5B92  DC3B FC43 D25B EDD5 EE7C
+```
+
 ## Official Releases
 
 _Language Bindings_
@@ -167,4 +174,5 @@ Fingerprint: 88AD 93AC 4589 FD09 0FF3 B8D1 2768 C43E 8803 C6A3
 [Download Key — Joe (joewood.asc)](/pgp/joewood.asc)  
 [Download Key — Leonardo (leonardo.asc)](/pgp/leonardo.asc)  
 [Download Key — LagginTimes (SSH Key) (laggintimes-ssh.txt)](/pgp/laggintimes-ssh.txt)  
-[Download Key — Language bindings (bindings.asc)](/pgp/bindings.asc)  
+[Download Key — Luis Schwab (luisschwab.asc)](/pgp/luisschwab.asc)  
+[Download Key — Language bindings (bindings.asc)](/pgp/bindings.asc)
