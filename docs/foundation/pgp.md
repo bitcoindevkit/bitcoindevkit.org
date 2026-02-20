@@ -143,10 +143,19 @@ wzc110@gmail.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINJ2p5obcLTamFNtWXG22esq1/u
 ```
 
 _Luis Schwab_
+
 ```txt
 Owner: Luis Schwab
 Email: luisschwab@protonmail.com
 Fingerprint: 5B80 DDCD 9A41 2144 5B92  DC3B FC43 D25B EDD5 EE7C
+```
+
+_tvpeter_
+
+```txt
+Owner: Peter Tyonum
+Email: withtvpeter@gmail.com
+Fingerprint: 28E5 65EC DF5D 7602 414C 01BF E987 7967 879A CFB4
 ```
 
 ## Official Releases
@@ -175,4 +184,5 @@ Fingerprint: 88AD 93AC 4589 FD09 0FF3 B8D1 2768 C43E 8803 C6A3
 [Download Key — Leonardo (leonardo.asc)](/pgp/leonardo.asc)  
 [Download Key — LagginTimes (SSH Key) (laggintimes-ssh.txt)](/pgp/laggintimes-ssh.txt)  
 [Download Key — Luis Schwab (luisschwab.asc)](/pgp/luisschwab.asc)  
-[Download Key — Language bindings (bindings.asc)](/pgp/bindings.asc)
+[Download Key — tvpeter (tvpeter.asc)](/pgp/tvpeter.asc)  
+[Download Key — Language bindings (bindings.asc)](/pgp/bindings.asc)  
