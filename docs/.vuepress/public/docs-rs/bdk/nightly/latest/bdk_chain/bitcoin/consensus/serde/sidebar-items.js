@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["hex"],"struct":["Hex","With"],"trait":["ByteDecoder","ByteEncoder","EncodeBytes","IntoDeError"]};

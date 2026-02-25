@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Bip44","Bip44Public","Bip49","Bip49Public","Bip84","Bip84Public","Bip86","Bip86Public","P2Pkh","P2TR","P2Wpkh","P2Wpkh_P2Sh"],"trait":["DescriptorTemplate"],"type":["DescriptorTemplateOut"]};

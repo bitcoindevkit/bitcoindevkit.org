@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["WalletExport","Structure that contains the export of a wallet"]]});
