@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["BuildSatisfaction","PkOrF","PolicyError","Satisfaction","SatisfiableItem"],"struct":["Condition","Policy"],"type":["ConditionMap","FoldedConditionMap"]};

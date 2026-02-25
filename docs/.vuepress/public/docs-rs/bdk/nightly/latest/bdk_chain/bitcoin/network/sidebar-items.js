@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Network","NetworkKind"],"mod":["as_core_arg"],"struct":["ParseNetworkError","UnknownChainHashError"]};

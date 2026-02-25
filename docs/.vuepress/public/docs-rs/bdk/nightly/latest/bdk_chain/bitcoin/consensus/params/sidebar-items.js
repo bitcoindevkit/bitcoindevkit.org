@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"static":["MAINNET","REGTEST","SIGNET","TESTNET","TESTNET3","TESTNET4"],"struct":["Params"]};

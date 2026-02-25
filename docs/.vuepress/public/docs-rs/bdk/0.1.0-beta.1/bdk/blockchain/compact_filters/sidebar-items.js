@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["CompactFiltersError","An error that can occur during sync with a [`CompactFiltersBlockchain`]"]],"struct":[["CompactFiltersBlockchain","Structure implementing the required blockchain traits"],["Mempool","Container for unconfirmed, but valid Bitcoin transactions"],["Peer","A Bitcoin peer"]]});

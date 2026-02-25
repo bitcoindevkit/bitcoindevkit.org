@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["ChangeSpendPolicy","Policy regarding the use of change outputs when creating a transaction"],["TxOrdering","Ordering of the transaction's inputs and outputs"]],"struct":[["TxBuilder","A transaction builder"]]});

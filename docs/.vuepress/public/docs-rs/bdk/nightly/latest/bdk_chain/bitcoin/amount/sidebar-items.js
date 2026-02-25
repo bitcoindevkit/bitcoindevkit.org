@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Denomination","ParseAmountError"],"mod":["serde"],"struct":["Amount","Display","SignedAmount"],"trait":["CheckedSum"]};

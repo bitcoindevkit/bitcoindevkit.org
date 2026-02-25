@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["SCHEMAS_TABLE_NAME"],"fn":["migrate_schema"]};

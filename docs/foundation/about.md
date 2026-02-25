@@ -1,11 +1,3 @@
----
-sidebar: true
-tagline: "Foundation"
-description: "About the Bitcoin Dev Kit Foundation"
-editLink: false
-lastUpdated: false
----
-
 # Bitcoin Dev Kit Foundation
 
 The BDK Foundation is a US 501(c&#8203;)(6) non-profit organization with the mission to promote the common business interests of the Bitcoin software development industry. To that end the Foundation focuses on enhancing the capabilities of businesses, individuals, and organizations who use Bitcoin related technology in their products and services. The primary way the Foundation carries out this mission is through our stewardship of free and open source (FOSS) tools such as the BDK suite of libraries and related training material. The foundation also hosts forums for developer mentoring and networking, and in-person talks and workshops.

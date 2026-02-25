@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Bip34Error","ValidationError"],"struct":["Block","BlockHash","Header","TxMerkleNode","Version","WitnessCommitment","WitnessMerkleNode"]};

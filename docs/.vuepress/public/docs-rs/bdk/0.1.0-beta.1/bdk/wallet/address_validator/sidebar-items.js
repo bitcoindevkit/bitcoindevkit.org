@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["AddressValidatorError","Errors that can be returned to fail the validation of an address"]],"trait":[["AddressValidator","Trait to build address validators"]]});
