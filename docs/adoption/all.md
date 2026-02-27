@@ -1,647 +1,395 @@
----
-# cases: true
-sidebar: true
-tagline: "Bitcoin applications building with BDK"
-description: "A list of bitcoin applications and services building with BDK"
-editLink: false
-lastUpdated: false
----
+# Built With BDK
 
-# All
+<div class="grid cards" markdown>
 
-Explore the ecosystem of projects that are built with the BDK family of libraries.
+-   ### AnchorWatch
 
-<!-- AnchorWatch -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://www.anchorwatch.com/" target="_blank">
-    <img src="/img/case-studies-logos/anchorwatch-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://www.anchorwatch.com/" target="_blank">AnchorWatch</a>
-      <a class="foundation-member-badge" href="/foundation/members">Foundation Member</a>
-    </h3>
-    <p>Protect your bitcoin with regulated insurance and enterprise-grade multi-institutional custody.</p>
-  </div>
+    ---
+
+    <img src="/assets/logos/users/anchorwatch-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="AnchorWatch" />
+
+    Protect your bitcoin with regulated insurance and enterprise-grade multi-institutional custody.
+
+    [:octicons-arrow-right-24: Website](https://www.anchorwatch.com/)
+
+-   ### Proton Wallet
+
+    ---
+
+    <img src="/assets/logos/users/protonwallet-logo-transparent-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Proton Wallet" />
+
+    A self-custodial Bitcoin wallet from the makers of Proton Mail.
+
+    [:octicons-arrow-right-24: Website](https://proton.me/wallet)
+
+-   ### 10101
+
+    ---
+
+    <img src="/assets/logos/users/10101-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="10101" />
+
+    Decentralised finance. For real. BTC trading without counterparty risk in one easy and fast app.
+
+    [:octicons-arrow-right-24: Website](https://10101.finance/)
+
+-   ### Alby
+
+    ---
+
+    <img src="/assets/logos/users/alby-logo-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Alby" />
+
+    Alby develops open-source tools like Browser Extension and Alby Hub to make Lightning and Nostr easier to use and build on.
+
+    [:octicons-arrow-right-24: Website](https://getalby.com/)
+
+-   ### Bark
+
+    ---
+
+    <img src="/assets/logos/users/bark-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Bark" />
+
+    A Rust implementation of the Ark protocol on bitcoin.
+
+    [:octicons-arrow-right-24: Website](https://codeberg.org/ark-bitcoin/bark/)
+
+-   ### Bitcoin-Safe
+
+    ---
+
+    <img src="/assets/logos/users/bitcoin-safe-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Bitcoin-Safe" />
+
+    A desktop software for managing your cold storage wallets.
+
+    [:octicons-arrow-right-24: Website](https://github.com/andreasgriffin/bitcoin-safe)
+
+-   ### BitMask Wallet
+
+    ---
+
+    <img src="/assets/logos/users/bitmask-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="BitMask Wallet" />
+
+    Your Gateway to DeepWeb3 on Bitcoin. A browser extension for decentralized applications on Bitcoin.
+
+    [:octicons-arrow-right-24: Website](https://bitmask.app/)
+
+-   ### Bitkey
+
+    ---
+
+    <img src="/assets/logos/users/block-logo.gif" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Bitkey" />
+
+    Bitkey is the safe, easy way to own and manage bitcoin. It's a mobile app, hardware device, and a set of recovery tools, for simple, secure self-custody.
+
+    [:octicons-arrow-right-24: Website](https://bitkey.build/)
+
+-   ### Bitvault
+
+    ---
+
+    <img src="/assets/logos/users/bitvault-logo.jpg" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Bitvault" />
+
+    BitVault is your fortress against physical attacks and hacks, by employing time-delayed transactions and a multisig convenience service to shield your assets.
+
+    [:octicons-arrow-right-24: Website](https://www.bitvault.sv/)
+
+-   ### Bull Bitcoin
+
+    ---
+
+    <img src="/assets/logos/users/bull-bitcoin-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Bull Bitcoin" />
+
+    A self-custodial Bitcoin Wallet and Exchange app that lets users buy, sell, spend and get paid with Bitcoin. Bitcoins are automatically sent from the exchange to the user's wallet.
+
+    [:octicons-arrow-right-24: Website](https://www.bullbitcoin.com/)
+
+-   ### Caravan
+
+    ---
+
+    <img src="/assets/logos/users/caravan-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Caravan" />
+
+    Caravan is a multi-sig coordinator application, and an Unchained-sponsored open source project.
+
+    [:octicons-arrow-right-24: Website](https://www.caravanmultisig.com/)
+
+-   ### Cove Wallet
+
+    ---
+
+    <img src="/assets/logos/users/cove_wallet.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Cove Wallet" />
+
+    Cove is a simple yet powerful bitcoin mobile wallet. It's intuitive and simple for newcomers while being powerful enough for experienced bitcoiners.
+
+    [:octicons-arrow-right-24: Website](https://covebitcoinwallet.com/)
+
+-   ### Eigenwallet
+
+    ---
+
+    <img src="/assets/logos/users/eigenwallet-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Eigenwallet" />
+
+    Eigenwallet is an ambitious community effort to build the Monero wallet for the future. It's a self-custody Monero and Bitcoin wallet with a built-in atomic swap protocol.
+
+    [:octicons-arrow-right-24: Website](https://eigenwallet.org/)
+
+-   ### Envoy By Foundation
+
+    ---
+
+    <img src="/assets/logos/users/foundation-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Envoy By Foundation" />
+
+    A Bitcoin wallet with powerful account management and privacy features. Use alongside your Passport hardware wallet to take true ownership of your Bitcoin.
+
+    [:octicons-arrow-right-24: Website](https://foundationdevices.com/)
+
+-   ### Fedimint
+
+    ---
+
+    <img src="/assets/logos/users/fedimint-icon.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Fedimint" />
+
+    A modular open source protocol to custody and transact bitcoin in a community context, built on a strong foundation of privacy.
+
+    [:octicons-arrow-right-24: Website](https://fedimint.org/)
+
+-   ### Frostsnap
+
+    ---
+
+    <img src="/assets/logos/users/frostsnap.svg" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Frostsnap" />
+
+    Next-generation Bitcoin security.
+
+    [:octicons-arrow-right-24: Website](https://frostsnap.com/)
+
+-   ### Galoy
+
+    ---
+
+    <img src="/assets/logos/users/galoy-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Galoy" />
+
+    Bitcoin-native banking infrastructure for organizations.
+
+    [:octicons-arrow-right-24: Website](https://galoy.io/)
+
+-   ### Iris Wallet
+
+    ---
+
+    <img src="/assets/logos/users/iris-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Iris Wallet" />
+
+    Open-source wallet for Bitcoin and RGB assets.
+
+    [:octicons-arrow-right-24: Website](https://play.google.com/store/apps/details?id=com.iriswallet.testnet)
+
+-   ### Lava
+
+    ---
+
+    <img src="/assets/logos/users/lava-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Lava" />
+
+    The Future of Finance Available Today. Functional, safe and simple.
+
+    [:octicons-arrow-right-24: Website](https://www.lava.xyz/)
+
+-   ### LDK Node
+
+    ---
+
+    <img src="/assets/logos/users/ldk-node-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="LDK Node" />
+
+    A ready-to-go Lightning node library built using LDK and BDK.
+
+    [:octicons-arrow-right-24: Website](https://github.com/lightningdevkit/ldk-node)
+
+-   ### Lexe Wallet
+
+    ---
+
+    <img src="/assets/logos/users/lexe-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Lexe Wallet" />
+
+    Lexe is a self-custodial Bitcoin and Lightning wallet that can receive payments 24/7.
+
+    [:octicons-arrow-right-24: Website](https://lexe.app/)
+
+-   ### Liana
+
+    ---
+
+    <img src="/assets/logos/users/liana-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Liana" />
+
+    Never lose your coins. Liana is a simple Bitcoin wallet with built-in loss protection and inheritance.
+
+    [:octicons-arrow-right-24: Website](https://wizardsardine.com/liana/)
+
+-   ### Lipa
+
+    ---
+
+    <img src="/assets/logos/users/lipa-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Lipa" />
+
+    The Swiss app for cashless payments with Bitcoin.
+
+    [:octicons-arrow-right-24: Website](https://lipa.swiss/en)
+
+-   ### mempool.space
+
+    ---
+
+    <img src="/assets/logos/users/mempool-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="mempool.space" />
+
+    Explore the full Bitcoin ecosystem.
+
+    [:octicons-arrow-right-24: Website](https://mempool.space/)
+
+-   ### MetaMask
+
+    ---
+
+    <img src="/assets/logos/users/metamask-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="MetaMask" />
+
+    Full self-custody and native Bitcoin support in MetaMask for Extension and Mobile.
+
+    [:octicons-arrow-right-24: Website](https://metamask.io/news/bitcoin-on-metamask-btc-wallet)
+
+-   ### Mutiny Wallet
+
+    ---
+
+    <img src="/assets/logos/users/mutiny-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Mutiny Wallet" />
+
+    Mutiny is a self-custodial lightning wallet that runs in the browser.
+
+    [:octicons-arrow-right-24: Website](https://www.mutinywallet.com/)
+
+-   ### Padawan Wallet
+
+    ---
+
+    <img src="/assets/logos/users/padawan-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Padawan Wallet" />
+
+    Padawan is a testnet-only bitcoin wallet packed with tutorials to learn how to use bitcoin on mobile.
+
+    [:octicons-arrow-right-24: Website](https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet)
+
+-   ### Peach Bitcoin
+
+    ---
+
+    <img src="/assets/logos/users/peach-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Peach Bitcoin" />
+
+    Connecting Bitcoin buyers and sellers directly together. Buy or sell bitcoin peer-to-peer anywhere, at anytime.
+
+    [:octicons-arrow-right-24: Website](https://peachbitcoin.com/)
+
+-   ### Satoshi
+
+    ---
+
+    <img src="/assets/logos/users/satoshi-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Satoshi" />
+
+    Buy, pay, earn, learn, spend and borrow—all in one super app.
+
+    [:octicons-arrow-right-24: Website](https://satoshi.money/)
+
+-   ### Satsails
+
+    ---
+
+    <img src="/assets/logos/users/satsails-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Satsails" />
+
+    Satsails is a self custodial bitcoin wallet with fiat integration for selected countries.
+
+    [:octicons-arrow-right-24: Website](https://www.satsails.com/)
+
+-   ### Satsigner
+
+    ---
+
+    <img src="/assets/logos/users/satsigner-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Satsigner" />
+
+    A pouch for your sats.
+
+    [:octicons-arrow-right-24: Website](https://satsigner.com/)
+
+-   ### Seba Bank
+
+    ---
+
+    <img src="/assets/logos/users/seba-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Seba Bank" />
+
+    From everyday banking to crypto custody and trading, get the most out of your assets with a regulated global crypto bank.
+
+    [:octicons-arrow-right-24: Website](https://www.seba.swiss/)
+
+-   ### Smart Vaults
+
+    ---
+
+    <img src="/assets/logos/users/smart-vaults-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Smart Vaults" />
+
+    Determine who, how, and when your Bitcoin can be accessed.
+
+    [:octicons-arrow-right-24: Website](https://www.smartvaults.io/)
+
+-   ### Spotbit
+
+    ---
+
+    <img src="/assets/logos/users/spotbit-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Spotbit" />
+
+    Spotbit is a portable API for Bitcoin price data and candles.
+
+    [:octicons-arrow-right-24: Website](https://github.com/BlockchainCommons/spotbit)
+
+-   ### Stackmate
+
+    ---
+
+    <img src="/assets/logos/users/stackmate-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Stackmate" />
+
+    A multi-purpose Bitcoin Wallet.
+
+    [:octicons-arrow-right-24: Website](https://github.com/StackmateNetwork)
+
+-   ### Strata
+
+    ---
+
+    <img src="/assets/logos/users/strata-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Strata" />
+
+    A work-in-progress EVM-compatible validity rollup on bitcoin.
+
+    [:octicons-arrow-right-24: Website](https://www.stratabtc.org/)
+
+-   ### TwentyTwo
+
+    ---
+
+    <img src="/assets/logos/users/twentytwo-logo-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="TwentyTwo" />
+
+    The first 100% open source mobile-native hardware wallet: designed to keep your keys safe and seamlessly integrate into any mobile wallet app.
+
+    [:octicons-arrow-right-24: Website](https://twenty-two.xyz/)
+
+-   ### utreexod
+
+    ---
+
+    <img src="/assets/logos/users/utreexod-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="utreexod" />
+
+    A fully validating Bitcoin node with Utreexo support.
+
+    [:octicons-arrow-right-24: Website](https://github.com/utreexo/utreexod)
+
+-   ### Volt
+
+    ---
+
+    <img src="/assets/logos/users/volt-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Volt" />
+
+    A modern descriptor-based Financial Freedom Bitcoin Wallet aimed at restoring sovereignty to Global Bitcoiners.
+
+    [:octicons-arrow-right-24: Website](https://github.com/Zero-1729/volt)
+
 </div>
-
-<!-- Proton Wallet -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://proton.me/wallet" target="_blank">
-      <img src="/img/case-studies-logos/protonwallet-logo-transparent-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://proton.me/wallet" target="_blank">Proton Wallet</a>
-      <a class="foundation-member-badge" href="/foundation/members">Foundation Member</a>
-    </h3>
-    <p>A self-custodial Bitcoin wallet from the makers of Proton Mail.</p>
-  </div>
-</div>
-
-<!-- 10101 -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://10101.finance/" target="_blank">
-    <img src="/img/case-studies-logos/10101-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://10101.finance/" target="_blank">10101</a>
-  </h3>
-  <p>Decentralised finance. For real. BTC trading without counterparty risk in one easy and fast app.</p>
-  </div>
-</div>
-
-<!-- Alby -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://getalby.com/" target="_blank">
-      <img src="/img/case-studies-logos/alby-logo-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://getalby.com/" target="_blank">Alby</a>
-    </h3>
-    <p>Alby develops open-source tools like Browser Extension and Alby Hub to make Lightning and Nostr easier to use and build on.</p>
-  </div>
-</div>
-
-<!-- Bark -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://codeberg.org/ark-bitcoin/bark/" target="_blank">
-      <img src="/img/case-studies-logos/bark-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://codeberg.org/ark-bitcoin/bark/" target="_blank">Bark</a>
-    </h3>
-    <p>A Rust implementation of the Ark protocol on bitcoin.</p>
-  </div>
-</div>
-
-<!-- Bitcoin Safe -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://github.com/andreasgriffin/bitcoin-safe" target="_blank">
-      <img src="https://github.com/andreasgriffin/andreasgriffin.github.io/blob/main/static/images/logo/icon-big.png?raw=true" width="130" height="130" alt="Bitcoin-Safe logo"/>
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://github.com/andreasgriffin/bitcoin-safe" target="_blank">Bitcoin-Safe</a>
-    </h3>
-    <p>A desktop software for managing your cold storage wallets.</p>
-  </div>
-</div>
-
-<!-- BitMask -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://bitmask.app/" target="_blank">
-    <img src="/img/case-studies-logos/bitmask-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://bitmask.app/" target="_blank">BitMask Wallet</a>
-  </h3>
-  <p>Your Gateway to DeepWeb3 on Bitcoin. A browser extension for decentralized applications on Bitcoin.</p>
-  </div>
-</div>
-
-<!-- Bitkey -->
-<div class="project">
-  <div class=project-logo>
-    <a href="https://bitkey.build/" target="_blank">
-      <img src="/img/case-studies-logos/block-logo.gif" style="max-height: 130px;" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h2>
-      <a href="https://bitkey.build/" target="_blank">Bitkey</a> 
-    </h2>
-    <p>
-      Bitkey is the safe, easy way to own and manage bitcoin. It's a mobile app, hardware device, and a set of recovery tools, for simple, secure self-custody.
-    </p>
-  </div>
-</div>
-
-<!-- Bitvault -->
-<div class="project">
-  <div class=project-logo>
-    <a href="https://www.bitvault.sv/" target="_blank">
-      <img src="/img/case-studies-logos/bitvault-logo.jpg" style="max-height: 130px;" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h2>
-      <a href="https://www.bitvault.sv/" target="_blank">Bitvault</a> 
-    </h2>
-    <p>
-      BitVault is your fortress against physical attacks and hacks, by employing time-delayed transactions and a multisig convenience service to shield your assets.
-    </p>
-  </div>
-</div>
-
-<!-- Bull Bitcoin -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://www.bullbitcoin.com/" target="_blank">
-    <img src="/img/case-studies-logos/bull-bitcoin-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://www.bullbitcoin.com/" target="_blank">Bull Bitcoin</a>
-  </h3>
-  <p>A self-custodial Bitcoin Wallet and Exchange app that lets users buy, sell, spend and get paid with Bitcoin. Bitcoins are automatically sent from the exchange to the user's wallet.</p>
-  </div>
-</div>
-
-<!-- Caravan -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://www.caravanmultisig.com/" target="_blank">
-    <img src="/img/case-studies-logos/caravan-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://www.caravanmultisig.com/#/" target="_blank">Caravan</a>
-  </h3>
-  <p>Caravan is a multi-sig coordinator application, and an Unchained-sponsored open source project.</p>
-  </div>
-</div>
-
-<!-- Cove Wallet -->
-<div class="project">
-  <div class=project-logo>
-    <a href="https://covebitcoinwallet.com/" target="_blank">
-      <img src="/img/case-studies-logos/cove_wallet.png" style="max-height: 130px;" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h2>
-      <a href="https://covebitcoinwallet.com/" target="_blank">Cove Wallet</a> 
-    </h2>
-    <p>
-      Cove is a simple yet powerful bitcoin mobile wallet. It's intuitive and simple for newcomers while being powerful enough for experienced bitcoiners.
-    </p>
-  </div>
-</div>
-
-<!-- Eigenwallet -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://eigenwallet.org/" target="_blank">
-      <img src="/img/case-studies-logos/eigenwallet-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://eigenwallet.org/" target="_blank">Eigenwallet</a>
-    </h3>
-    <p>Eigenwallet is an ambitious community effort to build the Monero wallet for the future. It's a self-custody Monero and Bitcoin wallet with a built-in atomic swap protocol.</p>
-  </div>
-</div>
-
-<!-- Envoy By Foundation -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://foundationdevices.com/" target="_blank">
-    <img src="/img/case-studies-logos/foundation-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://foundationdevices.com/" target="_blank">Envoy By Foundation</a> 
-  </h3>
-  <p>A Bitcoin wallet with powerful account management and privacy features. Use alongside your Passport hardware wallet to take true ownership of your Bitcoin.</p>
-  </div>
-</div>
-
-<!-- Fedimint -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://fedimint.org/" target="_blank">
-      <img src="/img/case-studies-logos/fedimint-icon.png" style="max-height: 130px;" />
-    </a>
-  </div>
-    <div class="tagline">
-        <h3>
-          <a href="https://fedimint.org/" target="_blank">Fedimint</a>
-        </h3>
-        <p>A modular open source protocol to custody and transact bitcoin in a community context, built on a strong foundation of privacy.</p>
-    </div>
-</div>
-
-<!-- Frostsnap -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://frostsnap.com/" target="_blank">
-      <img src="/img/case-studies-logos/frostsnap.svg" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://frostsnap.com/" target="_blank">Frostsnap</a>
-    </h3>
-    <p>Next-generation Bitcoin security.</p>
-  </div>
-</div>
-
-<!-- Galoy -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://galoy.io/" target="_blank">
-    <img src="/img/case-studies-logos/galoy-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://galoy.io/" target="_blank">Galoy</a>
-  </h3>
-  <p>Bitcoin-native banking infrastructure for organizations.</p>
-  </div>
-</div>
-
-<!-- Iris Wallet -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://play.google.com/store/apps/details?id=com.iriswallet.testnet" target="_blank">
-    <img src="/img/case-studies-logos/iris-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://play.google.com/store/apps/details?id=com.iriswallet.testnet" target="_blank">Iris Wallet</a>
-  </h3>
-  <p>Open-source wallet for Bitcoin and RGB assets.</p>
-  </div>
-</div>
-
-<!-- Lava -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://www.lava.xyz/" target="_blank">
-    <img src="/img/case-studies-logos/lava-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://www.lava.xyz/" target="_blank">Lava</a>
-  </h3>
-  <p>The Future of Finance Available Today. Functional, safe and simple.</p>
-  </div>
-</div>
-
-<!-- LDK Node -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://github.com/lightningdevkit/ldk-node" target="_blank">
-    <img src="/img/case-studies-logos/ldk-node-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://github.com/lightningdevkit/ldk-node" target="_blank">LDK Node</a> 
-  </h3>
-  <p>A ready-to-go Lightning node library built using LDK and BDK.</p>
-  </div>
-</div>
-
-<!-- Lexe -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://lexe.app/" target="_blank">
-      <img src="/img/case-studies-logos/lexe-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://lexe.app/" target="_blank">Lexe Wallet</a>
-    </h3>
-    <p>Lexe is a self-custodial Bitcoin and Lightning wallet that can receive payments 24/7.</p>
-  </div>
-</div>
-
-<!-- Liana -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://wizardsardine.com/liana/" target="_blank">
-      <img src="/img/case-studies-logos/liana-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://wizardsardine.com/liana/" target="_blank">Liana</a>
-    </h3>
-    <p>Never lose your coins. Liana is a simple Bitcoin wallet with built-in loss protection and inheritance.</p>
-  </div>
-</div>
-
-<!-- Lipa -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://lipa.swiss/en" target="_blank">
-    <img src="/img/case-studies-logos/lipa-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://lipa.swiss/en" target="_blank">Lipa</a>
-  </h3>
-  <p>The Swiss app for cashless payments with Bitcoin.</p>
-  </div>
-</div>
-
-<!-- mempool.space -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://mempool.space/" target="_blank">
-    <img src="/img/case-studies-logos/mempool-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://mempool.space/" target="_blank">mempool.space</a>
-  </h3>
-  <p>Explore the full Bitcoin ecosystem.</p>
-  </div>
-</div>
-
-<!-- MetaMask -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://metamask.io/news/bitcoin-on-metamask-btc-wallet" target="_blank">
-    <img src="/img/case-studies-logos/metamask-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://metamask.io/news/bitcoin-on-metamask-btc-wallet" target="_blank">MetaMask</a>
-  </h3>
-  <p>Full self-custody and native Bitcoin support in MetaMask for Extension and Mobile.</p>
-  </div>
-</div>
-
-<!-- Mutiny Wallet -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://www.mutinywallet.com/" target="_blank">
-    <img src="/img/case-studies-logos/mutiny-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://www.mutinywallet.com/" target="_blank">Mutiny Wallet</a>
-  </h3>
-  <p>Mutiny is a self-custodial lightning wallet that runs in the browser.</p>
-  </div>
-</div>
-
-<!-- Padawan Wallet -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">
-    <img src="/img/case-studies-logos/padawan-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://play.google.com/store/apps/details?id=com.goldenraven.padawanwallet" target="_blank">Padawan Wallet</a>
-  </h3>
-  <p>Padawan is a testnet-only bitcoin wallet packed with tutorials to learn how to use bitcoin on mobile.</p>
-  </div>
-</div>
-
-<!-- Peach Bitcoin -->
-<div class="project">
-    <div class="project-logo">
-        <a href="" target="_blank">
-            <img src="/img/case-studies-logos/peach-130.png" />
-        </a>
-    </div>
-    <div class="tagline">
-        <h2>
-            <a href="https://peachbitcoin.com/" target="_blank">Peach Bitcoin</a>
-        </h2>
-        <p>Connecting Bitcoin buyers and sellers directly together. Buy or sell bitcoin peer-to-peer anywhere, at anytime.</p>
-    </div>
-</div>
-
-<!-- Satoshi -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://satoshi.money/" target="_blank">
-      <img src="/img/case-studies-logos/satoshi-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://satoshi.money/" target="_blank">Satoshi</a>
-    </h3>
-    <p>Buy, pay, earn, learn, spend and borrow—all in one super app.</p>
-  </div>
-</div>
-
-<!-- Satsails -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://www.satsails.com/" target="_blank">
-      <img src="/img/case-studies-logos/satsails-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://www.satsails.com/" target="_blank">Satsails</a>
-    </h3>
-    <p>Satsails is a self self custodial bitcoin wallet with fiat integration for selected countries.</p>
-  </div>
-</div>
-
-<!-- Satsigner -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://satsigner.com/" target="_blank">
-      <img src="/img/case-studies-logos/satsigner-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://satsigner.com/" target="_blank">Satsigner</a>
-    </h3>
-    <p>A pouch for your sats.</p>
-  </div>
-</div>
-
-<!-- Seba Bank -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://www.seba.swiss/" target="_blank">
-    <img src="/img/case-studies-logos/seba-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://www.seba.swiss/" target="_blank">Seba Bank</a>
-  </h3>
-  <p>From everyday banking to crypto custody and trading, get the most out of your assets with a regulated global crypto bank.</p>
-  </div>
-</div>
-
-<!-- Smart Vaults -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://www.smartvaults.io/" target="_blank">
-    <img src="/img/case-studies-logos/smart-vaults-130.png" style="max-height: 130px;" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://www.smartvaults.io/" target="_blank">Smart Vaults</a> 
-  </h3>
-  <p>Determine who, how, and when your Bitcoin can be accessed.</p>
-  </div>
-</div>
-
-<!-- Spotbit -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">
-      <img src="/img/case-studies-logos/spotbit-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://github.com/BlockchainCommons/spotbit" target="_blank">Spotbit</a>
-  </h3>
-  <p>Spotbit is a portable API for Bitcoin price data and candles.</p>
-  </div>
-</div>
-
-<!-- Stackmate -->
-<div class="project">
-  <div class="project-logo">
-  <a href="https://github.com/StackmateNetwork" target="_blank">
-    <img src="/img/case-studies-logos/stackmate-130.png" />
-  </a>
-  </div>
-  <div class="tagline">
-  <h3>
-    <a href="https://github.com/StackmateNetwork" target="_blank">Stackmate</a>
-  </h3>
-  <p>A multi-purpose Bitcoin Wallet.</p>
-  </div>
-</div>
-
-<!-- Strata -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://www.stratabtc.org/" target="_blank">
-      <img src="/img/case-studies-logos/strata-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://www.stratabtc.org/" target="_blank">Strata</a>
-    </h3>
-    <p>A work-in-progress EVM-compatible validity rollup on bitcoin.</p>
-  </div>
-</div>
-
-<!-- TwentyTwo -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://twenty-two.xyz/" target="_blank">
-      <img src="/img/case-studies-logos/twentytwo-logo-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://twenty-two.xyz/" target="_blank">TwentyTwo</a>
-    </h3>
-    <p>The first 100% open source mobile-native hardware wallet: designed to keep your keys safe and seamlessly integrate into any mobile wallet app.</p>
-  </div>
-</div>
-
-<!-- utreexod -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://github.com/utreexo/utreexod" target="_blank">
-      <img src="/img/case-studies-logos/utreexod-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://github.com/utreexo/utreexod" target="_blank">utreexod</a>
-    </h3>
-    <p>A fully validating Bitcoin node with Utreexo support.</p>
-  </div>
-</div>
-
-<!-- Volt -->
-<div class="project">
-  <div class="project-logo">
-    <a href="https://github.com/Zero-1729/volt" target="_blank">
-      <img src="/img/case-studies-logos/volt-130.png" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://github.com/Zero-1729/volt" target="_blank">Volt</a>
-    </h3>
-    <p>A modern descriptor-based Financial Freedom Bitcoin Wallet aimed at restoring sovereignty to Global Bitcoiners.</p>
-  </div>
-</div>
-
-<br>
-
-<a href="https://github.com/orgs/bitcoindevkit/discussions/64" target="_blank" rel="noopener noreferrer" class="nav-link external action-button">
-  Add your project!
-</a>
-
-<style>
-.project {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  padding: 2rem 0;
-}
-
-.project-logo {
-  flex-basis: 30%;
-  margin: auto;
-}
-
-.tagline {
-  flex-basis: 70%
-}
-
-@media screen and (max-width: 700px) {
-  .project {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    padding: 2rem 0;
-  }
-
-  .project-logo {
-    flex-basis: 30%;
-    margin: auto;
-  }
-
-  .tagline {
-    flex-basis: 70%
-  }
-}
-</style>

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MAX_VEC_SIZE"],"enum":["Error","FromHexError"],"fn":["deserialize","deserialize_hex","deserialize_partial","serialize","serialize_hex"],"struct":["CheckedData","VarInt"],"trait":["Decodable","Encodable","ReadExt","WriteExt"]};

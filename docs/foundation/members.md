@@ -1,195 +1,127 @@
----
-sidebar: true
-tagline: "Foundation"
-description: "Information about the Bitcoin Dev Kit Foundation"
-editLink: false
-lastUpdated: false
----
-
 # Members
 
 The Bitcoin Dev Kit project is proudly supported by the Bitcoin Dev Kit Foundation and its members.
 
-<div style="text-align: left; margin-bottom: 2rem;">
-  <a href="/foundation/become-a-member" style="display: inline-block; background-color: var(--docs-primary-dark); color: var(--docs-dark); padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Become A Member</a>
+[Become a Member](become-a-member){ .md-button .md-button--primary }
+
+<br>
+
+# Platinum Members
+
+<div class="grid cards" markdown>
+
+-   ### Spiral
+    
+    ---
+
+    <img src="/assets/logos/members/spiral.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Spiral" />
+
+    Making bitcoin more than an investment. Bitcoin is the best money. It should be used like it. We build and fund free, open-source projects aimed at making bitcoin the planet’s preferred currency.
+
+    [:octicons-arrow-right-24: Website](https://spiral.xyz)
+
 </div>
 
-# Platinum
+<br>
 
-<!-- Spiral -->
-<div class="members">
-  <div class="members-logo">
-    <a href="https://spiral.xyz/" target="_blank">
-      <img src="/img/member-logos/spiral.png" alt="Spiral" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://spiral.xyz/" target="_blank">Spiral</a>
-    </h3>
-    <p>Making bitcoin more than an investment. Bitcoin is the best money. It should be used like it. We build and fund free, open-source projects aimed at making bitcoin the planet’s preferred currency.</p>
-  </div>
+# Gold Members
+
+<div class="grid cards" markdown>
+
+-   ### OpenSats
+    
+    ---
+
+    <img src="/assets/logos/members/opensats.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="OpenSats" />
+
+    OpenSats is a 501(c )(3) public charity that aims to support and maintain a sustainable ecosystem of funding for free and open-source projects and contributors, especially bitcoin-related projects and projects that help bitcoin flourish.
+
+    [:octicons-arrow-right-24: Website](https://opensats.org)
+
 </div>
 
-# Gold
+<br>
 
-<!-- OpenSats -->
-<div class="members">
-  <div class="members-logo">
-    <a href="https://opensats.org/" target="_blank">
-      <img src="/img/member-logos/opensats.png" alt="OpenSats" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://opensats.org/" target="_blank">OpenSats</a>
-    </h3>
-    <p>OpenSats is a 501(c )(3) public charity that aims to support and maintain a sustainable ecosystem of funding for free and open-source projects and contributors, especially bitcoin-related projects and projects that help bitcoin flourish.</p>
-  </div>
+# Silver Members
+
+<div class="grid cards" markdown>
+
+-   ### AnchorWatch
+    
+    ---
+
+    <img src="/assets/logos/members/anchorwatch.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="AnchorWatch" />
+
+    AnchorWatch is a Lloyd's of London coverholder, offering 1:1 insurance on bitcoin held in its cold storage solution Trident Vault for up to $100 Million per customer. Serving both retail and commercial clients today in the United States, AnchorWatch leverages advanced Bitcoin smart contracts with the functionality of Miniscript which is supported within BDK.
+
+    [:octicons-arrow-right-24: Website](https://www.anchorwatch.com)
+
+-   ### Proton Foundation
+    
+    ---
+
+    <img src="/assets/logos/members/protonfoundation.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Proton Foundation" />
+
+    Proton Mail started in 2014 with uncensorable donations from the Bitcoin community. In 2024, Proton Wallet launched as a BDK-based Bitcoin wallet to protect financial freedom for all. As Proton's primary shareholder, the non-profit Proton Foundation supports technologies that advance privacy, freedom, and democracy around the world.
+
+    [:octicons-arrow-right-24: Website](https://proton.me/foundation)
+
+-   ### CleanSpark
+    
+    ---
+
+    <img src="/assets/logos/members/cleanspark.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="CleanSpark" />
+
+    CleanSpark responsibly develops infrastructure for Bitcoin, an essential tool for financial independence and inclusion. We strive to leave the planet better than we found it by investing in communities that we operate in. Bitcoin is a watershed moment, not only in the history and invention of money, but in how we relate to each other.
+
+    [:octicons-arrow-right-24: Website](https://www.cleanspark.com)
+
+-   ### Satoshi Pacioli Accounting
+    
+    ---
+
+    <img src="/assets/logos/members/satoshipacioli.jpeg" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Satoshi Pacioli Accounting" />
+
+    Satoshi Pacioli Accounting bridges traditional & bitcoin-specific accounting, providing expert help for tax compliance, financial ops & complex processes.
+
+    [:octicons-arrow-right-24: Website](https://satoshipacioli.com)
+
 </div>
 
-# Silver
+<br>
 
-<!-- AnchorWatch -->
-<div class="members">
-  <div class="members-logo">
-    <a href="https://www.anchorwatch.com/" target="_blank">
-      <img src="/img/member-logos/anchorwatch.png" alt="AnchorWatch" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://www.anchorwatch.com/" target="_blank">AnchorWatch</a>
-    </h3>
-    <p>AnchorWatch is a Lloyd's of London coverholder, offering 1:1
-insurance on bitcoin held in its cold storage solution Trident Vault for
-up to $100 Million per customer. Serving both retail and commercial
-clients today in the United States, AnchorWatch leverages advanced
-Bitcoin smart contracts with the functionality of Miniscript which is
-supported within BDK.</p>
-  </div>
-</div>
+# Associate Members
 
-  <!-- CleanSpark -->
-<div class="members">
-  <div class="members-logo">
-    <a href="https://www.cleanspark.com/" target="_blank">
-      <img src="/img/member-logos/cleanspark.png" alt="CleanSpark" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://www.cleanspark.com/" target="_blank">CleanSpark</a>
-    </h3>
-    <p>CleanSpark responsibly develops infrastructure for Bitcoin, an essential
-tool for financial independence and inclusion. We strive to leave the
-planet better than we found it by investing in communities that we operate
-in. Bitcoin is a watershed moment, not only in the history and invention of
-money, but in how we relate to each other.</p>
-  </div>
-</div>
+<div class="grid cards" markdown>
 
-  <!-- Proton Foundation -->
-<div class="members">
-  <div class="members-logo">
-    <a href="https://proton.me/foundation/" target="_blank">
-      <img src="/img/member-logos/protonfoundation.png" alt="Proton Foundation" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://proton.me/foundation/" target="_blank">Proton Foundation</a>
-    </h3>
-    <p>Proton Mail started in 2014 with uncensorable donations from the Bitcoin community. In 2024, Proton Wallet launched as a BDK-based Bitcoin wallet to protect financial freedom for all. As Proton's primary shareholder, the non-profit Proton Foundation supports technologies that advance privacy, freedom, and democracy around the world.</p>
-  </div>
-</div>
+-   ### Btrust
+    
+    ---
 
-  <!-- Satoshi Pacioli Accounting -->
-<div class="members">
-  <div class="members-logo">
-    <a href="https://satoshipacioli.com" target="_blank">
-      <img src="/img/member-logos/satoshipacioli-clear.jpeg" alt="Satoshi Pacioli Accounting" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://satoshipacioli.com" target="_blank">Satoshi Pacioli Accounting</a>
-    </h3>
-    <p>Satoshi Pacioli Accounting bridges traditional & bitcoin-specific accounting, providing expert help for tax compliance, financial ops & complex processes.</p>
-  </div>
-</div>
+    <img src="/assets/logos/members/btrust.svg" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Btrust" class="btrust-logo" />
 
-# Associate
+    Btrust is a non-profit organization with a dedicated mission to decentralize the development of Bitcoin software. Their focus is on fostering developer talent in the global south and supporting the free and open-source Bitcoin ecosystem.
 
-<!-- Btrust -->
-<div class="members">
-  <div class="members-logo">
-    <a href="https://www.btrust.tech" target="_blank">
-      <img src="/img/member-logos/btrust-logo-black.svg" alt="Btrust" class="btrust-logo" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://www.btrust.tech" target="_blank">Btrust</a>
-    </h3>
-    <p>Btrust is a non-profit organization with a dedicated mission to decentralize the development of Bitcoin software. Their focus is on fostering developer talent in the global south and supporting the free and open-source Bitcoin ecosystem.</p>
-  </div>
-</div>
+    [:octicons-arrow-right-24: Website](https://www.btrust.tech)
 
-<!-- Vinteum -->
-<div class="members">
-  <div class="members-logo">
-    <a href="https://vinteum.org" target="_blank">
-      <img src="/img/member-logos/vinteum.png" alt="Vinteum" />
-    </a>
-  </div>
-  <div class="tagline">
-    <h3>
-      <a href="https://vinteum.org" target="_blank">Vinteum</a>
-    </h3>
-    <p>Vinteum is a non-profit Bitcoin research and development center dedicated to supporting Bitcoin developers in Brazil and the wider Latin America region.</p>
-  </div>
+-   ### Vinteum
+    
+    ---
+
+    <img src="/assets/logos/members/vinteum.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Vinteum" />
+
+    Vinteum is a non-profit Bitcoin research and development center dedicated to supporting Bitcoin developers in Brazil and the wider Latin America region.
+
+    [:octicons-arrow-right-24: Website](https://vinteum.org)
+
 </div>
 
 <style>
-.members {
-  display: flex;
-  flex-direction: row;
-}
-
-.members-logo {
-  flex-basis: 20%;
-  margin: auto;
-}
-
-.tagline {
-  flex-basis: 80%
-}
-
 .btrust-logo {
   filter: none;
 }
 
-html[data-theme="dark"] .btrust-logo,
-.dark .btrust-logo,
-[data-theme="dark"] .btrust-logo {
+[data-md-color-scheme="slate"] .btrust-logo {
   filter: brightness(0) invert(1);
-}
-
-@media screen and (max-width: 700px) {
-  .members {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-  }
-
-  .members-logo {
-    flex-basis: 20%;
-    margin: auto;
-  }
-
-  .tagline {
-    flex-basis: 80%
-  }
 }
 </style>

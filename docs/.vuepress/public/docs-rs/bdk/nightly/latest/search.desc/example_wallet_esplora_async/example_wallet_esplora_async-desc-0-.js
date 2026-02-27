@@ -1,1 +1,0 @@
-searchState.loadedDescShard("example_wallet_esplora_async", 0, "")

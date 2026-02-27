@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"struct":["BitStreamReader","BitStreamWriter","BlockFilter","BlockFilterReader","BlockFilterWriter","FilterHash","FilterHeader","GcsFilterReader","GcsFilterWriter"]};

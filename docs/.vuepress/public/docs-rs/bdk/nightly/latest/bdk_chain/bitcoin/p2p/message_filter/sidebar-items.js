@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["CFCheckpt","CFHeaders","CFilter","GetCFCheckpt","GetCFHeaders","GetCFilters"]};

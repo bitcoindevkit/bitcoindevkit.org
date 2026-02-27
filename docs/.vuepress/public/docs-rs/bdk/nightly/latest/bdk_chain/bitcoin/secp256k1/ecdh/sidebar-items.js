@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["shared_secret_point"],"struct":["SharedSecret"]};
