@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ParseOutPointError"],"fn":["effective_value","predict_weight","predict_weight_from_slices"],"struct":["IndexOutOfBoundsError","InputWeightPrediction","InputsIndexError","OutPoint","OutputsIndexError","Sequence","Transaction","TxIn","TxOut","Txid","Version","Wtxid"]};

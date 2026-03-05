@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["BITCOIN_SIGNED_MSG_PREFIX"],"enum":["MessageSignatureError"],"fn":["signed_msg_hash"],"struct":["MessageSignature"]};

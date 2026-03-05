@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Descriptor","DescriptorPublicKey","Legacy","Segwitv0"],"mod":["checksum","error","policy","template"],"struct":["Miniscript"],"trait":["ExtractPolicy","IntoWalletDescriptor","ScriptContext"],"type":["DerivedDescriptor","ExtendedDescriptor","HdKeyPaths","TapKeyOrigins"]};

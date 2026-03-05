@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"struct":["BlockTransactions","BlockTransactionsRequest","HeaderAndShortIds","PrefilledTransaction","ShortId","TxIndexOutOfRangeError"]};

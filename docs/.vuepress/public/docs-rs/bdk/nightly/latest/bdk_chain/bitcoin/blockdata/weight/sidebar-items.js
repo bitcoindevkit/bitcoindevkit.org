@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["WITNESS_SCALE_FACTOR"],"struct":["Weight"]};

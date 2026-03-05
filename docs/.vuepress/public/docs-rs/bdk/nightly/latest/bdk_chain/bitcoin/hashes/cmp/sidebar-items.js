@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["fixed_time_eq"]};

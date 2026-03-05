@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["BlockTxn","CmpctBlock","GetBlockTxn","SendCmpct"]};
