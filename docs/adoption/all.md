@@ -73,6 +73,21 @@ Explore the ecosystem of projects that are built with the BDK family of librarie
   </div>
 </div>
 
+<!-- Arké -->
+<div class="project">
+  <div class="project-logo">
+    <a href="https://www.arke.cash/" target="_blank">
+      <img src="/img/case-studies-logos/arke.png" width="130" height="130" alt="Arké logo" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://www.arke.cash/" target="_blank">Arké</a>
+    </h3>
+    <p>An Ark-based Bitcoin app designed for instant everyday spending.</p>
+  </div>
+</div>
+
 <!-- Bark -->
 <div class="project">
   <div class="project-logo">
