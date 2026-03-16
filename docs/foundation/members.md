@@ -151,6 +151,21 @@ money, but in how we relate to each other.</p>
   </div>
 </div>
 
+<!-- Bitshala -->
+<div class="members">
+  <div class="members-logo">
+    <a href="https://bitshala.org" target="_blank">
+      <img src="/img/member-logos/bitshala.jpg" alt="Bitshala" />
+    </a>
+  </div>
+  <div class="tagline">
+    <h3>
+      <a href="https://bitshala.org" target="_blank">Bitshala</a>
+    </h3>
+    <p>Bitshala is a grass-root education initiative led by Indian Bitcoiners, focused on strengthening the Bitcoin ecosystem by nurturing and supporting Bitcoin FOSS (Free and Open Source Software) Devs. Our mission is to equip people with the skills and knowledge needed to contribute to Bitcoin FOSS projects.</p>
+  </div>
+</div>
+
 <style>
 .members {
   display: flex;
