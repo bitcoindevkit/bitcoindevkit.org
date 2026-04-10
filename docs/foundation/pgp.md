@@ -168,6 +168,14 @@ Email: bindings@bitcoindevkit.org
 Fingerprint: 88AD 93AC 4589 FD09 0FF3 B8D1 2768 C43E 8803 C6A3
 ```
 
+## Security Disclosures
+
+```txt
+Owner: security@bitcoindevkit.org
+Email: security@bitcoindevkit.org
+Fingerprint: 7416 BB25 5E60 E40D 482E 591B 7201 8930 A1FB 3444
+```
+
 ## Downloads
 
 [Download Key — thunderbiscuit (thunderbiscuit.asc)](/pgp/thunderbiscuit.asc)  
@@ -186,3 +194,4 @@ Fingerprint: 88AD 93AC 4589 FD09 0FF3 B8D1 2768 C43E 8803 C6A3
 [Download Key — Luis Schwab (luisschwab.asc)](/pgp/luisschwab.asc)  
 [Download Key — tvpeter (tvpeter.asc)](/pgp/tvpeter.asc)  
 [Download Key — Language bindings (bindings.asc)](/pgp/bindings.asc)  
+[Download Key — Security disclosures (security.asc)](/pgp/security.asc)
