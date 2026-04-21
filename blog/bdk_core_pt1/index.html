@@ -1,0 +1,2173 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="BDK Foundation Website">
+      
+      
+        <meta name="author" content="Bitcoin Dev Kit Foundation">
+      
+      
+        <link rel="canonical" href="https://bitcoindevkit.org/blog/bdk_core_pt1/">
+      
+      
+        <link rel="prev" href="../road_to_bdk_1/">
+      
+      
+        <link rel="next" href="../first_bdk_taproot_tx_part_2/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.33">
+    
+    
+      
+        <title>bdk_core: a new architecture for the Bitcoin Dev Kit - Bitcoin Dev Kit</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.53a7feaf.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#bdk_core-a-new-architecture-for-the-bitcoin-dev-kit" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Bitcoin Dev Kit" class="md-header__button md-logo" aria-label="Bitcoin Dev Kit" data-md-component="logo">
+      
+  <img src="../../assets/bdk-logo-text.svg" alt="Bitcoin Dev Kit">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Bitcoin Dev Kit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              bdk_core: a new architecture for the Bitcoin Dev Kit
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/bitcoindevkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub Organization
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../foundation/about/" class="md-tabs__link">
+          
+  
+  Foundation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../adoption/all/" class="md-tabs__link">
+          
+  
+  Adoption
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../2025_q4_update/" class="md-tabs__link">
+          
+  
+  Blog
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Bitcoin Dev Kit" class="md-nav__button md-logo" aria-label="Bitcoin Dev Kit" data-md-component="logo">
+      
+  <img src="../../assets/bdk-logo-text.svg" alt="Bitcoin Dev Kit">
+
+    </a>
+    Bitcoin Dev Kit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bitcoindevkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub Organization
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foundation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Foundation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../foundation/about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About Us
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../foundation/members/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Members
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../foundation/grantees/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Grantees
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../foundation/grants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Grants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../foundation/pgp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PGP Keys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../foundation/become-a-member/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Become a Member
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adoption
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Adoption
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adoption/all/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    All
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adoption/mobile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mobile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adoption/desktop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Desktop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adoption/infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adoption/hardware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adoption/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchanges
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adoption/web/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blog
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Blog
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2025_q4_update/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2025 Q4 Update
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2025_q4_btcnews_interview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    BDK Featured in Bitcoin News Interview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2025_q3_update/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2025 Q3 Update
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2025_q2_update/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2025 Q2 Update
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2025_q1_New_Foundation_Members/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    BDK Foundation Welcomes New Corporate Members
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2025_q1_update/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2025 Q1 Update
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2024_q4_update/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2024 Q4 Update
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2024_q4_code_audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2024 Code Audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2024_q3_update/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2024 Q3 Update
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2024_q2_update/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2024 Q2 Update
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../why-bindings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why Build Bindings?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2024_q1_update/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2024 Q1 Update
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2023_q4_update/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2023 Q4 Update
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bindings-scope/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Our Approach to Rust Bindings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../road_to_bdk_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Road to BDK 1.0
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    `bdk_core`: a new architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    `bdk_core`: a new architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-separation-of-policy-and-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The separation of policy and mechanism
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-syncing-mechansim-without-the-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A syncing mechansim without the policy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="A syncing mechansim without the policy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-general-syncing-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A general syncing mechanism
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-store-and-index-transactions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to store and index transactions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-back-rolling-forward-and-syncing-to-disk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling back, rolling forward and syncing to disk
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#doing-an-initial-sync-of-a-descriptor-that-may-already-contain-coins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Doing an initial sync of a descriptor that may already contain coins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#doing-a-sync-of-a-wallet-after-you-already-have-syncd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Doing a sync of a wallet after you already have sync'd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-state-when-you-get-the-data-in-real-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updating state when you get the data in real time
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feedback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feedback
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../first_bdk_taproot_tx_part_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The first BDK Taproot TX (2)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../first_bdk_taproot_tx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The first BDK Taproot TX (1)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hello-world/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hello World!
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-separation-of-policy-and-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The separation of policy and mechanism
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-syncing-mechansim-without-the-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A syncing mechansim without the policy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="A syncing mechansim without the policy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-general-syncing-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A general syncing mechanism
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-store-and-index-transactions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to store and index transactions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-back-rolling-forward-and-syncing-to-disk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling back, rolling forward and syncing to disk
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#doing-an-initial-sync-of-a-descriptor-that-may-already-contain-coins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Doing an initial sync of a descriptor that may already contain coins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#doing-a-sync-of-a-wallet-after-you-already-have-syncd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Doing a sync of a wallet after you already have sync'd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updating-state-when-you-get-the-data-in-real-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updating state when you get the data in real time
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feedback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feedback
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="bdk_core-a-new-architecture-for-the-bitcoin-dev-kit"><code>bdk_core</code>: a new architecture for the Bitcoin Dev Kit<a class="headerlink" href="#bdk_core-a-new-architecture-for-the-bitcoin-dev-kit" title="Permanent link">&para;</a></h1>
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-pen-tool" viewBox="0 0 24 24"><path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z"/><path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18M2.3 2.3l7.286 7.286"/><circle cx="11" cy="11" r="2"/></svg></span> &nbsp; <a href="https://github.com/LLFourn"><code>Lloyd Fournier</code></a><br />
+<span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-calendar-1" viewBox="0 0 24 24"><path d="M11 14h1v4M16 2v4M3 10h18M8 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/></svg></span> &nbsp; <code>May 9, 2022</code></p>
+<hr />
+<p>The Bitcoin Devkit (BDK) lets you do a lot of useful things through convenient high level
+abstractions. It works great when these abstractions map nicely onto what you are trying to do. My
+goal is to develop a new <code>bdk_core</code> library for when they don't. I want <code>bdk_core</code> to expose all the
+useful <em>mechanisms</em> that BDK has inside it without them being tied to any particular usage <em>policy</em>
+and with very minimal dependencies.</p>
+<p>The <code>bdk_core</code> idea is still "in the lab". We're not sure yet whether <code>bdk_core</code> will just be what's
+left of <code>bdk</code> once we spin off all the components that have extra dependencies into their own crates
+and refine it a bit. In that case <code>bdk_core</code> will just be called <code>bdk v1.0.0</code> or something. Or it might
+be that <code>bdk</code> lives on with its current APIs and uses stuff <code>bdk_core</code> to implement it internally.</p>
+<h2 id="the-separation-of-policy-and-mechanism">The separation of policy and mechanism<a class="headerlink" href="#the-separation-of-policy-and-mechanism" title="Permanent link">&para;</a></h2>
+<p>My guiding principle for <code>bdk_core</code> is the <em>separation of policy and mechanism</em>. This is
+what I mean by these terms:</p>
+<ul>
+<li><em>mechanism</em>: How you do a particular thing. Mechanism code is functional and doesn't change much.</li>
+<li><em>policy</em>: What you want to do. Policy code composes mechanisms to achieve something in
+  an application.</li>
+</ul>
+<p>Here's a nice passage about why the designers of the <a href="https://en.wikipedia.org/wiki/X_Window_System">X window system</a> applied this principle. X has
+been around since 1984 and doesn't look like it's going anywhere so it probably has a lot to teach us.
+From <em><a href="https://en.wikipedia.org/wiki/The_Art_of_Unix_Programming">The Art of UNIX Programming</a></em>:</p>
+<blockquote>
+<p>...we observed that the designers of X made a basic decision to implement “mechanism, not policy”—to
+make X a generic graphics engine and leave decisions about user-interface style to toolkits and
+other levels of the system. We justified this by pointing out that policy and mechanism tend to
+mutate on different timescales, with policy changing much faster than mechanism. Fashions in the
+look and feel of GUI toolkits may come and go, but raster operations and compositing are forever.</p>
+<p>Thus, hardwiring policy and mechanism together has two bad effects: It makes policy rigid and
+harder to change in response to user requirements, and it means that trying to change policy has a
+strong tendency to destabilize the mechanisms.</p>
+<p>On the other hand, by separating the two we make it
+possible to experiment with new policy without breaking mechanisms. We also make it much easier to
+write good tests for the mechanism (policy, because it ages so quickly, often does not justify the
+investment).</p>
+</blockquote>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> &gt; This design rule has wide application outside the GUI context. In general, it implies that we<blockquote>
+<p>should look for ways to separate interfaces from engines.</p>
+</blockquote>
+</li>
+</ul>
+<p>You'll notice we have a similar situation in Bitcoin engineering. We have mechanism code like
+signing algorithms, key derivation, transaction construction logic, etc., that don't change much. But
+how these compose together in applications changes quickly over time and between applications.</p>
+<p>The main culprit of policy and mechanism conflation in <code>bdk</code> is the main [<code>Wallet</code>] type.
+Wallets do all of the following:</p>
+<ol>
+<li>Store one or two descriptors (external and optional internal).</li>
+<li>Keep track of which addresses you've given out so you only give out fresh ones from each descriptor.</li>
+<li>Keep a list of transactions associated with the addresses in the wallet.</li>
+<li>Given a source of blockchain data it can update its internal list of transactions.</li>
+<li>Given some parameters it can build a PSBT from transaction outputs.</li>
+<li>Given a PSBT it can sign it with its [<code>Signers</code>][<code>Signer</code>].</li>
+</ol>
+<p>All of that is very useful but it is bound together with the particular policies and opinions of <code>Wallet</code>.
+If <code>Wallet</code>'s policy is not your policy it's going to be tricky to get it to do what you want.
+Here are some examples:</p>
+<ol>
+<li>In order to control how the <code>Wallet</code> will select coins for a transaction internally you have to
+   pass in something implementing the [<code>CoinSelectionAlgorithm</code>] trait. A coin selection algorithm
+   is clearly mechanism code but the policy of <code>Wallet</code> restricts that mechanism's interface. We
+   have <a href="https://github.com/bitcoindevkit/bdk/issues/281">very old issues</a> related to what the
+   interface of this trait should be and we don't have a clear way forward. In <code>bdk_core</code> I want to
+   purely provide the coin selection mechanisms for figuring out whether you need to select more
+   UTXOs or whether you need a change output etc. How you use that mechanism will be up to you.</li>
+<li>Another trait that has a similar structure is the [<code>Signer</code>] trait. You have to pass in signers
+   so your wallet can sign PSBTs but you have little control over how the wallet chooses which
+   signers to use in any given situation. Right now the wallet will just iterate through all the
+   signers and ask them to sign. This is not always appropriate. In <code>bdk_core</code> I want to provide
+   functions for populating PSBTs given something that can sign. You'll be in control of when they
+   get called.</li>
+</ol>
+<h2 id="a-syncing-mechansim-without-the-policy">A syncing mechansim without the policy<a class="headerlink" href="#a-syncing-mechansim-without-the-policy" title="Permanent link">&para;</a></h2>
+<p>Syncing in <code>bdk</code> is the place where the design of <code>Wallet</code> is most restrictive. The [<code>WalletSync</code>]
+trait forces you to sync all addresses in a wallet in one big batch. But this is not always what you
+want to do. I spoke to a developer who wanted to sync his wallet slowly over time with each address
+being queried over a different Tor connection. It would be really difficult to implement
+<code>WalletSync</code> with such a strategy. Another example where <code>WalletSync</code> isn't the right fit is the
+<a href="https://l2.technology/sensei">Sensei</a> project which uses BDK but incrementally updates the database whenever new information
+comes in from the blockchain.</p>
+<p>Even if syncing all addresses at the same time is roughly what you want to do <code>WalletSync</code> still
+gets in the way since it defines whether you do it synchronously or asynchrononusly. Applications
+can control this through <code>bdk</code>'s <code>async-interface</code> feature flag which internally changes the trait
+definition through macros. Another annoyance is that when using <code>async-interface</code> the future that
+gets returned from <code>WalletSync</code> <a href="https://github.com/bitcoindevkit/bdk/issues/165">cannot be <code>Send</code></a>
+because of how <code>Wallet</code> handles database mutability internally, meaning you can't spawn the future
+into a new thread.</p>
+<h3 id="a-general-syncing-mechanism">A general syncing mechanism<a class="headerlink" href="#a-general-syncing-mechanism" title="Permanent link">&para;</a></h3>
+<p>So what is the most general syncing mechanism that solves these problems? These are the things I
+think it has to do regardless of where the blockchain data comes from or how it's stored:</p>
+<ol>
+<li>Generate and store addresses.</li>
+<li>Index transaction data, e.g. transaction outputs we own, when/if they were spent, etc.</li>
+<li>Keep track of which addresses have been given out and which have been used.</li>
+<li>Be able to "roll back" our view of the above data if a reorg makes some of it stale.</li>
+<li>Keep track of transactions related our addresses in our mempool.</li>
+</ol>
+<p>Let's talk about how to implement a mechanism that does all that.</p>
+<h3 id="how-to-store-and-index-transactions">How to store and index transactions<a class="headerlink" href="#how-to-store-and-index-transactions" title="Permanent link">&para;</a></h3>
+<p>Different persistent storage backends have different APIs and their own indexing strategies. That's
+why the [<code>Database</code>] trait exists in BDK, to make a clean API to the different storage engines. It's
+important to note that the database in BDK only holds public data that could always be retrieved
+from the chain. It's just a cache. Despite this we support different backends. Right now it is a
+lot of work to add a new index to the data since you have to add it to every backend and you might have
+to apply schema changes (we still <a href="https://github.com/bitcoindevkit/bdk/issues/359">don't have a standard approach to
+this</a>).</p>
+<p>Thomas Eizinger <a href="https://github.com/bitcoindevkit/bdk/issues/165#issuecomment-1047483895">suggested</a>
+doing everything in memory and only writing to persistent storage when it was convenient. It took me
+some time but I came around to this idea. It would allow us to get rid of the <code>Database</code> trait (at
+least at the <code>bdk_core</code> level) and greatly simplify what the persistent storage layer has to do.
+Whenever the data is loaded from persistent storage we can just do the indexing in memory and
+present it to the application.</p>
+<p><em>But wait! Wouldn't this mean we'd use way more memory than we need to?</em> Yes but memory is cheap.
+Consider that if we say the average transaction size is 300 bytes then with all our indexes each
+transaction might cost 1kb of memory (pessimistically). This means we could index one thousand
+transactions in a single megabyte! My iPhone has 4gb of memory so it could index a million
+transactions with plenty of memory to spare. <em>But what if some users can't afford an iPhone?</em> Then
+they also couldn't have afforded to have made a million Bitcoin transactions! <em>But what about memory
+constrained devices like hardware wallets!?</em> Those devices typically don't store and retrieve
+transactions. They're usually just signing devices. Perhaps one day someone will build a memory
+constrained device that needs to do this work but until then I think this is a fine approach to
+take.</p>
+<p>For now I'm calling this thing that does the in-memory indexing of transactions related to a single
+descriptor a <code>DescriptorTracker</code>. Here's a diagram that communicates how I imagine it relates to the
+other components.</p>
+<p><img alt="" src="../../assets/blog/descriptor-tracker.jpg" /></p>
+<h3 id="rolling-back-rolling-forward-and-syncing-to-disk">Rolling back, rolling forward and syncing to disk<a class="headerlink" href="#rolling-back-rolling-forward-and-syncing-to-disk" title="Permanent link">&para;</a></h3>
+<p>State changes in blockchains are clearly delineated. They all happen in blocks! Every view of the
+blockchain, whether you're getting it through compact block filters, an electrum server or something
+wacky like a utreexo bridge will have a concept of blocks and transactions in them. For a wallet we
+only need a very sparse view of the blockchain that includes at which block a set of transactions
+existed. That way, if a block disappears we know that all those transactions might disappear too.</p>
+<p>With <code>bdk_core</code> I want to introduce the concept of a <em>checkpoint</em>, which is a block height and hash and
+a set of txids that were present at that height <strong>but not present in the previous checkpoint</strong>. In
+this way we create an append-only data structure that can easily be rolled back to a previous height
+if there is a reorg. After rolling back we can then roll forward and apply the new blocks.</p>
+<p>Here's an example of how this idea works:</p>
+<p><img alt="" src="../../assets/blog/checkpoints.jpg" /></p>
+<p>There are a few edge cases I'd like to cover:</p>
+<ol>
+<li>What if when gathering new data from the chain to update a <code>DescriptorTracker</code> we find an old transaction that belongs to an earlier checkpoint that we had missed form our earlier syncs?</li>
+<li>What if when we go to write to persistent storage from a <code>DescriptorTracker</code> we find that it has some transactions the tracker doesn't? Should we try and reconcile the two sets of transactions?</li>
+</ol>
+<p>I think the correct approach is to treat the chain data as the source of truth for the
+<code>DescriptorTracker</code> and the <code>DescriptorTracker</code> as the source of truth for persistent storage. That
+is in the case of (1) we should just rollback the <code>DescriptorTracker</code> and insert the old but
+recently discovered transaction in the right place. In the case of (2) we should roll back the
+persistent storage to the point where it differs and apply changes from there. This implies that you
+should only keep one instance of a <code>DescriptorTracker</code> for a descriptor in your application and only
+update persistent storage by first applying the changes to the tracker.</p>
+<h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
+<p>Here are some examples of what I think this may end up looking like in code. Keep in mind that if
+this looks complicated it will probably be more complicated in practice! This doesn't mean that we
+can't create simplifying abstractions and tools around these primitives to cover common policies. I hope we can implement <code>Wallet</code> with <code>DescriptorTracker</code>s internally.</p>
+<h3 id="doing-an-initial-sync-of-a-descriptor-that-may-already-contain-coins">Doing an initial sync of a descriptor that may already contain coins<a class="headerlink" href="#doing-an-initial-sync-of-a-descriptor-that-may-already-contain-coins" title="Permanent link">&para;</a></h3>
+<p>When we first sync a descriptor that may already contain coins we want to iterate over all the
+scripts of the wallet and then stop if there's a big enough gap (e.g. 20). In this example we use an
+stateless <a href="https://mempool.space/docs/api/rest">esplora-like API</a>.</p>
+<div class="language-rust highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// create a descriptor tracker the external addresses of a BIP86 key</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">tracker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DescriptorTracker</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;tr([73c5da0a/86&#39;/0&#39;/0&#39;]xpub6BgBgsespWvERF3LHQu6CnqdvfEvtMcQjYrcRzx53QJjSxarj2afYWcLteoGVky7D3UKDP9QyrLprQ3VCECoY49yfdDEHGCtMMj92pReUsQ/0/*)&quot;</span><span class="p">);</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kd">let</span><span class="w"> </span><span class="n">esplora</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bdk_esplora</span><span class="p">::</span><span class="n">Client</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="kd">let</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">esplora</span><span class="p">.</span><span class="n">fetch_related_transactions</span><span class="p">(</span><span class="n">bdk_esplora</span><span class="p">::</span><span class="n">Params</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">   </span><span class="c1">// iterate over all addresses in a descriptor</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">   </span><span class="n">scripts</span><span class="p">:</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">tracker</span><span class="p">.</span><span class="n">iter_scripts</span><span class="p">()),</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">   </span><span class="c1">// stop if you find a gap of 20 unused addresses</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">   </span><span class="n">stop_gap</span><span class="p">:</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">   </span><span class="o">..</span><span class="nb">Default</span><span class="p">::</span><span class="n">default</span><span class="p">()</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">}).</span><span class="k">await</span><span class="o">?</span><span class="p">;</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">tracker</span><span class="p">.</span><span class="n">apply_update</span><span class="p">(</span><span class="n">update</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="c1">// now we want to persist this disk</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="kd">let</span><span class="w"> </span><span class="n">db_update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tracker</span><span class="p">.</span><span class="n">generate_update</span><span class="p">(</span><span class="n">Params</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="n">start_checkpoint</span><span class="p">:</span><span class="w"> </span><span class="nb">None</span><span class="p">,</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="p">});</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="c1">// Note that the db_update type is the same as the `update` above.</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">my_db</span><span class="p">.</span><span class="n">apply_update</span><span class="p">(</span><span class="n">db_update</span><span class="p">);</span>
+</span></code></pre></div>
+<h3 id="doing-a-sync-of-a-wallet-after-you-already-have-syncd">Doing a sync of a wallet after you already have sync'd<a class="headerlink" href="#doing-a-sync-of-a-wallet-after-you-already-have-syncd" title="Permanent link">&para;</a></h3>
+<p>Now imagine you just want to check if any UTXOs in your wallet have been spent. In this case we've
+already sync'd before so we need to load that data into the tracker from disk first (rather than
+going straight to the blockchain). Then we just ask esplora for transactions related to these
+transaction outputs.</p>
+<div class="language-rust highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// create a descriptor tracker the external addresses of a BIP86 key</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">tracker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DescriptorTracker</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;tr([73c5da0a/86&#39;/0&#39;/0&#39;]xpub6BgBgsespWvERF3LHQu6CnqdvfEvtMcQjYrcRzx53QJjSxarj2afYWcLteoGVky7D3UKDP9QyrLprQ3VCECoY49yfdDEHGCtMMj92pReUsQ/0/*)&quot;</span><span class="p">);</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kd">let</span><span class="w"> </span><span class="n">init_update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">my_db</span><span class="p">.</span><span class="n">generate_update</span><span class="p">(</span><span class="n">Params</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="n">checkpoint</span><span class="p">:</span><span class="w"> </span><span class="nb">None</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="p">});</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1">// get up to speed with what was on disk.</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">tracker</span><span class="p">.</span><span class="n">apply_update</span><span class="p">(</span><span class="n">init_update</span><span class="p">);</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1">// get the latest checkpoint</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="kd">let</span><span class="w"> </span><span class="n">checkpoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tracker</span><span class="p">.</span><span class="n">get_checkpoint</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="kd">let</span><span class="w"> </span><span class="n">esplora</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bdk_esplora</span><span class="p">::</span><span class="n">Client</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1">// Fetch transactions spending any utxos we have</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="kd">let</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">esplora</span><span class="p">.</span><span class="n">fetch_related_transactions</span><span class="p">(</span><span class="w"> </span><span class="n">bdk_esplora</span><span class="p">::</span><span class="n">Params</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">   </span><span class="n">checkpoint</span><span class="p">:</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">),</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">   </span><span class="n">tx_outs</span><span class="p">:</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">tracker</span><span class="p">.</span><span class="n">iter_unspent</span><span class="p">()),</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">   </span><span class="o">..</span><span class="nb">Default</span><span class="p">::</span><span class="n">default</span><span class="p">()</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="p">}).</span><span class="k">await</span><span class="o">?</span><span class="p">;</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="k">match</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">   </span><span class="nb">Ok</span><span class="p">(</span><span class="n">update</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">       </span><span class="n">tracker</span><span class="p">.</span><span class="n">apply_update</span><span class="p">(</span><span class="n">update</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">       </span><span class="c1">// now we want to persist this disk</span>
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="w">       </span><span class="kd">let</span><span class="w"> </span><span class="n">db_update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tracker</span><span class="p">.</span><span class="n">generate_update</span><span class="p">(</span><span class="n">Params</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">           </span><span class="c1">// this call could fail if tracker no longer has this checkpoint.</span>
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="w">           </span><span class="c1">// In this case we&#39;d ask persistent_storage for an earlier checkpoint and try again.</span>
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="w">           </span><span class="n">start_checkpoint</span><span class="p">:</span><span class="w"> </span><span class="nc">persistent_storage</span><span class="p">.</span><span class="n">get_checkpoint</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="w">       </span><span class="p">});</span>
+</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>
+</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="w">       </span><span class="n">persistent_storage</span><span class="p">.</span><span class="n">apply_update</span><span class="p">(</span><span class="n">db_update</span><span class="p">);</span>
+</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="w">   </span><span class="p">}</span>
+</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="w">   </span><span class="nb">Err</span><span class="p">(</span><span class="n">bdk_esplora</span><span class="p">::</span><span class="n">Error</span><span class="p">::</span><span class="n">StaleCheckpoint</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a><span class="w">      </span><span class="c1">// here we should call fetch related transactions with an earlier checkpoint.</span>
+</span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="w">      </span><span class="c1">// In practice this logic will be called in a loop</span>
+</span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a><span class="w">   </span><span class="p">}</span>
+</span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="updating-state-when-you-get-the-data-in-real-time">Updating state when you get the data in real time<a class="headerlink" href="#updating-state-when-you-get-the-data-in-real-time" title="Permanent link">&para;</a></h3>
+<p>If you have an event based view of the blockchain that feeds you block connected or block
+disconnected events then I imagine the API would look something like this.
+There's quite a bit left out here but I hope you get the idea.</p>
+<div class="language-rust highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// create a descriptor tracker the external addresses of a BIP86 key</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">tracker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DescriptorTracker</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;tr([73c5da0a/86&#39;/0&#39;/0&#39;]xpub6BgBgsespWvERF3LHQu6CnqdvfEvtMcQjYrcRzx53QJjSxarj2afYWcLteoGVky7D3UKDP9QyrLprQ3VCECoY49yfdDEHGCtMMj92pReUsQ/0/*)&quot;</span><span class="p">);</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kd">let</span><span class="w"> </span><span class="n">blockchain_events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* get a Stream of blockchain block connected/disconnected events */</span><span class="w"> </span><span class="p">};</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">loop</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">blockchain_event</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="n">blockchain_events</span><span class="p">.</span><span class="n">next</span><span class="p">().</span><span class="k">await</span><span class="p">;</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="k">match</span><span class="w"> </span><span class="n">blockchain_event</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">        </span><span class="n">BlockChainEvent</span><span class="p">::</span><span class="n">Connected</span><span class="p">(</span><span class="n">new_block</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">            </span><span class="k">match</span><span class="w"> </span><span class="n">tracker</span><span class="p">.</span><span class="n">apply_block</span><span class="p">(</span><span class="n">new_block</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">                </span><span class="nb">Ok</span><span class="p">(</span><span class="n">modified</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">modified</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">                    </span><span class="c1">// update persistent storage from tracker</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">                </span><span class="p">}</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">                </span><span class="nb">Err</span><span class="p">(</span><span class="n">ApplyBlockError</span><span class="p">::</span><span class="n">OutOfOrder</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">                    </span><span class="c1">// the block event we got was not the next block we expected.</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">                    </span><span class="c1">// How to recover from this will depend on the application and block source</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">                </span><span class="p">}</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">           </span><span class="p">},</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">           </span><span class="n">BlockchainEvent</span><span class="p">::</span><span class="n">Disconnected</span><span class="p">((</span><span class="n">disconnected_height</span><span class="p">,</span><span class="w"> </span><span class="n">disconnected_hash</span><span class="p">))</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">              </span><span class="c1">// this might invalidate a checkpoint</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">              </span><span class="n">tracker</span><span class="p">.</span><span class="n">disconnect_block</span><span class="p">(</span><span class="n">disconnected_height</span><span class="p">,</span><span class="w"> </span><span class="n">disconnected_hash</span><span class="p">);</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">              </span><span class="c1">// Now apply to persistent storage</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="w">           </span><span class="p">}</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="p">}</span>
+</span></code></pre></div>
+<h2 id="feedback">Feedback<a class="headerlink" href="#feedback" title="Permanent link">&para;</a></h2>
+<p>The best way to give feedback on this would be to comment on the <a href="https://github.com/bitcoindevkit/bitcoindevkit.org/pull/100">pull request</a> for this blog post.
+Thanks in advance.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../road_to_bdk_1/" class="md-footer__link md-footer__link--prev" aria-label="Previous: The Road to BDK 1.0">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                The Road to BDK 1.0
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../first_bdk_taproot_tx_part_2/" class="md-footer__link md-footer__link--next" aria-label="Next: The first BDK Taproot TX (2)">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                The first BDK Taproot TX (2)
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Bitcoin Dev Kit Foundation
+
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["announce.dismiss","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.prefetch","navigation.sections","navigation.tabs","navigation.top","navigation.tracking","search.highlight"],"search":"../../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.63456bd9.min.js"></script>
+      
+    
+  </body>
+</html>
