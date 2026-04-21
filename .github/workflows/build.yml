@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  # Run the build for pushes and pull requests targeting master
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Checkout and setup
+      - name: Checkout
+        uses: actions/checkout@v4
+      # Install uv
+      - name: Install
+        uses: astral-sh/setup-uv@v5
+      # Sync uv
+      - name: Sync
+        run: uv sync
+      # Build site
+      - name: Build
+        run: uv run zensical build
+      # Deploy, limited to the master branch
+      - name: Deploy
+        if: success() && github.ref == 'refs/heads/master'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          publish_dir: ./site
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          cname: bitcoindevkit.org
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
+
