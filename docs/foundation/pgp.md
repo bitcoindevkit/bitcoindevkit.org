@@ -54,20 +54,28 @@ Fingerprint: 28A5 A3AF D5AB 4545 BC0E A244 0312 492D 661E C3B8
 
 ## Officers
 
-_Steve (President)_
-
-```txt
-Owner: Steve Myers
-Email: steve@notmandatory.org
-Fingerprint: D9FF 9010 BE16 9B64 D3ED CBF9 8105 A46B 22C2 D051
-```
-
 _Matthew (Secretary)_
 
 ```txt
 Owner: Matthew Ramsden
 Email: ramsden@hey.com
 Fingerprint: C761 C84F 3F83 B94E DD4A F672 8D4F CD82 DD54 DDD2
+```
+
+_Seth (Treasurer)_
+
+```txt
+Owner: Seth Baylis
+Email: seth.baylis@bitcoindevkit.org
+Fingerprint: DE45 A97D B677 EFE7 F489 FE2A 6696 CD9A E101 1193
+```
+
+_Steve (President)_
+
+```txt
+Owner: Steve Myers
+Email: steve@notmandatory.org
+Fingerprint: D9FF 9010 BE16 9B64 D3ED CBF9 8105 A46B 22C2 D051
 ```
 
 _thunderbiscuit (Vice-President)_
