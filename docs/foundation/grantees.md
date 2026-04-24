@@ -2,7 +2,7 @@
 
 ## ValuedMammal 
 
-[:lucide-github:](https://github.com/ValuedMammal) &nbsp; [:lucide-twitter:](https://twitter.com/valuedmammal)
+[:material-github:](https://github.com/ValuedMammal) &nbsp; [:material-twitter:](https://twitter.com/valuedmammal)
 
 ValuedMammal is a Rust developer and node operator whose work includes research in the areas of mempool and p2p. He's interested in bitcoin payment solutions, problems around fee estimation, and innovations in bitcoin Script. In 2021 he managed Tangerine node on the lightning network and was active in the PLEBNET community. He started contributing to BDK out of a belief that modern wallets should be built with modern tools and sought out a team that makes no compromises when it comes to quality and correctness and who share a mission to master the fundamentals while providing convenient abstractions to developers. His unorthodox path into software development came as a byproduct of his own bitcoin journey and continues to grow more fulfilling each day. As a result, his natural environment is in a terminal managing a server or database, and of course writing code. ValuedMammal studied Biological Science at university, and outside of bitcoin he's a writer and educator who likes music, travel, and foreign languages.
 
@@ -10,7 +10,7 @@ ValuedMammal is a Rust developer and node operator whose work includes research 
 
 ## Evan Lin
 
-[:lucide-github:](https://github.com/evanlinjin) &nbsp; [:lucide-twitter:](https://twitter.com/evanlinjin) &nbsp; [:lucide-feather:](https://njump.me/npub1kysd8m44dhv7ywa75u5z7w2w0gs4t6qzhgvjp555gfknasy3krlqfxde60)
+[:material-github:](https://github.com/evanlinjin) &nbsp; [:material-twitter:](https://twitter.com/evanlinjin) &nbsp; [:lucide-feather:](https://njump.me/npub1kysd8m44dhv7ywa75u5z7w2w0gs4t6qzhgvjp555gfknasy3krlqfxde60)
 
 Evan Lin (林志宇) is a Rust/Golang developer who has been contributing to BDK since 2022. Before working on bitcoin-related projects, his professional career started in 2017 where he led various umbrella projects for an altcoin. After discovering the importance of bitcoin, he started contributing to various projects (including BDK, Fedimint and Utreexo) and was eventually taken under the wing of and mentored by Lloyd Fournier.
 
@@ -18,7 +18,7 @@ Evan Lin (林志宇) is a Rust/Golang developer who has been contributing to BDK
 
 ## Leonardo Souza
 
-[:lucide-github:](https://github.com/oleonardolima) &nbsp; [:lucide-twitter:](https://twitter.com/oleonardolima) &nbsp; [:lucide-feather:](https://njump.me/npub1ez8efu9rjxu64g0lalty2ffmr2tgkzjz92rkafyfyz5463wr8ars8zls5t)
+[:material-github:](https://github.com/oleonardolima) &nbsp; [:material-twitter:](https://twitter.com/oleonardolima) &nbsp; [:lucide-feather:](https://njump.me/npub1ez8efu9rjxu64g0lalty2ffmr2tgkzjz92rkafyfyz5463wr8ars8zls5t)
 
 Leonardo is a Software Engineer based in Brazil, previously Clojure/Java developer in a real-estate tech startup, and Rust developer in a Bitcoin on-ramp/off-ramp startup. He started contributing to BDK and Bitcoin-related FOSS projects in 2022 through his participation in Summer of Bitcoin 2022, mentored by Lloyd Fournier his work focused on a real-time block events library on top of mempool.space API. He's continued his FOSS journey in Summer of Bitcoin 2023, contributing to Fedimint, mentored by Eric Sirion working on adding Tor support on the client level, using Arti, which he's contributing since. He's been continuing his contributions to BDK focusing on improvements, enhancements for BDK 1.0, and Fedimint with focus on adding/improving its Tor support.
 
@@ -28,7 +28,7 @@ Leonardo's grant is [funded by Vinteum](https://medium.com/vinteum-org/leonardo-
 
 ## Matthew Ramsden
 
-[:lucide-github:](https://github.com/reez) &nbsp; [:lucide-twitter:](https://twitter.com/matthewramsden) &nbsp; [:lucide-feather:](https://njump.me/npub1reezn2ctrrg736uqj7mva9lsuwv0kr5asj4vvkwxnrwlhvxf98tsq99ty4)
+[:material-github:](https://github.com/reez) &nbsp; [:material-twitter:](https://twitter.com/matthewramsden) &nbsp; [:lucide-feather:](https://njump.me/npub1reezn2ctrrg736uqj7mva9lsuwv0kr5asj4vvkwxnrwlhvxf98tsq99ty4)
 
 Matthew is an experienced iOS engineer who has picked up Rust along the way to expand his contributions to the bitcoin ecosystem. His primary focus is maintaining the bdk-ffi Rust bindings, contributing features, and ensuring the library's robustness, along with leading the development of the [BDK Swift Example Wallet](https://github.com/bitcoindevkit/BDKSwiftExampleWallet) which is an example iOS wallet built on BDK.
 
@@ -38,7 +38,7 @@ He also created the Lightning iOS app [Monday](https://github.com/reez/Monday), 
 
 ## thunderbiscuit
 
-[:lucide-github:](https://github.com/thunderbiscuit) &nbsp;  [:lucide-globe:](https://thunderbiscuit.com) &nbsp; [:lucide-twitter:](https://twitter.com/thunderB__)
+[:material-github:](https://github.com/thunderbiscuit) &nbsp;  [:material-web:](https://thunderbiscuit.com) &nbsp; [:material-twitter:](https://twitter.com/thunderB__)
 
 Thunderbiscuit is an Android engineer who's has been working on the project for over 3 years, leading the work on the language bindings for BDK. He's using BDK in production with [Padawan Wallet](https://padawanwallet.com/). He's also in charge of the [BDK Kotlin Example Wallet](https://github.com/bitcoindevkit/bdk-kotlin-example-wallet), the sample native Android wallet for BDK, and the [Book of BDK](https://bitcoindevkit.github.io/book-of-bdk/) project, working on building walkthrough documentation for the BDK ecosystem.
 
@@ -46,7 +46,7 @@ Thunderbiscuit is an Android engineer who's has been working on the project for 
 
 ## Itoro Ukpong
 
-[:lucide-github:](https://github.com/ItoroD)
+[:material-github:](https://github.com/ItoroD)
 
 Itoro is a software engineer with over six years of experience building Java-based enterprise applications. In 2024, he was selected as a fellow in the Btrust Builders program, where he was introduced to Bitcoin and began contributing to the open source Bitcoin ecosystem. During the fellowship, he focused on learning the foundational principles of Bitcoin, its developer tooling, and how to contribute meaningfully to open source projects.
 
@@ -60,7 +60,7 @@ Itoro's grant is [funded by BTrust](https://blog.btrust.tech/announcing-q1-2025-
 
 ## Peter Tyonum
 
-[:lucide-github:](https://github.com/tvpeter)
+[:material-github:](https://github.com/tvpeter)
 
 Peter is a skilled software engineer based in Nigeria and a fellow of the Qala (now Btrust Builders) genesis cohort. With over five years of experience working with JavaScript, PHP, and Rust, Peter has made extensive contributions to the Bitcoin Dev Kit (BDK) ecosystem, developing features for bdk-cli, enhancing wallet APIs, improving documentation, and actively reviewing and testing code to raise the quality and reliability of BDK libraries.
 
@@ -74,7 +74,7 @@ Peter's grant is [funded by BTrust](https://blog.btrust.tech/announcing-q2-2025-
 
 ## Nymius
 
-[:lucide-github:](https://github.com/nymius)
+[:material-github:](https://github.com/nymius)
 
 Nymius is a software engineer who fell down the rabbit hole of bitcoin, privacy and open source. After contributing to other bitcoin related projects, he found BDK, where his interest for bitcoin and rust got aligned. Since then he has been contributing to the coin selection and the persistence testing module, and file store. His new challenge is implementing support for BIP 352 (Silent Payments) on BDK. At the same time he will continue his previous work and help with the maintenance of the project.
 
@@ -82,7 +82,7 @@ Nymius is a software engineer who fell down the rabbit hole of bitcoin, privacy 
 
 ## Luis Schwab
 
-[:lucide-github:](https://github.com/luisschwab)
+[:material-github:](https://github.com/luisschwab)
 
 Luis is a Computer Engineering student and Rust hacker based out of Brazil. He's interested in technology that transfers power from trusted third parties to the individual, such as permissionless money transmission and anonimous communications, as well as computer systems and networks, and economics. He is also co-founder of [ClubeBitcoinUnB](https://github.com/ClubeBitcoinUnB), a student club focused on Bitcoin-related Research, Development, and Education.
 
@@ -94,7 +94,7 @@ He started contributing to BDK through [Summer of Bitcoin 2024](https://www.summ
 
 ## Manuel Gatti
 
-[:lucide-github:](https://github.com/nondiremanuel) &nbsp; [:lucide-twitter:](https://twitter.com/nondiremanuel) &nbsp; [:lucide-feather:](https://njump.me/npub10znwkv69vus58rrqydwfzy3tuljhqn5plec84y0v2pa5n85xfwnqaft2sl)
+[:material-github:](https://github.com/nondiremanuel) &nbsp; [:material-twitter:](https://twitter.com/nondiremanuel) &nbsp; [:lucide-feather:](https://njump.me/npub10znwkv69vus58rrqydwfzy3tuljhqn5plec84y0v2pa5n85xfwnqaft2sl)
 
 Manuel Gatti is a Product/Project Manager who has worked for about 3 and a half years as a functional analyst/project manager in the IT consultancy sector and for the last year as a Product Owner in a non-bitcoin-related software company. He is involved in some educational projects related to bitcoin in Italy and hosts an italian podcast about libertarian philosophy with episodes dedicated to bitcoin as a tool for freedom.
 
@@ -104,7 +104,7 @@ He has been contributing to BDK since April 2023 mostly on the project managemen
 
 ## Robert Netzke
 
-[:lucide-github:](https://github.com/rustaceanrob)
+[:material-github:](https://github.com/rustaceanrob)
 
 Robert was supported by the BDK Foundation to develop a compact block filter light client, [Kyoto](https://github.com/2140-dev/kyoto), from experimental to practical. He focused his time on molding the client API to work optimally with BDK, while pushing the light client performance and usability. Since the initial support from the foundation, Kyoto is incorporated in the BDK foreign language bindings, [integrates with BDK wallet](https://github.com/bitcoindevkit/bdk-kyoto), and may soon be available in the BDK Swift example app.
 
@@ -114,6 +114,6 @@ After studying mathematics at the University of California - Berkeley, Robert be
 
 ## Wei Chen
 
-[:lucide-github:](https://github.com/LagginTimes)
+[:material-github:](https://github.com/LagginTimes)
 
 Wei Chen has been contributing to BDK since late 2023 and was formerly a full stack Java developer based in Washington D.C. with ten years of experience. He was introduced to BDK as a result of Evan Lin, whom he met when taking Mandarin lessons in Taipei. The focus of his contributions will be towards assisting with the restructuring of the electrum crate, reengineering of the TxGraph data components to simplify the tracking of lineal conflicts, as well as focusing on performance optimization and the continued debugging of BDK, which includes the maintenance of the TestEnv crate. Outside of code contributions to the project, Wei Chen will be also assisting Evan Lin with various bitcoin events or workshops to improve understanding towards BDK.
