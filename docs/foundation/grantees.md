@@ -20,6 +20,16 @@ Outside of Bitcoin, he loves to draw and explore creative expression through art
 
 Itoro's grant is [funded by BTrust](https://blog.btrust.tech/announcing-q1-2025-btrust-grants/). [Btrust](https://www.btrust.tech) is a non-profit organization with a dedicated mission to decentralize the development of Bitcoin software. Their focus is on fostering developer talent in the global south and supporting the free and open-source Bitcoin ecosystem.
 
+## John Osezele
+
+[:material-github:](https://github.com/Johnosezele)
+
+John is a mobile engineer with experience building across edtech, fintech, and security. He began his career as a native Android developer with Java, progressed to Kotlin, and later moved into cross-platform development with Flutter and Dart.
+
+His entry into Bitcoin open source began with the [Chaincode BOSS program](https://bosschallenge.xyz/). After completing the program, he contributed to Rust-Payjoin, particularly in the release of [payjoin-0.25.0](https://github.com/payjoin/rust-payjoin/releases/tag/payjoin-0.25.0). Recognizing a gap in Bitcoin's mobile tooling for Dart, he joined the foundational [discussion](https://github.com/orgs/payjoin/discussions/673) and contributed to the development of [uniffi-dart](https://github.com/Uniffi-Dart/uniffi-dart), before turning his focus to building Dart language bindings for BDK, now [bdk-dart](https://github.com/bitcoindevkit/bdk-dart). He is now a co-maintainer of bdk-dart and leads the development of the [BDK Dart Wallet](https://github.com/bitcoindevkit/bdk-dart/tree/main/bdk_demo), built in Flutter.
+
+John's grant is [funded by Btrust](https://blog.btrust.tech/q1-2026-btrust-developer-grant-announcement/). [Btrust](https://www.btrust.tech/) is a non-profit organization with a dedicated mission to decentralize the development of Bitcoin software, with a focus on fostering developer talent in the Global South.
+
 ## Leonardo Souza
 
 [:material-github:](https://github.com/oleonardolima) &nbsp; [:material-twitter:](https://twitter.com/oleonardolima) &nbsp; [:lucide-feather:](https://njump.me/npub1ez8efu9rjxu64g0lalty2ffmr2tgkzjz92rkafyfyz5463wr8ars8zls5t)
