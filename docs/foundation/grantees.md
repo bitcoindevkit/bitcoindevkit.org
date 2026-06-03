@@ -30,6 +30,16 @@ His entry into Bitcoin open source began with the [Chaincode BOSS program](https
 
 John's grant is [funded by Btrust](https://blog.btrust.tech/q1-2026-btrust-developer-grant-announcement/). [Btrust](https://www.btrust.tech/) is a non-profit organization with a dedicated mission to decentralize the development of Bitcoin software, with a focus on fostering developer talent in the Global South.
 
+## Abiodun Awoyemi
+
+[:material-github:](https://github.com/aagbotemi) &nbsp; [:material-twitter:](https://x.com/_abiodunAwoyemi)
+
+Abiodun Awoyemi is a software engineer and open-source contributor focused on Bitcoin infrastructure, wallet development, and developer tooling. With experience building software professionally and working extensively with Rust, he became involved in Bitcoin open source.
+
+His entry into Bitcoin open source began with the BOSS program through Btrust Builders. His work has primarily focused on Bitcoin Dev Kit (BDK) and supporting libraries, contributing to wallet infrastructure and transaction building. He is particularly interested in making wallet infrastructure more robust and easier for developers to build upon. He is now a co-maintainer of `bdk-tx` and leads the development of `bdk-message-signer`.
+
+Abiodun's grant is [funded by Btrust](https://blog.btrust.tech/announcing-q3-2025-btrust-developer-grant-recipients/). [Btrust](https://btrust.tech/) is a non-profit organization with a dedicated mission to decentralize the development of Bitcoin software, with a focus on fostering developer talent in the Global South.
+
 ## Leonardo Souza
 
 [:material-github:](https://github.com/oleonardolima) &nbsp; [:material-twitter:](https://twitter.com/oleonardolima) &nbsp; [:lucide-feather:](https://njump.me/npub1ez8efu9rjxu64g0lalty2ffmr2tgkzjz92rkafyfyz5463wr8ars8zls5t)
