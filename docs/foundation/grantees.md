@@ -2,6 +2,10 @@
 
 ## ValuedMammal
 
+[:material-github:](https://github.com/ValuedMammal) &nbsp; [:material-twitter:](https://twitter.com/valuedmammal)
+
+ValuedMammal is a Rust developer and node operator whose work includes research in the areas of mempool and p2p. He's interested in bitcoin payment solutions, problems around fee estimation, and innovations in bitcoin Script. In 2021 he managed Tangerine node on the lightning network and was active in the PLEBNET community. He started contributing to BDK out of a belief that modern wallets should be built with modern tools and sought out a team that makes no compromises when it comes to quality and correctness and who share a mission to master the fundamentals while providing convenient abstractions to developers. His unorthodox path into software development came as a byproduct of his own bitcoin journey and continues to grow more fulfilling each day. As a result, his natural environment is in a terminal managing a server or database, and of course writing code. ValuedMammal studied Biological Science at university, and outside of bitcoin he's a writer and educator who likes music, travel, and foreign languages.
+
 ## Evan Lin
 
 [:material-github:](https://github.com/evanlinjin) &nbsp; [:material-twitter:](https://twitter.com/evanlinjin) &nbsp; [:lucide-feather:](https://njump.me/npub1kysd8m44dhv7ywa75u5z7w2w0gs4t6qzhgvjp555gfknasy3krlqfxde60)
@@ -71,10 +75,6 @@ Peter's grant is [funded by BTrust](https://blog.btrust.tech/announcing-q2-2025-
 [:material-github:](https://github.com/thunderbiscuit) &nbsp;  [:material-web:](https://thunderbiscuit.com) &nbsp; [:material-twitter:](https://twitter.com/thunderB__)
 
 Thunderbiscuit is an Android engineer who's has been working on the project for over 3 years, leading the work on the language bindings for BDK. He's using BDK in production with [Padawan Wallet](https://padawanwallet.com/). He's also in charge of the [BDK Kotlin Example Wallet](https://github.com/bitcoindevkit/bdk-kotlin-example-wallet), the sample native Android wallet for BDK, and the [Book of BDK](https://bitcoindevkit.github.io/book-of-bdk/) project, working on building walkthrough documentation for the BDK ecosystem.
-
-[:material-github:](https://github.com/ValuedMammal) &nbsp; [:material-twitter:](https://twitter.com/valuedmammal)
-
-ValuedMammal is a Rust developer and node operator whose work includes research in the areas of mempool and p2p. He's interested in bitcoin payment solutions, problems around fee estimation, and innovations in bitcoin Script. In 2021 he managed Tangerine node on the lightning network and was active in the PLEBNET community. He started contributing to BDK out of a belief that modern wallets should be built with modern tools and sought out a team that makes no compromises when it comes to quality and correctness and who share a mission to master the fundamentals while providing convenient abstractions to developers. His unorthodox path into software development came as a byproduct of his own bitcoin journey and continues to grow more fulfilling each day. As a result, his natural environment is in a terminal managing a server or database, and of course writing code. ValuedMammal studied Biological Science at university, and outside of bitcoin he's a writer and educator who likes music, travel, and foreign languages.
 
 # Current Grantees :lucide-chevrons-right: Project Grants
 
