@@ -92,6 +92,16 @@
 
     [:octicons-arrow-right-24: Website](https://frostsnap.com/)
 
+-   ### Grimm App
+
+    ---
+
+    <img src="/assets/logos/users/grimm-130.png" style="max-width: 100px; display: block; margin: auto; margin-bottom: 1em;" alt="Grimm App" />
+
+    A self-custodial Bitcoin wallet supporting on-chain and Lightning payments, focused on privacy, security, and usability for day-to-day transactions.
+
+    [:octicons-arrow-right-24: Website](https://usegrimm.app/)
+
 -   ### Iris Wallet
 
     ---
