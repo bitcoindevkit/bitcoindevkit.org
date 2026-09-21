@@ -1,11 +1,5 @@
 # Current Grantees :lucide-chevrons-right: Full-Time
 
-## ValuedMammal
-
-[:material-github:](https://github.com/ValuedMammal) &nbsp; [:material-twitter:](https://twitter.com/valuedmammal)
-
-ValuedMammal is a Rust developer and node operator whose work includes research in the areas of mempool and p2p. He's interested in bitcoin payment solutions, problems around fee estimation, and innovations in bitcoin Script. In 2021 he managed Tangerine node on the lightning network and was active in the PLEBNET community. He started contributing to BDK out of a belief that modern wallets should be built with modern tools and sought out a team that makes no compromises when it comes to quality and correctness and who share a mission to master the fundamentals while providing convenient abstractions to developers. His unorthodox path into software development came as a byproduct of his own bitcoin journey and continues to grow more fulfilling each day. As a result, his natural environment is in a terminal managing a server or database, and of course writing code. ValuedMammal studied Biological Science at university, and outside of bitcoin he's a writer and educator who likes music, travel, and foreign languages.
-
 ## Evan Lin
 
 [:material-github:](https://github.com/evanlinjin) &nbsp; [:material-twitter:](https://twitter.com/evanlinjin) &nbsp; [:lucide-feather:](https://njump.me/npub1kysd8m44dhv7ywa75u5z7w2w0gs4t6qzhgvjp555gfknasy3krlqfxde60)
@@ -116,3 +110,10 @@ After studying mathematics at the University of California - Berkeley, Robert be
 [:material-github:](https://github.com/LagginTimes)
 
 Wei Chen has been contributing to BDK since late 2023 and was formerly a full stack Java developer based in Washington D.C. with ten years of experience. He was introduced to BDK as a result of Evan Lin, whom he met when taking Mandarin lessons in Taipei. The focus of his contributions will be towards assisting with the restructuring of the electrum crate, reengineering of the TxGraph data components to simplify the tracking of lineal conflicts, as well as focusing on performance optimization and the continued debugging of BDK, which includes the maintenance of the TestEnv crate. Outside of code contributions to the project, Wei Chen will be also assisting Evan Lin with various bitcoin events or workshops to improve understanding towards BDK.
+
+## ValuedMammal
+
+[:material-github:](https://github.com/ValuedMammal) &nbsp; [:material-twitter:](https://twitter.com/valuedmammal)
+
+ValuedMammal is a Rust developer and node operator whose work includes research in the areas of mempool and p2p. He's interested in bitcoin payment solutions, problems around fee estimation, and innovations in bitcoin Script. In 2021 he managed Tangerine node on the lightning network and was active in the PLEBNET community. He started contributing to BDK out of a belief that modern wallets should be built with modern tools and sought out a team that makes no compromises when it comes to quality and correctness and who share a mission to master the fundamentals while providing convenient abstractions to developers. His unorthodox path into software development came as a byproduct of his own bitcoin journey and continues to grow more fulfilling each day. As a result, his natural environment is in a terminal managing a server or database, and of course writing code. ValuedMammal studied Biological Science at university, and outside of bitcoin he's a writer and educator who likes music, travel, and foreign languages.
+
