@@ -54,6 +54,12 @@ Matthew is an experienced iOS engineer who has picked up Rust along the way to e
 
 He also created the Lightning iOS app [Monday](https://github.com/reez/Monday), the native iOS implementation of Bitcoin UI Kit [BitcoinUI](https://github.com/reez/BitcoinUI), the iOS app [Block Screen](https://apps.apple.com/us/app/block-screen/id1533333210), and co-organizes NashBitDevs.
 
+## Nymius
+
+[:material-github:](https://github.com/nymius)
+
+Nymius is a software engineer who fell down the rabbit hole of bitcoin, privacy and open source. After contributing to other bitcoin related projects, he found BDK, where his interest for bitcoin and rust got aligned. Since then he has been contributing to the coin selection and the persistence testing module, and file store. His new challenge is implementing support for BIP 352 (Silent Payments) on BDK. At the same time he will continue his previous work and help with the maintenance of the project.
+
 ## Peter Tyonum
 
 [:material-github:](https://github.com/tvpeter)
@@ -79,12 +85,6 @@ Thunderbiscuit is an Android engineer who's has been working on the project for 
 Luis is a Computer Engineering student and Rust hacker based out of Brazil. He's interested in technology that transfers power from trusted third parties to the individual, such as permissionless money transmission and anonimous communications, as well as computer systems and networks, and economics. He is also co-founder of [ClubeBitcoinUnB](https://github.com/ClubeBitcoinUnB), a student club focused on Bitcoin-related Research, Development, and Education.
 
 He started contributing to BDK through [Summer of Bitcoin 2024](https://www.summerofbitcoin.org), and currently works on integrating [Floresta](https://github.com/vinteumorg/Floresta), a Utreexo-powered node implementation, with BDK, through the `bdk-floresta` crate.
-
-## Nymius
-
-[:material-github:](https://github.com/nymius)
-
-Nymius is a software engineer who fell down the rabbit hole of bitcoin, privacy and open source. After contributing to other bitcoin related projects, he found BDK, where his interest for bitcoin and rust got aligned. Since then he has been contributing to the coin selection and the persistence testing module, and file store. His new challenge is implementing support for BIP 352 (Silent Payments) on BDK. At the same time he will continue his previous work and help with the maintenance of the project.
 
 # Past Grantees
 
