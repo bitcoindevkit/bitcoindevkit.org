@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2023-06-02
+categories:
+  - Technical
+---
+
 # BDK's Scope and Approach to Rust Bindings
 
 :lucide-pen-tool: &nbsp; [`thunderbiscuit`](https://github.com/thunderbiscuit)  
@@ -5,6 +12,8 @@
 ---
 
 **tldr;** _we can't produce and maintain bindings for all Rust crates we get requests for, but we are working to help others build their own bindings by (1) making our architecture composable and reusable, and (2) building strong examples and documentation on how to do it for other crates._
+
+<!-- more -->
 
 Over the past 2 years, the Bitcoin Development Kit team has been successful at building and releasing language bindings for our Rust library. In particular, over the past 18 months we have locked in and solidified our approach for the iOS, Android, Kotlin, Java, and Python bindings by using a Rust library called [Uniffi](https://github.com/mozilla/uniffi-rs).
 

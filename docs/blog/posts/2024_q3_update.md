@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2024-11-07
+categories:
+  - Update
+---
+
 # 2024 Q3 Update: What Have We Been Up To?
 
 :lucide-pen-tool: &nbsp; [`thunderbiscuit`](https://github.com/thunderbiscuit)  
@@ -5,6 +12,8 @@
 ---
 
 The bitcoindevkit team has been hard at work for Q3 in 2024, polishing the API of our `bdk_wallet` crate and releasing 4 new beta versions (1, 2, 3, and 4!), and aiming to release a final 1.0 release by the end of 2024. Here are some of the notable changes and upgrades to the software libraries we maintain:
+
+<!-- more -->
 
 - **RBF by default on TxBuilder.** The transaction builder in BDK will now signal RBF by default.
 - **New wallet builder API.** The new wallet builder offers flexibility and ease-of-development for future features. We've also been listening to user feedback, and brought back support for single-descriptor wallets.

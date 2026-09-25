@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2026-01-21
+categories:
+  - Update
+---
+
 # 2025 Q4 Update: What Have We Been Up To?
 
 :lucide-pen-tool: &nbsp; [`thunderbiscuit`](https://github.com/thunderbiscuit)  
@@ -6,6 +13,8 @@
 ---
 
 Q4 saw two new feature releases of the bdk_wallet library (`2.2.0` and `2.3.0`), continued work on documentation, and a strong presence at TABConf where four team members presented talks and workshops. We also had a productive three-day summit in Nashville where a large part of the team met with other Rust + Bitcoin developers.
+
+<!-- more -->
 
 Here are some of the notable releases and changes over Q4 to the software libraries we maintain:
 
@@ -29,7 +38,7 @@ Following TABConf, the BDK team met with other Rust and Bitcoin-based developers
 
 ## BDK in the Wild
 
-Q4 saw new projects integrating BDK into their software and being added to our [adoption page](../adoption/all/):
+Q4 saw new projects integrating BDK into their software and being added to our [adoption page](../../adoption/all.md):
 
 - [Eigenwallet](https://eigenwallet.org/)
 - [Satsigner](https://satsigner.com/)

@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2025-11-06
+categories:
+  - Update
+---
+
 # 2025 Q3 Update: What Have We Been Up To?
 
 :lucide-pen-tool: &nbsp; [`thunderbiscuit`](https://github.com/thunderbiscuit)  
@@ -5,6 +12,8 @@
 ---
 
 Q3 saw a new feature release of the bdk_wallet library (`2.1.0`), with great new features being added including support for multipath descriptors, more flexible transaction building capabilities, as well as better caching when working with large wallets.
+
+<!-- more -->
 
 Here are some of the notable releases and changes over Q3 to the software libraries we maintain:
 

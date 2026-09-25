@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2024-05-07
+categories:
+  - Technical
+---
+
 # Why Do We Build Bindings?
 
 :lucide-pen-tool: &nbsp; [`thunderbiscuit`](https://github.com/thunderbiscuit)  
@@ -5,6 +12,8 @@
 ---
 
 This article explores the reasons why the Bitcoin Dev Kit Foundation supports a number of language bindings libraries as part of its core offering, and the challenges and decision tradeoffs we face along the way.
+
+<!-- more -->
 
 We build language bindings for a number of use cases. One of the most common of those rests on a belief that as time goes on, applications of all kinds will need to interact with the bitcoin protocol. Many of those will be applications that are not "bitcoin-first" like wallets, but rather other kinds of applications that simply wish to integrate payments for their users (games, chat applications, content creation, etc.). These applications already have well-developed codebases and teams, seldom built entirely in Rust (BDK's first and core language). Our goal is to offer these teams and applications an all-inclusive dependency they can add to whatever technology stack they are using in production, and allow the integration of bitcoin-related capabilities without the need to completely change their tech stack or require the hire of full-time bitcoin experts.
 

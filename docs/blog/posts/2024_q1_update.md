@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2024-03-21
+categories:
+  - Update
+---
+
 # 2024 Q1 Project Update
 
 :lucide-pen-tool: &nbsp; [`Steve Myers`](https://github.com/notmandatory)  
@@ -7,6 +14,8 @@
 ### Core BDK
 
 The majority of BDK rust library work this quarter was towards finishing new and improved electrum,  esplora and Bitcoin Core RPC (block-by-block) syncing APIs. Bug fixes and improvements were also completed for the transaction builder and other wallet APIs. Six bi-weekly 1.0.0-alpha releases were made ([alpha.3](https://github.com/bitcoindevkit/bdk/releases/tag/v1.0.0-alpha.3), [alpha.4](https://github.com/bitcoindevkit/bdk/releases/tag/v1.0.0-alpha.4), [alpha.5](https://github.com/bitcoindevkit/bdk/releases/tag/v1.0.0-alpha.5), [alpha.6](https://github.com/bitcoindevkit/bdk/releases/tag/v1.0.0-alpha.6), [alpha.7](https://github.com/bitcoindevkit/bdk/releases/tag/v1.0.0-alpha.7), [alpha.8](https://github.com/bitcoindevkit/bdk/releases/tag/v1.0.0-alpha.8)). For the quarter [54 PRs](https://github.com/bitcoindevkit/bdk/pulls?q=is%3Apr+merged%3A2024-01-01..2024-03-31+) were merged and [55 issues](https://github.com/bitcoindevkit/bdk/issues?q=is%3Aissue+closed%3A2024-01-01..2024-03-31+) were closed.
+
+<!-- more -->
 
 ### BDK-FFI
 

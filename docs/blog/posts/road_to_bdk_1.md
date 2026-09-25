@@ -1,11 +1,19 @@
+---
+draft: false
+date: 2022-10-03
+categories:
+  - Technical
+---
+
 # The Road to BDK 1.0
 
 :lucide-pen-tool: &nbsp; [`Alekos Filini`](https://github.com/afilini)  
 :lucide-calendar-1: &nbsp; `Oct 3, 2022`
 ---
 
-Over the past few months the work on [bdk\_core] quietly continued behind the scenes, and as the time went on it started expanding beyond the scope of just improving the *syncing* mechanism of BDK. Being a new fresh
-project it allowed for iterating much faster, and we soon realized we could make large improvements to the general architecture of BDK to fix many of the issues and shortcomings found over time.
+Over the past few months the work on [bdk\_core] quietly continued behind the scenes, and as the time went on it started expanding beyond the scope of just improving the *syncing* mechanism of BDK. Being a new fresh project it allowed for iterating much faster, and we soon realized we could make large improvements to the general architecture of BDK to fix many of the issues and shortcomings found over time.
+
+<!-- more -->
 
 For this reason, we decided to move forward with the project and start planning the integration into BDK itself. This blog post will briefly describe the new concept for how BDK will be structured and lay down a plan
 for the development in the next few months.
@@ -91,6 +99,6 @@ for our downstream users, and it's a major step towards our goal of providing si
 [^1]: Not every script can be expressed as descriptor
 
 [bdk\_core]: https://github.com/LLFourn/bdk_core_staging
-[first bdk\_core post]: /blog/bdk-core-pt1/
+[first bdk\_core post]: bdk_core_pt1.md
 [`rust-miniscript`]: https://github.com/rust-bitcoin/rust-miniscript
 [`mrustc`]: https://github.com/thepowersgang/mrustc

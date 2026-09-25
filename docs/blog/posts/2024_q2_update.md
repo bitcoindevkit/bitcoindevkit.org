@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2024-07-01
+categories:
+  - Update
+---
+
 # 2024 Q2 Update: What Have We Been Up To?
 
 :lucide-pen-tool: &nbsp; [`thunderbiscuit`](https://github.com/thunderbiscuit)  
@@ -5,6 +12,8 @@
 ---
 
 The bitcoindevkit team has been hard at work for Q2 in 2024, pushing to stabilize the API of its `bdk_wallet` crate and releasing 4 new alpha versions (9, 10, 11, and 12!), and aiming to release a 1.0 beta in July. Here are some of the notable changes and upgrades to the software libraries we maintain:
+
+<!-- more -->
 
 - **Update `bdk_electrum` to use merkle proofs.** This PR is the first step in reworking `bdk_electrum` to use merkle proofs. When we fetch a transaction, we now also obtain the merkle proof and block header for verification. We then confirm a transaction is in a block only after validating it's Merkle proof.
 - **Upgrade of rust-bitcoin and rust-miniscript.** We upgraded our dependencies on these crates to the latest `0.32.0` and `0.12.0` respectively.
