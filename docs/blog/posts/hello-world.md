@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2020-12-18
+categories:
+  - Announcement
+---
+
 # Hello World!
 
 :lucide-pen-tool: &nbsp; [`Alekos Filini`](https://github.com/afilini)  
@@ -7,6 +14,8 @@
 ## Introduction
 
 This article should serve as a "getting started" guide for developers who are considering integrating BDK in their projects: it tries to introduce the reader to the basic concepts behind the library and some of its modules and components that can be used to build a very simple functioning Bitcoin wallet. All the information written in this article are valid for the latest [published version](https://docs.rs/bdk/latest/bdk/).
+
+<!-- more -->
 
 ## Design Goals
 

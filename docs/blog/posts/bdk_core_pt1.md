@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2022-05-09
+categories:
+  - Technical
+---
+
 # `bdk_core`: a new architecture for the Bitcoin Dev Kit
 
 :lucide-pen-tool: &nbsp; [`Lloyd Fournier`](https://github.com/LLFourn)  
@@ -9,6 +16,8 @@ abstractions. It works great when these abstractions map nicely onto what you ar
 goal is to develop a new `bdk_core` library for when they don't. I want `bdk_core` to expose all the
 useful *mechanisms* that BDK has inside it without them being tied to any particular usage *policy*
 and with very minimal dependencies.
+
+<!-- more -->
 
 The `bdk_core` idea is still "in the lab". We're not sure yet whether `bdk_core` will just be what's
 left of `bdk` once we spin off all the components that have extra dependencies into their own crates
@@ -141,7 +150,7 @@ For now I'm calling this thing that does the in-memory indexing of transactions 
 descriptor a `DescriptorTracker`. Here's a diagram that communicates how I imagine it relates to the
 other components.
 
-![](../assets/blog/descriptor-tracker.jpg)
+![](../../assets/blog/descriptor-tracker.jpg)
 
 ### Rolling back, rolling forward and syncing to disk
 
@@ -158,7 +167,7 @@ if there is a reorg. After rolling back we can then roll forward and apply the n
 
 Here's an example of how this idea works:
 
-![](../assets/blog/checkpoints.jpg)
+![](../../assets/blog/checkpoints.jpg)
 
 There are a few edge cases I'd like to cover:
 

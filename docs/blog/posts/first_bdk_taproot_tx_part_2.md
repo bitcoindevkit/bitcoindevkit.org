@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2021-12-10
+categories:
+  - Technical
+---
+
 # The first BDK Taproot TX: a look at the code (Part 2)
 
 :lucide-pen-tool: &nbsp; [`Alekos Filini`](https://github.com/afilini)  
@@ -5,6 +12,8 @@
 ---
 
 This is the second part of a two-part blog series in which I talk through the changes made to BDK to make a Taproot transaction. If you haven't read it yet, check out [Part 1].
+
+<!-- more -->
 
 While in the first part I managed to show full raw commits, in this case I will only focus on the relevant changes, otherwise the post would get very long. You can always find the [full diff] here, if you are interested
 in that.

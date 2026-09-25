@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2025-07-02
+categories:
+  - Update
+---
+
 # 2025 Q2 Update: What Have We Been Up To?
 
 :lucide-pen-tool: &nbsp; [`matthewramsden`](https://github.com/reez)  
@@ -5,6 +12,8 @@
 ---
 
 The second quarter of 2025 was an exciting one for the Bitcoin Dev Kit. With major releases, new libraries, a YouTube launch, and ongoing contributions from our community of grantees and collaborators, BDK continues to push forward the frontier of building Bitcoin wallets.
+
+<!-- more -->
 
 Here are some of the notable releases and changes over Q2 to the software libraries we maintain:
 
@@ -20,7 +29,7 @@ There are also new projects and initiatives being built.
 
 ## Our Grantees in Action
 
-We're excited to welcome new Silver [corporate members](../foundation/members.md) to the BDK Foundation and thank them for their financial support!
+We're excited to welcome new Silver [corporate members](../../foundation/members.md) to the BDK Foundation and thank them for their financial support!
 
 - [AnchorWatch](https://www.anchorwatch.com)
 - [CleanSpark](https://www.cleanspark.com)

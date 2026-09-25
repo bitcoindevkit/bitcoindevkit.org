@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2025-01-15
+categories:
+  - Update
+---
+
 # 2024 Q4 Update: What Have We Been Up To?
 
 :lucide-pen-tool: &nbsp; [`thunderbiscuit`](https://github.com/thunderbiscuit)  
@@ -5,6 +12,8 @@
 ---
 
 The bitcoindevkit team was very proud to release the 1.0 stable version of our bdk_wallet API in Q4! It's been a long time coming, and all that testing, reviewing, refactoring, and polishing finally paid off. Onwards! 🎉
+
+<!-- more -->
 
 Here are some of the notable releases and changes over Q4 to the software libraries we maintain:
 

@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2021-11-15
+categories:
+  - Technical
+---
+
 # The first BDK Taproot TX: a look at the code (Part 1)
 
 :lucide-pen-tool: &nbsp; [`Alekos Filini`](https://github.com/afilini)  
@@ -6,6 +13,8 @@
 
 This is the first of a two-parts blog series in which I will try to explain all the changes that I made to BDK (and some of its dependencies) to make our [first Taproot transaction in mainnet][first-mainnet-tx], which also
 turned out to be [the first ever use of the new `OP_CHECKSIGADD` opcode][first-ever-use-checksigadd].
+
+<!-- more -->
 
 Hopefully this will give an insight into what kind of changes need to be made to a wallet in order to support spending `P2TR` outputs, both with key-spend and script-spend. BDK actually delegates
 most of the hard work to [rust-miniscript], and luckily most of the Taproot code was already implemented by the time I started working on it. I only had to patch a few little bugs here and there, and it ended up

@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2026-04-20
+categories:
+  - Update
+---
+
 # 2026 Q1 Update: What Have We Been Up To?
 
 :lucide-pen-tool: &nbsp; [`thunderbiscuit`](https://github.com/thunderbiscuit)  
@@ -6,6 +13,8 @@
 ---
 
 Q1 2026 was headlined by the release candidate cycle for `bdk_wallet` 3.0.0, a major milestone the team has been building toward for over a year. Alongside that, we welcomed two new associate members to the BDK Foundation, saw continued momentum in mobile library development, and formalized maintainership and support tiers across every library in the GitHub org.
+
+<!-- more -->
 
 Here are some of the notable releases and changes over Q1 to the software libraries we maintain:
 

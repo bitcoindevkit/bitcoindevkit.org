@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2024-02-20
+categories:
+  - Update
+---
+
 # 2023 Q4 Project Update
 
 :lucide-pen-tool: &nbsp; [`Steve Myers`](https://github.com/notmandatory) &nbsp; [`Daniela Brozzoni`](https://github.com/danielabrozzoni)  
@@ -5,6 +12,8 @@
 ---
 
 The [Spiral](https://spiral.xyz) team has graciously supported BDK financially (and spiritually) for the past four years and since early 2022 the BDK team has let folks know what we've been up to via the [Spiral blog](https://spiral.xyz/blog/). As of last summer we are grateful to also have received a generous [OpenSats grant](https://opensats.org/blog/bitcoin-and-nostr-grants-august-2023) supporting our project. To keep our current and future financial supporters, open source contributors, and downstream users updated on our progress, starting this year we will be publishing a quarterly BDK project updates here on our blog.
+
+<!-- more -->
 
 ### End of Year Review
 

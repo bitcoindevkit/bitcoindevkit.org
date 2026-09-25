@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2025-12-17
+categories:
+  - Announcement
+---
+
 # BDK Featured in Bitcoin News Interview
 
 :lucide-pen-tool: &nbsp; [`Steve Myers`](https://github.com/notmandatory)  
@@ -5,6 +12,8 @@
 ---
 
 I recently joined Bitcoin News for a friendly conversation about Bitcoin Development Kit’s origins, mission, and where we’re headed. I shared how BDK grew from an early side project into a cross-platform foundation, powering wallets and Bitcoin applications across the ecosystem.
+
+<!-- more -->
 
 The chat also covered BDK’s open-source philosophy, support for layer two protocols, and how developers use BDK to ship safer, more flexible Bitcoin products, without reinventing core infrastructure. Check out [the full conversation](https://bitcoinnews.com/p/bitcoin-development-kit-steve-myers) to hear the complete story behind BDK, its real-world impact, and what’s coming next.
 

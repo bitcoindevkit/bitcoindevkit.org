@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2026-08-27
+categories:
+  - Update
+---
+
 # 2026 Q2 Update: What Have We Been Up To?
 
 :lucide-pen-tool: &nbsp; [`thunderbiscuit`](https://github.com/thunderbiscuit)  
@@ -6,6 +13,8 @@
 ---
 
 Q2 2026 is the quarter the 3.0 line landed. `bdk_wallet` 3.0.0 shipped in April, 3.1.0 followed in June, and the 3.0 API made its way out to every language we support: Swift, Kotlin, Android, JVM, Python, React Native, and Dart. Along the way we welcomed two new corporate members to the BDK Foundation, added two new grantees to the team, and published the first release of a brand new library.
+
+<!-- more -->
 
 Here are some of the notable releases and changes over Q2 to the software libraries we maintain:
 
@@ -21,7 +30,7 @@ Here are some of the notable releases and changes over Q2 to the software librar
 - **A new library: `bdk-message-signer`.** [Version 0.1.0](https://github.com/bitcoindevkit/bdk-message-signer) of a new library shipped this quarter, providing a script-generic signed message format for proving fund availability or committing to a message.
 - **The Book of BDK is on 3.0.** All Rust, Swift, Kotlin, and Python examples have been updated to the 3.0.0 API, the Kyoto example now uses the 0.17.0 API, and we published [release notes](https://bookofbdk.com/release-guide/3.1/notes/) for the 2.4, 3.0, and 3.1 releases. The Python examples moved to the `uv` build tool and the Kotlin examples to the Amper toolchain.
 - **Example wallets on 3.0.** Our sample Android app, the [Devkit Wallet](https://github.com/bitcoindevkit/devkit-wallet), followed the release candidates through May and now runs bdk-android 3.0.0, and the [BDK Swift Example Wallet](https://github.com/bitcoindevkit/BDKSwiftExampleWallet) was updated to bdk-ffi 3.0.0 as well.
-- **A new website.** The website you're reading this on was rebuilt on [Zensical](https://zensical.org/) and deployed in April, with a new logo, icons, and favicon. We also published a PGP key for [security@bitcoindevkit.org](../foundation/pgp.md) so that vulnerabilities can be reported to us privately.
+- **A new website.** The website you're reading this on was rebuilt on [Zensical](https://zensical.org/) and deployed in April, with a new logo, icons, and favicon. We also published a PGP key for [security@bitcoindevkit.org](../../foundation/pgp.md) so that vulnerabilities can be reported to us privately.
 
 ## New Foundation Members
 
@@ -39,11 +48,11 @@ Two new grantees joined the team this quarter, both funded by [Btrust](https://w
 - **[John Osezele](https://github.com/Johnosezele)** is a mobile engineer working on the Dart language bindings. He is a co-maintainer of [bdk-dart](https://github.com/bitcoindevkit/bdk-dart) and leads the development of the [BDK Dart Wallet](https://github.com/bitcoindevkit/bdk-dart/tree/main/bdk_demo), a demo app built in Flutter.
 - **[Abiodun Awoyemi](https://github.com/aagbotemi)** works on wallet infrastructure and transaction building. He is a co-maintainer of [bdk-tx](https://github.com/bitcoindevkit/bdk-tx) and leads the development of [bdk-message-signer](https://github.com/bitcoindevkit/bdk-message-signer).
 
-See our [grantees page](../foundation/grantees.md) for the full roster of developers funded through the Foundation.
+See our [grantees page](../../foundation/grantees.md) for the full roster of developers funded through the Foundation.
 
 ## BDK in the Wild
 
-Q2 saw new projects integrating BDK into their software and being added to our [adoption page](../adoption/all.md):
+Q2 saw new projects integrating BDK into their software and being added to our [adoption page](../../adoption/all.md):
 
 - [Grimm App](https://usegrimm.app/) — a self-custodial bitcoin wallet supporting on-chain and Lightning payments.
 - [Cyberkrill](https://github.com/douglaz/cyberkrill) — a comprehensive CLI toolkit for Bitcoin and Lightning Network operations, written in Rust.

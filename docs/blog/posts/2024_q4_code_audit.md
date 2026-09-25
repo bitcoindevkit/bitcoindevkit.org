@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2024-12-03
+categories:
+  - Announcement
+---
+
 # 2024 Q4 Code Audit
 
 :lucide-pen-tool: &nbsp; [`Steve Myers`](https://github.com/notmandatory)  
@@ -5,6 +12,8 @@
 ---
 
 A heartfelt thank you to our friends at [Spiral](https://spiral.xyz/) for sponsoring a code audit of the current `bdk` 1.0.0-beta Rust codebase. The effort was led by [Antoine Poinsot](https://github.com/darosior) from [Wizardsardine](https://wizardsardine.com/), who did a fantastic job providing insightful and actionable recommendations for the BDK team. You can find the full report [here](https://gist.github.com/darosior/4aeb9512d7f1ac7666abc317d6f9453b).
+
+<!-- more -->
 
 As outlined in Antoine's report, the audit's primary focus was to review the core components that constitute a BDK-based wallet, particularly the new methods for managing and synchronizing chain data. The audit scope included some reasonable simplifying assumptions, such as trusting that the Electrum or Esplora servers to which BDK wallets connect are not malicious. However, Antoine went above and beyond and also recommended a few simple fixes we can do to guard against certain types of bad server behavior.
 

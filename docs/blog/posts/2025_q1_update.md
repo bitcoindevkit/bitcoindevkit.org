@@ -1,3 +1,10 @@
+---
+draft: false
+date: 2025-04-02
+categories:
+  - Update
+---
+
 # 2025 Q1 Update: What Have We Been Up To?
 
 :lucide-pen-tool: &nbsp; [`thunderbiscuit`](https://github.com/thunderbiscuit)  
@@ -6,6 +13,8 @@
 
 The bitcoindevkit team is hitting cruising speed after the release of the 1.0 bdk_wallet API. We are implementing a new release cadence of 8-week cycles, planning to do a feature release (1.1, 1.2, etc.) on [these dates for 2025](
 https://github.com/bitcoindevkit/bdk/milestones).
+
+<!-- more -->
 
 Here are some of the notable releases and changes over Q1 to the software libraries we maintain:
 
